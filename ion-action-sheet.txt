@@ -1,0 +1,59 @@
+export class ActionSheetExample {
+
+  constructor(public actionSheetController: ActionSheetController) {}
+
+  async presentActionSheet() {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Albums',
+      buttons: [{
+        text: 'Delete',
+        role: 'destructive',
+        icon: 'trash',
+        handler: () => {
+          console.log('Delete clicked');
+        }
+      }, {
+        text: 'Share',
+        icon: 'share',
+        handler: () => {
+          console.log('Share clicked');
+        }
+      }, {
+        text: 'Play (open modal)',
+        icon: 'arrow-dropright-circle',
+        handler: () => {
+          console.log('Play clicked');
+        }
+      }, {
+        text: 'Favorite',
+        icon: 'heart',
+        handler: () => {
+          console.log('Favorite clicked');
+        }
+      }, {
+        text: 'Cancel',
+        icon: 'close',
+        role: 'cancel',
+        handler: () => {
+          console.log('Cancel clicked');
+        }
+      }]
+    });
+    await actionSheet.present();
+  }
+
+} // class
+
+css properties
+---------------------------------------------------------------------------------------------------------------------------
+Name	Description
+--background 	Background of the action sheet group
+--background-activated 	Background of the activated action sheet button
+--background-selected 	Background of the selected action sheet button
+--color 	Color of the action sheet text
+--height 	height of the action sheet
+--max-height 	Maximum height of the action sheet
+--max-width 	Maximum width of the action sheet
+--min-height 	Minimum height of the action sheet
+--min-width 	Minimum width of the action sheet
+--width 	Width of the action sheet

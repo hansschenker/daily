@@ -1,0 +1,253 @@
+RxJs
+
+What are operators?
+--------------------
+Operators are methods on the Observable type, such as .map(...), .filter(...), .merge(...), etc. 
+When called, they do not change the existing Observable instance. Instead, 
+they return a new Observable, whose subscription logic is based on the first Observable.
+
+An Operator is a function which creates a new Observable based on the current Observable. T
+his is a pure operation: the previous Observable stays unmodified.
+
+An Operator is essentially a pure function which takes one Observable as input and generates 
+another Observable as output. Subscribing to the output Observable will also subscribe to the input Observable. 
+
+custom operator sample:multiplyByTen
+-----------------------
+import {Observable, from} from 'rxjs';
+
+function multiplyByTen(input) {
+  const output = Observable.create(function subscribe(observer) {
+    input.subscribe({
+      next: (v) => observer.next(10 * v),
+      error: (err) => observer.error(err),
+      complete: () => observer.complete()
+    });
+  });
+  return output;
+}
+
+const input = from([1, 2, 3, 4]);
+const output = multiplyByTen(input);
+output.subscribe(x => console.log(x));
+
+
+static operators (usually creation operators: from, fromEvents, of, empty, interval, timer
+------------------------------------------------------------------------------------------s
+Static operators are pure functions attached to the Observable class, 
+and usually are used to create Observables from scratch. 
+The most common type of static operators are the so-called Creation Operators.
+
+What is a static operator? 
+Besides instance operators, static operators are functions attached to the Observable class directly. 
+A static operator uses no this keyword internally, but instead relies entirely on its arguments.
+
+Static operators are pure functions attached to the Observable class, and usually are used to create Observables from scratch.
+
+The most common type of static operators are the so-called Creation Operators. 
+Instead of transforming an input Observable to an output Observable, 
+they simply take a non-Observable argument, like a number, and create a new Observable.
+
+
+instance operators (pipeable operators)
+-------------------
+Instance operators are functions that use the this keyword to infer what is the input Observable.
+
+
+
+
+
+
+
+
+Instance operators versus static operators
+-----------------------------------------
+What is an instance operator? Typically when referring to operators, we assume instance operators, 
+which are methods on Observable instances. For instance, if the operator multiplyByTen would be 
+an official instance operator, it would look roughly like this:
+
+import {Observable} from 'rxjs';
+
+Observable.prototype.multiplyByTen = function multiplyByTen() {
+  const input = this;
+  return Observable.create(function subscribe(observer) {
+    input.subscribe({
+      next: (v) => observer.next(10 * v),
+      error: (err) => observer.error(err),
+      complete: () => observer.complete()
+    });
+  });
+}
+Instance operators are functions that use the this keyword to infer what is the input Observable.
+
+Notice how the input Observable is not a function argument anymore, it is assumed to be the this object.
+
+Creation Operators
+-----------------
+ajax
+create
+defer
+empty
+
+from
+fromEvent
+fromEventPattern
+fromPromise
+
+interval
+never
+of
+range
+repeat
+repeatWhen
+throw
+timer
+
+bindCallback
+bindNodeCallback
+
+generate
+
+Transformation Operators
+-----------------------
+buffer
+bufferCount
+bufferTime
+bufferToggle
+bufferWhen
+
+concatMap
+concatMapTo
+
+exhaustMap
+expand
+groupBy
+
+map
+mapTo
+
+mergeMap
+mergeMapTo
+mergeScan
+
+pairwise
+partition
+pluck
+scan
+
+switchMap
+switchMapTo
+
+window
+windowCount
+windowTime
+windowToggle
+windowWhen
+
+Filtering Operators
+------------------
+audit
+auditTime
+
+debounce
+debounceTime
+
+distinct
+distinctKey
+distinctUntilChanged
+distinctUntilKeyChanged
+
+elementAt
+filter
+first
+ignoreElements
+
+last
+
+sample
+sampleTime
+
+single
+
+skip
+skipLast
+skipUntil
+skipWhile
+
+take
+takeLast
+takeUntil
+takeWhile
+
+throttle
+throttleTime
+
+Combination Operators
+------------------
+combineAll		When source observable completes use combineLatest with collected observables.
+combineLatest		When any observable emits a value, emit the last emitted value from each
+
+concat
+concatAll
+
+exhaust
+
+forkJoin
+
+merge
+mergeAll
+
+race
+startWith
+switch
+
+withLatestFrom
+
+zip
+zipAll
+
+Multicasting Operators
+-----------------------
+multicast
+publish
+publishBehavior
+publishLast
+publishReplay
+share
+
+Error Handling Operators
+------------------------
+catch
+retry
+retryWhen
+Utility Operators
+do
+delay
+delayWhen
+dematerialize
+finally
+let
+materialize
+observeOn
+subscribeOn
+timeInterval
+timestamp
+timeout
+timeoutWith
+toArray
+toPromise
+
+Conditional and Boolean Operators
+----------------------------------
+defaultIfEmpty
+every
+find
+findIndex
+isEmpty
+
+Mathematical and Aggregate Operators
+------------------------------------
+count
+max
+min
+reduce

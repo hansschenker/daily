@@ -1,0 +1,560 @@
+nx intro, https://angularplaybook.com/courses 
+
+working with nx
+------------------
+npm install -g @angular/cli @nrwl/schematics
+create-nx-workspace myworkspacename --directory dname --npm-scope nxp
+
+add nx to existing angular app
+--------------------------------
+ng add @nrwl/schematics
+
+ns workspace content:
+----------------------
+apps/
+  libs/
+  tools/
+  angular.json
+  nx.json
+  tslint.json
+  tsconfig.json
+
+
+apps/: This is where all the apps and e2e folders reside
+
+libs/: This is where libraries are placed
+
+tools/: This is used for tooling e.g. workspace schematics
+
+angular.json: This is used by the Angular CLI to describe the projects (apps and libs), how to build and test them, etc.
+
+nx.json: This is used by Nx to provide metadata for projects e.g. tags
+
+tslint.json: This is the linter configuration file
+
+tsconfig.json: This is the workspace tsconfig. Nx adds path aliases for each lib here to allow for workspace-relative imports e.g.
+
+import { myLib } from '@myProject/shared/my-lib';
+
+ng generate app:
+-----------------
+ng generate app myapp --directory=myteam creates a new application in apps/myteam/myapp.
+
+ng generate app myapp --routing configures the root NgModule to wire up routing, as well as add a <router-outlet> to the AppComponent template to help get us started.
+
+ng generate app myapp --tags=scope:shared,type:app annotates the created app with the two tags, which can be used for advanced code analysis. Read more about this in the section "Constraints on libraries" in Part 3.
+
+Library tags:
+----------------
+There are two basic classifiers: "scope" and "type". There can be additional classifiers in order 
+to help with different scenarios in a particular organization for example, "platform".
+
+Scope - logical grouping, business use case or domain (booking, shared, check-in...)
+------
+Scope Scope relates to a logical grouping, business use-case, or domain. Examples of scope from 
+our sample application are seatmap, booking, shared, and check-in. They contain libraries that manage a sub-domain of application logic.
+
+We recommend using folder structure to denote scope.
+
+The following folder structure is an example scope hierarchy used to describe the seatmap feature:
+
+shared/
+    seatmap/
+        feature/
+Here, "shared" and "seatmap" are grouping folders, and feature is a library that is nested two levels deep
+
+Type - ui, data-access and feature
+-----
+Type Type relates to the contents of the library and indicates its purpose and usage. 
+Examples of types are ui, data-access, and feature. See the longer discussion below.
+
+We recommend using prefixes and tags to denote type. We recommend limiting the number 
+of types to only the four described in the sections to follow.
+
+The folder name for this feature would be feature-shell so that it uses the prefix for its library type.
+
+The tag for the seatmap feature library as in the previous example would now be scope:shared,type:feature.
+
+Platform - server, mobile, platform
+---------
+Platform There can be other classifiers used to differentiate between similar libraries
+ (e.g. between server, mobile, and desktop). Platform is one such classifier.
+
+We recommend using tags to denote platform.
+
+The final tag for the seatmap feature would be scope:shared,type:feature,platform:desktop.
+
+Every library should be located in the folder tree by scope, have tags that are in the format 
+scope:SCOPE,type:TYPE,platform:PLATFORM as above, 
+and have a prefix by its type. 
+
+Types Of Libraries - feature, ui, data-access and utility
+-----------------------------------------------------------
+LibTypes of libs There are many different types of libraries in a workspace. 
+In order to maintain a certain sense of order, we recommend having only the below four (4) types of libraries:
+
+Feature libraries: 
+---------------
+Developers should consider feature libraries as libraries that implement smart UI 
+(with injected services) for specific business use cases or pages in an application.
+LibFeature libsFeature libs A feature library contains a set of files that configure a business use case or a page in an application. 
+These libraries contain an ngModule that specifies how this part of the application behaves (it may contain a slice of the Store, 
+handle its own routing within a particular application section, and can be lazy loaded into an app).
+
+feature (if nested) or feature-* (e.g., feature-shell).
+
+  libs/
+    booking/
+      feature-shell/ 
+        src/
+          index.ts
+          lib/
+            booking-feature-shell.module.ts
+feature-shell is the app-specific feature library (in this case, the "booking" app).
+
+UI libraries: 
+--------------
+A UI library contains only presentational components.
+
+What is it?
+LibUI libsUI libs A UI library is a collection of related presentational components. 
+There are generally no services injected into these components (all of the data they need should come from Inputs).
+
+For a discussion of whether to make a ui library app-specific and shared, please refer to Appendix C ("where should I create my new lib?").
+
+Data-access libraries: 
+---------------------
+A data-access library contains services and utilities for interacting with a back-end system. 
+It also includes all the code related to State management.
+LibData-access libsData-access libs Data-access libraries contain REST or webSocket services that function as client-side delegate layers to server tier APIs.
+
+All files related to State management also reside in a data-access folder (by convention, they can be grouped under a +state folder under src/lib).
+
+Naming Convention
+data-access (if nested) or data-access-* (e.g. data-access-seatmap
+
+
+Utility libraries: 
+------------------
+A utility library contains common utilities and services used by many libraries and applications.
+
+LibUtility libsUtility libs A utility contains common utilities/services used by many libraries. Often there is no 
+ngModule and the library is simply a collection of utilities or pure functions.
+
+Naming Convention
+util (if nested), or util-* (e.g., util-testing)
+
+An example ui lib module
+libs/shared/util-formatting.
+
+  export { formatDate, formatTime } from './src/format-date-fns';
+  export { formatCurrency } from './src/format-currency';
+
+he purpose of these folders is to help with organizing by scope. We recommend grouping libraries together 
+which are (usually) updated together. It helps with minimizing the amount of time a developer spends navigating the folder tree to find the right file.
+
+  apps/
+    booking/
+    check-in/
+  libs/
+    booking/                 <---- grouping folder
+      feature-shell/         <---- library
+
+    check-in/
+      feature-shell/
+
+    shared/                  <---- grouping folder
+      data-access/           <---- library
+
+      seatmap/               <---- grouping folder
+
+The Barrel File
+--------------
+LibBarrel fileBarrel file When we use Nx and @nrwl/schematics to create a library, 
+there are a few steps that are executed. The most important feature is the creation of the barrel file.
+
+Here are the files generated when creating a lib called data-access in shared:
+jest.config.js 
+src/
+  index.ts 
+  lib/
+    shared-data-access.module.spec.ts
+    shared-data-access.module.ts
+  test-setup.ts
+tsconfig.lib.json
+tsconfig.spec.json
+tslint.json
+jest was selected as the testing framework for this lib.
+
+This is the barrel file.
+
+Note the index.ts file is in the src/ folder. This is the barrel file for the lib. It contains t
+he public API to interact with the library and we should ensure that any constants, enums, classes, functions, etc. 
+that we want to expose are exported in this barrel file.
+
+Nx configures this in the root tsconfig.json, which would contain the following entry:
+
+Configuration of the path alias for our lib.
+
+"paths": {
+  ...
+  "@nrwl-airlines/shared/data-access": [
+    "libs/shared/data-access/src/index.ts"
+  ]
+  ...
+}
+
+The above allows us to write import * from '@nrwl-airlines/shared/data-access'; anywhere in our workspace 
+and instructs typescript to import from the barrel file (though we should import specific entities from the barrel instead of *).
+
+Each app and lib that we create using the CLI gets an entry in this file to help with the mapping using 
+the @ workspace-relative path syntax. You can create your own aliases in this way if it helps with development.
+
+Enforcing Constraints In the Workspace
+-------------------------------------
+LibEnforcing constraintsEnforcing constraints on libs Nx uses code analysis to make sure projects 
+can only depend on each other’s well-defined public API. 
+It also allows you to declaratively impose constraints on how projects can depend on each other.
+
+Nx comes with some defaults that should apply to all workspaces, and allows for custom rules as needed by the organization.
+
+Universal Constraints
+-----------------------
+The following invariants should hold true for all workspaces:
+
+a lib cannot depend on an app
+
+a project cannot have circular dependencies
+
+a project that lazy loads another project cannot import it directly.
+
+Nx comes with a few predefined rules that apply to all workspaces:
+
+Libs cannot imports apps.
+
+A project loading a library via loadChildren cannot also import it using an ESM import.
+
+Circular dependencies aren’t allowed.
+
+Libs cannot be imported using relative imports.
+
+Nx schematics also include this as a default.
+
+"nx-enforce-module-boundaries": [
+  true, 
+  {
+    "allow": [], 
+    "depConstraints": [
+      { "sourceTag": "*", "onlyDependOnLibsWithTags": ["*"] } 
+    ]
+  }
+]
+This is a flag that enables the rule.
+
+This is a whitelist that bypasses the checks in depConstraints - see the "Exceptions" section below.
+
+This is where we specify the explicit dependency rules based on the tags in our workspace libs.
+
+Imposing Your Own Constraints On Library Dependencies
+----------------------------------------------------
+Some examples of recommended workspace rules are below:
+
+An app-specific library cannot depend on a lib from another app 
+(e.g., "booking/*" can only depend on libs from "booking/*" or shared libs).
+
+A shared library cannot depend on an app-specific lib (e.g., "shared-data-access" cannot depend on "booking-data-access").
+
+A ui library cannot depend on a feature or data-access library.
+
+A util library can only depend on other util libraries.
+
+A data-access library cannot depend on a feature or ui library.
+
+These constraints are enforced in the following ways:
+
+IDEs and editors display an error if you are trying to violate these rules (if they are set up to recognize tslint rules)
+
+CI will fail if we use the lint rule in the pipeline
+
+Constraints are defined using the rules in tslint.json and tags in nx.json:
+
+  ng g lib feature-destination --directory=booking --tags=scope:booking,type:feature
+Note, you can also modify the tags in nx.json after the fact, like this:
+
+  "booking-feature-destination": {
+    "tags": ["scope:booking", "type:feature"]
+  },
+  "booking-shell": {
+    "tags": []
+  },
+Once tags have been associated with each library, tsLint rules can be defined to configure constraints:
+
+  "nx-enforce-module-boundaries": [
+    true,
+    {
+      "allow": [], 
+      "depConstraints": [
+          {
+            "sourceTag": "scope:shared", 
+            "onlyDependOnLibsWithTags": ["scope:shared"]
+          },
+          {
+            "sourceTag": "scope:booking", 
+            "onlyDependOnLibsWithTags": ["scope:booking", "scope:shared"]
+          },
+          {
+            "sourceTag": "type:util", 
+            "onlyDependOnLibsWithTags": ["type:util"]
+          }
+        ]
+    }
+  ]
+The allow parameter allows us to specify a whitelist that we can import from regardless of the other rules in depConstraints.
+
+A lib tagged scope:shared can only import from other libs with tag scope:shared.
+
+A lib tagged scope:booking can only import from libs tagged with either scope:booking or scope:shared.
+
+A lib tagged type:util can only import from another lib that is tagged type:util.
+
+With the example configuration above, we should see an error when we try to import a lib from check-in into booking (violates rule 2 above).
+
+
+Why Use the DataPersistence Library?
+--------------------------------------
+The library was designed to abstract some of the logic that is common to Effects:
+
+It fetches the state from the Store to retrieve one or more values during the asynchronous operation
+
+It forces us to choose between updating the application state pessimistically or optimistically.
+
+It provides help with dealing with multiple calls and with sequencing them in a meaningful way.
+
+It also helps with being explicit about error handling: it is often forgotten when using a switchMap operation
+ leading to the Effect completing when an error is encountered (and therefore not being able to respond to further actions that trigger it)
+
+It helps with initiating asynchronous logic when a route change occurs to a particular component.
+
+Let’s take a look at some of the features that it provides:
+
+Optimistic and pessimistic updates
+
+rxjs operators for all of the members used (optimisticUpdate, pessimisticUpdate, fetch and navigation)
+
+fetching arbitrary data reliably
+
+initiating asynchronous workflows on route change (to a particular component)
+
+Optimistic Updates
+Optimistic updates For a better user experience, optimisticUpdate method updates the state on the client 
+application immediately before updating the data on the server-side. While it addresses fetching data in order, 
+removing the race conditions and handling error, it is optimistic about not failing to update the server. 
+In case of a failure, when using optimisticUpdate, the local state on the client is already updated. 
+The developer must provide an undo action to restore the previous state to keep it consistent with the server state.
+ The error handling must be done in the callback, or by means of the undo action.
+
+import { DataPersistence } from '@nrwl/nx';
+...
+
+class TodoEffects {
+  @Effect() updateTodo = this.dataPersistence.optimisticUpdate('UPDATE_TODO', {
+    // provides an action and the current state of the store
+    run: (a: UpdateTodo, state: TodosState) => {
+      return this.backend(state.user, a.payload);
+    },
+
+    undoAction: (a: UpdateTodo, e: any) => {
+      // dispatch an undo action to undo the changes in the client state
+      return ({
+        type: 'UNDO_UPDATE_TODO',
+        payload: a
+      });
+    }
+  });
+
+  constructor(
+    private dataPersistence: DataPersistence<TodosState>,
+    private backend: Backend
+  ) {}
+}
+Pessimistic Updates
+Pessimistic updates To achieve a more reliable data synchronization, pessimisticUpdate method updates the server 
+data first before updating the UI. When the change is reflected in the server state, a change is made in the client state 
+by dispatching an action. The pessimisticUpdate method enforces the order of the fetches and error handling.
+
+import { DataPersistence } from '@nrwl/nx';
+
+mport { DataPersistence } from '@nrwl/nx';
+...
+
+@Injectable()
+class TodoEffects {
+  @Effect() updateTodo = this.dataPersistence.pessimisticUpdate('UPDATE_TODO', {
+    // provides an action and the current state of the store
+    run: (a: UpdateTodo, state: TodosState) => {
+      // update the backend first, and then dispatch an action that
+      // updates the client side
+      return this.backend(state.user, a.payload).map(updated => ({
+        type: 'TODO_UPDATED',
+        payload: updated
+      }));
+    },
+
+    onError: (a: UpdateTodo, e: any) => {
+      // we don't need to undo the changes on the client side.
+      // we can dispatch an error, or simply log the error here and return `null`
+      return null;
+    }
+  });
+
+  constructor(
+    private dataPersistence: DataPersistence<TodosState>,
+    private backend: Backend
+  ) {}
+}
+Data Fetching
+Data fetching DataPersistence’s fetch method provides consistency when fetching data. 
+If there are multiple requests scheduled for the same action it only runs the last one.
+
+import { DataPersistence } from '@nrwl/nx';
+...
+
+@Injectable()
+class TodoEffects {
+  @Effect() loadTodos = this.dataPersistence.fetch('GET_TODOS', {
+   // provides an action and the current state of the store
+   run: (a: GetTodos, state: TodosState) => {
+     return this.backend(state.user, a.payload).map(r => ({
+       type: 'TODOS',
+       payload: r
+     }));
+   },
+
+   onError: (a: GetTodos, e: any) => {
+     // dispatch an undo action to undo the changes in the client state
+     return null;
+   }
+});
+
+  constructor(
+    private dataPersistence: DataPersistence<TodosState>,
+    private backend: Backend
+  ) {}
+
+}
+This is correct, but we can improve the performance by supplying and id of the data by using 
+an accessor function and adding concurrency to the fetch action for different ToDo’s.
+
+@Injectable()
+class TodoEffects {
+  @Effect() loadTodo = this.dataPersistence.fetch('GET_TODO', {
+    id: (a: GetTodo, state: TodosState) => {
+      return a.payload.id;
+    },
+
+    // provides an action and the current state of the store
+    run: (a: GetTodo, state: TodosState) => {
+      return this.backend(state.user, a.payload).map(r => ({
+        type: 'TODO',
+        payload: r
+      }));
+    },
+
+    onError: (a: GetTodo, e: any) => {
+      // dispatch an undo action to undo the changes in the client state
+      return null;
+    }
+  });
+
+  constructor(
+    private dataPersistence: DataPersistence<TodosState>,
+    private backend: Backend
+  ) {}
+
+}
+With this setup, the requests for Todo run concurrently with the requests for Todo 2. 
+Consecutive calls for Todo are queued behind the first.
+
+Data Fetching On Router Navigation
+Router navigationFetching data on navigation Since the user can always interact with the URL directly, 
+we should treat the router as the source of truth and the initiator of actions. In other words, 
+the router should invoke the reducer, not the other way around.
+When our state depends on navigation, we can not assume the route change happened when a new url is triggered but 
+when we actually know the user was able to navigate to the url. DataPersistence navigation method checks 
+if an activated router state contains the passed in component type, and, if it does, runs the run callback. 
+It provides the activated snapshot associated with the component and the current state. And it only runs the last request.
+
+import { DataPersistence } from '@nrwl/nx';
+...
+
+@Injectable()
+class TodoEffects {
+  @Effect() loadTodo = this.dataPersistence.navigation(TodoComponent, {
+    run: (a: ActivatedRouteSnapshot, state: TodosState) => {
+      return this.backend.fetchTodo(a.params['id']).map(todo => ({
+        type: 'TODO_LOADED',
+        payload: todo
+      }));
+    },
+
+    onError: (a: ActivatedRouteSnapshot, e: any) => {
+      // we can log and error here and return null
+      // we can also navigate back
+      return null;
+    }
+  });
+
+  constructor(
+    private dataPersistence: DataPersistence<TodosState>,
+    private backend: Backend
+  ) {}
+
+}
+The DataPersistence library is a useful tool to standardize the way our applications interact with back-ends, 
+rather than hand-coding it each time leading to different approaches across many applications.
+
+Trunk-based Development
+---------------------------
+Trunk-based development Trunk-based development revolves around the concept of having a single branch 
+in the repository that acts as the "trunk" or the main branch that all of the teams use. 
+This is the branch from which all feature branches originate and the one that all of them get merged into.
+
+There are two fundamental concepts with trunk-based development:
+
+The existence of a single branch that all feature branches originate from and get merged into.
+
+The short-lived nature of feature branches: each feature branch only lasts a day or two and has a very specific purpose.
+
+The main reason for working in this way is that long-lived branches cause problems when it is time to merge them back with code from other teams:
+
+The code is very much out-of-date and will require a very long time to resolve all of the merge conflicts.
+
+It requires and additional round of regression testing after resolving the conflicts before the code can be merged back in.
+
+It is very difficult to roll back and debug changes because of the number of branches involved.
+
+Git Strategy
+------------
+We recommend the following:
+
+Always use Pull Requests when merging code. A PR has two purposes:
+
+To initiate a conversation and to get feedback on the implementation
+
+To initiate a build and to run tests and lint checks to ensure that we don’t break the build
+
+Avoid long-running branches and don’t merge branches locally
+
+Enforce a git merging strategy that ensures that feature branches are up-to-date before merging. 
+This ensures that these branches are tested with the latest code before the merge.
+
+The website trunkbaseddevelopment.com contains a lot of very helpful information on trunk-based development and is a great resource.
+
+The following sections are the most pertinent:
+
+Feature flags
+
+Strategy for migrating code
+
+Feature branches
+

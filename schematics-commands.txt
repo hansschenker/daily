@@ -1,0 +1,126 @@
+schematics @angular/material: --list-schematics
+schematics @angular/material:nav main-nav
+
+schematics imports
+--------------------------
+
+import {
+      apply,
+      mergeWith,
+      chain,
+      move,
+      Rule,
+      template,
+      url,
+      Tree,
+     SchematicContext
+ } from '@angular-devkit/schematics';
+
+ import { strings } from '@angular-devkit/core';
+ import { SchematicOneOptions } from './schema';
+
+Tree methods
+-------------------------------------------------------------------
+tree.create(path: string, content: Buffer | string): void
+
+
+tree.delete(path: string): void
+
+
+tree.rename(from: string, to: string): void
+
+
+tree.overwrite(path: string, content: Buffer | string): void
+
+Tree helpers
+------------------------------------------------------------------------
+tree.branch(): Tree
+
+tree.merge(other: Tree, strategy?: MergeStrategy): void
+
+Rule Factories
+------------------------------------------------------------------------------------------------------------
+noop(): Rule
+
+This RuleFactory returns an empty Rule. This is useful within boolean contexts.
+
+chain(rules: Rule[]): Rule
+
+This is an oft-used RuleFactory which returns a final Rule after chaining all Rules that are passed in to it.
+
+mergeWith(source: Source, strategy?: MergeStrategy): Rule
+
+This function, at its core, merges two Trees with an optional MergeStrategy. The first Tree in the merge is taken
+ from calling the Source function that is passed in to mergeWith (more on the Source later). The second Tree is passed 
+in to the resulting Rule. This function is incredibly useful when it comes to templating!
+
+branchAndMerge(rule: Rule, strategy?: MergeStrategy): Rule
+
+This function branches the current Tree (creating a performant, virtual copy) 
+and merges it with the given Rule whilst using an optional MergeStrategy.
+
+filter(predicate: FilePredicate<boolean>): Rule
+
+In the filter function, the passed in FilePredicate is itself a function that takes in a path as a string and returns a boolean. 
+This function is useful for filtering out files from a Tree. An example FilePredicate could look like the following:
+
+1 (path: string) => !path.endsWith('.spec.ts')
+The above FilePredicate filters out test files from a Tree’s directory structure.
+
+forEach(operator: FileOperator): Rule
+
+This function returns a Rule after applying the given FileOperator to every file in the Tree.
+
+move(input: string): Rule
+
+
+The Source
+--------------------------------------------------------------------------------------------------------
+Angular describes a Source as a “function that creates an entirely new Tree from an empty filesystem”2.
+
+A Source’s single purpose is to return a Tree. Sources work in conjunction with Rules in order to create and transform Trees. 
+The Schematics library provides the following Source factories which help creators of schematics with most, basic operations. 
+
+These factories include:
+
+source(tree: Tree): Source
+
+This factory returns a Source that itself returns the input Tree.
+------------------------------------------------------------------
+empty(): Source
+
+This factory returns a Source that returns an empty Tree.
+-----------------------------------------------------------------
+apply(source: Source, rules: Rule[]): Source
+
+This function applies a list of Rules to a Source and returns a new Source.
+-----------------------------------------------------------------------------
+url(url: string): Source
+
+This function returns a Source that returns a Tree with files loaded from the give URL.
+--------------------------------------------------------------------------------------
+
+hello blank schematics sample - tomas trajan
+---------------------------------------------------------------------
+schematics blank hello
+
+addd build:watch to package.json, add --watch to existing build and rename build:watch
+
+cd hello
+
+npm i @schematics/angular
+
+run after build:
+------------------
+schematics .:hello --debug=false (only necessary in dev mode)
+
+tree.create(path:"hello.js", content:"console.log('hello')"
+
+define an option: name
+--------------------------------------------
+const {name} = _options;
+ 
+schematics .:hello --name='Hans' --debug=false (only necessary in dev mode)
+
+
+

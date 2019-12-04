@@ -1,0 +1,103 @@
+Angular CRUD Customers with NgRx
+
+state management
+---------------
+
+store is a state tree
+is a database in the frontend
+
+state 
+- single source of truth for application
+- state is readonly
+- state change made by reducers
+
+state change in
+- ui (state change in ui element)
+- router (state change in url)
+- app data local (crud app data)
+- app data server (server response)
+
+data flow
+--------------------------------------------------------
+action:
+-------
+every state change ui/router/server triggers an action
+
+service
+-------
+does the http requests
+a service is called by an effect
+
+effect:
+-------
+io operations like a server request are side effects.
+a sideeffect is triggered by an action, does something and
+dispatches an action back into actions
+
+reducer:
+--------
+the action triggers all reducers to run
+
+state:
+-----
+the reducer which handles the action will make a copy
+of the old state and add the new state to it
+
+selector
+----------
+the ui component subscribes to state in which it is
+interested with a selector function
+
+
+
+Error state
+loading
+loaded
+
+
+ngrx install
+----------------------
+@ngrx/schematics
+store, effects, entity, store-devtools, router-store
+
+json-server
+-----------
+db.json
+json-server -w db.json
+
+angular app
+--------------------------------------------------
+ng new ngrx-experts --routing --style=scss --prefix=hs
+
+app components:
+----------------
+app, home, customers/customer-add, /customer-edit, /customer-list
+
+
+
+RouterModule.forChild
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

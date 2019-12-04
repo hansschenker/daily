@@ -1,0 +1,40 @@
+create project with cli
+Styling
+with normal css
+application wide: styles.scss
+link in index.html
+css transition: animate transation a state from a to b
+
+transition:
+-------------------------------------------
+div { transition width 0.3s ease-out}
+whenever the width of this div changes, 
+the change is going to get animated over 0.3 seconds
+with an ease-out timing function
+
+animation
+---------------------------------------------------------
+div  { animation: myAnimation 0.3s ease-out forwards; }
+
+@keyframes myAnimation { 0% { opacity: 0} 100% { opacity: 1} }
+
+angular animations
+---------------------------------------------------------------------
+in pollyfills.js (cli) activate webanimations.js and npm install it
+npm install -S @angular/animations
+imort { BrowserAnimationsModule} from '@angular/platform-browser/animations'
+import { trigger, state, style, transition, animate }
+@Commonent
+...
+animations: [
+	trigger('clickedState', [state('deault', style({'background-color': orange}), state('clicked'...]
+
+]
+
+attach trigger to html element
+------------------------------------------
+div [@clickedState="default"]
+
+invoke a trigger
+-----------------------------------------
+

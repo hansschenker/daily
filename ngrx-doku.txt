@@ -1,0 +1,59 @@
+ngRx libraries: ngrx/core, ngrx/store, ngrx/router-store, ngrx/store-devtools, ngrx/effects, ngrx/entity
+
+NgRx provides
+--------------------------------
+state management, 		@ngrx/store
+isolation of side effects,	@ngrx/effects 	
+entity collection management, 	@ngrx/entity
+router bindings, 		@ngrx/router-store
+code generation, 		@ngrx/schematics
+and developer tools 		@ngrx/store-devtools
+
+--------------
+Library -Parts: 
+-------------
+store, 		single source of truth, in the form of a single object (think frontend database)
+		is an obserable<state> and immutable (new state is added, old state stays untouched)
+		contains slices of state, slice of state is a object literal, (table in db)
+		is a hierarchical object (1 root state, n feature states) 
+
+action, 	is a object with with a type property and an obtional payload: { type , payload}
+		type is required and of type string
+
+actions		is like a message bus
+		reducers listen to actions (message bus)
+		effects listen to actions (message bus)
+
+state, 		is an argument of the action and is the actual state, payload is of type any
+
+selector	is a observable of slice of state
+
+entity		reducer helper for crud actions
+
+reducer fn	the fn is immuatable, it copies the old state and adds the new state			
+		return copy of old state + add new state
+		reducer fn must have an initial state (not null)
+
+event		dispatch action
+
+router		dispatch an action
+
+a pure function	returns always the same result for the same parameter
+
+effect		dispatch an action
+		models side effect, communication with outside world is considerd as a side effect
+
+outside world	io operations are considered as side effects
+		server request, web sockets, offline storage, local storage, time functions ( with every
+		time request you get a new time value), these are considered as not pure function
+
+		server request is a side effect, and so wrapped in effect which listens outside world actions
+		handles them and dispatches an action back into the app inside world
+
+app		app = fn(state)
+feature		feature fn(slice-of-state)
+
+components	displays only state, as long as you give the component the same state, it will
+		always display the same result, you do not handle side effects in componets
+		components select state and display that state	
+		components are a pure representation of state

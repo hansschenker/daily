@@ -1,0 +1,242 @@
+Angular Directives 
+
+Strucutral D	changes the DOM Layout (add/remove/change DOM Element(s)), 
+		Structural Directives are special kind of Dynamic Components
+
+Attribute D	change Behavior/Appearance of DOM Element
+Componnent	inserts a view (template) : Hostview or attaches a view as EmbeddedView
+
+Dynammic C	
+
+
+TemplateRef
+------------------------------------------------
+You can access a TemplateRef, in two ways. 
+
+1 - Via a directive placed on a <ng-template> element (or directive prefixed with *) 
+and have the TemplateRef for this Embedded View injected into the constructor of the directive using the TemplateRef Token. 
+
+2 - Alternatively you can query for the TemplateRef from a Component or a Directive via Query.
+
+To instantiate Embedded Views based on a Template, 
+use createEmbeddedView, which will create the View and attach it to the View Container.
+
+ViewContainerRef
+---------------------
+Represents a container where one or more Views can be attached.
+
+
+Declarative Dynamic Component Creation
+----------------------------------------
+Instantiates a single Component type and inserts its Host View into current View. 
+NgComponentOutlet provides a declarative approach for dynamic component creation.
+
+
+
+Structural D sample: *ngIf
+--------------------------
+ng-template surrounds the element which is to change
+
+<ng-template [ngIf]="hero">
+  <div class="name">{{hero.name}}</div>
+</ng-template>
+
+ng
+ngIf
+----------------------
+<div *ngIf="hero" >{{hero.name}}</div>
+
+ngFor
+---------------------
+<ul>
+  <li *ngFor="let hero of heroes">{{hero.name}}</li>
+</ul>
+
+ngSwitch
+--------------------------------
+<div [ngSwitch]="hero?.emotion">
+  <happy-hero    *ngSwitchCase="'happy'"    [hero]="hero"></happy-hero>
+  <sad-hero      *ngSwitchCase="'sad'"      [hero]="hero"></sad-hero>
+  <confused-hero *ngSwitchCase="'confused'" [hero]="hero"></confused-hero>
+  <unknown-hero  *ngSwitchDefault           [hero]="hero"></unknown-hero>
+</div>
+
+
+
+custom structural directive "unless" means if-not
+--------------------------------------------------¨
+import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+
+/**
+ * Add the template content to the DOM when not true
+ * otherwise when the condition is true remove from DOM
+ */
+@Directive({ selector: '[appUnless]'})
+export class UnlessDirective {
+  private hasView = false;
+
+  constructor(
+    private templateRef: TemplateRef<any>,
+    private viewContainer: ViewContainerRef) { }
+
+  @Input() set appUnless(condition: boolean) {
+    if (!condition && !this.hasView) {
+      this.viewContainer.createEmbeddedView(this.templateRef);
+      this.hasView = true;
+    } else if (condition && this.hasView) {
+      this.viewContainer.clear();
+      this.hasView = false;
+    }
+  }
+}
+
+
+Attribute D sample: [ngClass]
+----------------------------------
+adds css class active if isActive is true
+
+<div [ngClass]="{active: isActive}"
+
+Component
+-------------------------------------
+
+
+
+ng-template and ngTemplateOutlet
+-------------------------------------------
+The ng-template directive and the related ngTemplateOutlet directive are very powerful Angular features 
+that support a wide variety of advanced use cases.
+
+These directives are frequently used with ng-container, and because these directives are designed to be used together, 
+it will help if we learn them all in one go, as we will have more context around each directive
+
+The ng-container directive
+In order to avoid having to create that extra div, we can instead use ng-container directive:
+
+
+<ng-container *ngIf="lessons">
+    <div class="lesson" *ngFor="let lesson of lessons">
+        <div class="lesson-detail">
+            {{lesson | json}}
+        </div>
+    </div>
+</ng-container>
+
+
+ng-container
+-------------------------
+As we can see, the ng-container directive provides us with an element that we can attach a structural directive 
+to a section of the page, without having to create an extra element just for that.
+
+There is another major use case for the ng-container directive: it can also provide a placeholder for injecting a template dynamically into the page
+
+
+<ng-container *ngTemplateOutlet="loading"></ng-container>
+
+
+@Component({
+  selector: 'ng-template-outlet-example',
+  template: `
+    <ng-container *ngTemplateOutlet="greet"></ng-container>
+    <hr>
+    <ng-container *ngTemplateOutlet="eng; context: myContext"></ng-container>
+    <hr>
+    <ng-container *ngTemplateOutlet="svk; context: myContext"></ng-container>
+    <hr>
+    
+    <ng-template #greet><span>Hello</span></ng-template>
+    <ng-template #eng let-name><span>Hello {{name}}!</span></ng-template>
+    <ng-template #svk let-person="localSk"><span>Ahoj {{person}}!</span></ng-template>
+`
+})
+class NgTemplateOutletExample {
+  myContext = {$implicit: 'World', localSk: 'Svet'};
+}
+
+template context
+-------------------------
+But each template can also define its own set of input variables! Actually, each template has associated a context object containing all the template-specific input variables
+
+
+
+
+
+@Component({
+  selector: 'app-root',
+  template: `      
+
+<ng-template #estimateTemplate let-lessonsCounter="estimate">
+    <div> Approximately {{lessonsCounter}} lessons ...</div>
+</ng-template>
+
+<ng-container 
+   *ngTemplateOutlet="estimateTemplate;context:ctx">
+</ng-container>
+`})
+export class AppComponent {
+
+    totalEstimate = 10;
+    ctx = {estimate: this.totalEstimate};
+  
+}
+
+Here is the breakdown of this example:
+
+this template, unlike the previous templates also has one input variable (it could also have several)
+the input variable is called lessonsCounter, and it's defined via a ng-template property using the prefix let-
+The variable lessonsCounter is visible inside the ng-template body, but not outside
+the content of this variable is determined by the expression that its assigned to the property let-lessonsCounter
+That expression is evaluated against a context object, passed to ngTemplateOutlet together with the template to instantiate
+This context object must then have a property named estimate, for any value to be displayed inside the template
+the context object is passed to ngTemplateOutlet via the context property, that can receive any expression that evaluates to an object
+
+Configurable Components with Template Partial @Inputs
+------------------------------------------------------
+Let's take for example a tab container, where we would like to give the user of the component the possibility of 
+configuring the look and feel of the tab buttons.
+
+Here is how that would look like, we would start by defining the custom template for the buttons in the parent component:
+
+
+@Component({
+    selector: 'tab-container',
+    template: `
+    
+<ng-template #defaultTabButtons>
+    
+    <div class="default-tab-buttons">
+        ...
+    </div>
+    
+</ng-template>
+
+<ng-container 
+  *ngTemplateOutlet="headerTemplate ? headerTemplate: defaultTabButtons">
+    
+</ng-container>
+
+... rest of tab container component ...
+
+`})
+export class TabContainerComponent {
+    @Input()
+    headerTemplate: TemplateRef<any>;
+}
+
+A couple of things are going on here, in this final combined example. Let's break this down:
+
+there is a default template defined for the tab buttons, called defaultTabButtons
+This template will be used only if the input property headerTemplate remains undefined
+If the property is defined, then the custom input template passed via headerTemplate will be used to display the buttons instead
+the headers template is instantiated inside a ng-container placeholder, using the ngTemplateOutlet property
+the decision of which template to use (default or custom) is taken using a ternary expression, 
+but if that logic was complex we could also delegate this to a controller method
+The end result of this design is that the tab container will display a default look and feel for the tab buttons 
+if no custom template is provided, but it will use the custom template if its available.
+
+Summary and Conclusions
+---------------------------
+The core directives 
+ng-container, 
+ng-template and 
+ngTemplateOutlet all combine together to allow us to create highly dynamical and customizable components.

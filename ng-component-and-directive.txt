@@ -1,0 +1,162 @@
+Components and Directives
+--------------------------------------------------------------------------
+To build an Angular application you define a set of components, for every UI element, screen, and route. 
+An application will always have root components (usually just one) that contain all other components.
+
+Input and Output Properties
+---------------------------------
+A component has input and output properties, which can be defined 
+in the component decorator or using property decorators.
+Data flows into a component via input properties. 
+Data flows out of a component via output properties, 
+hence the names: ‘input’ and ‘output’.
+
+Public API
+--------------------------------
+Input and output properties are the public API of a component. 
+You use them when you instantiate a component in your application.
+You can set input properties using property bindings, through square brackets. []
+
+You can subscribe to output properties using event bindings, through parenthesis.()
+
+Template
+----------------------------------
+A component has a template, which describes how the component is rendered on the page.
+You can define the template inline, as shown above, or externally using templateUrl. 
+In addition to the template, a component can define styles using the style and styleUrls properties.
+
+Lifecycle
+---------------------------------
+Components have a well-defined lifecycle, which you can tap into. 
+The component will be notified when its input properties change.
+
+Providers
+-------------------------------
+A component can configure dependency injection by defining the 
+list of providers the component and its children may inject.
+
+Host Element
+To turn an Angular component into something rendered in the DOM you have to 
+associate an Angular component with a DOM element. 
+
+We call such elements host elements.
+
+A component can interact with its host DOM element in the following ways:
+
+It can listen to its events.
+It can update its properties.
+It can invoke methods on it.
+
+The component, for instance, listens to the input event using hostListeners, 
+trims the value, and then stores it in a field. Angular will sync up the stored value with the DOM.
+Angular aims to provide a higher-level API, so the native platform, the DOM, 
+will just reflect the state of the Angular application. This is useful for a couple of reasons:
+
+It makes components easier to refactor.
+It allows unit testing most of the behavior of an application without touching the DOM. 
+Such tests are easier to write 
+
+and understand. In addition, they are significantly faster.
+It allows running Angular applications in a 
+
+web worker, 
+server, or 
+other platforms 
+
+where a native DOM isn’t present.
+Sometimes you just need to interact with the DOM directly. 
+Angular provides such APIs, but our hope is that you will rarely need to use them.
+
+Queries
+---------------------------------------
+In addition to access its host element, a component can interact with its children. 
+There are two types of children a component can have: content children and view children.
+
+
+View Child/ren and Content Child/ren
+--------------------------------------
+@Component({
+  selector: 'tab',
+  template: `...`
+})
+class TabCmp {}
+
+@Component({
+  selector: 'tabs',
+  template: `
+    Tabs:
+    <div>
+      <ng-content></ng-content> // content projection creates Content Child/ren
+    </div>
+    <div>
+      <button (click)="selectPrev()">Prev</button> // View Child
+      <button (click)="selectNext()">Next</button>
+    </div>
+  `
+})
+class TabsCmp {}
+
+@Component({
+  template: `
+    <tabs>
+      <tab title="One"></tab> // Content Child
+      <tab title="Two"></tab>
+      <tab title="Three"></tab>
+    </tabs>
+  `
+})
+class CmpUsingTabs {
+
+The content children (Tab Component)
+-----------------------
+of the tabs component are the three tab components. 
+
+The user of the tabs component provided those. 
+
+The view children (prev/next of the tabs component)
+--------------------------------------------------
+The previous and next buttons 
+are the view children of the tabs component. The author of the tabs component provided those. 
+
+Components can query their children using the ContentChild, ContentChildren, ViewChild, and ViewChildren decorators.
+
+Angular will set this list during the construction of the tabs component, 
+and will keep it updated when content children get updated
+
+Let’s Recap
+---------------------------------------------
+
+A component knows how to interact with its host element.
+A component knows how to interact with its content and view children.
+A component knows how to render itself.
+A component configures dependency injection.
+A component has a well-defined public API of input and output properties.
+
+All of these make components in Angular self-describing, so they contain all the information needed to instantiate them. 
+And this is extremely important.
+
+This means that any component can be bootstrapped. 
+It does not have to be special in any way. 
+Moreover, any component can be loaded into a router outlet. 
+As a result, you can write 
+
+a component that can :
+
+- be bootstrapped as an application, 
+- loaded as a route
+- used in some other component. 
+
+This results in less API to learn. And it also makes components more reusable.
+
+What About Directives?
+---------------------------------------
+If you are familiar with Angular 1, you must be wondering “What happened to directives?”.
+
+Actually directives are still here in Angular. 
+The component is just the most important type of a directive, but not the only one. 
+
+A component is a directive with a template. 
+But you can still write decorator-style directives, which do not have templates.
+
+
+

@@ -1,0 +1,45 @@
+ngn <appname>
+
+ngrx install: 			ngrxi
+------------------
+npm install @ngrx/schematics --save-dev &&   @ngrx/schematics
+
+root store and app.effects:	
+----------------------------
+ng g store Store --state-path store --root --state-interface AppState -m app
+ng g effect App --root --m app.module.ts
+
+angular feature module: ngm <modulename in singular>
+----------------------
+ngm product
+
+or generate ngrx container with reference to store
+----------------------------------------------------
+ng generate container products -f --state state/product.reducer.ts --stateInterface ProductState
+
+
+*************ngrx entities inside!!! feature directory
+--------------------------------------------------------------------------------------
+ng g entity state/link -m ../links -r ../../store/index.ts
+
+
+add the following in reducer file
+-------------------------------------------------------------------------------
+*1 state: selectedProductId: number | null;
+
+*2 initialState: selectedProductId: null;
+
+*3 export const getSelectedProductId = (state: State) => state.selectedProductId;
+
+
+-----------------------------------------------------------------------------
+01 ngn <appname>
+02 ngrxi
+03 ng g store Store --state-path store --root -m app.module.ts
+04 ng g effect App --root --m app.module.ts
+05 ngm <entity>
+06 ng g entity <name-pl>/entity -m ../<name-pl> -r ../store/index.ts
+06 ng g effect --feature <name> -m <name-pls>
+06 update reducer for *1 *2 *3
+07 go into feature entity directory: echo "import { createFeatureSelector, createSelector } from "@ngrx/store"; import * as fromArticle from "./Article.reducer"; export const selectArticleState = createFeatureSelector<fromArticle.State>("Article"); export const getSelectedArticleId = (state: fromArticle.State) => state.selectedId; export const selectArticleIds = createSelector(selectArticleState,fromArticle.selectIds); export const selectArticleEntities = createSelector(selectArticleState,fromArticle.selectEntities);export const selectAllArticles = createSelector(selectArticleState,fromArticle.selectAll); export const selectArticleTotal = createSelector(selectArticleState,fromArticle.selectTotal); export const selectCurrentArticleId = createSelector(selectArticleState,fromArticle.getSelectedId);export const selectCurrentArticle = createSelector(selectArticleEntities,selectCurrentId,(entities, id) => entities[id]);" >> article.selectors.ts
+08 correction for selector files

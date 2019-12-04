@@ -1,0 +1,239 @@
+In modern web development, there are two main techniques for describing what components render: 
+
+- using JavaScript (React, StencilJs)
+- using templates (Angular, ...)
+
+
+Using templates is aligned with the Rule of Least Power, 
+which is a useful design principle.
+
+the less powerful the language, the more you can do with the data stored in that language […] 
+I chose HTML not to be a programming language because I wanted different programs to do 
+different things with it: 
+- present it differently, 
+- extract tables of contents, 
+- index it, and so on. 
+
+Tim Berners-Lee, on the Principle of Least Power
+Because templates are pure HTML, and hence are constrained, 
+
+tools and developers can make smart assumptions about 
+- what components are 
+- and how they behave, 
+
+and Angular can do a lot of interesting things that would have not been possible if components used JavaScript instead.
+
+Swapping Implementations
+------------------------
+One of the best things templates give us is a 
+
+- clear boundary separating the view layer from the rest of the framework, 
+
+so we swap the implementation of the view layer without breaking any applications. 
+This allows us to experiment and adapt the framework to new capabilities of the platform.
+
+Finally, the framework can have multiple implementations of the template compiler optimized for different use cases (e.g., mobile vs desktop).
+
+Analyzing Templates
+---------------------------------------
+Being able to analyze templates is another consequence of the rule of least power.
+
+Imagine we use a data-access library like Falcor or Apollo.
+
+Normally, we would have to define all the queries needed by those libraries explicitly. 
+And if we do not use templates, there is not much we can do about it. 
+
+It is not possible, at least in a general way, to derive the queries 
+from the JavaScript code rendering the components without actually running it.
+
+The situation is different when the framework uses templates. 
+-------------------------------------------------------------
+They are much simpler, and more constrained than JavaScript, and, as a result, 
+the data-access integration library could reliably derive the queries from the templates.
+ 
+And since the queries usually match the structure of the templates pretty closely 
+(after all the templates are showing the data returned by the queries), we can remove a lot of duplication this way.
+
+Transforming Templates (see schematics and builders)
+---------------------------------------------------------------
+What is even more powerful than template introspection is the ability to transform templates during compilation. 
+And yes, it’s possible to transform JavaScript with, let’s say, a Babel plugin, but it is a lot harder to to, 
+at least if we want to do it correctly.
+
+Templating languages are different. 
+------------------------------------
+They just define the structure of the view and have a limited set of well-defined side effects. 
+
+That is why automatically adding new things to the template is unlikely to break the guarantees the templating language provides.
+
+Here is an analogy to give you an intuition of what I mean here. 
+Using templates to render components is akin to using 
+this array literal [1,20,2,4] to describe the collection of the four numbers. 
+
+Using JavaScript to render components is similar 
+------------------
+to using the following instructions to describe the same collection:
+
+array.push(1);
+array.push(20);
+array.push(21);
+array.pop();
+array.push(2);
+array.push(4);
+
+Yes, the resulting collection is the same. 
+
+The difference is that we can analyze the literal statically. 
+-------------------------------------------------------------
+So it is a lot easier to write transformations of it. And though in simple cases it is possible to analyze 
+JavaScript to figure out what the resulting array will look like, it is not trivial. 
+And it is not possible for an arbitrary set of instructions.
+
+Separating Dynamic and Static Parts
+------------------------------------
+Another thing that using a templating language gives us is a clear separation of the dynamic and static parts of the view. 
+Angular can easily see what parts of the view are static and optimize those. 
+
+For instance, Angular knows that only expressions can cause changes in the DOM, 
+and the rest of the markup is static. So after the initial rendering is done, the static markup is essentially free.
+
+Building on Existing Technologies and Communities
+--------------------------------------------------
+Finally, a lot of people are already proficient with HTML and CSS, and they can leverage this knowledge to write html templates. 
+On top of that, there is a rich set of tools around these technologies, 
+and being able to use them when building applications is a huge plus.
+
+Angular Templates
+-------------------------------------------------------
+Templates can be analyzable, transformable, and declarative in a way that JavaScript fundamentally cannot be. 
+
+When designing Angular we put a lot of effort to make sure the template language has these properties. 
+Let’s look at what we ended up with.
+
+Property and Event Bindings
+---------------------------------------------------------
+Input and output properties are the public API of a directive. 
+Data flows into a directive via its inputs and flows out via its outputs.
+ 
+We can update input properties using property bindings. 
+And we can subscribe to output properties using event bindings.
+
+Say we have a component that renders a button that allows to rate a conference talk. 
+We could use this component in our template as follows:
+
+<rate-button [talk]="myTalk" (rate)="handleRate($event)"></rate-button>
+
+This tells Angular that whenever myTalk changes, 
+
+Angular needs to automatically update the rate button component by calling the setter. 
+This also tells Angular that if an event called “rate” is fired, it should invoke handleRate.
+
+The component declares that it has an input property named “talk” and an output property “rate”. 
+Only the input properties of a component can be updated using property bindings. 
+This separates the input of the component from its internal state.
+
+Angular uses the Rx style of programming to deal with events. 
+------------------------------------------------------------
+EventEmitter is an implementation of both the observable and observer interfaces. 
+So we can use it to fire events, and Angular can use it to listen to events.
+
+As you can see, the core syntax of property and event bindings is very simple. 
+On top of the core syntax, Angular provides some syntax sugar to make expressing common programming patterns easier. 
+It is important to understand that this is just sugar, and it does not change the semantics.
+
+Two-Way Bindings
+----------------------------------------------------------------
+Two-way data bindings are convenient in certain scenarios, most notably for handling input. 
+
+- property bindings are used to pass data from the parent to the child, []
+- and event bindings are used to pass data from the child to the parent. ()
+
+So we can use the two together to implement two-way bindings.[()]
+
+<input [ngModel]="todo.text" (ngModelChange)="todo.text=$event">
+
+Although this works, this is too verbose. And since this is such a common pattern, 
+Angular provides syntax sugar to remove the boilerplate.
+
+<input [(ngModel)]="todo.text"></input>
+
+Interpolation
+------------------------------------------------------------------
+<div>Rating {{rating}}</div>
+is just sugar for
+
+<div [textContent]="interpolate(['Rating'], [rating])"></div>
+
+Passing Constants
+----------------------------------------------------------------
+<input md-input formControlName="title">
+
+is just sugar for
+
+<input md-input [formControlName]=" 'title' ">
+References
+It is not uncommon to have two components that have to talk to each other. To enable that Angular supports defining references in the template.
+
+<confirmation-dialog #dialog></confirmation-dialog> 
+<button (click)="dialog.open()">Open</button>
+The references get hoisted, so their order does not matter.
+
+Templates and *
+---------------------------------------------------------------------
+Angular treats template elements in a special way. They are used to create views, chunks of DOM you can dynamically manipulate. 
+The * syntax is a shortcut that lets you avoid writing the whole <template> element. 
+Let me show you how it works.
+
+Say we render a list of talk components.
+
+<talk-cmp *ngFor="let t of talks; let i=index" [talk]="t" [index]="i"></talk-cmp>
+This de-sugars it into
+
+<talk-cmp 
+  template="ngFor: let t of talks; let i=index" 
+  [talk]="t" 
+  [index]="i">
+</talk-cmp>
+which de-sugars into
+
+<template 
+  ngFor 
+  [ngForOf]="talks" 
+  let-t="$implicit" 
+  let-i="index">
+    <talk-cmp [talk]="t" [index]="i"></talk-cmp>
+</template>
+
+It is important to understand what the * syntax expands into when you build your own directives that manipulate views. 
+For instance, if you look at NgFor, you will see that it has the ngForOf property, but does not have the of property.
+
+Let’s Recap
+--------------------------------------------------------------------------------
+That’s how Angular templates work. Let’s see if they are analyzable and transformable, 
+and if they provide the benefits I talked about at the beginning of this chapter.
+
+Contrasting with Angular 1, there is a lot more the framework can tell about the template statically.
+
+For example, regardless of what the component element is, Angular knows that 
+
+- name in [property1]="name" is a field read and // with []
+- name in property2=“name" is a string literal. // just a string
+ 
+
+It also knows that the name property cannot be updated by the component: 
+property bindings update from the parent to the child. 
+Similarly, Angular can tell what variables are defined in the template by just looking at *ngFor. 
+
+Finally, it can tell apart the static and dynamic parts in the template.
+
+introspect and transform templates at compile time
+---------------------------------------------------
+All of these allow us to reliably introspect and transform templates at compile time. 
+That’s a powerful feature, that, for instance, the Angular i18n support is built upon.
+
+IDE Support (Angular Language Services in VS Code)
+------------
+Having designed templates in this way, we also solved one of the biggest Angular 1 problems: IDE support. 
+When using Angular 1, editors and IDEs had to do a lot of guessing to provide 
+And, as a result, completion, refactoring, and navigation work reliably.
+

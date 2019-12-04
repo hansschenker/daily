@@ -1,0 +1,205 @@
+Reactive Programming in the Core Framework
+-------------------------------------------
+An Angular application is a reactive system. The user clicks on a button, 
+the application reacts to this event and updates the model. 
+
+- The model gets updated, 
+- the application propagates the changes through the component tree.
+
+
+Angular implements these two arrows very differently. Let’s explore why.
+
+Events () and State []
+-----------------------------------------------------------------------
+To understand why Angular uses two very different ways of reactive programming, 
+we need to look at the differences between events and the state.
+
+
+Events are discrete and cannot be skipped. Discrete means every single event matters, 
+----------------------------------------------------------------------
+including the order in which the events are emitted. The “most recent event” is not a special thing we care about. 
+Finally, very rarely are events directly displayed to the user.
+
+The state, on the other hand, is continuous, only the the most recent value matters
+---------------------------------------------------------------------
+at any point in time it is defined . 
+
+We usually do not care about how many times it gets updated–only the most recent value matters. 
+The state is often displayed or has a meaningful serialization form.
+
+Button clicks
+------------------
+Say the conference application we use in this book has a “Load More” button, clicking on which 
+loads more items and adds them to the list. Using this button and mouse click events 
+we can change the content of the list. Clicking on the button increases the number of items. 
+The number of clicks matters. And we cannot skip any of them, as it would change the content of the list. 
+Finally, we will never have to examine the last click event or display it to the user.
+
+List state
+------------
+The list itself, on the other hand, is the state. 
+We only care about its latest value, not about how many times it was updated.
+
+Definition
+-----------------------------------------------
+Events are streams
+-----------------
+Event streams are sequences of values produced over a period of time. 
+
+State is a single value
+-----------------------
+And the state is a single value that varies over time.
+
+Note that we only care about the most recent value of talk, i.e., 
+only last state
+-----------------
+skipping an intermediate value of talk wonâ€™t affect anything. 
+
+every click is a new selection
+-----------------------------
+Contrast it with the selected event sequence, where every single emitted value matters, including the order in which they are emitted.
+
+Time
+--------------------------------
+Another thing that is different in regards to the state and events is their relation to time.
+
+Using time when deriving the state is rarely practical, i.e., time is always implicit. 
+
+Using time when dealing with events is common (e.g., debouncing), i.e., time is often explicit.
+
+To make dealing with time easier, Angular has support for reified reactive programming.
+
+What is it?
+
+Reified and Transparent
+----------------------------------------------
+Or to be more specific, let’s look at the {{talk.title}} binding. 
+Angular does not provide any object representing it–we only get the current value. 
+We can call this type of reactive programming transparent because the developer 
+only interacts with the most recent value, and the act of observation is hidden in the framework.
+
+When propagating state we only care about the latest value, and we don’t usually need to worry about time. 
+And that’s why Angular uses this type of reactive programming here. It is simpler and a lot more performant. 
+Plus we can use ‘plain’ JavaScript to composes different values changing over time, like this:
+
+{{talk.title + ' by ' + talk.speaker}}
+Now, let’s look at the selected event. Angular gives us a EventEmitter object to represent it. 
+We can call this type of reactive programming reified because we have access 
+to a concrete object representing the act of observation. And having these concrete objects is powerful 
+because we can manipulate them, pass them around, and compose them. In particular, we can use them to explicitly handle time.
+
+This type of reactive programming is more powerful, but it is also more complicated: 
+we have to use special operators to do composition. For instance, the example above will have to be rewritten like this:
+
+const talk: Subject<{title: string, speaker: string}> = getTalk();
+const title: Subject<string> = talk.map(c => c.title);
+const speaker: Subject<string> = talk.map(c => c.speaker);
+const result: Subject<string> = zip(title, speaker).map(p => `${p[0]} by ${p[1]}\
+`);
+When handling events we often care about the time aspect, and that’s why Angular 
+uses this type of reactive programming for managing events.
+
+Observables
+-------------------------------------------------------
+There are many ways to implement event streams or reified reactive programming. 
+Angular embraced RxJS, and the 
+
+- EventEmitter class is just an implementation of RxJS/Observable.
+
+RxJS and Reactive Programming
+-------------------------------------------------------------
+When saying “reactive programming”, many are referring to programing using RxJS. 
+Most of what you do in Angular is reactive even if you don’t use RxJS. 
+
+Reified reactive programming 
+---------------------------------------------------------------
+is a better way to refer to programming using observable-based APIs.
+
+What About Event Callbacks?
+---------------------------------------------------------------------
+Since reified reactive programming is more complicated than transparent reactive programming, 
+Angular supports handling events in a more traditional way by supplying callbacks 
+(e.g., the click handler in the example above). In other words, we can use 
+both transparent and reified programming to handle events. We will see the same being true 
+in other parts of the framework and the ecosystem: we can use transparent reactive programming 
+for simple use cases, and the reified one for advanced ones.
+
+Unfortunately, at the moment Angular’s support for reified reactive programming in the core framework 
+is a bit inconsistent (e.g., all the DOM events are handled in the transparent way, 
+but there is a proposal to make it complete https://github.com/angular/angular/issues/13248).
+
+Reactive Programming in the Angular Ecosystem
+We have looked at how the Angular core framework itself supports reactive programming. 
+Now let’s look at the Angular ecosystem.
+
+@angular/forms
+------------------------------------------------------------------------
+Angular has always had strong support for building dynamic forms. 
+It’s one of the main reasons the framework got so successful.
+
+Now the framework comes with a module that adds support for handling input using reactive programming.
+
+Look at how elegant this solution is. We simply define a form with two controls, which we bind to the two input elements in the DOM.
+
+Then we use the valueChanges observable to wait for the form to get stable before firing a request. 
+We use the switchMap operator to ignore all the requests but the last one, 
+so the filters form and the data will never get out of sync. We then bind the created observable 
+using the async pipe to display the list of talks.
+
+Implementing this without ReactiveFormsModule requires a lot of manual state management, correlation IDs, 
+and is not easy to get right. That’s why ReactiveFormsModule is one of the most useful additions to the framework. 
+It enables us to solve many input-handling problems in an elegant way, with just a few lines of code.
+
+For simple cases, however, we can still grab the current value, 
+which is transparently kept in sync with the UI, like this:
+
+@angular/router
+----------------------------------------------------------------------------------
+The Angular router is built around the same ideas. It gives us a simple API 
+to 
+- get the current value of params to use in simple use cases, 
+- an observable-based API for more interesting situations.
+
+t also exposes all router events via an observable that can be used as follows:
+
+@Component({
+  template: `
+    <spinner *ngIf="showSpinner|async"></spinner>
+  `
+})
+class AppCmp {
+  showSpinner: Observable<boolean>;
+  constructor(r: Router) {
+    this.showSpinner = r.events.
+      // Fitlers only starts and ends.
+      filter(e => isStart(e) || isEnd(e)).
+
+      // Returns Observable<boolean>.
+      map(e => isStart(e)).
+
+      // Skips duplicates, so two 'true' values are never emitted in a row.
+      distinctUntilChanged();
+  }
+}
+
+Summary
+--------------------------------------------------------------------------------
+An Angular application is a reactive system. 
+And that’s why we need to understand reactive programming to be productive with Angular.
+
+Reactive programming works with event streams and the state. And it can be divided into transparent and reified.
+
+Since the very beginning the framework has had excellent support for transparent reactive programming. 
+It was used both to propagate the state and to handle events. It is simple and fast. 
+And the new versions of the framework still support it.
+
+But it can also be limiting at times and make solving certain problems difficult. 
+That’s why Angular now comes with support for reified reactive programming, using observables.
+
+The Angular ecosystem embraced these ideas as well. 
+- The reactive forms module, 
+- the router, and other 
+- libraries like NgRx, all provide observable-based APIs.
+
+
+

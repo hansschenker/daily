@@ -1,0 +1,68 @@
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+// documents
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+document reference
+--------------------
+var messageRef = db.collection('rooms').doc('roomA')
+                .collection('messages').doc('message1');
+
+
+var citiesRef = db.collection("cities");
+
+citiesRef.doc("SF").set({
+    name: "San Francisco", state: "CA", country: "USA",
+    capital: false, population: 860000,
+    regions: ["west_coast", "norcal"] });
+citiesRef.doc("LA").set({
+    name: "Los Angeles", state: "CA", country: "USA",
+    capital: false, population: 3900000,
+    regions: ["west_coast", "socal"] });
+citiesRef.doc("DC").set({
+    name: "Washington, D.C.", state: null, country: "USA",
+    capital: true, population: 680000,
+    regions: ["east_coast"] });
+citiesRef.doc("TOK").set({
+    name: "Tokyo", state: null, country: "Japan",
+    capital: true, population: 9000000,
+    regions: ["kanto", "honshu"] });
+citiesRef.doc("BJ").set({
+    name: "Beijing", state: null, country: "China",
+    capital: true, population: 21500000,
+    regions: ["jingjinji", "hebei"] });
+
+get a document
+---------------
+var docRef = db.collection("cities").doc("SF");
+
+docRef.get().then(function(doc) {
+    if (doc.exists) {
+        console.log("Document data:", doc.data());
+    } else {
+        // doc.data() will be undefined in this case
+        console.log("No such document!");
+    }
+}).catch(function(error) {
+    console.log("Error getting document:", error);
+});
+
+document cache
+-----------------
+var docRef = db.collection("cities").doc("SF");
+
+// Valid options for source are 'server', 'cache', or
+// 'default'. See https://firebase.google.com/docs/reference/js/firebase.firestore.GetOptions
+// for more information.
+var getOptions = {
+    source: 'cache'
+};
+
+// Get a document, forcing the SDK to fetch from the offline cache.
+docRef.get(getOptions).then(function(doc) {
+    // Document was found in the cache. If no cached document exists,
+    // an error will be returned to the 'catch' block below.
+    console.log("Cached document data:", doc.data());
+}).catch(function(error) {
+    console.log("Error getting cached document:", error);
+});
+

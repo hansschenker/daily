@@ -1,0 +1,224 @@
+1 2 3 # @  * + f ""Ff
+
+Maxim Korretskyi: https://github.com/maximusk/dom-manipulation-workshop
+
+Angular Practices
+---------------------------------------------------------------
+Component for Presentation Logic (Looping List)
+How Business Data should presented to User
+
+Directive for Rendering Logic (Style, Behaviour)
+Render DOM Nodes
+
+ComponentRef
+----------------
+In Angular, each component is bound to a particular instance of an injector, 
+so we’re passing the current injector instance when creating the component. 
+Also, don’t forget that components that are instantiated dynamically 
+must be added to EntryComponents of a module or hosting component.
+
+Represents a component created by a ComponentFactory. 
+Provides access to the component instance and related objects, 
+and provides the means of destroying the instance.
+
+abstract class ComponentRef<C> {
+  abstract location: ElementRef
+  abstract injector: Injector
+  abstract instance: C
+  abstract hostView: ViewRef
+  abstract changeDetectorRef: ChangeDetectorRef
+  abstract componentType: Type<any>
+  abstract destroy(): void
+  abstract onDestroy(callback: Function): void
+}
+
+ElementRef with ViewChild
+--------------------------
+This is the most basic abstraction. If you observe it’s class structure, 
+you’ll see that it only holds the native element it’s associated with. 
+It’s useful for accessing native DOM element 
+
+ElementRef with DI of Host Element
+---------------------------------
+ElementRef can be returned for any DOM element using ViewChild decorator. 
+But since all 
+- components are hosted inside a custom DOM element and all directives are applied to DOM elements, 
+- component and directive can obtain ElementRef associated with their host element through DI mechanism
+
+TemplateRef (HTML 5 Template equivalent)
+-----------
+The notion of template should be familiar for most web developers. 
+It’s a group of DOM elements that are reused in views across the app
+The Template can be reused, by instanciating it in a ViewContainer.
+You access a Template with a Template Reference variable (#myTpl)
+and the ViewChild Decorator: @ViewChild('myTpl')
+
+@Component({
+    selector: 'sample',
+    template: `
+        <ng-template #tpl>
+            <span>I am span in template</span>
+        </ng-template>
+    `
+})
+export class SampleComponent implements AfterViewInit {
+    @ViewChild("tpl") tpl: TemplateRef<any>;
+
+    ngAfterViewInit() {
+        let elementRef = this.tpl.elementRef;
+        // outputs `template bindings={}`
+        console.log(elementRef.nativeElement.textContent);
+    }
+}
+
+By itself the TemplateRef class is a simple class. It holds a reference to its host element 
+in elementRef property and has one method createEmbeddedView. However, this method is very useful 
+since it allows us to create a view and return a reference to it as ViewRef.
+
+ViewRef
+-------------------------
+Represents an Angular view, specifically the host view that is defined by a component. 
+Also serves as the base class that adds destroy methods for embedded views.
+
+Angular supports two types of views:
+- Embedded Views which are linked to a Template
+- Host Views which are linked to a Component
+
+This type of abstraction represents an angular View. In angular world a View is 
+a fundamental building block of the application UI. It is the smallest grouping of elements 
+which are created and destroyed together. Angular philosophy encourages developers to see UI 
+as a composition of Views, not as a tree of standalone html tags.
+
+abstract class ViewRef extends ChangeDetectorRef {
+  abstract destroyed: boolean
+  abstract destroy(): void
+  abstract onDestroy(callback: Function): any
+
+  // inherited from core/ChangeDetectorRef
+  abstract markForCheck(): void
+  abstract detach(): void
+  abstract detectChanges(): void
+  abstract checkNoChanges(): void
+  abstract reattach(): void
+}
+
+Creating host view
+------------------
+Host views are created when a component is dynamically instantiated. 
+A component can be created dynamically using ComponentFactoryResolver:
+
+constructor(private injector: Injector,
+            private r: ComponentFactoryResolver) {
+    let factory = this.r.resolveComponentFactory(ColorComponent);
+    let componentRef = factory.create(injector);
+    let view = componentRef.hostView;
+}
+
+EmbeddedViewRef
+--------------------------------------------
+Represents an Angular view in a view container. An embedded view can be referenced from a component 
+other than the hosting component whose template defines it, or it can be defined independently by a TemplateRef
+
+abstract class EmbeddedViewRef<C> extends ViewRef {
+  abstract context: C
+  abstract rootNodes: any[]
+
+  // inherited from core/ViewRef
+  abstract destroyed: boolean
+  abstract destroy(): void
+  abstract onDestroy(callback: Function): any
+
+  // inherited from core/ChangeDetectorRef
+  abstract markForCheck(): void
+  abstract detach(): void
+  abstract detectChanges(): void
+  abstract checkNoChanges(): void
+  abstract reattach(): void
+}
+
+Creating embedded view
+--------------------------
+A template simply holds a blueprint for a view. A view can be instantiated from the template 
+using aforementioned createEmbeddedView method like this:
+
+ngAfterViewInit() {
+    let view = this.tpl.createEmbeddedView(null);
+}
+
+Also, don’t forget that components that are instantiated dynamically 
+must be added to EntryComponents of a module or hosting component.
+
+ViewContainerRef
+------------------------
+Represents a container where one or more views can be attached.
+
+The first thing to mention here is that any DOM element can be used as a view container. 
+What’s interesting is that Angular doesn’t insert views inside the element, 
+but appends them after the element bound to ViewContainer. 
+This is similar to how router-outlet inserts components
+
+class ViewContainerRef {
+    ...
+    clear() : void
+    insert(viewRef: ViewRef, index?: number) : ViewRef
+    get(index: number) : ViewRef
+    indexOf(viewRef: ViewRef) : number
+    detach(index?: number) : ViewRef
+    move(viewRef: ViewRef, currentIndex: number) : ViewRef
+}
+
+@Component({
+    selector: 'sample',
+    template: `
+        <span>I am first span</span>
+        <ng-container #vc></ng-container>
+        <span>I am last span</span>
+    `
+})
+export class SampleComponent implements AfterViewInit {
+    @ViewChild("vc", {read: ViewContainerRef}) vc: ViewContainerRef;
+
+    ngAfterViewInit(): void {
+        // outputs `template bindings={}`
+        console.log(this.vc.element.nativeElement.textContent);
+    }
+}
+
+
+Template Directive or Structural Directives
+---------------------------------------------------
+They are able to change the DOM structure
+
+NgTemplateOutlet DIRECTIVE
+---------------------------
+Inserts an embedded view from a prepared TemplateRef.
+
+You can attach a context object to the EmbeddedViewRef by setting [ngTemplateOutletContext]. 
+[ngTemplateOutletContext] should be an object, the object's keys will be available 
+for binding by the local template let declarations.
+
+
+<ng-container *ngTemplateOutlet="templateRefExp; context: contextExp"></ng-container>
+
+Using the key $implicit in the context object will set its value as default.
+
+Example
+content_copy
+@Component({
+  selector: 'ng-template-outlet-example',
+  template: `
+    <ng-container *ngTemplateOutlet="greet"></ng-container>
+    <hr>
+    <ng-container *ngTemplateOutlet="eng; context: myContext"></ng-container>
+    <hr>
+    <ng-container *ngTemplateOutlet="svk; context: myContext"></ng-container>
+    <hr>
+    
+    <ng-template #greet><span>Hello</span></ng-template>
+    <ng-template #eng let-name><span>Hello {{name}}!</span></ng-template>
+    <ng-template #svk let-person="localSk"><span>Ahoj {{person}}!</span></ng-template>
+`
+})
+export class NgTemplateOutletExample {
+  myContext = {$implicit: 'World', localSk: 'Svet'};
+}

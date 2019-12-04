@@ -1,0 +1,280 @@
+node.js add security
+---------------------
+// This complex HTTP function will be created as an ExpressJS app:
+// https://expressjs.com/en/4x/api.html
+const app = require('express')();
+
+// We'll enable CORS support to allow the function to be invoked
+// from our app client-side.
+app.use(require('cors')({origin: true}));
+
+// Then we'll also use a special 'getFirebaseUser' middleware which
+// verifies the Authorization header and adds a `user` field to the
+// incoming request:
+// https://gist.github.com/abehaskins/832d6f8665454d0cd99ef08c229afb42
+app.use(getFirebaseUser);
+
+// Add a route handler to the app to generate the secured key
+app.get('/', (req, res) => {
+  // Create the params object as described in the Algolia documentation:
+  // https://www.algolia.com/doc/guides/security/api-keys/#generating-api-keys
+  const params = {
+    // This filter ensures that only documents where author == user_id will be readable
+    filters: `author:${req.user.user_id}`,
+    // We also proxy the user_id as a unique token for this key.
+    userToken: req.user.user_id,
+  };
+
+  // Call the Algolia API to generate a unique key based on our search key
+  const key = client.generateSecuredApiKey(ALGOLIA_SEARCH_KEY, params);
+
+  // Then return this key as {key: '...key'}
+  res.json({key});
+});
+
+// Finally, pass our ExpressJS app to Cloud Functions as a function
+// called 'getSearchKey';
+exports.getSearchKey = functions.https.onRequest(app);
+
+node.js add security 2
+-----------------------
+// Use Firebase Authentication to request the underlying token
+return firebase.auth().currentUser.getIdToken()
+  .then(function(token) {
+    // The token is then passed to our getSearchKey Cloud Function
+    return fetch('https://us-central1-' + PROJECT_ID + '.cloudfunctions.net/getSearchKey/', {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+  })
+  .then(function(response) {
+    // The Fetch API returns a stream, which we convert into a JSON object.
+    return response.json();
+  })
+  .then(function(data) {
+    // Data will contain the restricted key in the `key` field.
+    client = algoliasearch(ALGOLIA_APP_ID, data.key);
+    index = client.initIndex('notes');
+
+    // Perform the search as usual.
+    return index.search({query});
+  })
+  .then(function(responses) {
+    // Finally, use the search 'hits' returned from Algolia.
+    return responses.hits;
+  });
+
+
+security sample with roles
+---------------------------
+Suppose you are building a collaborative writing application in which users can create "stories" and "comments" with the following security requirements:
+
+Each story has one owner and can be shared with "writers", "commenters", and "readers".
+Readers can only see stories and comments. They cannot edit anything.
+Commenters have all the access of readers, and they can also add comments to a story.
+Writers have all the access of commenters, and they can also edit story content.
+Owners can edit any part of a story as well as control the access of other users.
+-------------------------
+
+{
+  title: "A Great Story",
+  content: "Once upon a time ...",
+  roles: {
+    alice: "owner",
+    bob: "reader",
+    david: "writer",
+    jane: "commenter"
+    // ...
+  }
+}
+
+step 1
+----------------------------------------
+
+service cloud.firestore {
+   match /databases/{database}/documents {
+     match /stories/{story} {
+         // TODO: Story rules go here...
+
+         match /comments/{comment} {
+            // TODO: Comment rules go here...
+         }
+     }
+   }
+}
+
+step 2
+--------------
+service cloud.firestore {
+   match /databases/{database}/documents {
+     match /stories/{story} {
+        function isSignedIn() {
+          return request.auth != null;
+        }
+
+        function getRole(rsc) {
+          // Read from the "roles" map in the resource (rsc).
+          return rsc.data.roles[request.auth.uid];
+        }
+
+        function isOneOfRoles(rsc, array) {
+          // Determine if the user is one of an array of roles
+          return isSignedIn() && (getRole(rsc) in array);
+        }
+
+        function isValidNewStory() {
+          // Valid if story does not exist and the new story has the correct owner.
+          return resource == null
+            && request.resource.data.roles[request.auth.uid] == 'owner';
+        }
+
+        // Owners can read, write, and delete stories
+        allow write: if isValidNewStory() || isOneOfRoles(resource, ['owner']);
+
+         match /comments/{comment} {
+            // ...
+         }
+     }
+   }
+}
+
+step 3
+----------
+service cloud.firestore {
+   match /databases/{database}/documents {
+     match /stories/{story} {
+        function isSignedIn() {
+          return request.auth != null;
+        }
+
+        function getRole(rsc) {
+          return rsc.data.roles[request.auth.uid];
+        }
+
+        function isOneOfRoles(rsc, array) {
+          return isSignedIn() && (getRole(rsc) in array);
+        }
+
+        function isValidNewStory() {
+          return resource == null
+            && request.resource.data.roles[request.auth.uid] == 'owner';
+        }
+
+        allow write: if isValidNewStory() || isOneOfRoles(resource, ['owner']);
+
+        // Any role can read stories.
+        allow read: if isOneOfRoles(resource, ['owner', 'writer', 'commenter', 'reader']);
+
+        match /comments/{comment} {
+          // Any role can read comments.
+          allow read: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),
+                                      ['owner', 'writer', 'commenter', 'reader']);
+        }
+     }
+   }
+}
+
+step 4
+----------
+service cloud.firestore {
+   match /databases/{database}/documents {
+     match /stories/{story} {
+        function isSignedIn() {
+          return request.auth != null;
+        }
+
+        function getRole(rsc) {
+          return rsc.data.roles[request.auth.uid];
+        }
+
+        function isOneOfRoles(rsc, array) {
+          return isSignedIn() && (getRole(rsc) in array);
+        }
+
+        function isValidNewStory() {
+          return resource == null
+            && request.resource.data.roles[request.auth.uid] == 'owner';
+        }
+
+        allow write: if isValidNewStory() || isOneOfRoles(resource, ['owner'])
+        allow read: if isOneOfRoles(resource, ['owner', 'writer', 'commenter', 'reader']);
+
+        match /comments/{comment} {
+          allow read: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),
+                                      ['owner', 'writer', 'commenter', 'reader']);
+
+          // Owners, writers, and commenters can create comments. The
+          // user id in the comment document must match the requesting
+          // user's id.
+          //
+          // Note: we have to use get() here to retrieve the story
+          // document so that we can check the user's role.
+          allow write: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),
+                                        ['owner', 'writer', 'commenter'])
+                        && request.resource.data.user == request.auth.uid;
+        }
+     }
+   }
+}
+
+step 5
+-------
+service cloud.firestore {
+   match /databases/{database}/documents {
+     match /stories/{story} {
+        function isSignedIn() {
+          return request.auth != null;
+        }
+
+        function getRole(rsc) {
+          return rsc.data.roles[request.auth.uid];
+        }
+
+        function isOneOfRoles(rsc, array) {
+          return isSignedIn() && (getRole(rsc) in array);
+        }
+
+        function isValidNewStory() {
+          return request.resource.data.roles[request.auth.uid] == 'owner';
+        }
+
+        function onlyContentChanged() {
+          // Ensure that title and roles are unchanged and that no new
+          // fields are added to the document.
+          return request.resource.data.title == resource.data.title
+            && request.resource.data.roles == resource.data.roles
+            && request.resource.size() == resource.size();
+        }
+
+        // Split writing into creation, deletion, and updating. Only an
+        // owner can create or delete a story but a writer can update
+        // story content.
+        allow create: if isValidNewStory();
+        allow delete: if isOneOfRoles(resource, ['owner']);
+        allow update: if isOneOfRoles(resource, ['owner'])
+                      || (isOneOfRoles(resource, ['writer']) && onlyContentChanged());
+        allow read: if isOneOfRoles(['owner', 'writer', 'commenter', 'reader']);
+
+        match /comments/{comment} {
+          allow read: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),
+                                      ['owner', 'writer', 'commenter', 'reader']);
+          allow create: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),
+                                        ['owner', 'writer', 'commenter'])
+                        && request.resource.data.user == request.auth.uid;
+        }
+     }
+   }
+}
+
+Limitations
+The solution shown above demonstrates securing user data using Security Rules, but you should be aware of the following limitations:
+
+
+Granularity: In the example above, multiple roles (writer and owner) have write access to the same document but with different limitations. T
+his can become hard to manage with more complex documents and it may be better to split single documents 
+into multiple documents each owned by a single role.
+Large Groups: If you need to share with very large or complex groups, consider a system where roles are stored in their own collection 
+rather than as a field on the target document.
+
+
+
+

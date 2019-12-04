@@ -1,0 +1,79 @@
+let users = {} ;
+let loadedPosts = {};
+db.collection('users').get().then((results) => {
+  results.forEach((doc) => {
+    users[doc.id] = doc.data();
+  });
+  posts = db.collection('posts').orderBy('timestamp', 'desc').limit(3);
+  posts.get().then((docSnaps) => {
+    docSnaps.forEach((doc) => {
+    loadedPosts[doc.id] = doc.data();
+    loadedPosts[doc.id].userName = users[doc.data().uid].name;
+  });
+}); 
+
+
+let loadedPosts = {};
+posts = db.collection('posts')
+          .orderBy('timestamp', 'desc')
+          .limit(3);
+posts.get()
+.then((docSnaps) => {
+  docSnaps.forEach((doc) => {
+    loadedPosts[doc.id] = doc.data();
+    db.collection('users').child(doc.data().uid).get().then((userDoc) => {
+      loadedPosts[doc.id].userName = userDoc.data().name;
+    });
+  })
+});
+If you want to prevent loading a user multiple times, you can cache the user data client side. 
+In that case I'd recommend factoring the user-loading code into a helper function. But it'll be a variation of the above.
+
+
+Concept: You know user id you want to get information, in your posts list, you can request user document and 
+save it as promise in your post item. after promise resolve then you get user information.
+
+Note: i do not test below code, but it is simplify version of my code.
+
+let posts: Observable<{}[]>;  // you can display in HTML directly with  | async tag
+this.posts = this.listenPosts()
+         .map( posts => {
+           posts.forEach( post => {
+                post.promise = this.getUserDoc( post.uid )
+                               .then( (doc: DocumentSnapshot) => {
+                                  post.userName = doc.data().name;
+                               });
+           }); // end forEach
+           return posts;
+         });
+
+// normally, i keep in provider
+listenPosts(): Observable<any> {
+  let fsPath = 'posts';
+  return this.afDb.collection( fsPath ).valueChanges();
+}
+
+// to get the document according the user uid
+getUserDoc( uid: string ): Promise<any> {
+   let fsPath = 'users/' + uid;
+   return this.afDb.doc( fsPath ).ref.get();
+}
+Note: afDb: AngularFirestore it is initialize in constructor (by angularFire lib)
+
+
+
+I will do just one userdoc query and the needed postsdoc call.
+
+Let users={} ;
+let loadedPosts = {};
+db.collection('users').get().then((results) =>{
+Results.forEach( (doc) =>
+users[doc.id]=doc.data();
+}) 
+posts=db.collection('posts') .orderBy('timestamp', 'desc') 
+posts.get().then((docSnaps)=>{
+docSnaps.forEach((doc)=>{
+loadedPosts[doc.id] = doc.data();
+loadedPosts[doc.id].userName = users[doc.data().uid].name});
+}) 
+

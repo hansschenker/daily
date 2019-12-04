@@ -1,0 +1,62 @@
+NgModules
+---------------------------------
+Declarations, Imports, and Exports
+
+NgModules are the unit of compilation and distribution of Angular components and pipes. 
+In many ways they are similar to ES6 modules, in that they have declarations, imports, and exports.
+
+Bootstrap and Entry Components
+--------------------------------
+The bootstrap property defines the components that are instantiated when a module is bootstrapped. 
+First, Angular creates a component factory for each of the bootstrap components. 
+And then, at runtime, it’ll use the factories to instantiate the components.
+
+Entry Components
+------------------
+Angular supports a special provider token to automatically pre-populate entryComponents.
+
+Summary
+-------------------
+To be more efficient, Angular separates components used statically (declaratively) from the components used 
+
+dynamically (imperatively).
+Angular directly instantiates components used statically; no extra abstraction is required.
+Angular generates a component factory for every component listed in entryComponents, so that they can be instantiated imperatively.
+
+Providers
+--------------------
+NgModules can contain providers. 
+And the providers of the imported modules are merged with the target module’s providers, 
+left to right, i.e., if multiple imported modules define the same provider, the last module wins.
+
+Angular instantiates NgModules and registers them with dependency injection. 
+This means that you can inject modules into other modules or components
+
+Bootstrap an Angular app
+------------------------
+To bootstrap an Angular application in the JIT mode, you pass a module to bootstrapModule.
+This will compile AppModule into a module factory and then use the factory to instantiate the module. 
+If you use AOT, you may need to provide the factory yourself.
+
+Lazy Loading
+----------------------
+As I mentioned above NgModules are not just the units of compilation, they are also the units of distribution. 
+That is why we bootstrap an NgModule, and not a component–we don’t distribute components, we distribute modules. 
+And that’s why we lazy load NgModules as well.
+The loader compiles the modules if the application is running in the JIT mode, 
+and does not in the AOT mode. The default loader @angular/core ships with uses SystemJS, but, 
+as most things in Angular, you can provide your own
+
+Let’s Recap
+----------------------
+NgModules are the units of compilation. They tell Angular how components should be compiled.
+
+Similar to ES module they have declarations, imports, and exports.
+Every component belongs to a NgModule.
+Bootstrap and entry components are configured in NgModules.
+NgModules configure dependency injection.
+NgModules are used to bootstrap applications.
+NgModules are used to lazy load code.
+
+
+

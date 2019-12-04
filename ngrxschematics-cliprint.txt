@@ -1,0 +1,248 @@
+ngrx schematics commands 
+-----------------------------------------------------------------------------------------------------------------------------
+usage: ng generate store <name> [options]
+
+-----------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--module (-m)
+    Allows specification of the declaring module.
+  
+--root 
+    Flag to setup the root state or feature state.
+  
+--spec 
+    Specifies if a spec file is generated.
+  
+--state-interface (-si)
+    Specifies the interface for the state.
+  
+--state-path 
+    undefined
+usage: 
+
+root store
+-----------
+ng g store AppState --root --flat=false --state-path=state/store --state-interface=AppState -m=app
+
+ng generate action <name> [options]
+
+-------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group actions file within 'actions' folder
+  
+--spec 
+    Specifies if a spec file is generated.
+usage: 
+
+ng generate container <name> [options]
+
+----------------------------------------------------
+options:
+  
+--change-detection (-c)
+    Specifies the change detection strategy.
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--export 
+    Specifies if declaring module exports the component.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--inline-style (-s)
+    Specifies if the style will be in the ts file.
+  
+--inline-template (-t)
+    Specifies if the template will be in the ts file.
+  
+--module (-m)
+    Allows specification of the declaring module.
+  
+--prefix (-p)
+    The prefix to apply to generated selectors.
+  
+--selector 
+    The selector to use for the component.
+  
+--skip-import 
+    Flag to skip the module import.
+  
+--spec 
+    Specifies if a spec file is generated.
+  
+--state 
+    Specifies the path to the state exports.
+  
+--state-interface 
+    Specifies the interface for the state.
+  
+--styleext 
+    The file extension to be used for style files.
+ 
+ --view-encapsulation (-v)
+    Specifies the view encapsulation strategy.
+usage: 
+
+ng g container users --state=UsersState --state-interface=Users -c
+
+ng generate effect <name> [options]
+
+----------------------------------------------------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--feature 
+    Flag to indicate if part of a feature schematic.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group effects file within 'effects' folder
+  
+--module (-m)
+    Allows specification of the declaring module.
+  
+--root 
+    Flag to indicate whether the effects are registered as root.
+  
+--spec 
+    Specifies if a spec file is generated.
+usage: 
+
+root effects:
+-------------
+ng g effect state/effects --root  --flat=false --state-path=store --module=app.module.ts
+
+
+
+ng generate entity <name> [options]
+
+------------------------------------------------------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group actions, reducers and effects within relative subfolders
+  
+--module (-m)
+    Specifies the declaring module.
+  
+--reducers (-r)
+    Specifies the reducers file.
+  
+--spec 
+    Specifies if a spec file is generated.
+usage: 
+
+ng generate feature <name> [options]
+
+----------------------------------------------------------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group actions, reducers and effects within relative subfolders
+  
+--module (-m)
+    Specifies the declaring module.
+  
+--reducers (-r)
+    Specifies the reducers file.
+  
+--spec 
+    Specifies if a spec file is generated.
+usage: 
+
+ng g m threads
+ng g feature thread --reducers=store/index.ts -m=threads/threads
+ng g feature link --reducers=store/index.ts -m=links/links
+
+ng g entity threads/thread --reducers=state/store/index.ts -m=threads/threads
+ng g entity links/link --reducers=store/index.ts -m=links/links
+
+ng g effect threads/thread --feature=thread -m=threads/threads
+ng g store ThreadState --flat=false --state-path=threads/store --state-interface=ThreadState -m=threads/threads
+
+ng g store threads
+--state-interface (-si)
+    Specifies the interface for the state.
+  
+--state-path 
+
+
+
+ng generate reducer <name> [options]
+-------------------------------------------------------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--feature 
+    Flag to indicate if part of a feature schematic.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group reducer file within 'reducers' folder
+  
+--module (-m)
+    Specifies the declaring module.
+  
+--reducers (-r)
+    Specifies the reducers file.
+  
+--spec 
+    Specifies if a spec file is generated.

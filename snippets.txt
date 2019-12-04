@@ -1,0 +1,53 @@
+fetch api
+------------------------------------------------------------------------------------------------
+const endpoint = 'will_play_text.json';
+
+const plays = [];
+fetch(endpoint)
+  .then(blob => blob.json())
+  .then(data => plays.push(...data));
+
+fetch('./data/fakeData.json')
+  .then((res) => res.json())
+  .then((data) => {
+    console.log('data:', data);
+  })
+
+
+in localstorage
+-----------------------------------------------------------------------------------------------------
+import low from 'lowdb'
+import LocalStorage from 'lowdb/adapters/LocalStorage'
+
+const adapter = new LocalStorage('db')
+const db = low(adapter)
+
+db.defaults({ posts: [] })
+  .write()
+
+// Data is automatically saved to localStorage
+db.get('posts')
+  .push({ title: 'lowdb' })
+  .write()
+
+In-memory
+--------------------------------------------------------------------------------------------------
+With this adapter, calling write will do nothing. One use case for this adapter can be for tests.
+
+const fs = require('fs')
+const low = require('low')
+const FileSync = require('low/adapters/FileSync')
+const Memory = require('low/adapters/Memory')
+
+const db = low(
+  process.env.NODE_ENV === 'test'
+    ? new Memory()
+    : new FileSync('db.json')
+)
+
+db.defaults({ posts: [] })
+  .write()
+
+db.get('posts')
+  .push({ title: 'lowdb' })
+  .write()

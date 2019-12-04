@@ -1,0 +1,44 @@
+NgRx Best Practices 
+----------------------
+
+01a install
+............
+root sate
+rate RootStoreModule using the Angular CLI:
+ng g module root-store —-flat false —-module app.module.ts
+2. Generate RootState interface to represent the entire state of your application using the Angular CLI:
+
+ng g interface root-store/root-state
+
+01b feaature module
+-------------------
+ng g module root-store/my-feature-store --flat false --module root-store/root-store.module.ts
+
+02 actions
+---------
+import { Action } from '@ngrx/store';
+import { MyModel } from '../../models';
+
+export enum ActionTypes {
+  LOAD_REQUEST = '[My Feature] Load Request',
+  LOAD_FAILURE = '[My Feature] Load Failure',
+  LOAD_SUCCESS = '[My Feature] Load Success'
+}
+
+export class LoadRequestAction implements Action {
+  readonly type = ActionTypes.LOAD_REQUEST;
+}
+
+export class LoadFailureAction implements Action {
+  readonly type = ActionTypes.LOAD_FAILURE;
+  constructor(public payload: { error: string }) {}
+}
+
+export class LoadSuccessAction implements Action {
+  readonly type = ActionTypes.LOAD_SUCCESS;
+  constructor(public payload: { items: MyModel[] }) {}
+}
+
+export type Actions = LoadRequestAction | LoadFailureAction | LoadSuccessAction;
+
+

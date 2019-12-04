@@ -1,0 +1,116 @@
+create location wirh GeoPoint
+--------------------------------------------------------------------------
+{
+  location: new firebase.firestore.GeoPoint(latitude, longitude)
+}
+--------------------------------------------------------------------------
+
+// *** Usage
+const geopoint = this.db.geopoint(38, -119)
+return this.db.add('items', { location: geopoint })
+
+// *** Code
+geopoint(lat: number, lng: number) {
+return new firebase.firestore.GeoPoint(lat, lng)
+1
+---------------------------------------------------------------------
+
+
+
+
+ * Get locations within a bounding box defined by a center point and distance from from the center point to the side of the box;
+ *
+ * @param {Object} area an object that represents the bounding box
+ *    around a point in which locations should be retrieved
+ * @param {Object} area.center an object containing the latitude and
+ *    longitude of the center point of the bounding box
+ * @param {number} area.center.latitude the latitude of the center point
+ * @param {number} area.center.longitude the longitude of the center point
+ * @param {number} area.radius (in kilometers) the radius of a circle
+ *    that is inscribed in the bounding box;
+ *    This could also be described as half of the bounding box's side length.
+ * @return {Promise} a Promise that fulfills with an array of all the
+ *    retrieved locations
+ */
+function getLocations(area) {
+  // calculate the SW and NE corners of the bounding box to query for
+  const box = utils.boundingBoxCoordinates(area.center, area.radius);
+
+  // construct the GeoPoints
+  const lesserGeopoint = new GeoPoint(box.swCorner.latitude, box.swCorner.longitude);
+  const greaterGeopoint = new GeoPoint(box.neCorner.latitude, box.neCorner.longitude);
+
+  // construct the Firestore query
+  let query = firebase.firestore().collection('myCollection').where('location', '>', lesserGeopoint).where('location', '<', greaterGeopoint);
+
+  // return a Promise that fulfills with the locations
+  return query.get()
+    .then((snapshot) => {
+      const allLocs = []; // used to hold all the loc data
+      snapshot.forEach((loc) => {
+        // get the data
+        const data = loc.data();
+        // calculate a distance from the center
+        data.distanceFromCenter = utils.distance(area.center, data.location);
+        // add to the array
+        allLocs.push(data);
+      });
+      return allLocs;
+    })
+    .catch((err) => {
+      return new Error('Error while retrieving events');
+    });
+}
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+stackoverflow: get all the locations which are nearby, 
+first we get a Database reference to where we save our GeoFire locations. From your question, it should be
+
+DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("geofire");
+
+Next we create a GeoFire instance with our GeoFire location reference as the argument
+
+GeoFire geoFire = new GeoFire(ref);
+Now we query the GeoFire reference,geoFire using it's queryAtLocation method The queryAtLoction method takes 2 arguments:a GeoLocation object and the distance range. So if we use 3 as the distance range, any location which is 3kilometers away from the user will show up in the onKeyEntered(...) method.
+
+NB: The GeoLocation object takes 2 arguments: latitude and longitude. So we can use the user's latitude and longitude as the arguments GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(userLatitde, userLongitude), 3);
+
+    geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+        @Override
+        public void onKeyEntered(String key, GeoLocation location) {
+            //Any location key which is within 3km from the user's location will show up here as the key parameter in this method 
+            //You can fetch the actual data for this location by creating another firebase query here
+Query locationDataQuery = new FirebaseDatabase.getInstance().child("locations").child(key);
+locationDataQuery..addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        //The dataSnapshot should hold the actual data about the location
+dataSnapshot.getChild("name").getValue(String.class); //should return the name of the location and dataSnapshot.getChild("description").getValue(String.class); //should return the description of the locations
+                    }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        @Override
+        public void onKeyExited(String key) {}
+
+        @Override
+        public void onKeyMoved(String key, GeoLocation location) {}
+
+        @Override
+        public void onGeoQueryReady() {
+            //This method will be called when all the locations which are within 3km from the user's location has been loaded Now you can do what you wish with this data
+        }
+
+        @Override
+        public void onGeoQueryError(DatabaseError error) {
+
+        }
+    });
+geofire sample, c:\Users\Folio\web\firebase-geofire\michael-solati-gdg-chicago 
+geofire query, c:\Users\Folio\web\firebase-geofire\michael-solati-gdg-chicago 

@@ -1,0 +1,151 @@
+redirectURI =
+URLENCODE(redirectURI) =
+clientId =
+clientSecret =
+
+
+google oauth playground
+-------------------------
+
+/auth - request (authorize api via consent popup to user) -> result authorization code
+----------------------------------------------------------------------------------------
+GET /oauthplayground/?code=4/twEq2v91fa7dO6YX-NHDYyBI2jkHLcXz6TP40jbUv4rHJ1cCgGDwVGQU0IeiGUTOw_Yk-AGU6GYoB7ekq7el4yw
+&scope=https://www.googleapis.com/auth/youtube%20
+https://www.googleapis.com/auth/youtube.force-ssl%20
+https://www.googleapis.com/auth/youtube.readonly%20
+https://www.googleapis.com/auth/youtube.upload%20
+https://www.googleapis.com/auth/youtubepartner%20
+https://www.googleapis.com/auth/youtubepartner-channel-audit HTTP/1.1
+Host: developers.google.com
+
+/auth - response
+-----------------------------
+code=4/twF_w6A7t3CM2QQ5a7zbDXVNxfNek2DEgu6WFL_jhtIlDVoTkB_-0kQbT5IhrBqKWirE6E09-O2YD2WJVv8S5U4
+&scope=https://www.googleapis.com/auth/youtube HTTP/1.1
+Host: developers.google.com
+
+
+/token - request
+-----------
+code=4%2FtwEq2v91fa7dO6YX-NHDYyBI2jkHLcXz6TP40jbUv4rHJ1cCgGDwVGQU0IeiGUTOw_Yk-AGU6GYoB7ekq7el4yw
+&redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground
+&client_id=407408718192.apps.googleusercontent.com
+&client_secret=************
+&scope=&grant_type=authorization_code
+
+/token - response -> access_token, refresh_token, expires in ten minutes
+-----------------------------------------------------------------------
+Content-type: application/json; charset=utf-8
+{
+  "access_token": "ya29.Il-yBxSOA-UxxX1JTFSltF08ctgJq-g1m_smR5TxwSX5ExkuUojoHwLJwAM5E6wTPoFHB2I1-xTXNt9QhgtzwkFFBUwRmObi1xwCjA8WTdjHKQKBnthpgA2ov89bEzmuPQ", 
+  "scope": "https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtubepartner https://www.googleapis.com/auth/youtubepartner-channel-audit https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly", 
+  "token_type": "Bearer", 
+  "expires_in": 3600, 
+  "refresh_token": "1//04bCQ6r2_imA0CgYIARAAGAQSNwF-L9Ir4s3LEfZV_ohVSBDfxlt3rOrDTH38gbQ5MPZyd6L0kM1p5PAHpaK9wHzUmxhvUk_GMeo"
+}
+
+youtube api operations - YouTube Data API v3
+-----------------------------------------------
+channel
+-------------
+ Insert ActivitiesPosts a bulletin for a specific channel. (The user submitting the request must be authorized to act on the channel's behalf.) Note: Even though an activity resource can contain information about actions like a user rating a video or marking a video as a favorite, you need to use other API methods to generate those activity resources. For example, you would use the API's videos.rate() method to rate a video and the playlistItems.insert() method to mark a video as a favorite.
+ List ActivitiesReturns a list of channel activity events that match the request criteria. For example, you can retrieve events associated with a particular channel, events associated with the user's subscriptions and Google+ friends, or the YouTube home page feed, which is customized for each user.
+
+ Delete CaptionsDeletes a specified caption track.
+ Download CaptionsDownloads a caption track. The caption track is returned in its original format unless the request specifies a value for the tfmt parameter and in its original language unless the request specifies a value for the tlang parameter.
+ Insert CaptionsUploads a caption track.
+
+ List CaptionsReturns a list of caption tracks that are associated with a specified video. Note that the API response does not contain the actual captions and that the captions.download method provides the ability to retrieve a caption track.
+ Update CaptionsUpdates a caption track. When updating a caption track, you can change the track's draft status, upload a new caption file for the track, or both.
+ Insert ChannelBannersUploads a channel banner image to YouTube. This method represents the first two steps in a three-step process to update the banner image for a channel: - Call the channelBanners.insert method to upload the binary image data to YouTube. The image must have a 16:9 aspect ratio and be at least 2120x1192 pixels. - Extract the url property's value from the response that the API returns for step 1. - Call the channels.update method to update the channel's branding settings. Set the brandingSettings.image.bannerExternalUrl property's value to the URL obtained in step 2.
+ Delete ChannelSectionsDeletes a channelSection.
+ Insert ChannelSectionsAdds a channelSection for the authenticated user's channel.
+ List ChannelSectionsReturns channelSection resources that match the API request criteria.
+ Update ChannelSectionsUpdate a channelSection.
+ List ChannelsReturns a collection of zero or more channel resources that match the request criteria.
+ Update ChannelsUpdates a channel's metadata. Note that this method currently only supports updates to the channel resource's brandingSettings and invideoPromotion objects and their child properties.
+
+ Insert CommentThreadsCreates a new top-level comment. To add a reply to an existing comment, use the comments.insert method instead.
+ List CommentThreadsReturns a list of comment threads that match the API request parameters.
+ Update CommentThreadsModifies the top-level comment in a comment thread.
+ Delete CommentsDeletes a comment.
+ Insert CommentsCreates a reply to an existing comment. Note: To create a top-level comment, use the commentThreads.insert method.
+ List CommentsReturns a list of comments that match the API request parameters.
+ MarkAsSpam CommentsExpresses the caller's opinion that one or more comments should be flagged as spam.
+ SetModerationStatus CommentsSets the moderation status of one or more comments. The API request must be authorized by the owner of the channel or video associated with the comments.
+ Update CommentsModifies a comment.
+ List GuideCategoriesReturns a list of categories that can be associated with YouTube channels.
+ List I18nLanguagesReturns a list of application languages that the YouTube website supports.
+ List I18nRegionsReturns a list of content regions that the YouTube website supports.
+
+ Bind LiveBroadcastsBinds a YouTube broadcast to a stream or removes an existing binding between a broadcast and a stream. A broadcast can only be bound to one video stream, though a video stream may be bound to more than one broadcast.
+ Control LiveBroadcastsControls the settings for a slate that can be displayed in the broadcast stream.
+ Delete LiveBroadcastsDeletes a broadcast.
+ Insert LiveBroadcastsCreates a broadcast.
+ List LiveBroadcastsReturns a list of YouTube broadcasts that match the API request parameters.
+ Transition LiveBroadcastsChanges the status of a YouTube live broadcast and initiates any processes associated with the new status. For example, when you transition a broadcast's status to testing, YouTube starts to transmit video to that broadcast's monitor stream. Before calling this method, you should confirm that the value of the status.streamStatus property for the stream bound to your broadcast is active.
+ Update LiveBroadcastsUpdates a broadcast. For example, you could modify the broadcast settings defined in the liveBroadcast resource's contentDetails object.
+
+ Delete LiveChatBansRemoves a chat ban.
+ Insert LiveChatBansAdds a new ban to the chat.
+ Delete LiveChatMessagesDeletes a chat message.
+ Insert LiveChatMessagesAdds a message to a live chat.
+ List LiveChatMessagesLists live chat messages for a specific chat.
+ Delete LiveChatModeratorsRemoves a chat moderator.
+ Insert LiveChatModeratorsAdds a new moderator for the chat.
+ List LiveChatModeratorsLists moderators for a live chat.
+
+ Delete LiveStreamsDeletes a video stream.
+ Insert LiveStreamsCreates a video stream. The stream enables you to send your video to YouTube, which can then broadcast the video to your audience.
+ List LiveStreamsReturns a list of video streams that match the API request parameters.
+ Update LiveStreamsUpdates a video stream. If the properties that you want to change cannot be updated, then you need to create a new stream with the proper settings.
+
+ List MembersLists members for a channel.
+ List MembershipsLevelsLists pricing levels for a channel.
+
+ Delete PlaylistItemsDeletes a playlist item.
+ Insert PlaylistItemsAdds a resource to a playlist.
+ List PlaylistItemsReturns a collection of playlist items that match the API request parameters. You can retrieve all of the playlist items in a specified playlist or retrieve one or more playlist items by their unique IDs.
+ Update PlaylistItemsModifies a playlist item. For example, you could update the item's position in the playlist.
+ Delete PlaylistsDeletes a playlist.
+ Insert PlaylistsCreates a playlist.
+ List PlaylistsReturns a collection of playlists that match the API request parameters. For example, you can retrieve all playlists that the authenticated user owns, or you can retrieve one or more playlists by their unique IDs.
+ Update PlaylistsModifies a playlist. For example, you could change a playlist's title, description, or privacy status.
+
+ List SearchReturns a collection of search results that match the query parameters specified in the API request. By default, a search result set identifies matching video, channel, and playlist resources, but you can also configure queries to only retrieve a specific type of resource.
+
+ List SponsorsLists sponsors for a channel.
+
+ Delete SubscriptionsDeletes a subscription.
+ Insert SubscriptionsAdds a subscription for the authenticated user's channel.
+ List SubscriptionsReturns subscription resources that match the API request criteria.
+ List SuperChatEventsLists Super Chat events for a channel.
+
+ Set ThumbnailsUploads a custom video thumbnail to YouTube and sets it for a video.
+
+ List VideoAbuseReportReasonsReturns a list of abuse reasons that can be used for reporting abusive videos.
+ List VideoCategoriesReturns a list of categories that can be associated with YouTube videos.
+
+ Delete VideosDeletes a YouTube video.
+ GetRating VideosRetrieves the ratings that the authorized user gave to a list of specified videos.
+
+ Insert VideosUploads a video to YouTube and optionally sets the video's metadata.
+ List VideosReturns a list of videos that match the API request parameters.
+ Rate VideosAdd a like or dislike rating to a video or remove a rating from a video.
+ ReportAbuse VideosReport abuse for a video.
+ Update VideosUpdates a video's metadata.
+ Set WatermarksUploads a watermark image to YouTube and sets it for a channel.
+ Unset WatermarksDeletes a channel's watermark image.
+
+YouTube Analytics API v2
+----------------------------------------------------------------------------
+ Delete GroupItemsRemoves an item from a group.
+ Insert GroupItemsCreates a group item.
+ List GroupItemsReturns a collection of group items that match the API request parameters.
+ Delete GroupsDeletes a group.
+ Insert GroupsCreates a group.
+ List GroupsReturns a collection of groups that match the API request parameters. 
+For example, you can retrieve all groups that the authenticated user owns, 
+or you can retrieve one or more groups by their unique IDs.
+ Update GroupsModifies a group. For example, you could change a group's title.
+ Query ReportsRetrieve your YouTube Analytics reports.

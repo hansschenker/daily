@@ -1,0 +1,246 @@
+playground auth request
+----------------------------
+request
+------------
+GET /oauthplayground/?
+code=4/twFs6Q7nkzRMuonUAu1j3zzteS0Ha7Ntf9UvGC2lU7SGHdzFZkf7gHX9Q4xnwyk3IB8u4RnVZz243zHQmMxEGaE
+&scope=https://www.googleapis.com/auth/youtube HTTP/1.1
+Host: developers.google.com
+
+response
+-----------
+HTTP/1.1 302 Found
+Location: https://accounts.google.com/o/oauth2/v2/auth?
+redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground
+&prompt=consent&response_type=code&client_id=407408718192.apps.googleusercontent.com
+&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube
+&access_type=offline
+
+playground token request
+-------------------------
+Post authentication_code
+--------------------------
+POST /oauth2/v4/token HTTP/1.1
+Host: www.googleapis.com
+Content-length: 277
+content-type: application/x-www-form-urlencoded
+user-agent: google-oauth-playground
+code=4%2FtwFs6Q7nkzRMuonUAu1j3zzteS0Ha7Ntf9UvGC2lU7SGHdzFZkf7gHX9Q4xnwyk3IB8u4RnVZz243zHQmMxEGaE&redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&client_id=407408718192.apps.googleusercontent.com&client_secret=************&scope=&grant_type=authorization_code
+HTTP/1.1 200 OK
+
+token response
+--------------------
+Content-type: application/json; charset=utf-8
+{
+  "access_token": "ya29.Il-zB_7PnpHJac5Jcg3zrMAnnUgdNjvklKtEDUGtgLx4t60_wIuronmMyOvIEUuXgwMvpGTXngyHK-7aAdaQttxqgSo5Hh6goPZDPo9XOy1PSHb83HNbNdIaMdKgpeO-dQ", 
+  "scope": "https://www.googleapis.com/auth/youtube", 
+  "token_type": "Bearer", 
+  "expires_in": 3600, 
+  "refresh_token": "1//04v5wGfbi1TavCgYIARAAGAQSNwF-L9Ir40magub0xfUmscNsZNKBlhvSZMiCVcVfh6tht5CNpSI4O5zQwivGx04bOvlCGKPpGfk"
+}
+
+youtube request with access_token
+-----------------------------------
+request headers: Authorization with access_token
+
+Authorization: Bearer ya29.Il-zB_7PnpHJac5Jcg3zrMAnnUgdNjvklKtEDUGtgLx4t60_wIuronmMyOvIEUuXgwMvpGTXngyHK-7aAdaQttxqgSo5Hh6goPZDPo9XOy1PSHb83HNbNdIaMdKgpeO-dQ
+
+
+
+
+access token response
+----------------------
+  access_token: '',
+  expires_in: 3600,
+  refresh_token: '',
+  scope: '',
+  token_type: '',
+  id_token: ''
+
+
+
+  access_token: 'ya29.Il-zB5OAloy1ptKGMpARXF3EeEzjek354ST7MglWGJmJ6YATddtQO1UfRZIOtWH5TfzmvHJJYqfRS2blGm65q8n5VpY8elYZQn8ymtCwhFNQwmeDX5r-3nLxEnZlhj7UTQ',
+  refresh_token: '1//09n41LV5rhQGlCgYIARAAGAkSNwF-L9IrA6QXhcOrSQhvlmcXc3-9SzFca19aINZ7V_UZh9dnFAfcBiB_Sa6t1nF6-XbgE-rFFU0',
+
+
+yt scopes
+------------------------------------------------------------------------------------------------------------------------
+https://www.googleapis.com/auth/youtube			Manage your YouTube account
+https://www.googleapis.com/auth/youtube.force-ssl	See, edit, and permanently delete your YouTube videos, ratings, comments and captions
+https://www.googleapis.com/auth/youtube.readonly	View your YouTube account
+https://www.googleapis.com/auth/youtube.upload		Manage your YouTube videos
+https://www.googleapis.com/auth/youtubepartner		View and manage your assets and associated content on YouTube
+https://www.googleapis.com/auth/youtubepartner-channel-audit	View private information of your YouTube channel 
+							relevant during the audit process with a YouTube partner
+
+show video url:
+https://www.youtube.com/watch?v=hewP0NI4epo
+
+youtube api 
+angular yt factory, npm i angular-youtube-api-factory 
+
+base-path:
+------------------------------------------------------------
+https://www.googleapis.com/youtube/v3/
+
+api-key or yt-playlists: AIzaSyD_OgcwI3TlWj9F84naiEugfc61NW9S9Wo
+------------------------------------------------------------------------------------------------------------------------------------
+channel playlists: channel:UCYlW9EuQnlNRtEYqVtpfbDw
+-------------------------------------------------------------------------------------------------------------------------------------
+https://www.googleapis.com/youtube/v3/channelId={CHN-ID}
+&playlists?part=snippet,contentDetails
+&maxResults={MAX-RES}
+&key={API-KEY}" 
+
+https://www.googleapis.com/youtube/v3/channelId=CYlW9EuQnlNRtEYqVtpfbDw&playlists?part=snippet,contentDetails&maxResults=50&key=AIzaSyD_OgcwI3TlWj9F84naiEugfc61NW9S9Wo
+
+json-result only 1 item:
+-------------------------------------------------------------------------
+{
+  "kind": "youtube#playlist",
+
+  "etag": "\"ZG3FIn5B5vcHjQiQ9nDOCWdxwWo/ycm2KHgFUM02_1k_UAv_iYnwBZM\"",
+
+  "id": "PLw5h0DiJ-9PCsbV-xQy8GSH_bqEX8Xsxw",
+
+  "snippet": {
+    "publishedAt": "2018-04-25T07:26:28.000Z",
+
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+
+    "title": "NgConf 2018 - Workshops",
+
+    "description": "",
+
+    "thumbnails": {
+      "default": {
+        "url": "https://i.ytimg.com/vi/BULrf2pkfJY/default.jpg",
+
+        "width": 120,
+
+        "height": 90
+      },
+
+      "medium": {
+        "url": "https://i.ytimg.com/vi/BULrf2pkfJY/mqdefault.jpg",
+
+        "width": 320,
+
+        "height": 180
+      },
+
+      "high": {
+        "url": "https://i.ytimg.com/vi/BULrf2pkfJY/hqdefault.jpg",
+
+        "width": 480,
+
+        "height": 360
+      },
+
+      "standard": {
+        "url": "https://i.ytimg.com/vi/BULrf2pkfJY/sddefault.jpg",
+
+        "width": 640,
+
+        "height": 480
+      },
+
+      "maxres": {
+        "url": "https://i.ytimg.com/vi/BULrf2pkfJY/maxresdefault.jpg",
+
+        "width": 1280,
+
+        "height": 720
+      }
+    },
+
+    "channelTitle": "Hans Schenker bei Google",
+
+    "localized": {
+      "title": "NgConf 2018 - Workshops",
+
+      "description": ""
+    }
+  },
+
+  "contentDetails": {
+    "itemCount": 5
+  }
+
+}
+--------------------------------------------------------------------------------------------------------------------------------------
+playlistitems
+---------------------------------------------------------------------------------------------------------------------------------------
+playlistId={PL-ID}&
+playlistItems?part=snippet,contentDetails&
+maxResults={MAX-RES}&
+key={API-KEY}
+
+results: path to video id:
+
+object/items[0]/snippet/resourceid/videoid/urlvalue
+object/items[0]/contentDetails/videoid/urlvalues
+
+json-result only 1 item:
+-------------------------------------------------------------------------
+
+{
+ "kind": "youtube#playlistItemListResponse",
+ "etag": "\"ZG3FIn5B5vcHjQiQ9nDOCWdxwWo/qm8kAa_36fe9AVerAxdFroSIrUY\"",
+ "pageInfo": {
+  "totalResults": 5,
+  "resultsPerPage": 25
+ },
+ "items": [
+  {
+
+
+   "kind": "youtube#playlistItem",
+   "etag": "\"ZG3FIn5B5vcHjQiQ9nDOCWdxwWo/bGx1-bk7v9-obY76k_wJCp9J8kM\"",
+   "id": "UEx3NWgwRGlKLTlQQ3NiVi14UXk4R1NIX2JxRVg4WHN4dy41NkI0NEY2RDEwNTU3Q0M2",
+   "snippet": {
+    "publishedAt": "2018-04-25T07:26:28.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Writing A Custom Angular Build - Steve Belovarich",
+    "description": "ng-conf is a two day, single track conference focused on delivering the highest quality training in the Angular JavaScript framework. 1500+ developers from across the country will converge on beautiful Salt Lake City, UT to participate in training sessions by the Google Angular team, and other Angular experts. In addition to the invaluable training, ng-conf will deliver a premier conference experience for attendees, providing opportunities to network with other developers, relax at social events, and engage in some of the unique entertainment opportunities available in Utah.",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/BULrf2pkfJY/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/BULrf2pkfJY/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/BULrf2pkfJY/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/BULrf2pkfJY/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/BULrf2pkfJY/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "playlistId": "PLw5h0DiJ-9PCsbV-xQy8GSH_bqEX8Xsxw",
+    "position": 0,
+    "resourceId": {
+     "kind": "youtube#video",
+     "videoId": "BULrf2pkfJY"
+    }
+   },
+   "contentDetails": {
+    "videoId": "BULrf2pkfJY",
+    "videoPublishedAt": "2018-04-20T13:38:09.000Z"
+   }
+  }
+ 
