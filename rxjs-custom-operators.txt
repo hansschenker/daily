@@ -1,0 +1,21 @@
+log operator: just console log value and forward it
+-----------------------------------------------------------------------------------
+
+import { of, from, range, Observable, Observer } from "rxjs";
+import { map, tap } from "rxjs/operators";
+
+export const log = <T>(source: Observable<T>) => {
+  return new Observable((observer: Observer<T>) => {
+    const subscription = source.subscribe(
+      (value: T) => {
+        console.log(value);
+        observer.next(value);
+      },
+      (err: any) => observer.error(err),
+      () => observer.complete()
+    );
+    return subscription;
+  });
+};
+
+----------------------------------------------------------------------------------------
