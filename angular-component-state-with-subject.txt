@@ -1,3 +1,26 @@
+Nrwl -state or react and angular
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+import { Subject } from 'rxjs';
+
+export class PubSubService {
+ msgEmitter = new Subject<string>();
+
+ publish(msg: string) {
+   this.msgEmitter.next(msg);
+ }
+
+ messages() {
+   return this.msgEmitter.asObservable();
+ }
+}
+----------------------------------------------------------------------------
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 import {Observable, BehaviorSubject} from 'rxjs';
 
 export class State<T> {
