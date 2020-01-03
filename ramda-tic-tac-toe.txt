@@ -1,0 +1,37 @@
+import { map, range, reduce, addIndex, identity, ompose, pipe, any, join, contains, update, equals, prop, juxt, repeat, reverse } from 'ramda';
+
+const mapIdx = addIndex(map);
+const fillGrid = arr => arr.concat(map(() => repeat(' ', arr[0].length), arr));
+
+const shiftGrid = mapIdx((el,i,arr) => repeat(' ', arr.length - i).concat(el).concat(repeat(' ', i)));
+
+const initBoard = size => map(() => Array(size).fill(' '), range(0,size));
+const updateBoard = move => grid => update(move.x, update(move.y, move.val, grid[move.x]), grid);
+
+const performMoves = moves => reduce(compose, identity, map(updateBoard, moves));
+const xWins = compose(contains('XXX'), join(''));
+const oWins = compose(contains('OOO'), join(''));
+
+const getColumns = grid => mapIdx((el, i) => map(prop(i), grid), grid);
+const getDiagonalsF = compose(getColumns, fillGrid, shiftGrid);
+const getDiagonalsB = compose(getDiagonalsF, map(reverse));
+
+const checkRow = map(juxt([xWins, oWins]));
+
+const checkDiagF = compose(checkRow, getDiagonalsF);
+const checkDiagB = compose(checkRow, getDiagonalsB);
+
+const checkCol = compose(checkRow, getColumns);
+const checkWin = juxt([checkRow, checkDiagB, checkDiagF, checkCol]);
+
+const printWin = map(map((item) => {
+  if (item[0] === true) console.log('X wins');
+  if (item[1] === true) console.log('O wins');
+  return null;
+}));
+
+const game = size => mList => compose(performMoves(mList),initBoard)(size);
+const moveList = [{x: 1, y: 1, val: 'O'}, { x: 3, y: 1, val: 'X' }, {x: 1, y: 3, val: 'O'}, { x: 2, y: 2, val: 'X' }, {x: 1, y: 2, val: 'O'}]
+const display = g => {map(console.log, g);return g;};
+//run
+pipe(game(5),display,checkWin,printWin,() => 'done.')(moveList)
