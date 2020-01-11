@@ -1,0 +1,159 @@
+<html>
+<head>
+<style>
+td
+{
+	width: 30px;
+	height: 30px;
+	border: solid 1px #bbbbbb;
+	margin: 0px;
+	padding: 0px;
+}
+</style>
+
+<script type="text/javascript">
+var size = 16;
+var timer;
+var direction = "up";
+var theblock;
+var blocks = new Array();
+var segment;
+
+function drawGrid()
+{
+	document.getElementById("grid").innerHTML = "";
+
+	for(var i = 0; i < size; i++)
+	{
+		var row = document.createElement("tr");
+
+		for(var x = 0; x < size; x++)
+		{
+			var cell = document.createElement("td");
+			row.appendChild(cell);
+		}
+
+		document.getElementById("grid").appendChild(row);
+	}
+}
+function load()
+{
+	drawGrid();
+	createBlock();
+}
+
+function createBlock()
+{
+	theblock = {x:size/2, y:size/2, dir: direction};
+	drawBlock();
+}
+
+function drawBlock()
+{
+	var parent = document.getElementById("grid");
+	parent.rows[theblock.y].cells[theblock.x].style.backgroundColor = "black";
+}
+
+function start()
+{
+	addBlock();
+	document.onkeydown = checkKey;
+	timer = setInterval(function(){move();}, 100);
+}
+
+// moves the head segment
+function move()
+{
+	clearBlock(theblock);
+	theblock.dir = direction;
+
+	switch(direction)
+	{
+		case "up":
+		theblock.y--;
+		break;
+
+		case "down":
+		theblock.y++;
+		break;
+
+		case "left":
+		theblock.x--;
+		break;
+
+		case "right":
+		theblock.x++;
+		break;
+	}
+
+	if (theblock.x < 0 || theblock.y < 0 || theblock.x >= size || theblock.y >= size)
+	{
+		document.getElementById("message").innerHTML = "Lost";
+		clearInterval(timer);
+	}
+
+	else
+	{
+		drawBlock();
+		checkBlock();
+	}
+}
+
+function clearBlock(blockParam)
+{
+	var parent = document.getElementById("grid");
+	parent.rows[blockParam.y].cells[blockParam.x].style.backgroundColor = "white";
+}
+
+function checkKey(e) {
+if (locked==true)
+	return;
+
+    e = e || window.event;
+
+    if (e.keyCode == '38') {
+        // up arrow
+        if (blocks.length == 0 || (blocks.length > 0 && direction != "down"))
+        	direction = "up";
+    }
+    else if (e.keyCode == '40') {
+        // down arrow
+        if (blocks.length == 0 || (blocks.length > 0 && direction != "up"))
+        direction = "down";
+    }
+    else if (e.keyCode == '37') {
+       // left arrow
+       if (blocks.length == 0 || (blocks.length > 0 && direction != "right"))
+       direction = "left";
+    }
+    else if (e.keyCode == '39') {
+       // right arrow
+       if (blocks.length == 0 || (blocks.length > 0 && direction != "left"))
+       direction = "right";
+    }
+
+    document.getElementById("direction").innerHTML = "direction: " + direction;
+}
+
+function checkBlock()
+{
+	// check if theBlock has encountered a part of its body
+	if (theblock.x == segment.x && theblock.y == segment.y)
+	{
+		addBlock();
+	}
+}
+
+function addBlock()
+{
+	var x2;
+	var y2;
+
+	x2 = Math.floor((Math.random() * size));
+	y2 = Math.floor((Math.random() * size));
+
+	segment = {x:x2, y:y2};
+	var parent = document.getElementById("grid");
+	parent.rows[y2].cells[x2].style.backgroundColor = "red";
+}
+</script>
