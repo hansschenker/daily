@@ -1,0 +1,195 @@
+// =============================================================================
+
+
+// Initial data, where most of the software architecture happens.
+function newSnake() {
+  return {
+    // Movement direction
+    dir: [0, 1], // bottom
+
+    // Field dimensions
+    width: 10,
+    height: 10,
+
+    // Prizes positions
+    prizes: [[3, 8], [1, 8]],
+
+    // Snake positions
+    location: [[3, 3], [3, 4], [3, 5], [3, 6]],
+  };
+}
+
+
+// =============================================================================
+
+
+// Now how to transform the input data to the output data
+function addPrize(snake) {
+  const { width, height, location, prizes } = snake;
+
+  // Positions taken by the snake and existing prizes.
+  const takenPositions = [].concat(prizes, location);
+
+  // All positions on the filed.
+  const allPositions = [...Array(width)].map((_v, i) => {
+    return [...Array(height)].map((_vv, j) => [i, j]);
+  }).reduce((result, arr) => (
+    result.concat(arr)
+  ), []);
+
+  // AllPositions - TakenPositions
+  const possiblePositions = allPositions.filter(([x, y]) => (
+    !takenPositions.some(([x1, y1]) => (x === x1 && y === y1))
+  ));
+
+  // Random possible position.
+  const newPrizePosition = possiblePositions[
+    Math.floor(Math.random()*possiblePositions.length)
+  ];
+
+  return Object.assign(
+    {},
+    snake,
+    { prizes: [...prizes, newPrizePosition] }
+  );
+}
+
+
+// =============================================================================
+
+
+function turn(snake, dir) {
+  let newDir;
+  switch(dir) {
+    case 'top': newDir = [0, -1]; break;
+    case 'right': newDir = [1, 0]; break;
+    case 'left': newDir = [-1, 0]; break;
+    case 'bottom': newDir = [0, 1]; break;
+    default: throw new Error(`Bad direction provided: ${dir}`);
+  }
+
+  return Object.assign({}, snake, { dir: newDir });
+}
+
+
+// =============================================================================
+
+
+function move(snake) {
+  const { width, height, location, prizes, dir } = snake;
+
+  const lastPos = location[location.length - 1];
+
+  // New Position = Last Position + Direction
+  const newPos = [lastPos[0] + dir[0], lastPos[1] + dir[1]];
+
+
+  // New position is part of the snake => BITE
+  if (location.some(([x, y]) => (x === newPos[0] && y === newPos[1]))) {
+    return false; // bite
+  }
+
+  // New position is outside of the field => Wall hit
+  if (
+    newPos[0] >= width
+      || newPos[1] >= height
+      || newPos[0] < 0
+      || newPos[1] < 0
+  ) {
+    return false; // wall
+  }
+
+  // New position is a prize position => Enlarge the snake and add new prize.
+  const prize = prizes.filter(([x, y]) => (x === newPos[0] && y === newPos[1]))[0];
+  if (prize) {
+    let chompy = Object.assign(
+      {},
+      snake,
+      {
+        location: [...location, prize],
+        prizes: prizes.filter(([x, y]) => (x !== newPos[0] && y !== newPos[1])),
+      }
+    ); // nom
+
+    return addPrize(chompy);
+  }
+
+  // New position is an empty position => Just move.
+  return Object.assign(
+    {},
+    snake,
+    {
+      location: [...location.slice(1), newPos],
+    }
+  );
+}
+
+
+// =============================================================================
+
+
+// Perfect for React users ;)
+function draw(snake) {
+  console.log(snake);
+}
+
+
+// =============================================================================
+
+
+function game(state) {
+  let stopper = false; // Use this for stopping the game.
+  let turning = null; // Use this for changing the direction.
+
+  // Add player controls.
+  document.addEventListener('keyup', (e) => {
+    if (e.keyCode == '38') {
+      // up arrow
+      turning = 'top';
+    } else if (e.keyCode == '40') {
+      // down arrow
+      turning = 'bottom';
+    } else if (e.keyCode == '37') {
+      // left arrow
+      turning = 'left';
+    } else if (e.keyCode == '39') {
+      // right arrow
+      turning = 'right';
+    }
+  });
+
+  // Game loop. We call this recursively.
+  (function loop(snake){
+    if (stopper) {
+      // game stopped
+      return;
+    }
+    if (!snake) {
+      // game over
+      return;
+    }
+
+    setTimeout(() => {
+      let next;
+
+      if (turning) {
+        next = turn(snake, turning);
+        turning = false;
+      }
+
+      next = move(next);
+      draw(next);
+      loop(next);
+    }, 1000);
+  })(state);
+
+  // Return the stop cunction.
+  return () => {
+    stopper = true;
+  };
+
+  
+}
+
+const stop = game(newSnake());
+stop();
