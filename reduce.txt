@@ -1,0 +1,9 @@
+sander elias - serialize an js object
+--------------
+const serialize = o =>
+  Object.keys(o).reduce(
+    (search, k) => (search += `${k}=${encodeURIComponent(o[k])}&`),
+    ''
+  );
+----------------
+
