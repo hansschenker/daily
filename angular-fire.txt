@@ -1,0 +1,32 @@
+ngn links
+npm install firebase @angular/fire
+
+// 1. Import the libs you need
+import { AngularFireModule } from '@angular/fire';
+import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { AngularFireStorageModule } from '@angular/fire/storage';
+import { AngularFireAuthModule } from '@angular/fire/auth';
+
+// 2. Add your credentials from step 1
+
+    // 3. Initialize
+    AngularFireModule.initializeApp(config),
+    AngularFirestoreModule, // firestore
+    AngularFireAuthModule, // auth
+    AngularFireStorageModule // storage
+
+// 4. use in component
+import { AngularFirestore } from '@angular/fire/firestore';
+
+@Component(...)
+export class SomeComponent {
+
+  constructor(private db: AngularFirestore) {
+      const things = db.collection('things').valueChanges();
+      things.subscribe(console.log);
+  }
+}
+
+// add a angular eature module
+ngm link
+
