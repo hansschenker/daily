@@ -92,10 +92,16 @@ but values themselves. That means default project can be imagined as function th
 
 withLatestFrom
 ---------------
-
+withLatestFrom combines each value from the source Observable (the instance) with the latest values 
+from the other input Observables only when the source emits a value, optionally using a project function 
+to determine the value to be emitted on the output Observable. 
+Trigger:
+All input Observables must emit at least one value before the output Observable will emit a value.
 
 
 concat
+--------
+
 concatAll
 concatMap
 concatMapTo
