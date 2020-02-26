@@ -1,0 +1,159 @@
+Animation definitions are linked to components through the animations property in the @Component metadata
+The trigger() function encapsulates a named animation
+Angular animations are based on CSS web transition
+
+Angular animations allow you to:
+-------------------------------------------------------
+Set animation timings, styles, keyframes, and transitions.
+Animate HTML elements in complex sequences and choreographies.
+Animate HTML elements as they are inserted and removed from the DOM, including responsive real-time filtering.
+Create reusable animations.
+Animate parent and child elements
+
+@angular/animations	
+-------------------
+Implements a domain-specific language (DSL) for defining web animation sequences 
+for HTML elements as multiple transformations over time.
+
+Secondary
+@angular/animations/browser
+---------------------------	
+Provides infrastructure for cross-platform rendering of animations in a browser.
+
+@angular/animations/browser/testing
+-----------------------------------	
+Provides infrastructure for testing of the Animations browser subsystem.
+
+Classes
+AnimationBuilder	
+An injectable service that produces an animation sequence programmatically 
+within an Angular component or directive. Provided by the BrowserAnimationsModule or NoopAnimationsModule.
+
+AnimationFactory	
+A factory object returned from the AnimationBuilder.build() method.
+
+NoopAnimationPlayer	
+An empty programmatic controller for reusable animations. Used internally when animations are disabled, 
+to avoid checking for the null case when an animation player is expected.
+
+Functions
+animate	
+Defines an animation step that combines styling information with timing information.
+
+animateChild	
+Executes a queried inner animation element within an animation sequence.
+
+animation	
+Produces a reusable animation that can be invoked in another animation or sequence, 
+by calling the useAnimation() function.
+
+group	
+Defines a list of animation steps to be run in parallel.
+
+keyframes	
+Defines a set of animation styles, associating each style with an optional offset value.
+
+query	
+Finds one or more inner elements within the current element that 
+is being animated within a sequence. Use with animate().
+
+sequence	
+Defines a list of animation steps to be run sequentially, one by one.
+
+stagger	
+Use within an animation query() call to issue a timing gap after each queried item is animated.
+
+state	
+Declares an animation state within a trigger attached to an element.
+
+style	
+Declares a key/value object containing CSS properties/styles that can then 
+be used for an animation state, within an animation sequence, or as styling data for calls to animate() and keyframes().
+
+transition	
+Declares an animation transition as a sequence of animation steps to run when a given condition is satisfied. 
+The condition is a Boolean expression or function that compares the previous and current animation states, 
+and returns true if this transition should occur. When the state criteria 
+of a defined transition are met, the associated animation is triggered.
+
+trigger	
+Creates a named animation trigger, containing a list of state() and transition() entries 
+to be evaluated when the expression bound to the trigger changes.
+
+useAnimation	
+Starts a reusable animation that is created using the animation() function.
+
+Structures
+AnimateChildOptions	
+Adds duration options to control animation styling and timing for a child animation.
+
+AnimationAnimateChildMetadata	
+Encapsulates a child animation, that can be run explicitly when the parent is run. 
+Instantiated and returned by the animateChild function.
+
+AnimationAnimateMetadata	
+Encapsulates an animation step. Instantiated and returned by the animate() function.
+
+AnimationAnimateRefMetadata	
+Encapsulates a reusable animation. Instantiated and returned by the useAnimation() function.
+
+AnimationEvent	
+An instance of this class is returned as an event parameter when an animation 
+callback is captured for an animation either during the start or done phase.
+
+AnimationGroupMetadata	
+Encapsulates an animation group. Instantiated and returned by the group() function.
+
+AnimationKeyframesSequenceMetadata	
+Encapsulates a keyframes sequence. Instantiated and returned by the keyframes() function.
+
+AnimationMetadata	
+Base for animation data structures.
+
+AnimationMetadataType	
+Constants for the categories of parameters that can be defined for animations.
+
+AnimationOptions	
+Options that control animation styling and timing.
+
+AnimationPlayer	
+Provides programmatic control of a reusable animation sequence, built using the build() 
+method of AnimationBuilder. The build() method returns a factory, whose create() method instantiates and initializes this interface.
+
+AnimationQueryMetadata	
+Encapsulates an animation query. Instantiated and returned by the query() function.
+
+AnimationQueryOptions	
+Encapsulates animation query options. Passed to the query() function.
+
+AnimationReferenceMetadata	
+Encapsulates a reusable animation, which is a collection of individual animation steps. 
+Instantiated and returned by the animation() function, and passed to the useAnimation() function.
+
+AnimationSequenceMetadata	
+Encapsulates an animation sequence. Instantiated and returned by the sequence() function.
+
+AnimationStaggerMetadata	
+Encapsulates parameters for staggering the start times of a set of animation steps. 
+Instantiated and returned by the stagger() function.
+
+AnimationStateMetadata	
+Encapsulates an animation state by associating a state name with a set of CSS styles. 
+Instantiated and returned by the state() function.
+
+AnimationStyleMetadata	
+Encapsulates an animation style. Instantiated and returned by the style() function.
+
+AnimationTransitionMetadata	
+Encapsulates an animation transition. Instantiated and returned by the transition() function.
+
+AnimationTriggerMetadata	
+Contains an animation trigger. Instantiated and returned by the trigger() function.
+
+Types
+AUTO_STYLE	
+Specifies automatic styling.
+
+AnimateTimings	
+Represents animation-step timing parameters for an animation step.
+
