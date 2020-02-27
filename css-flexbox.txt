@@ -134,3 +134,33 @@ flex item order:
 -----------------
 order: 4;
 
+---------------------------------------------------------------------------------------
+Advanced Flexbox
+---------------------------------------------------------------------------------------
+flex-grow
+flex-shrink
+flex-basis
+
+flex:1 1 100%; // one single item takes the whole available space
+flex:1 1 auto; // one single item takes the whole available space
+
+.box {
+  flex: 1 1 200px; // item has basis value: 200px
+}
+
+There are four values that you can give the flex property, 
+rather than specifying the individual components.
+
+flex: initial: this is the initial value of flex items when you create a flex container 
+and is the same as flex: 0 1 auto. This will size your items according to width and height 
+(or the contents if no width or height is set), the item cannot grow but can shrink.
+
+flex: auto: like setting flex: 1 1 auto;. The item is sized as above but can grow as well as shrink.
+
+flex: none: this is the equivalent of setting flex: 0 0 auto, you will have fully inflexible items.
+
+flex: 1 or 
+flex: 2 and so on: this sets the flex-grow to the integer you specify, flex-shrink to 0 
+and flex-basis to 0. This means that the items will grow according to the factor you specify.
+
+
