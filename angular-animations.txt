@@ -1,6 +1,7 @@
 
 
 Animation definitions are linked to components through the 
+
 - animations property in the @Component metadata
 
 - The trigger() function encapsulates a named animation
@@ -379,4 +380,545 @@ Specifies automatic styling.
 
 AnimateTimings	
 Represents animation-step timing parameters for an animation step.
+----------------------------------------------------------------------------------------
+trigger() - named animation trigger, containing a list of state() and transition() entries 
+------------------------------------------------------------------------------------------
+Creates a named animation trigger, containing a list of 
+- state() and 
+- transition() entries 
+to be evaluated when the expression bound to the trigger changes.
 
+trigger(name: string, definitions: AnimationMetadata[]): AnimationTriggerMetadata
+
+- name	string ,An identifying string.
+
+- definitions	AnimationMetadata[]	
+  An animation definition object, containing an array of state() and transition() declarations.
+
+Returns:
+AnimationTriggerMetadata: An object that encapsulates the trigger data
+
+  animations: [
+    trigger("myAnimationTrigger", [
+      state(...),
+      state(...),
+      transition(...),
+      transition(...)
+    ])
+  ]
+---------------------------------------------------------------------------------------------
+state()
+.............................................................................................
+state
+FUNCTION
+Declares an animation state within a trigger attached to an element.
+
+state(name: string, styles: AnimationStyleMetadata, options?: { params: { [name: string]: any; }; }): AnimationStateMetadata
+Parameters
+- name	string, One or more names for the defined state in a comma-separated string. 
+
+The following reserved state names can be supplied to define a style for specific use cases:
+
+void You can associate styles with this name to be used when the element is detached from the application. 
+For example, when an ngIf evaluates to false, the state of the associated element is void.
+
+- * (asterisk) Indicates the default state. You can associate styles with this name to be used 
+as the fallback when the state that is being animated is not declared within the trigger.
+
+- styles	AnimationStyleMetadata, A set of CSS styles associated with this state, 
+created using the style() function. This set of styles 
+persists on the element once the state has been reached.
+
+- options	object, Parameters that can be passed to the state when it is invoked. 0 or more key-value pairs.
+
+- Optional. Default is undefined.
+
+Returns:
+- AnimationStateMetadata: An object that encapsulates the new state data.
+
+Special values for state-change expressions
+Catch-all state change for when an element is inserted into the page and the destination state is unknown:
+content_copy
+transition("void => *", [
+ style({ opacity: 0 }),
+ animate(500)
+ ])
+Capture a state change between any states:
+
+transition("* => *", animate("1s 0s"))
+
+Entry and exit transitions:
+
+content_copy
+transition(":enter", [
+  style({ opacity: 0 }),
+  animate(500, style({ opacity: 1 }))
+  ]),
+transition(":leave", [
+  animate(500, style({ opacity: 0 }))
+  ])
+Use :increment and :decrement to initiate transitions:
+content_copy
+transition(":increment", group([
+ query(':enter', [
+    style({ left: '100%' }),
+    animate('0.5s ease-out', style('*'))
+  ]),
+ query(':leave', [
+    animate('0.5s ease-out', style({ left: '-100%' }))
+ ])
+]))
+
+transition(":decrement", group([
+ query(':enter', [
+    style({ left: '100%' }),
+    animate('0.5s ease-out', style('*'))
+  ]),
+ query(':leave', [
+    animate('0.5s ease-out', style({ left: '-100%' }))
+ ])
+]))
+
+State-change functions
+--------------------------------------------------------------------------------------------------------------------------------------
+Here is an example of a fromState specified as a state-change function that invokes an animation when true:
+
+
+transition((fromState, toState) =>
+ {
+  return fromState == "off" && toState == "on";
+ },
+ animate("1s 0s"))
+
+Animating to the final state
+----------------------------
+If the final step in a transition is a call to animate() that uses a timing value with no style data, 
+that step is automatically considered the final animation arc, for the element to reach the final state. 
+Angular automatically adds or removes CSS styles to ensure that the element is in the correct final state.
+
+The following example defines a transition that starts by hiding the element, then makes sure that it animates 
+properly to whatever state is currently active for trigger:
+
+
+transition("void => *", [
+  style({ opacity: 0 }),
+  animate(500)
+ ])
+
+Boolean value matching
+-----------------------
+If a trigger binding value is a Boolean, it can be matched using a transition expression 
+that compares true and false or 1 and 0. For example:
+
+// in the template
+<div [@openClose]="open ? true : false">...</div>
+// in the component metadata
+trigger('openClose', [
+  state('true', style({ height: '*' })),
+  state('false', style({ height: '0px' })),
+  transition('false <=> true', animate(500))
+])
+
+----------------------------------------------------------------------------------------------------------
+AnimationMetadata - an animation step
+-----------------------------------------------------------------------------------------------------------
+Animation AnimateChild Metadata
+Animation Animate Metadata
+Animation AnimateRef Metadata
+Animation Group Metadata
+Animation KeyframesSequence Metadata
+Animation Query Metadata
+Animation Reference Metadata
+Animation Sequence Metadata
+Animation Stagger Metadata
+Animation State Metadata
+Animation Style Metadata
+Animation Transition Metadata
+Animation Trigger Metadata
+------------------------------------------------------------------------------------------------------------
+transistion() - sequence of animation steps, runs in sequence per default (parallel with group())
+-----------------------------------------------------------------------------------------------------------
+Declares an animation transition as a sequence of animation steps to run when a given condition is satisfied. 
+The condition is a Boolean expression or function that compares the previous and current animation states, 
+and returns true if this transition should occur. When the state criteria of a defined transition are met, 
+the associated animation is triggered.
+
+- transition(	  stateChangeExpr: string | 
+		((fromState: string, 
+		  toState: string, 
+		  element?: any, 
+		  params?: { [key: string]: any; }) => boolean), 
+		  steps: AnimationMetadata | AnimationMetadata[], 
+		  options: AnimationOptions = null): AnimationTransitionMetadata
+
+
+-------------------------------------------------------------------------------------------------------
+animate() - animation step that combines styling information with timing information.
+--------------------------------------------------------------------------------------------------------
+
+animate(timings: string | number, 
+	styles: AnimationStyleMetadata | AnimationKeyframesSequenceMetadata = null): AnimationAnimateMetadata
+
+- timings	string | number	
+Sets AnimateTimings for the parent animation. A string in the format "duration [delay][easing]".
+
+- Duration and 
+- Delay are expressed as a number and optional time unit, such as "1s" or "10ms" for one second and 10 milliseconds, respectively. 
+The default unit is milliseconds.
+
+- easing value controls how the animation accelerates and decelerates during its runtime. 
+Value is one of 
+- ease, 
+- ease-in, 
+- ease-out, 
+- ease-in-out, or a 
+- cubic-bezier() function call. If not supplied, no easing is applied.
+For example, the string "1s 100ms ease-out" specifies a duration of 1000 milliseconds, and delay of 100 ms, 
+and the "ease-out" easing style, which decelerates near the end of the duration.
+
+styles	AnimationStyleMetadata | AnimationKeyframesSequenceMetadata	
+Sets AnimationStyles for the parent animation. A function call to either style() or keyframes() that 
+returns a collection of CSS style entries to be applied to the parent animation. When null, 
+uses the styles from the destination state. This is useful when describing an animation step 
+that will complete an animation; see "Animating to the final state" in transitions().
+
+Optional. Default is null.
+
+Returns
+AnimationAnimateMetadata: An object that encapsulates the animation step.
+
+interface AnimationAnimateMetadata extends AnimationMetadata {
+  timings: string | number | AnimateTimings
+  styles: AnimationStyleMetadata | AnimationKeyframesSequenceMetadata | null
+
+  // inherited from animations/AnimationMetadata
+  type: AnimationMetadataType
+}
+
+
+Timing examples
+-------------------------------
+The following examples show various timings specifications.
+
+animate(500) : Duration is 500 milliseconds.
+animate("1s") : Duration is 1000 milliseconds.
+animate("100ms 0.5s") : Duration is 100 milliseconds, delay is 500 milliseconds.
+animate("5s ease-in") : Duration is 5000 milliseconds, easing in.
+animate("5s 10ms cubic-bezier(.17,.67,.88,.1)") : Duration is 5000 milliseconds, delay is 10 milliseconds, easing according to a bezier curve.
+Style examples
+
+style() to set a single CSS style.
+-------------------------------
+animate(500, style({ background: "red" }))
+The following example calls keyframes() to set a CSS style to different values for successive keyframes.
+
+keyframes()
+-------------------------------
+animate(500, keyframes(
+ [
+  style({ background: "blue" })),
+  style({ background: "red" }))
+ ])
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+style({k:v}) - key/value object containing CSS properties
+-------------------------------------------------------------------------------------------------------------------------------------------
+Declares a key/value object containing CSS properties/styles that can then be used for an animation state, 
+within an animation sequence, or as styling data for calls to animate() and keyframes().
+
+style(tokens: "*" | { [key: string]: string | number; } | ("*" | { [key: string]: string | number; })[]): AnimationStyleMetadata
+Parameters
+- tokens	"*" | { [key: string]: string | number; } | ("*" | { [key: string]: string | number; })[]	
+- A set of CSS styles or HTML styles associated with an animation state. The value can be any of the following:
+
+- A key-value style pair associating a CSS property with a value.
+- An array of key-value style pairs.
+- An asterisk (*), to use auto-styling, where styles are derived from the element being animated and applied to the animation when it starts.
+  sAuto-styling can be used to define a state that depends on layout or other environmental factors.
+
+Returns
+AnimationStyleMetadata: An object that encapsulates the style data.
+
+
+// string values for CSS properties
+style({ background: "red", color: "blue" })
+
+// numerical pixel values
+style({ width: 100, height: 0 })
+The following example uses auto-styling to allow a component to animate from a height of 0 up to the height of the parent element:
+
+content_copy
+style({ height: 0 }),
+animate("1s", style({ height: "*" }))
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+keyframes() - Defines a set of animation styles
+--------------------------------------------------------------------------------------------------------------------------------------------
+FUNCTION
+Defines a set of animation styles, associating each style with an optional offset value.
+
+keyframes(steps: AnimationStyleMetadata[]): AnimationKeyframesSequenceMetadata
+
+- steps	AnimationStyleMetadata[]	
+A set of animation styles with optional offset data. The optional offset value for a style specifies a percentage of 
+the total animation time at which that style is applied.
+
+Returns
+---------
+AnimationKeyframesSequenceMetadata: An object that encapsulates the keyframes data.
+
+Usage notes
+Use with the animate() call. Instead of applying animations from the current state to the destination state, 
+keyframes describe how each style entry is applied and at what point within the animation arc. 
+Compare CSS Keyframe Animations.
+
+Usage
+In the following example, the offset values describe when each backgroundColor value is applied. 
+The color is red at the start, and changes to blue when 20% of the total time has elapsed.
+
+
+// the provided offset values
+animate("5s", keyframes([
+  style({ backgroundColor: "red", offset: 0 }),
+  style({ backgroundColor: "blue", offset: 0.2 }),
+  style({ backgroundColor: "orange", offset: 0.3 }),
+  style({ backgroundColor: "black", offset: 1 })
+]))
+If there are no offset values specified in the style entries, the offsets are calculated automatically.
+
+
+animate("5s", keyframes([
+  style({ backgroundColor: "red" }) // offset = 0
+  style({ backgroundColor: "blue" }) // offset = 0.33
+  style({ backgroundColor: "orange" }) // offset = 0.66
+  style({ backgroundColor: "black" }) // offset = 1
+]))
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+group() - animation steps to be run in parallel
+------------------------------------------------------------------------------------------------------------------------------------------
+Defines a list of animation steps to be run in parallel.
+
+group(	steps: AnimationMetadata[], 
+	options: AnimationOptions = null): AnimationGroupMetadata
+
+Parameters
+- steps	AnimationMetadata[], An array of animation step objects.
+
+steps: style() or animate() run immediatley, keyframes() or animate() with delay
+-----
+run immediatley: 	When steps are defined by style() or animate() function calls, 
+			each call within the group is executed instantly.
+run delayed: 		keyframes() or animate() with delay
+
+To specify offset styles to be applied at a later time, define steps with keyframes(), 
+or use animate() calls with a delay value. For example:
+
+group([
+  animate("1s", style({ background: "black" })),
+  animate("2s", style({ color: "white" }))
+])
+
+- options	AnimationOptions	
+		An options object containing a delay and developer-defined parameters 
+		that provide styling defaults and can be overridden on invocation.
+
+Optional. Default is null.
+
+Returns
+AnimationGroupMetadata: An object that encapsulates the group data.
+
+group() - run in parallel
+-------------------------
+Grouped animations are useful when a series of styles must be animated at different 
+starting times and closed off at different ending times.
+
+sequence() - run in sequence (wait for previous to finish)
+----------------------------
+- sequence() or a 
+- transition() call, does not continue to the next instruction until all of the inner animation steps have completed.
+
+----------------------------------------------------------------------------------------------------------------------------------------
+query() - Use with animate(), Finds one or more inner elements within the current element
+------------------------------------------------------------------------------------------------------------------------------------------
+Finds one or more inner elements within the current element that is being animated within a sequence. Use with animate().
+
+query(	selector: string, 
+	animation: AnimationMetadata | AnimationMetadata[], 
+	options: AnimationQueryOptions = null): AnimationQueryMetadata
+
+Parameters
+- selector	string, The element to query, or a set of elements that contain Angular-specific characteristics, 
+		specified with one or more of the following tokens.
+
+query(":enter") or query(":leave") : Query for newly inserted/removed elements.
+query(":animating") : Query all currently animating elements.
+query("@triggerName") : Query elements that contain an animation trigger.
+query("@*") : Query all elements that contain an animation triggers.
+query(":self") : Include the current element into the animation sequence.
+
+- animation	AnimationMetadata | AnimationMetadata[]	
+		One or more animation steps to apply to the queried element or elements. An array is treated as an animation sequence.
+
+- options	AnimationQueryOptions	
+		An options object. Use the 'limit' field to limit the total number of items to collect.
+
+Optional. Default is null.
+
+Returns
+AnimationQueryMetadata: An object that encapsulates the query data.
+
+Usage notes
+Tokens can be merged into a combined query selector string. For example:
+
+query(':self, .record:enter, .record:leave, @subTrigger', [...])
+
+The query() function collects multiple elements and works internally by using element.querySelectorAll. 
+Use the limit field of an options object to limit the total number of items to be collected. For example:
+
+query('div', [
+  animate(...),
+  animate(...)
+], { limit: 1 })
+
+By default, throws an error when zero items are found. Set the optional flag to ignore this error. For example:
+
+query('.some-element-that-may-not-be-there', [
+  animate(...),
+  animate(...)
+], { optional: true })
+
+
+The following example queries for inner elements and animates them individually using animate().
+
+
+@Component({
+  selector: 'inner',
+  template: `
+    <div [@queryAnimation]="exp">
+      <h1>Title</h1>
+      <div class="content">
+        Blah blah blah
+      </div>
+    </div>
+  `,
+  animations: [
+   trigger('queryAnimation', [
+     transition('* => goAnimate', [
+       // hide the inner elements
+       query('h1', style({ opacity: 0 })),
+       query('.content', style({ opacity: 0 })),
+
+       // animate the inner elements in, one by one
+       query('h1', animate(1000, style({ opacity: 1 }))),
+       query('.content', animate(1000, style({ opacity: 1 }))),
+     ])
+   ])
+ ]
+})
+class Cmp {
+  exp = '';
+
+  goAnimate() {
+    this.exp = 'goAnimate';
+  }
+}
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+stagger() - Use within query()
+------------------------------------------------------------------------------------------------------------------------------------------
+
+Use within an animation query() call to issue a timing gap after each queried item is animated.
+
+stagger(	timings: string | number, 
+		animation: AnimationMetadata | AnimationMetadata[]): AnimationStaggerMetadata
+Parameters
+- timings	string | number, A delay value.
+
+- animation	AnimationMetadata | AnimationMetadata[]	
+		One ore more animation steps.
+
+Returns
+AnimationStaggerMetadata: An object that encapsulates the stagger data.
+
+Usage notes
+In the following example, a container element wraps a list of items stamped out by an ngFor. 
+The container element contains an animation trigger that will later be set to query for each of the inner items.
+
+Each time items are added, the opacity fade-in animation runs, and each removed item is faded out. 
+When either of these animations occur, the stagger effect is applied after each item's animation is started.
+
+
+<!-- list.component.html -->
+-----------------------------
+<button (click)="toggle()">Show / Hide Items</button>
+<hr />
+<div [@listAnimation]="items.length">
+  <div *ngFor="let item of items">
+    {{ item }}
+  </div>
+</div>
+
+Here is the component code:
+-----------------------------
+import {trigger, transition, style, animate, query, stagger} from '@angular/animations';
+@Component({
+  templateUrl: 'list.component.html',
+  animations: [
+    trigger('listAnimation', [
+    ...
+    ])
+  ]
+})
+class ListComponent {
+  items = [];
+
+  showItems() {
+    this.items = [0,1,2,3,4];
+  }
+
+  hideItems() {
+    this.items = [];
+  }
+
+  toggle() {
+    this.items.length ? this.hideItems() : this.showItems();
+   }
+ }
+
+Here is the animation trigger code:
+----------------------------------
+trigger('listAnimation', [
+  transition('* => *', [ // each time the binding value changes
+    query(':leave', [
+      stagger(100, [
+        animate('0.5s', style({ opacity: 0 }))
+      ])
+    ]),
+    query(':enter', [
+      style({ opacity: 0 }),
+      stagger(100, [
+        animate('0.5s', style({ opacity: 1 }))
+      ])
+    ])
+  ])
+])
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+animateChild()
+------------------------------------------------------------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+useAnimation()
+------------------------------------------------------------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+AnimationBuilder()
+------------------------------------------------------------------------------------------------------------------------------------------

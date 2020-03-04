@@ -1,0 +1,19 @@
+type User = {
+  id: number;
+  name: string;
+}
+
+
+type MakeReadOnly<Type> = {readonly [key in keyof Type ]: Type[key]};
+// Test MakeReadOnly
+type ReadOnlyUser =  MakeReadOnly<User>;
+
+/*
+type ReadOnlyUser = {
+  readonly id: number;
+  readonly name: string;
+}
+*/
+
+Typescript
+type ReadOnlyUser =  Readonly<User>;
