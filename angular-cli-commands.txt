@@ -1,0 +1,73 @@
+
+Application
+------------------------------------------------------------------------------------------------------------------
+arguments:
+  name
+    The name of the new workspace and initial project.
+
+my options
+-------------------------------------------------------------------------------------------------------------------
+alias ngmini=ng new $* -p nxp --style scss --routing --strict
+---------------------------------------------------------------
+ --minimal 
+    When true, creates a project without any testing frameworks. (Use for learning purposes only.)
+  --prefix (-p)
+    The prefix to apply to generated selectors for the initial project.
+  --style 
+    The file extension or preprocessor to use for style files.
+  --routing 
+    When true, generates a routing module for the initial project.
+  --strict 
+    Creates a workspace with stricter TypeScript compiler options.
+    Initial git repository commit information.
+  --create-application 
+    When true (the default), creates a new initial app project in the src folder of the new workspace. 
+When false, creates an empty workspace with no initial app. You can then use the generate application command 
+so that all apps are created in the projects folder.
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+Module
+-----------------------------------------------------------------------------------------------------------
+
+my options for a lazy loaded feature module
+-----------------------------------------------------------------------
+alias ngfm=ng g m $* --routing --route $* -m app
+--------------------------------------------------------------------------
+
+ --route
+    The route path for a lazy-loaded module. When supplied, creates a component in the new module, 
+and adds the route to that component in the `Routes` array declared in the module provided in the `--module` option.
+  --routing
+    When true, creates a routing module.
+  --routing-scope
+    The scope for the new routing module.
+
+-----------------------------------------------------------------------------------------------------------
+
+
+Component
+----------------------------------------------------------------------------------------------------------
+my options for a immutable component with ChangeDetection OnPush
+-----------------------------------------------------------------
+alias ngcpush=ng g c $1 -c OnPush --export -m $2 --skip-tests
+-----------------------------------------------------------------
+
+  --export
+    When true, the declaring NgModule exports this component.
+  --change-detection (-c)
+    The change detection strategy to use in the new component.
+  --display-block (-b)
+    Specifies if the style will contain `:host { display: block; }`.
+  --module (-m)
+    The declaring NgModule.
+  --prefix (-p)
+    The prefix to apply to the generated component selector.
+  --skip-tests
+    When true, does not create "spec.ts" test files for the new component.
+  --style
+    The file extension or preprocessor to use for style files.
+  --type
+    Adds a developer-defined type to the filename, in the format "name.type.ts".
+
