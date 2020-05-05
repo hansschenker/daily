@@ -1,0 +1,59 @@
+function getProperty<T, K extends keyof T>(obj: T, key: K) {
+    return obj[key];
+}
+
+let x = { a: 1, b: 2, c: 3, d: 4 };
+
+getProperty(x, "a"); // okay
+getProperty(x, "m"); // error: Argument of type 'm' isn't assignable to 'a' | 'b' | 'c' | 'd'.
+
+
+abstract class Model<T> {
+
+    protected options: T
+
+    constructor (options?: Partial<T>) {
+        this.options = { ...this.fake(), ...options }
+    }
+
+    abstract fake () : T
+
+}
+
+type UserOptions = {
+    userName: string,
+    email: string,
+    roles?: int[]
+}
+
+class User extends Model<UserOption> {
+
+    cake () : UserOption {
+        return {
+            userName: getRandomUsername(),
+            email: getRandomEmail()
+        }
+    }
+
+}
+
+
+interface Model<T> {
+
+    readonly fields: Partial<T>
+
+}
+
+type User = {
+    userName: string,
+    email: string,
+    roles?: int[]
+}
+
+type UserModel<User>
+
+interface Viewmodel<T> {
+	model: T
+}
+
+
