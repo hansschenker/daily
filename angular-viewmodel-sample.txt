@@ -1,0 +1,86 @@
+import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, scan, tap } from 'rxjs/operators';
+import { Observable, merge, Subject } from 'rxjs';
+
+
+interface User {
+  id?:number;
+  name:string;
+}
+interface ViewModel {
+  users: User[];
+  selectedUser?: User;
+}
+
+@Component({
+  selector: 'my-app',
+  templateUrl: './app.component.html',
+  styleUrls: [ './app.component.css' ]
+})
+export class AppComponent  {
+  name = 'Angular';
+
+  public vm$ : Observable<ViewModel>;
+  public addUserState = new Subject<User>();
+  public deleteUserState = new Subject<User>();
+  public detailUserState = new Subject<User>();
+  public closeDetailState = new Subject();
+
+  constructor(private http:HttpClient) {
+
+    this.vm$ = merge(
+      this.getUserAction$,
+      this.addUserAction$,
+      this.deleteUserAction$,
+      this.detailUserAction$,
+      this.closeDetailAction$
+    ).pipe(
+      scan( (oldVm:ViewModel, mutateFn:(vm:ViewModel)=>ViewModel) => mutateFn(oldVm), {users:[]} as ViewModel )
+    );
+
+  }
+
+  private getUserAction$ = this.http.get<User[]>(`https://jsonplaceholder.typicode.com/users`).pipe(
+    map( users => (vm:ViewModel) => ({...vm, users}))
+
+  );
+
+  private addUserAction$ = this.addUserState.pipe(
+    map( user => (vm:ViewModel) => ({...vm, users: [...vm.users ,{id:9, name:user}] })),
+  )
+  private deleteUserAction$ = this.deleteUserState.pipe(
+    map( user => (vm:ViewModel) => ({...vm, users: vm.users.filter(u=>u!==user) }))
+  )
+
+  private detailUserAction$ = this.detailUserState.pipe(
+    map( selectedUser => (vm:ViewModel) => ({...vm, selectedUser }))
+  )
+  private closeDetailAction$ = this.closeDetailState.pipe(
+    map( _ => (vm:ViewModel) => ({...vm, selectedUser:null }))
+  )
+
+}
+-----------------------------------------------------------------
+<ng-container *ngIf="vm$ | async as vm">
+
+  <h1>Users</h1>
+
+  <div>Add a User</div>
+  <input #user type="text" (change)="addUserSubj.next(user.value)" >
+  <hr>
+
+  <div *ngFor="let user of vm.users">
+    <button (click)="deleteUserSubj.next(user)" >X</button>  
+    <button (click)="detailUserSubj.next(user)" >detail</button>
+    {{user.name}}
+  </div> 
+  
+  <div style="margin-top:1em" *ngIf="vm.selectedUser">
+    {{vm.selectedUser.id}} - {{vm.selectedUser.name}}
+    <button (click)="closeDetailSubj.next()">close</button>
+  </div>
+
+  
+</ng-container>
+-------------------------------------------------------------
