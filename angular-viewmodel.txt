@@ -2,10 +2,150 @@ ng:viewmodel, 			sander elias, https://github.com/SanderElias/Samples/tree/maste
 js-viewmodel,          		js-viewmodel, js-viewmodel.txt   
 angular-viewmodel,      	sander elias, https://www.youtube.com/watch?v=ku1NcxPBLtg  
 angular-viewmodel,		https://github.com/rekna1/AngularVmAsObservable
+
 angular-viewmodel,  		file:///C:/Users/Hans/OneDrive/_docs/angular-viewmodel.pdf
+
 angular-viewmodel,         	rekna, https://indepth.dev/angular-viewmodel-as-observable/ 
-rxjs-in-angular,   		Practical samples with good ideas to apply rxjs operators with combining Action streams with Data streams - or bind all content to observables and combine them in viewmodel - very good ideas 
+
+rxjs-in-angular,   		Practical samples with good ideas to apply rxjs operators with combining Action streams with Data streams - 
+				or bind all content to observables and combine them in viewmodel - very good ideas 
+
 angular-viewmodel,            	rekna, https://stackblitz.com/edit/angular-viewmodel-rekna?file=src/app/app.component.ts  
-angular-viewmodel-sample.txt,   vile  
+
+angular-viewmodel-sample.txt,   file
+  
 react-viewmodel,      		bitovi, https://www.bitovi.com/blog/introducing-react-view-model-mvvm-with-react 
-angular-viewmodel 		pattern,   Viewmodel in Angular with the help of RxJs is a simple but effective solution to handle state in a component. In most cases you do not need a library, good knowledge in RxJs will help you to go a long way without a library! Thank's for publishing this pattern: !!!! Angular ViewModel Pattern !!!! 
+
+angular-viewmodel 		pattern,   Viewmodel in Angular with the help of RxJs is a simple but effective solution to handle state in a component. 
+				In most cases you do not need a library, good knowledge in RxJs will help you to go a long way without a library! 
+				Thank's for publishing this pattern: !!!! Angular ViewModel Pattern !!!! 
+
+
+sander elias  - @se-ng/observable-utils
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+export function modelFromLatest<T>(
+  modelBase: { [P in keyof T]: Observable<T[P]> | T[P] }
+): Observable<T> {
+  /** work in non-observable defaults into the array */
+  const sources = Object.values(modelBase).map(val =>
+    isObservable(val) ? val : of(val)
+  ) as Observable<unknown>[];
+
+  /** spread out the values into an array, and use combineLatest to "watch" for changes */
+  return combineLatest(sources).pipe(
+    map((values: any[]) =>
+      /** user reduce to reassemble the original structure, but then with the data */
+      Object.keys(modelBase).reduce(
+        (vm, key, i) => {
+          vm[key] = values[i];
+          return vm;
+        },
+        /** make sure it conforms to given types. */
+        {} as T
+      )
+    )
+  );
+}
+
+/**
+ * Sample usage:
+ *
+   const demo$ = modelFromLatest({
+     one: of(1),
+     two: of('jj'),
+     sub: modelFromLatest({
+       tree: of(false)
+     })
+   })
+ *
+ */
+
+Rekna1 - Angular Viewmodel - https://indepth.dev/angular-viewmodel-as-observable/
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+heavily on the use of observables for all actions inside a component
+
+#Goals
+-------------------------------------------------------------------------
+
+- avoid having to manually unsubscribe any subscription.
+- being able to use ChangeDetectionStrategy.onPush (for performance reasons)
+- being a solution with no dependencies.
+- it must be applicable in all cases.
+- use observables for all viewmodel mutations and interactions
+
+#Basic principle
+--------------------------------------------------------------------------
+
+- each component has a viewmodel, and all changes to the viewmodel result from a single (composed) observable.
+- the viewmodel observable is defined as an observable of viewmodel mutation functions.
+- the use of the rxjs scan operator which accumulates all viewmodel mutations.
+
+Viewmodel is an object with observable properties
+Viewmodel is typed with a Typescript interface
+
+Viewmodel:
+-----------------------------------------------------------------------------
+- each component has a typed viewmodel, ViewModel<T>
+- with combineLatest operator: all changes to the viewmodel result from a single (composed) observable
+
+Viewmodel mutation function:
+-----------------------------------------------------------------------------
+Viewmodel mutation functions allow me to map any observable to a change in the viewmodel.
+
+Scan Operator
+---------------------------------------------------------------------------
+The scan operator relies on these viewmodel mutation functions to apply the changes to the previous state of the viewmodel 
+to create the new mutated state when any of the source observables emit a value.
+
+Simple sample with Counter Component
+-----------------------------------------------------------------------------
+interface CounterVm {   
+    counter:number; 
+}
+
+public incrState = new Subject<number>;   
+public decrState = new Subject<number>;
+
+We define our viewmodel observable and in the constructor of the component, I define all interactions:
+
+public vm$ : Observable<ICounterVm>;
+public incrState = new Stateect<number>;
+public decrState = new Stateect<number>;
+constructor() {
+
+  // the Stateects are mapped to an anonymous function that 
+  // - accepts as parameter the previous state of the viewmodel (vm:ICounterVm)
+  // - and that returns the mutated viewmodel
+  // they are the viewmodel mutation functions
+-------------------------------------------------------------------------------------
+  const incrChange$ = this.incrState.pipe(
+    map( value => (vm:CounterVm) => ({...vm, counter:vm.counter+value}) )
+  );
+  const decrChange$ = this.decrState.pipe(
+    map( value => (vm:CounterVm) => ({...vm, counter:vm.counter-value}))
+  );
+--------------------------------------------------------------------------------
+
+  // the viewmodel observable is a merge of all mutation observables (incr$ and decr$) 
+  // piped into a scan function 
+  // scan has two arguments
+  // the first is the accumulator (the viewmodel) and the second the mutation function
+  // the body of the scan operator executes the mutation function : mutationFn(prevVm) passing the previous state of the viewmodel.
+  // this function returns the mutated viewmodel which is the new accumulated value of the vm$ observable
+
+mapToVm<T> = (vm<T>) => Vm<T>
+------------------------------------------------------------------------------------
+  this.vm$ = merge(of({counter:0}), incrChange$, decrChange$).pipe(
+    scan( (prevVm:CounterVm, mapToVm ) => mapToVm(prevVm))
+  )// pipe
+
+------------------------------------------------------------------------------------------------------------------------------------------
+<>
+The view is defined as follows:
+
+<!-- vm$ is subscribed by async pipe and exposes a variable named vm -->
+<div *ngIf="vm$ | async as vm">
+  Current counter : {{vm.counter}}
+  <button type="button" (click)="decrState.next(1)">Decrement</button>
+  <button type="button" (click)="incrState.next(1)">Increment</button> 
+</div>
