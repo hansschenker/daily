@@ -5,9 +5,9 @@ angular-viewmodel,      rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-V
 
 angular-viewmodel,      rekna, https://indepth.dev/angular-viewmodel-as-observable/
 --------------------------------------------------------------------------------------------------------------------------
-- implement Angular View Model as a single observable stream.
-- use observables for all viewmodel mutations and interactions
-- combine action streams with data streams (deborah)
+- implement Angular View Model (vm$ as vm) as a single observable stream
+- by mergin all observables into that single observable stream (merge: each merge obs is a separate value on output stream )
+- use of subject to store action (user input: input, button, select)
 - use async as for subscription and unsubscription
 - use ChangeDetectionStrategy.onPush by applying Immuability (Observables are immutable)
 - angular changedetection on input, output and bound Observable
@@ -18,15 +18,114 @@ Component Viewmodel
 - use of map operator: the viewmodel observable is defined as an observable of viewmodel mutation functions.
 - scan: the use of the rxjs scan operator which accumulates all viewmodel mutations.
 
-Viewmodel mutation Function
+Viewmodel Reduce Function with scan operator
 ---------------------------------------------------------------------------------------------
-- Viewmodel mutation function allows me to map any observable to a change in the viewmodel.
+- map any observable to a change in the viewmodel with the help of the Vm Reduce Function
+
+Vm Reduce Function VmFn used in the scan opperator
+---------------------------------------------
+ scan (acc, val) => acc + val, initialstate
+
+ scan (oldVm, VmFn) => VmFn(oldVm), initialstate
+      .............    -----------
+ sample
+----------------------------------------------------------------------------------------------
+
+    this.vm$ = merge(
+
+      this.dataChange$,
+      this.addChange$,
+      this.deleteChange$,
+      this.detailChange$,
+      this.closeDetailChange$,
+      this.searchItemChange$
+      
+    ).pipe(
+      scan(
+         accumulated Viewmodel       vmReduce: takes a vm as input and outputs a new vm           by applying the vmReduce Function on the oldVm
+          .........................  .........................................................    ...............   ...................................
+        ( oldVm: ViewModel<Product>, vmReduce: (vm: ViewModel<Product>) => ViewModel<Product>) => vmReduce(oldVm), { items: [] } as ViewModel<Product> )
+          .........................  .........................................................    ----------------  ....... initial Vm ...............  
+                                                                                                                    init the vm with an empty items array
+  // add products from http request onto vm
+  --------------------------------------------------------------------------------------------
+  private dataChange$ = this.http.get<Product[]>(`api/products`).pipe(   
+    map((products: Product[]) => (vm: ViewModel<Product>) => ({ ...vm, items: products,}))
+  );
+
+  // add product from user form onto vm
+  --------------------------------------------------------------------------------------------
+  private addChange$ = this.addState.pipe(  
+    // from addState we get a new item 
+    map((product) => (vm: ViewModel<Product>) => ({...vm,items: [...vm.items,{ id: product.id, name: product.name, color: product.color }],}))
+  );
+
+  // delete product from items with filter initated by a list delete button click
+  --------------------------------------------------------------------------------------------
+  private deleteChange$ = this.deleteState.pipe(
+    map((item) => (vm: ViewModel<Product>) => ({...vm, items: vm.items.filter((p) => p !== item)}))
+  );
+
+  // show product details page initiated by a details button click on list
+  --------------------------------------------------------------------------------------------
+  private detailChange$ = this.detailState.pipe(
+    map((product) => (vm: ViewModel<Product>) => ({ ...vm, selectedItem: product }))
+  );
+
+  // close product detail page with a click on the close button on page
+  --------------------------------------------------------------------------------------------
+
+  private closeDetailChange$ = this.detailCloseState.pipe(
+    map((_) => (vm: ViewModel<Product>) => ({ ...vm, selectedItem: null }))
+  );
+
+  // filter items based on the selection of an item field and a item value (whole word case sensitive)
+  ---------------------------------------------------------------------------------------------------
+  // the searchItem is a Product with empty fields except the field we are looking for: color:"green" or name: "Product 1" (only whole case sensitive search)
+  private searchItemChange$ = this.searchItemState.pipe(
+    map((item:Product) => (vm: ViewModel<Product>) => ({ ...vm, searchItem: item, searchItems: vm.items.filter((itm) => {
+        if (item.name.length > 0) {
+          console.log("search name");
+          item.color = "";
+          item.year = 0;
+          return itm.name === item.name;
+        }
+        if (item.year > 0) {
+          console.log("search year");
+          item.color = "";
+          item.name = "";
+          return itm.year.toString() === item.year.toString();
+        }
+        if (item.color.length > 0) {
+          console.log("search color");
+          item.year = 0;
+          item.name = "";
+          return itm.color === item.color;
+        }
+      }),
+    }))
+  );
+
+todo pagination
+................
+
+
+
+
+
+
+
+
+
+
+
+
 
 The Scan Operator - apply changes to the previous state of the viewmodel
 ---------------------------------------------------------------------------------------------
-- The scan operator relies on these viewmodel mutation functions
-  to apply the changes to the previous state of the viewmodel 
-  when any of the source observables emit a value it applies the new state change to the Vm 
+- The scan operator helps to apply these viewmodel reduce functions
+  take oldVm as input and apply the vmReduce to it to generate newVm 
+  when any of the change observables emit a value it applies the new state change to the Vm 
 
 ----------------------------------------------------------------------------------------------
 Simple Value sample with Counter - CounerVm
