@@ -1,11 +1,57 @@
+Angular DOM Manipulations
+--------------------------------------------------------------------------------------------------------
+https://indepth.dev/exploring-angular-dom-manipulation-techniques-using-viewcontainerref/
+https://www.youtube.com/watch?v=qWmqiYDrnDc&list=PLVI0Ut22uwY4UC1v5fUvi2RIU4R4jPkba&sns=tw
+
+
+The new Angular version runs on different platforms — in a browser, on a mobile platform or inside a web worker. 
+So a level of abstraction is required to stand between platform specific API and the framework interfaces. 
+In angular these abstractions come in a form of the following reference types: 
+- ElementRef, 
+- TemplateRef, 
+- ViewRef, 
+- ComponentRef and 
+- ViewContainerRef.
+
 Directives are markers on a DOM element that tell AngularJS to attach a specified behaviour 
 to that DOM element or even transform the DOM element and its children. In short, it extends the HTML. 
 Most of the directives in Angular are starting with ng- where ng stands for Angular. 
 Angular includes various built-in directives. In addition to this, 
 you can create custom directives for your application
 
+Template Variable:
+-----------------------------------------------------------------------------------------------------
+They are combined with Template Variable access:
 
+see: Alain Chautard: https://www.youtube.com/watch?v=wJwvmuK4tQw
+https://blog.angulartraining.com/tutorial-the-magic-of-template-reference-variables-3183f0a0d9d1
 
+Access Host Element via Dependency Injection
+---------------------------------------------------------------------------------------------------
+ElementRef can be returned for any DOM element using the ViewChild decorator. But since all components 
+are hosted inside a custom DOM element and all directives are applied to DOM elements, 
+component and directive classes can obtain an instance of ElementRef 
+associated with their host element through Dependency Injection (DI):
+
+@Component({
+    selector: 'sample',
+    ...
+export class SampleComponent{
+    constructor(private hostElement: ElementRef) {
+        //outputs <sample>...</sample>
+        console.log(this.hostElement.nativeElement.outerHTML);
+    }
+
+Angular Query DOM Nodes
+---------------------------------------------------------------------------------------------------
+@ViewChild#
+Before we explore the DOM abstractions, let’s understand how we access these abstractions inside a component/directive class. 
+Angular provides a mechanism called DOM queries. It comes in the form of 
+- @ViewChild and 
+- @ViewChildren decorators. They behave the same, only the former returns one reference, 
+while the latter returns multiple references as a QueryList object. 
+In the examples in this article I’ll be using mostly the  
+ViewChild decorator and will not be using the @ symbol before it.
 
 Angular Views and References (Element, Template & ViewContainer)
 ---------------------------------------------------------------------------------------------------
