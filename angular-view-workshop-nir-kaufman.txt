@@ -1,0 +1,485 @@
+lab 1 - property modification
+-----------------------------
+# Lab 1 - Property modification with Renderer
+
+Steps:
+1. Create an `<h2>` tag with text in your component template
+2. define a `template ref`
+
+```
+<h2 #titleRef>Some text inside the title</h2>
+```
+
+3. In the component class use `@ViewChild` to query the title
+4. log the `elementRef` in an `AfterViewInit` hook
+
+```
+export class AppComponent implements AfterViewInit {
+  @ViewChild('titleRef') title: ElementRef;
+
+  ngAfterViewInit(): void {
+    console.log(this.title);
+  }
+}
+```
+
+5. implement two css classes in your component styles 
+```
+    styles: [`
+        .danger {color: red}
+        .important {text-decoration: underline}
+    `]  
+```
+
+6. create an `object` on you class that maps those classes to booleans
+
+```
+  styles = {
+    'danger': true,
+    'important': false
+  }
+```
+
+7. inject `Renderer2` 
+
+```
+  constructor(private renderer: Renderer2) {}
+```
+
+8. inside `ngAfterViewInit` loop over the `object` and use `Renderer.addClass()` method
+   to add the object key which the value is true
+   
+```
+  ngAfterViewInit(): void {
+    const element = this.title.nativeElement;
+
+    for (let key in this.styles) {
+      if (this.styles[key]) {
+        this.renderer.addClass(element, key);
+      } else {
+        this.renderer.removeClass(element, key);
+      }
+    }
+  }
+```   
+
+# Lab 1 - Property modification directive
+
+1. create a directive name is `class`
+
+```
+@Directive({
+  selector: '[nkClass]'
+})
+export class ClassDirective {
+
+  constructor() { }
+
+}
+```
+
+2. create an input that accept an `object` (reuse directive selector)
+
+```typescript
+@Input() nkClass: Record<string, boolean>;
+```
+
+2. inject `Renderer2`, and `ElementRef`
+
+```
+  constructor(
+      private renderer: Renderer2,
+      private element:ElementRef
+  ) {}
+```
+
+3. copy the logic for adding classes from the previous component, 
+   use the provided `nkClass` object and the injected `element`
+   
+```typescript
+  ngOnChanges(changes: SimpleChanges): void {
+    const element = this.element.nativeElement;
+
+    for (let key in this.nkClass) {
+      if (this.nkClass[key]) {
+        this.renderer.addClass(element, key);
+      } else {
+        this.renderer.removeClass(element, key);
+      }
+    }
+  }
+```    
+
+4. go back to the previous component
+5. remove the `ref` from the `<h2>` tag
+```
+<h2>Some text inside the title</h2>
+```
+
+6. delete all class content
+
+```
+export class Lab1Component  {}
+```
+
+7. apply the `nkClass` directive and provide the `styles` object
+   as an `input`
+   
+```
+<h2 [nkClass]="{ 'danger': true, 'important': true }">Some text inside the title</h2>
+```
+
+8. to check the dynamics, create and bind two checkboxes to the object values
+
+```
+@Component({
+  selector: 'nk-lab1',
+  template: `
+      <input type="checkbox" (change)="isDanger = !isDanger"> danger
+      <input type="checkbox" (change)="isImportant = !isImportant"> important
+
+      <h2 [nkClass]="{ 'danger': isDanger, 'important': isImportant }">Some text inside the title</h2>
+  `,
+  styles: [`
+      .danger {color: red}
+      .important {text-decoration: underline}
+  `]
+})
+export class Lab1Component {
+  isDanger: boolean;
+  isImportant: boolean
+}
+```
+# Lab 2 - Render Embedded view
+
+1. declare an `<ng-template>` tag in your template with some content
+```
+<ng-template> 
+    <h2>some content</h2>
+</ng-container>    
+```
+2. use `@ViewChild` to get a reference to the template
+
+```
+@ViewChild(TemplateRef) container;
+```
+
+3. implement `OnInit`, use the `createEmbeddedView()` method to get a `View`
+
+```
+  ngAfterViewInit(): void {
+    const view = this.template.createEmbeddedView({});
+    console.log(view);
+  }
+```
+
+4. inject `ViewContainerRef`  
+
+```
+constructor(private container:ViewContainerRef) {}
+```
+
+5. use the `ViewContainer` api to attach the created view
+
+```
+  ngAfterViewInit(): void {
+    const view = this.template.createEmbeddedView({});
+    this.container.insert(view);
+  }
+```
+
+6. open the browser dev tools and inspect the position of the newly created element
+7. you can use a method on `ViewContainer` instead and get an `EmbeddedView` in return
+
+```
+  ngAfterViewInit(): void {
+    this.container.createEmbeddedView(this.template);   
+  }
+```
+
+8. create a placeholder in your component with `<ng-container>`
+9. Give ir=t a ref named 'container'
+
+```
+<ng-container #container></ng-container>
+```
+10. Read this container as a `ViewContainerRef` using a `@ViewChild`
+11. remove the constructor
+
+```
+export class Lab2Component implements AfterViewInit {
+  @ViewChild('container', {read: ViewContainerRef}) container;
+  @ViewChild(TemplateRef) template;
+
+  ngAfterViewInit(): void {
+    this.container.createEmbeddedView(this.template);
+  }
+}
+```
+12. inspect the elements on the devtools to verify the view location
+
+# Lab 2_2 - Embedded view with context
+
+- declare a template variable on the template and use it within the template
+
+```
+    <ng-template let-value>
+        <h2>lab2 works! with {{ value }}</h2>
+    </ng-template>
+```
+
+- when you create the view, provide a context object and initialize the $implicit property
+
+```
+  ngAfterViewInit(): void {
+    this.container.createEmbeddedView(this.template, {$implicit: 25});
+  }
+```
+
+- you should get a change detection error saying that the value changed after it was checked
+- to fix it, make sure to trigger change detection on this view
+
+```
+  ngAfterViewInit(): void {
+    const view = this.container.createEmbeddedView(this.template, {$implicit: 25});
+    view.detectChanges();
+  }
+```
+
+- provide another value in context
+
+```
+    const view = this.container.createEmbeddedView(this.template, {
+      $implicit: 25,
+      anotherValue: 'another value'
+    });
+```
+
+- assign a template variable to it in order to use it within your template
+
+```
+    <ng-template let-value let-another="anotherValue">
+        <h2>lab2 works! with {{ value }} {{ another }}</h2>
+    </ng-template>
+``` 
+# Lab 2_3 - Embedded view in a directive
+
+- create a directive named `when`
+- this directive should be used on a template element
+- so we inject `TemplateRef` and `ViewContainerRef` and get it from the host element
+
+```
+@Directive({
+  selector: '[nkWhen]'
+})
+export class WhenDirective {
+
+  constructor(
+      private template:TemplateRef<any>,
+      private container: ViewContainerRef
+  ) {}
+  
+}
+```
+
+- we want to render the template by attaching it to the view container
+- because this is a directive, OnInit is safe
+
+```
+  ngOnInit(): void {
+    this.container.createEmbeddedView(this.template);
+  }
+```
+
+- apply this directive to the template in the previous component and cleanup the rest of the code
+
+```
+@Component({
+  selector: 'nk-lab2',
+  template: `
+    <ng-container #container></ng-container>
+    
+    <ng-template nkWhen>
+        <h2>lab2 works!</h2>
+    </ng-template>
+  `,
+})
+export class Lab2Component {}
+```
+
+- Lets pass a `boolean` to the `directive` as an `input`
+- then, implement `OnChanges` and render the template if the conditionaly
+
+```
+@Directive({
+  selector: '[nkWhen]'
+})
+export class WhenDirective implements OnChanges {
+  @Input() nkWhen: boolean;
+
+  constructor(
+      private template: TemplateRef<any>,
+      private container: ViewContainerRef
+  ) {}
+
+  ngOnChanges(): void {
+    if(this.nkWhen) {
+      this.container.createEmbeddedView(this.template);
+    } else {
+      this.container.clear();
+    }
+  }
+}
+```
+- in the component, bind a checkbox to a boolean and test it:
+
+```
+@Component({
+  selector: 'nk-lab2',
+  template: `
+    <input type="checkbox" (change)="toggle()"> Toggle  
+    <ng-container #container></ng-container>
+    
+    <ng-template [nkWhen]="visible">
+        <h2>lab2 works!</h2>
+    </ng-template>
+  `,
+})
+export class Lab2Component {
+  visible:boolean = false;
+
+  toggle() {
+    this.visible = !this.visible;
+  }
+}
+```
+
+- Lets provide a template for the `else` condition
+- In the component create another template and give it a ref
+
+```
+<ng-template #default>
+    <h2>lab2 default</h2>
+</ng-template>
+```
+
+- Create another `input` to the directive for a `template`
+
+```
+export class WhenDirective implements OnChanges {
+  @Input() nkWhen: boolean;
+  @Input() nkWhenElse: TemplateRef<any>;
+}
+```
+- refactor the logic to work with the alternative template
+
+```
+  ngOnChanges(): void {
+    this.container.clear();
+
+    if (this.nkWhen) {
+      this.container.createEmbeddedView(this.template);
+    } else if (this.nkWhenElse) {
+      this.container.createEmbeddedView(this.nkWhenElse);
+    }
+  }
+```
+
+- finally, use ot on the template
+
+```
+    <ng-template [nkWhen]="visible" [nkWhenElse]="alt">
+        <h2>lab2 works!</h2>
+    </ng-template>
+      
+    <ng-template #alt>
+        <h2>lab2 default</h2>
+    </ng-template>
+```
+
+# Lab 3 - Extendable component
+
+- create a component named `card-deck`
+- this component should loop over array of cards and render a bootstrap styled card 
+
+```typescript
+import {Component, Input} from '@angular/core';
+
+export enum CardType { Text, Image, Custom }
+
+export interface Card {
+  type: CardType;
+  title: string;
+  bodyText: string;
+  imageUrl?: string;
+  mutedText?: string
+}
+
+@Component({
+  selector: 'card-deck',
+  template: `
+      <div class="card-deck">
+          <div class="card" *ngFor="let card of cards">
+              <div class="card-body">
+                  <h5 class="card-title">{{card.title}}</h5>
+                  <p class="card-text">{{ card.bodyText }}</p>
+                  <p class="card-text"><small class="text-muted">{{ card.mutedText }}</small></p>
+              </div>
+          </div>
+      </div>
+  `,
+})
+export class CardDeckComponent {
+  @Input() cards: Card[];
+}
+```
+
+- we want to support custom templates
+- let's take control of rendering
+
+```typescript
+@Component({
+  selector: 'nk-lab3',
+  template: `
+      <div class="card-deck">
+
+          <ng-container #viewContainer></ng-container>
+
+          <ng-template #defaultTextCard let-card>
+              <div class="card">
+                  <div class="card-body">
+                      <h5 class="card-title">{{card.title}}</h5>
+                      <p class="card-text">{{ card.bodyText }}</p>
+                      <p class="card-text"><small class="text-muted">{{ card.mutedText }}</small></p>
+                  </div>
+              </div>
+          </ng-template>
+
+
+      </div>
+  `,
+})
+export class Lab3Component implements DoCheck {
+  @ViewChild('viewContainer', {read: ViewContainerRef}) viewContainer: ViewContainerRef;
+  @ViewChild('defaultTextCard') defaultTextCard: TemplateRef<CardContext>;
+
+  @Input() cards: Card[] = [];
+
+  ngDoCheck(): void {
+    if (this.cards && this.defaultTextCard) {
+      this.cards.forEach(card => {
+        this.viewContainer.createEmbeddedView(this.defaultTextCard, {
+          $implicit: card
+        })
+      })
+    }
+  }
+
+
+}
+```
+
+- why ngDoCheck?
+
+
+

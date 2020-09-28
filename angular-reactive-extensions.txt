@@ -1,0 +1,50 @@
+async
+-----------------------------------------------
+<ng-container *ngIf="myData$ | async as data">
+  <div>{{data.name}}</div>
+  <ul>
+    <li *ngFor="let item of data.items">
+       {{item.name}}
+    </li>
+  </ul>
+</ng-container>
+
+*ngrxLet
+--------------------------------
+<div *ngrxLet="myData$ as data">
+   {{ data.name}}
+</div>
+Another possible syntax is:
+<div *ngrxLet="myData$; let data">
+   {{ data.name}}
+</div>
+
+<div *ngrxLet="myData$; let data; let error = $error; let done = $complete">
+We can make use of the error and completion status as follows:
+<ng-container *ngrxLet="datasource$; let data; let error = $error; let done = $complete">
+  <div>
+    {{data}}
+  </div>
+  <div style="color: red" *ngIf="error">
+      Error happened: {{error}} 
+  </div>
+  <div style="color: green" *ngIf="done">
+     The datasource is done emitting
+  </div>
+</ng-container>
+
+Install
+------------------------------------------------------------------------
+npm install @ngrx/component --save
+
+Import
+------------------------------------------------------------------------
+import { ReactiveComponentModule } from '@ngrx/component';
+@NgModule({
+   imports: [ 
+      BrowserModule, ..., ReactiveComponentModule 
+   ],
+   ...
+})
+export class AppModule { }
+---------------------------------------------------------------------------

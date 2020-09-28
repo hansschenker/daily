@@ -1,0 +1,129 @@
+More on template syntax
+You may also be interested in the following:
+
+https://angular.io/guide/template-syntax#!#ref-vars
+
+Interpolation—learn how to use interpolation and expressions in HTML.
+-----------------
+Template statements—respond to events in your templates.
+------------------
+
+Binding syntax—use binding to coordinate values in your app.
+-------------------------
+
+Property binding—set properties of target elements or directive @Input() decorators.
+----------------------------
+
+Attribute, class, and style bindings—set the value of attributes, classes, and styles.
+----------------------------
+
+Event binding—listen for events and your HTML.
+-----------------------------
+
+Two-way binding—share data between a class and its template.
+-------------------------
+
+Built-in directives—listen to and modify the behavior and layout of HTML.
+-------------------------
+
+Template reference variables—use special variables to reference a DOM element within a template.
+---------------------------
+
+Inputs and Outputs—share data between the parent context and child directives or components
+----------------------------
+
+Template expression operators—learn about the pipe operator, |, and protect against null or undefined values in your HTML.
+----------------------------
+
+SVG in templates—dynamically generate interactive graphics.
+
+From Static to Dynamic
+---------------------------------------------------------------------------------
+Template the first step from Static Html to Dynamic Html
+
+Single Page Application
+---------------------------------------------------------------------------------
+- Templates are the basis for building single-page client applications using HTML
+- Ajax (XmlHttpRequest)
+
+Das HTML template-Element 
+- <template> Client-seitige Inhalte zu gruppieren, die nicht gerendert werden, wenn die Seite geladen wird, 
+- zur Laufzeit mittels JavaScript gerendert werden können.
+
+Template is the basis of a Component
+------------------------------------
+a piece of Html can be stored and bound to Content
+via Data Bindings.
+
+angular-microsyntax,             template microsyntax, directives used in templates, Within a template, you can use special syntax to leverage many of Angular's features
+
+A structural directive that renders a template for each item in a collection. The directive is placed on an element, which becomes the parent of the cloned templates
+ Angular manipulates the DOM with structural directives
+
+A template statement responds to an event raised by a binding target such as an element, component, or directive.
+<button (click)="deleteHero()">Delete hero</button>
+
+Template Directive is a Directive used in a Template and starts with a *: *ngFor, *ngIf, *TemplateOutlet, *TemplateOutletContext...
+------------------------------------------------------
+The ngForOf directive is generally used in the shorthand form *ngFor. 
+
+In this form, the template to be rendered for each iteration 
+is the content of an anchor element containing the directive.
+
+<ng-template ngFor let-item [ngForOf]="items" let-i="index" [ngForTrackBy]="trackByFn">
+  <li>...</li>
+</ng-template>
+
+*ngIf
+............
+<ng-template [ngIf]="hero">
+  <div class="name">{{hero.name}}</div>
+</ng-template>
+
+
+When using the shorthand syntax, Angular allows only one structural directive on an element. 
+If you want to iterate conditionally, for example, 
+put the *ngIf on a container element that wraps the *ngFor element. For futher discussion, see Structural Directives.
+
+Structural directives are easy to recognize. An asterisk (*) precedes the directive attribute name as in this example.
+
+One structural directive per host element
+Someday you'll want to repeat a block of HTML but only when a particular condition is true. 
+You'll try to put both an *ngFor and an *ngIf on the same host element. Angular won't let you. 
+You may apply only one structural directive to an element.
+
+Microsyntax
+--------------------------------------------------------------------------------------------------------------------
+The Angular microsyntax lets you configure a directive in a compact, friendly string. 
+The microsyntax parser translates that string into attributes on the <ng-template>:
+
+<div *ngFor="let hero of heroes; let i=index; let odd=odd; trackBy: trackById" [class.odd]="odd">
+  ({{i}}) {{hero.name}}
+</div>
+
+<ng-template ngFor let-hero [ngForOf]="heroes" let-i="index" let-odd="odd" [ngForTrackBy]="trackById">
+  <div [class.odd]="odd">({{i}}) {{hero.name}}</div>
+</ng-template>
+
+
+The let keyword declares a template input variable that you reference within the template. 
+The input variables in this example are hero, i, and odd. 
+The parser translates let hero, let i, and let odd into variables named let-hero, let-i, and let-odd.
+
+The microsyntax parser title-cases all directives and prefixes them with the directive's attribute name, 
+such as ngFor. For example, the ngFor input properties, of and trackBy, become ngForOf and ngForTrackBy, 
+respectively. That's how the directive learns that the list is heroes and the track-by function is trackById.
+
+As the NgFor directive loops through the list, it sets and resets properties of its own context object. 
+These properties can include, but aren't limited to, index, odd, and a special property named $implicit.
+
+The let-i and let-odd variables were defined as let i=index and let odd=odd. Angular sets them to the 
+current value of the context's index and odd properties.
+
+The context property for let-hero wasn't specified. Its intended source is implicit. Angular sets let-hero 
+to the value of the context's $implicit property, which NgFor has initialized with the hero for the current iteration.
+
+The NgFor API guide describes additional NgFor directive properties and context properties.
+
+The NgForOf directive implements NgFor. Read more about additional NgForOf directive properties 
+and context properties in the NgForOf API reference.
