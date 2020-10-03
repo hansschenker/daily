@@ -21,7 +21,8 @@ numbers = [1, 2];
 
 let tuple: [number, number]
 
-type aliases
+type aliases: give a name to a collection of types
+similair to giving a variable a name: const distance:number = 0
 -----------------------------
 allow us to express an intent
 
@@ -233,6 +234,7 @@ functions are first class and they can be stored in a variable
  type Direction = 'North' | 'East' | 'South' | 'West'
 
  function move(distance: number, direction: Direction) {
+
   console.log('moving:', distance, direction)
  }
 
@@ -243,6 +245,18 @@ functions are first class and they can be stored in a variable
 
   type narrowing with typeof for primitve types 
   ----------------------------------------------
+
+ Compiler option: strict true
+
+  class Point {
+    x: number = 0,
+    y: number = 0
+    
+    move(x:number, y:number) {
+      this.x += x
+      this.y += y
+    }
+  }
 
   narowing between classes with instanceo
   ---------------------------------------
@@ -299,4 +313,90 @@ functions are first class and they can be stored in a variable
   Class Parameter Properties (29)
   ----------------------------------------------------------
 
-  continue later ...
+    class Person {
+      constructor(public name:string, public age: number)
+    }
+
+
+  Compiler strict option:
+  strict: true , includes
+  noImplicitAny: true,
+  strictFunctionTypes: true,
+  strictBindCallApply: true
+  strictPropertyInitializer: true,
+  noImplicitThis: true,
+  alwaysStrict: true
+
+
+  Null versus Undefinde
+  -----------------------------------
+  
+  function logVowels(word: string) {
+    console.log( word.match(/[aeiou]/gi)  )  // hello e o,  sky null
+
+  null == null // check for null or undefined
+
+  exclude null and undefined: !=null
+  strict must be set
+
+  Intersection Types
+  -------------------------------------------------------
+  Point2D, Point3D 
+  combine two given types
+  type Point3D = Point2D & { z: number }
+
+  create bigger types from smaller types
+  ---------------------------------------
+
+  type Person = { name: string}
+  type Email = { email: string}
+  type Phone = { phone: string }
+
+  type Contact = Person & Email & Phone
+
+  const contact(details: Contact) {
+     console.log('contact:', details.name
+  }
+
+  Type Modifiers: readOnly, optional (partial), 
+
+  Non-null Assertion Operator
+  -----------------------------
+
+  point.!x
+  point.!y
+  avoid non-null assertion operator
+
+
+  Interfaces: operate on body block, define the shape of an object
+  ----------------------------------------------------------------
+  define the structure of an object (structural typing)
+  - mimic object hierarchy
+  - define extensible, plugable api (see Express Request Object extended by middleware
+
+  Interface Declaration Merging
+  --------------------------------------
+  interfaces with the same name merge into one
+  it allows for structural extension similar to an Object Hierachy with inheritance
+  (sample: Express framework: middleware can merge into Request interface
+
+  Types versus Interfaces 
+ ------------------------------------------
+  type alias: union, intersection, primitves, shorthand functions (function typing), advanced type functions
+  interface: structural typing, define shape of an object, extend structure via interface merging
+
+  never type
+  -------------------------------------
+  indicate that a code part can never occur, function will never return
+
+  never can only be assigned to never, ensure that all important use cases are handled
+
+  at the end of a code block when you handled all cases 
+
+  only after you handled all possible cases you assign case variable to never and it should
+  be true because you handled all cases this part can never be reached.
+  you assign never to to that case variable: const ensureNever:  never = case variable
+  
+  leave the never assignment at the end, if a new case has to be handled, it errors if that new case i
+  is not handled
+
