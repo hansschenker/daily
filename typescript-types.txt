@@ -162,6 +162,10 @@ package.json
   scripts:
     sart: ts-node src/index.ts
 
+---------------------------------------------------------------------------------------------------------------------------------
+ Section II - Intermediate
+---------------------------------------------------------------------------------------------------------------------------------
+
 lexical this
 -------------------------------------------------------------------------------------------
 two ways:
@@ -400,3 +404,338 @@ functions are first class and they can be stored in a variable
   leave the never assignment at the end, if a new case has to be handled, it errors if that new case i
   is not handled
 
+Improved union/intersection type inference
+------------------------------------------------------------------------------------------------------------------------
+TypeScript 1.8 improves type inference involving source and target sides that are both union or intersection types. 
+For example, when inferring from string | string[] to string | T, we reduce the types to string[] and T, thus inferring string[] for T.
+
+Example
+type Maybe<T> = T | void;
+
+function isDefined<T>(x: Maybe<T>): x is T {
+  return x !== undefined && x !== null;
+}
+
+function isUndefined<T>(x: Maybe<T>): x is void {
+  return x === undefined || x === null;
+}
+
+function getOrElse<T>(x: Maybe<T>, defaultValue: T): T {
+  return isDefined(x) ? x : defaultValue;
+}
+
+function test1(x: Maybe<string>) {
+  let x1 = getOrElse(x, "Undefined"); // string
+  let x2 = isDefined(x) ? x : "Undefined"; // string
+  let x3 = isUndefined(x) ? "Undefined" : x; // string
+}
+
+function test2(x: Maybe<number>) {
+  let x1 = getOrElse(x, -1); // number
+  let x2 = isDefined(x) ? x : -1; // number
+  let x3 = isUndefined(x) ? -1 : x; // number
+}
+
+--------------------------------------------------------------------------------------------------------------------------------------
+Section III Advanced Types
+--------------------------------------------------------------------------------------------------------------------------------------
+39 implemnets keyword
+--------------------------------------------------------------------------------------------------------------------------------------
+animal, cat, dog , name, voice
+
+
+40 - Definite Assignment and Assertion: !
+--------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+41 - User Defined Type Guards: is
+--------------------------------------------------------------------------------------------------------------------------------------
+ isSquare(shape:Shape):shape is Square {
+  return 
+ }
+
+
+42 - Assertion Functions
+--------------------------------------------------------------------------------------------------------------------------------------
+
+ function assert(condition: unknown, message:string): asserts condition {
+
+  if (!condition) throw new new Error(message)
+ }
+
+ function assertDate(value: unknown): asserts value is Date {
+
+  if (value instanceof Date) {
+  return true } else
+  throw new Error('value is not a Date')
+ 
+ }
+
+  use User Defined Type Guard in Application Code
+  use Assertion Functions is TDD
+
+43 - Function Overloading
+--------------------------------------------------------------------------------------------------------------------------------------
+ place function types in front of the function to be overloaded
+ makeDate() 
+ makeDate(year)
+ makeDate(year,month)
+ makeDate(year,month, day)
+
+44 - Call Signature
+--------------------------------------------------------------------------------------------------------------------------------------
+ type Operation = (a:number, b:number) : number
+
+ call signature:
+ -----------------------------
+ type Operation = {
+  (a: number, b: number): number
+  // function overlaoding can be used here too
+ }
+
+ // call signature for a class
+ type PointConstructor = new (x: number, y: number) => new {x: number, y: number} 
+ const Point:PointConstruction = class { .. }
+
+45 . Abstract Classe
+-------------------------------------------------------------------------------------------------------------------------------------
+
+ abstract class Command {
+   execute( {...}
+ }
+
+
+
+
+46  - Index Signatures: [key:string ] Person
+--------------------------------------------------------------------------------------------------------------------------------------
+ sort, and reverse methods mutate the input array
+
+
+
+
+47 - Readonly Arrays and Tuples
+--------------------------------------------------------------------------------------------------------------------------------------
+
+ type Point = readonly [number, number]
+
+ funcion move(point: Point, x: number, y: number) {
+  return [point[0] + x, point[1] + y]
+
+ }
+
+
+
+48 - Double Assertion
+ --------------------------------------------------------------------------------------------------------------------------------------
+
+  person as unknown as Point3D (double assertion: first all values can be assigned, second: unknown can be asserted Point3D 
+  (do not use double assertions, helps while migration)
+
+
+49 - const Assertion
+  --------------------------------------------------------------------------------------------------------------------------------------
+
+   {name: 'John', role:'drummer'} as const, all is readonly, as const can be applied to any value
+
+   
+
+
+50 - this parameter
+--------------------------------------------------------------------------------------------------------------------------------------
+ this, is the calling context in  js
+ the left side of a method call is the calling context, mynumber.double()
+ calling context is lost in async functions like setTimeout
+
+ // fix this by typing this, this must be the first parameter
+ function double(this: {a: number}) {
+  this.a = this.a * 2
+ }
+
+
+
+51 - Generic Constraints: T extends ...
+----------------------------------------------------------------------------------------------------------------------------------------  
+ T
+
+
+
+52 - typeof type operator
+----------------------------------------------------------------------------------------------------------------------------------------  
+ const center = {
+ x: number, 
+ y: number,
+ z: number, 
+ }
+
+ type Point = typeof center
+
+ const unit:Point = {
+  x: center.x + 1,
+  y: center.y + 1,
+  z: center.z + 1,
+
+ }
+
+ json is valid javascript:  sample dowload json 
+
+ const personResponse = {
+  "name": "john",
+  "email": "john@mail.com"
+ }
+
+ type PersonResponse = typeof personResponse
+
+
+
+53 - Lookup Types: lookup a type in an object
+----------------------------------------------------------------------------------------------------------------------------------------  
+ type PaymentRequest = SubmitRequest["payment"]
+ type PreviousAliases = SubmitRequest["payment"]["previousAliases"]
+
+
+-----------------------------------------------------------------------------------------------------------------------
+ type operators
+----------------------------------------------------------------------------------------------------------------------
+TypeScript’s type system is very powerful because it allows expressing types in terms of other types. 
+Although the simplest form of this is generics, we actually have a wide variety of type operators available to us.
+It’s also possible to express types in terms of values that we already have.
+
+By combining various type operators, we can express complex operations and values in a succinct, 
+maintainable way. In this chapter we’ll cover ways to express a type in terms of an existing type or value.
+
+The typeof type operator
+JavaScript already has a typeof operator you can use in an expression context:
+
+// Prints "string"
+console.log(typeof "Hello world");
+
+Type Operators
+There are a collection of operators available which can assist you when working with objects in TypeScript. 
+Operators such as typeof, instanceof, in, and delete are the examples of Type operator. 
+The detail explanation of these operators is given below.
+
+Operator_Name			Description			Example
+------------------------------------------------------------------------------------------------------------------
+in			
+------------
+It is used to check for the existence of a property on an object.	
+let Bike = {make: 'Honda', model: 'CLIQ', year: 2018};
+console.log('make' in Bike);   // 
+Output:
+true
+
+delete	
+-------------
+It is used to delete the properties from the objects.	
+let Bike = { Company1: 'Honda',
+             Company2: 'Hero',
+             Company3: 'Royal Enfield'
+           };
+delete Bike.Company1;
+console.log(Bike);   // 
+Output:
+{ Company2: 'Hero', Company3: 'Royal Enfield' }
+
+typeof	
+---------
+It returns the data type of the operand.	
+let message = "Welcome to " + "JavaTpoint";
+console.log(typeof message);  // 
+Output:
+String
+
+instanceof	
+------------
+It is used to check if the object is of a specified type or not.	
+let arr = [1, 2, 3];
+console.log( arr instanceof Array ); // true
+console.log( arr instanceof String ); // false
+
+
+
+
+
+54 - keyof type operator
+----------------------------------------------------------------------------------------------------------------------------------------  
+
+ type Location = {
+
+  latitude: number,
+  longitude: number
+ }
+
+ type Person = { 
+  name: string,
+  age: number,
+  location: Location
+ }
+
+ type PersonKeys = keyof Person
+
+ function getProperty<T, Key extends keyof T>(obj:T,key: Key) {
+  const value = obj[key]
+  console.log("Accessing:", key, value)
+  return obj[key]
+ }
+ function setProperty<T, Key extends keyof T>(obj:T,key: Key, value: obj[key]) {
+  obj[key] = value
+  console.log("Setting:", key, value)
+  
+ }
+
+55 - Conditional Types: create conditional logic in Typescript Type System
+----------------------------------------------------------------------------------------------------------------------------------------  
+ type isNumber<T> = T extends number
+                   ? 'number'
+                   : 'other'
+
+ type TypeName<T> = 
+   T extends number?    'string':
+   T extends number?    'number':
+   T extends boolean?   'boolean' :
+   T extends undefined? 'undefined':
+   T extends symbol?    'symbod':
+   T extends bigint?    'bigint':
+   T extends Function   'function':
+   T extends null?      'object'
+
+  // null returns 'object'
+
+ function typeName<T>(t: T) : TypeName<T> {
+    return typeof t as TypeName<T>
+ }
+
+ function createPerson (fn: string, ln: string) {
+
+	return {fn, ln, fullname: `${fn} ${ln} `}
+ }
+
+ function logPerson(person: ReturnType<typeof createPerson>)
+
+56 - infer keyword used in ReturnType
+----------------------------------------------------------------------------------------------------------------------------------------  
+
+
+
+57 - Mapped Types: readonly, partial
+----------------------------------------------------------------------------------------------------------------------------------------  
+
+ type Readonly<T> = {
+  readonly [P in keyof T]: T[P]
+ }
+
+58 - Mapped type modifiers
+----------------------------------------------------------------------------------------------------------------------------------------  
+
+ class State<T> {
+  constructor(public current: T) {}
+  update(next: Partial<T>) {
+    this.current = {...this.current, ...next}
+  }
+  select(key: extends keyof T) {
+   return this.current[key]
+ }
+
+ }
