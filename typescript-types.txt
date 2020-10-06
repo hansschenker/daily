@@ -1,4 +1,4 @@
-primitive types: boolean, string, bigint, symbol
+ primitive types: boolean, string, bigint, symbol
 null, undefined, unknown,any
 
 classes
@@ -734,8 +734,11 @@ console.log( arr instanceof String ); // false
   update(next: Partial<T>) {
     this.current = {...this.current, ...next}
   }
-  select(key: extends keyof T) {
+  select(key: keyof T) {
    return this.current[key]
  }
 
  }
+
+var isEven: (v: number) => boolean = a => (a % 2 === 0);
+
