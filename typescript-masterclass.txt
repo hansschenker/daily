@@ -595,3 +595,30 @@ Advanced Types: mapped types, condtional types, type gards
 ------------------------------------------------------------
 programming with types
 
+Conditional Types -  CT
+-------------------------------------------------------------
+
+Type constructor: builds new types from old ones
+
+CT are type constructors that create a type based on a condition.
+
+CT: constructor is in the form of conditional expression: condition ? true : false
+
+isString<T> = T extends string ? true : false
+
+type NonNullable<T> = T extends null | undefined ? never : T
+
+never type: has no value, it is not possible to create an instance of never
+            never is similair to the empty set
+
+Built-in Conditional Types
+-----------------------------------------------------------------------------------------------------
+Exclude, Omit, Extract
+
+Exclude: removes all members that are assignable to U.
+type MyExclude<T,U> = T extends U? never : T;
+
+Exclude: very useful in combination with keyof operator
+
+
+ 
