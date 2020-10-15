@@ -1,3 +1,14 @@
+Get next PlaylistsPage
+----------------------------------------------------
+part=snippet
+channelId=22UCYlW9EuQnlNRtEYqVtpfbDw
+maxResults=50
+pageToken=CDIQAA%22%7D
+
+
+
+
+----------------------------------------------------------
 GET https://www.googleapis.com/youtube/v3/playlists?
 part=snippet&
 channelId=UCYlW9EuQnlNRtEYqVtpfbDw&
@@ -64,6 +75,54 @@ videos count: 6
       }
     }
 }
+-----------------------------------------------------------------------------------------
+jsontots
+------------
+interface RootObject 
+{
+  kind: string;
+  etag: string;
+  id: Id;
+  snippet: Snippet;
+}
+
+
+
+interface Snippet 
+{
+  publishedAt: string;
+  channelId: string;
+  title: string;
+  description: string;
+  
+   thumbnails: Thumbnails;
+  channelTitle: string;
+  liveBroadcastContent: string;
+  
+   publishTime: string;
+}
+
+
+
+interface Thumbnails {
+  default: Default;
+  medium: Default;
+  high: Default;
+}
+
+
+interface Default {
+  url: string;
+  width: number;
+  height: number;
+}
+
+
+interface Id {
+  kind: string;
+  playlistId: string;
+}
+
 -----------------------------------------------------------------------------------------
 get playListForChannel
 
