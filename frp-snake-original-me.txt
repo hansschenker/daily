@@ -1,0 +1,94 @@
+export interface Direction {
+  x: number;
+  y: number;
+}
+export interface Snake {
+  body: Direction[];
+}
+export interface ApplePositions {
+  positons: Direction[];
+}
+interface Scene {
+  snake: Direction[];
+  apples: Direction[];
+  score: number;
+}
+
+// *** source: ticks
+--------------------------------------------------------------------------------------
+// input: -
+// output: number
+// track:
+------------------------------------------------------------------------------------
+
+
+// *** keys: only arrow keys
+------------------------------------------------------------------------------------
+// input: KeyboaardEvent
+// output: {37, 38, 39, 40}
+// track: -
+
+------------------------------------------------------------------------------------
+// *** direction from keys
+------------------------------------------------------------------------------------
+// input: number
+// output: Direction
+// track: previous direction, next direction
+------------------------------------------------------------------------------------
+
+// *** apples: count
+------------------------------------------------------------------------------------
+// input: number
+// output: number
+// track: apples count
+------------------------------------------------------------------------------------
+
+
+// *** snake: positon - when snakes moves and collides with an apple
+------------------------------------------------------------------------------------
+// the apple count goes ups
+// input: direction
+// output: { direction, applesCount}
+// track: previous position, next position
+------------------------------------------------------------------------------------
+
+
+// *** apples: positions
+------------------------------------------------------------------------------------
+// input: positions: Direction[]
+// output:
+// track: apples positions: Direction[]
+------------------------------------------------------------------------------------
+
+
+// *** appleEaten: has the snake eaten an apple
+------------------------------------------------------------------------------------
+// input: apples positions: Direction[]
+// output: applesCountState.next(GROW_PER_APPLE)
+// track: -
+------------------------------------------------------------------------------------
+
+
+// *** score: when an apple is added the score goes up
+------------------------------------------------------------------------------------
+// input: applesCount count number
+// output: score: number, score = applesCount
+// track: previous score, next score
+------------------------------------------------------------------------------------
+
+
+// *** scene
+------------------------------------------------------------------------------------
+// input: snake positions: Direction[], apples positions: Direction[], score: number
+// output: { snake, apples, score }
+// track: -
+------------------------------------------------------------------------------------
+
+
+// *** game
+------------------------------------------------------------------------------------
+// input: tick: number, withLatestFrom scene
+// output: scene: { snake, apples, score }
+------------------------------------------------------------------------------------
+
+game$.subscribe((scene) => render(ctx, scene));
