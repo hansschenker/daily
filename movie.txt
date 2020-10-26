@@ -1,0 +1,23 @@
+moive component
+--------------------------------------------------------------------
+get movie effect
+
+@Component({
+  template: `...`,
+  // ??MoviesStore is provided higher up the component tree
+})
+export class MovieComponent {
+  movie$: Observable<Movie>;
+
+  @Input()
+  set movieId(value: string) {
+    // calls effect with value. ?? Notice it's a single string value.
+    this.moviesStore.getMovie(value);
+    this.movie$ = this.moviesStore.selectMovie(value);
+  }
+
+  constructor(private readonly moviesStore: MoviesStore) {}
+
+}
+
+---------------------------------------------------------------------
