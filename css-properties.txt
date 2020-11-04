@@ -124,19 +124,86 @@ prevent container collapse:
   }
 
 
-General Sibling
+Combinator Selectors: div ~ p, div p, div * p, div > p , div + p
+---------------------------------------------------------------
+descendant selector:	div p 		// all paragraphs in any div
+grantparent selector:	div * p		// match all children in a div
+child selector		div > p		// matches only the first direct child
+adjascent sibling	div + p 	// match all p that follow directly after div
+
+General Sibling: ~ style all p elements that are after h2 ( they do not have to adjacent), sibling means on the same dom level hierarchy not child or parent
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+h2 ~ p { color: red}
 
+sampe for general following sibling selector: open and closed state without javascript£:
 
+html:
+section
+  input type checkbox hidden
+  h1
+    label
+  h1
+section
 
+css:
+input[type="checkbox"] ~ .accordian { max-height: 0 ; overflow: hidden}
+input[type="checkbox"]:checked ~ .accordian { max-height: 10000px; }
 
-The Hover Pseudo Class
+The Hover Pseudo Class can be used to style state: text links, buttons
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+a:hover { color: }
+a:visited
+a:active
+a:focus
+--------
+:enabled
+:disabled
+----------
 
-
-
-
-
-
-The ID Selector
+The ID Selector: styling a single element (avoid id selector, prefer class selector)
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+classes for structure
+classes for look and feel
+
+reusable button:
+------------
+structure
+---------
+display: inline-block
+margin
+padding
+look
+------
+font-size
+text-align
+
+modified buttons
+---------------
+button-large
+
+button-confirm
+
+button-cancel
+
+button-rounded
+
+sample usage:
+
+a href class= button button-large button-confirm>OK </a>
+
+Specificity
+---------------------------------------------------------------
+determines what styles gets applied to the element. css further down overwrites things above them
+
+Calculate Specificity: 4 digit number
+--------------------------------
+- all style attributes:			0          // count style attributes
+- all ID's				1	   // count id selectors
+- all Classes and Pseudo Classes	2	   // cout classes and pseudo classe
+- all elements and pseudo elements	3          // count elements and pseudo elements
+
+keep specificity low to be able to overwrite  with higher specificity
+
+
+Justify Text
+-----------------------------------------------------------------------------
