@@ -205,5 +205,86 @@ Calculate Specificity: 4 digit number
 keep specificity low to be able to overwrite  with higher specificity
 
 
-Justify Text
+Justify Text: text-align 12 possibilites	
 -----------------------------------------------------------------------------
+left, start		// direction: rtl ltr
+center
+right, end
+justify
+match-parent
+inherit
+<string>
+start <string>
+end <string>
+
+css columns with column-count
+------------------------------------------------------------------------------
+
+justified-grid
+-------------------------------------------------------------------------------
+.grid-container: font-size: 0, text-align: justify
+.grid-container:after content:"" display:inline-block width:100%
+.grid-item display:inline-block width:45%
+
+ul li with display:inline-block // to be justified
+
+
+animation: @keyframes              animation
+-------------------------------------------------------------------------------------------------------------------------
+animations can be triggered by: 
+- page load, 
+- after a delay, 
+- state based change: :hover :focus :active
+- by javascript: animationPlayState
+
+@keyframes (from to over certain amount of time)
+tweening: during the animation , xtyles between keyframes are automatically calculated by the browser
+
+// define as many porperties and keyframes as you like
+@keyframes grow {
+  0% { font-size: 20px; }
+  75% { font-size: 100px; }
+  100% { font-size: 10px; }
+}
+
+animation name used to apply keyframes
+--------------------------------------------
+animation-name				// block of keyframes to use
+animation-duration			// time (in secs/ms) the animation lasts
+animation-delay				// delay until animation start
+animation-iteration-count		// how many times the animation loops
+animation-direction			// forward, reverse , alternate
+animation-play-state			// pause, resume, stopp animation
+animation-timeing-function		// easing, acceleration curve
+animation-fill-mode			// how styles are applied before and after the animation
+
+shorthand version:
+-------------------------------------------
+.box 
+  animation: name duration delay count direction play-state timing fill-mode
+  name and duration are required
+
+.ball 
+ position:absolute
+ height:100px
+ width:100px
+ border-radius: 100%
+ background-color:red
+ animation: bounce 3s linear infinite
+            moveLeft 12s linear infinite
+
+@keyframes bounce
+ 0% { bottom: 100%; }
+ 25% { bottom: 0; width:100px height:100px }
+ 30% { bottom: 0;  width:110px height:50px}
+ 35% { bottom: 0;  width:100px height:100px}
+ 70% { bottom: 100%; }
+ 100% { bottom: 100%; }
+
+@keyframes moveLeft
+ from { left:0; }
+ to { left:100%; }
+
+
+line-height property
+------------------------------------------------------------------------------------------------------------
