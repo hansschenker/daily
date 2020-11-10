@@ -90,6 +90,109 @@ grid
 
 inline-grid
 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                              ****** SELECTORS *****
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+selector list
+---------------
+
+Basic Selectors
+------------------
+Type selectors
+Class selectors
+ID selectors
+Universal selectors
+Attribute selectors
+
+Combinator selectors
+-----------------------------------
+Adjacent sibling combinator
+General sibling combinator
+Child combinator
+Descendant combinator
+Column combinator
+
+
+Pseudo-class selectors
+--------------------------------------
+:active
+:any-link
+:checked
+:blank
+:default
+:defined
+:dir()
+:disabled
+:empty
+:enabled
+:first
+:first-child
+:first-of-type
+:fullscreen
+:focus
+:focus-visible
+:focus-within
+:has()
+:host()
+:host-context()
+:hover
+:indeterminate
+:in-range
+:invalid
+:is() (:matches(), :any())
+:lang()
+:last-child
+:last-of-type
+:left
+:link
+:not()
+:nth-child()
+:nth-last-child()
+:nth-last-of-type()
+:nth-of-type()
+:only-child
+:only-of-type
+:optional
+:out-of-range
+:placeholder-shown
+:read-only
+:read-write
+:required
+:right
+:root
+:scope
+:target
+:valid
+:visited
+:where()
+
+Pseudo-element selectors
+-----------------------------------------------------------------------------
+::-moz-progress-bar
+::-moz-range-progress
+::-moz-range-thumb
+::-moz-range-track
+::-webkit-progress-bar
+::-webkit-progress-value
+::-webkit-slider-runnable-track
+::-webkit-slider-thumb
+::after (:after)
+::backdrop
+::before (:before)
+::cue
+::cue-region
+::first-letter (:first-letter)
+::first-line (:first-line)
+::grammar-error
+::marker
+::part()
+::placeholder
+::selection
+::slotted()
+::spelling-error
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Pseudo Class: help us style different states
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 :enabled
@@ -288,3 +391,233 @@ shorthand version:
 
 line-height property
 ------------------------------------------------------------------------------------------------------------
+with line-height yoou can control the vertical rhythm in the document
+
+leading: distance between baselines, space is always added below baseline
+
+sample: font-size: 16px, line-height:24px; 4px above and 4px below
+
+vertical centering with line-height is possible
+
+project default settings:
+body {
+  font-size:16px;
+  line-height:1.5 (1.5 * 16 = 24px) //keep factor consistent in element styling
+}
+
+
+Conditionaly styling of Elements: @media
+-------------------------------------------------------------------------------------------------------------------
+the @media rule allows conditonal styling of elements
+----------------------------------------------------------------------------------------------------------------
+conditon: - based on type of device used, or characterristics of the device (screen width, screen resolution
+
+Responsive Web Design
+--------------------------------------------------------------
+combining media queries with fluid layout (relative units) and flexible images (width: 100%) of container element
+
+Media queries: print , screen
+---------------------------
+print style @mdeia print (all, braille, embossed, handheld, projection, screen, speech, tty, tv)
+
+@media (min-width:600px): query types: width, height, device-width, device-height, orientation, aspect-ratio
+                          device-aspect-ratio, resolution, color, color-index, monochrome, scan, grid
+
+
+Nth-Child
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+selectors
+---------------------------------------------------------
+peseudo classes:
+------------------------------------------------------ 
+ :active 
+
+order matters
+--------------------------
+:link 
+:visited 
+:hover 
+:active
+
+a:link:hover, button:hovcer {
+  border: 1px solid black
+}
+
+input:focus { outline:none, box-shadow border }
+
+input:checke + label
+
+input:invalid
+
+input:valid
+
+input:required
+
+input:optioanl
+
+location in dom hierarchy
+---------------------------------------
+li:first-child, nth-child(1)
+li:last-child
+li:nth-child(2)
+li:nth-child(2n) 		// start with 0, even elements
+li:nth-child(2n+1) 		// start with 1, odd elements
+li-nth-child(-n + 4)		// 
+li-nth-child(n+4)
+:only-child
+:only-of-child
+
+
+Pseudo class list
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+A
+:active
+:any-link 
+B
+:blank 
+C
+:checked
+:current 
+D
+:default
+:defined
+:dir() 
+:disabled
+:drop 
+E
+:empty
+:enabled
+F
+:first
+:first-child
+:first-of-type
+:fullscreen 
+:future 
+:focus
+:focus-visible 
+:focus-within
+H
+:has() 
+:host
+:host()
+:host-context() 
+:hover
+I
+:indeterminate
+:in-range
+:invalid
+:is() 
+L
+:lang()
+:last-child
+:last-of-type
+:left
+:link
+:local-link 
+N
+:not()
+:nth-child()
+:nth-col() 
+:nth-last-child()
+:nth-last-col() 
+:nth-last-of-type()
+:nth-of-type()
+O
+:only-child
+:only-of-type
+:optional
+:out-of-range
+P
+:past 
+:picture-in-picture
+:placeholder-shown 
+R
+:read-only
+:read-write
+:required
+:right
+:root
+S
+:scope
+:state() 
+T
+:target
+:target-within 
+U
+:user-invalid 
+V
+:valid
+:visited
+W
+:where() 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+pseudo elements: ::before, ::after
+-----------------------------------------------------------------------
+blockquote::after {
+  content:"'"
+}
+
+::first-line
+::first-letter
+
+::
+
+
+Opacity property: 0 to 1, 0:transparent but keeeps position
+--------------------------------------------------------------------
+opacity can be animated, fade in , fade out
+
+Css Slideshow, using series of keyframes to set opacity
+--------------------------------------------------------
+class="slide1"
+class="slide2"
+class="slide3"
+class="slide4"
+class="slide5"
+
+.slide1 { animation:fade, 20% infinite}
+.slide2 { animation:fade, 20% 4s infinite}
+.slide3 { animation:fade, 20% 8s infinite}
+.slide4 { animation:fade, 20% 12s infinite}
+.slide5 { animation:fade, 20% 16s infinite}
+
+@keyframes fade {
+  0% { opacity:0;}
+
+  10% { opacity:1;}
+  20% { opacity:1;}  
+
+  30% { opacity:0;}
+  40% { opacity:0;}
+
+  50% { opacity:1;}
+  60% { opacity:1;}
+
+  70% { opacity:0;}
+  80% { opacity:0;}
+
+  90% { opacity:01;}
+  100% { opacity:1;}
+}
