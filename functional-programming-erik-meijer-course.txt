@@ -1,0 +1,71 @@
+functional programming, programming with haskell, graham hutton
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+functional programming characteristic:
+
+- statically types, use compiler to catch your errors
+
+- lazy: 	     deferred expression evalution, if not used it is not computed
+                     makes accesssing infinite lists possible: because infinite list is not evaluate eagerly; take 5 from infinite list is possible
+		     pros: compiler has a lot of possibilites to optimize
+		     
+		     cons: memory pitfalls, you could fill up your memory with a giant expression			
+
+- purely functional: everything is a function: f :: Int -> Int, f x = x + 1
+                     everything is immutable, no assignment operations
+                     transforming data, not creating variables, transform data from  fn in -> out
+                     everything is a compression: if is an expression
+		     no usual control flow (switch loop)
+		     no effects, function totall depends on input parameters
+                     Side effects are explicitly stated: readFile ::  String -> IO String, IO is a special type, it is impure
+                     All Side effects are in IO
+		     Core logic of program is pure
+	 	     Impure effects are in the outer layer (main)
+                     a -> IO is possible
+                     IO -> a is not possible, form impute to pure
+
+function types
+----------------------------------------------------------------------------------------------------------------------------------------------
+                    f :: Int -> Int -> [Int] // function with 2 arguments, function that returns a function // currying, all functions are one argument fns
+                                                                                                            // which allows for partial application: bind one arg in a fn call
+                                                                                                            // f 1 :: (Int) -> [Int]
+                                                                                                            // (f 1) 2 :: [Int]
+		    f :: (Int) -> (Int) -> [Int] // () indiquates function call
+
+                    -> is right associative
+                    f 1 is left associative
+		   
+ 		    ???  ::  (a -> b) -> [a] -> [b]   // (a -> b) : is a function from type A to type B
+                                                      // [a] -> [b]     transforms a list of a into a list of b
+						      // ??? is map // lowercase letters are type parameters, uppercase letters are reserved for Types
+ 						     // a and b are generic , they do not have a type
+                    filter :: (a -> Bool ) -> [a] -> [a]
+
+
+
+
+- general purpose
+
+- no assignments: var a = 6;
+- pure functions
+- function compositon, sequence operators with transformation functions
+- point free style
+- chaining function calls
+- robert milner: generics, type inference,Algebraic Data Types, ML -> OCAML -> F#
+- steel good ideas is better than having bad ideas
+- function: you apply an argument to a function
+- lambda expression
+- expression based programmming, lazy evaluation
+- static typing, let compiler find your errors
+- 1987 Haskell: pure Lazy functional programming language
+- 1998 Haskell 1998, Haskell Specification
+
+- quick sort in haskell: [] empty list, 
+
+  pattern matching (case analysis)
+  sort empty list: f [] = [],
+  f (x:xs) = f ys ++ [x] ++ f zs
+             where
+               ys = [a | a <- xs, a <= x ]
+               zs = [b | b <- xs, b > x ]
+
+
