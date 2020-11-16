@@ -1,5 +1,8 @@
 functional programming, programming with haskell, graham hutton
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+https://www.youtube.com/playlist?list=PLoJC20gNfC2gpI7Dl6fg8uj1a-wfnWTH8
+
+
 functional programming characteristic:
 
 - statically types, use compiler to catch your errors
@@ -69,3 +72,150 @@ function types
                zs = [b | b <- xs, b > x ]
 
 
+- expressions are possible to be evaluated in a REPL, because they are self contained
+
+- equational reasoning in functional programming
+
+  take n xs is equal to drop n xs
+
+  f xs <-> xs |> f // apply f on xs
+
+  OOP:   receiver.method(a, b , c) // object most important
+
+  FP     method receiver a b c     // method most important
+         pattern matching (based on dynamic types)
+
+
+  FP    List is the most important data structure (universal data block)
+
+  Synstax: Function Application
+ 
+  f(a,b) + c d // Apply the function f to a and b, and add the result to the product of c times d
+
+  f a b
+  f (a, b)
+
+	math			haskell
+	f(x)			f x
+	f(x,y)			f x y
+	f(g(x))			f (g x)
+       	f(x, g(y))		f x (g x)
+	f(x) g(y)		f x * g y
+
+	$ operator: right associative operator to make leave out ()
+
+
+  haskel scripts: file.hs
+
+  double x = x + x // compiler infers types: Num a -> a -> a
+
+  quadruble = double . double (compose double with double)
+
+  function testing is easier, they do not depend on external state (only parameter values and return value)
+
+  compositionl thinging only possible because of lazy functions (expressions) in FP
+ 
+  xs = take n [1..] // take from inifinite list
+
+  impperative - eager evaluation
+
+  functional - lazy evaluation
+
+  Naming requirements:
+  -  functions and argument names must begin with a locwercase letter
+  -  list names have by convention an s suffix: x -> xs, list of list xss
+  -  type names start with upercase
+
+  factorial n = product [1..n]
+
+  The Layout Rule
+  Whitespace is significant (block structure)
+    
+Lecture 03: Types
+------------------------------------------------------------------------------------------------------
+
+Type		is a name for a set of related values with the same type: sample Bool True/False
+		Types are for the compiler to indicate when you try use a number for a boolean
+
+Type inference  you do not have to write the Type for the expression, the compiler can infer the type 
+
+Type errors	compiler uses knowledge on types to indicate you when you misuse a type
+
+Types		Bool, Char, String (list of Char), Int (fixed precision), Integer (arbitrary precison), Float
+
+List Types      a list is a sequence of values of the same type [bool, bool, bool] :: [Bool]
+
+		[1, 2, 3] :: [Int] 
+                             Type constructor: []
+                value constructor: []
+
+Tuple Type	(1, True, 'c') :: (Int, Bool, Char) 
+		- list of specific length, access by position or pattern matching
+		- order matters
+
+Function Type	mapping from one value to another value
+		\x -> ..x     // T1 -> T2, T1 can be a function and T2 a number
+
+
+		Func<T>  - () - T
+		Func<T,S> - S -> T
+		Action<T> - T => IO T
+
+		add :: (Int, Int) -> Int
+		add (x,y) = x + Y
+                add = \(x,y) -> x + y // es6: const add = (x,y) => x + y
+
+Functions are all in curried format: each function is a one argument function
+
+		add x y = x + Y
+
+arrows are right associative:
+		int -> int -> int -> int
+                int -> (int -> (int -> int))
+		Func<Int,Func<Int,Func<Int, Int>>>
+	       	
+function assiociate to the left: (f 5) is a closure or an anonymous function which can be passed around
+		f 3 2 1 - ((f 3) 2 ))
+type application assiociates to the left: int -> int -> int -> int
+
+		type structure = expression structure
+
+Polymorphic functions - Generics (parameteerized over types)
+---------------------------------------------------------------------------------------------------------
+
+		length :: [a] -> Int // a type variable
+                length [False, True]
+                length ['abc']
+
+		fst 	:: (a,b) -> a
+		head	:: [a] -> a
+		take	:: Int -> [a] -> [a]
+		zip	:: [a] -> {b] -> [(a,b)]
+		zip	:: ([a][b]) -> [(a,b)]
+		id	:: a -> ->
+
+
+
+Class		correspond to interfaces: sum	:: Num a -> [a] -> -> // Num correspond to Num Interface // Num class
+
+Good programming style: first write the type of your function
+
+homework: write the type of the following functions:
+-------------------------------------------------------
+		type:		second :: [a] -> a (a, [a])		
+		expression: 	second xs = head (tail, xx)
+		 
+		type:		swap :: (a,b) -> (b , a)
+		expression:	swap (x,y) = (y,x)
+
+		type:      	pair :: a -> b -> (a,b)
+		expression	pair x y = (x,y)
+
+		type		double :: Num a -> Int -> Int
+		expression	double x = x * 2
+
+		type
+		expression	palindrome xs = reverse xs == xs
+
+		type		twice :: \x -> \x -> \x
+		expression	twice f x = f (f x)		
