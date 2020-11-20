@@ -1,0 +1,14 @@
+calculate delta mouse moves for drag and drop
+---------------------------------------------
+
+const dragBG$ = mousedown$
+    .switchMapTo(mousemove$
+        .pairwise()
+        .map(([[x1], [x2]]) => x2 - x1)
+        .takeUntil(mouseup$)
+    )
+    .scan((x, y) => x + y)
+    .do((x) => {
+        chart.transform({ x })
+    })
+

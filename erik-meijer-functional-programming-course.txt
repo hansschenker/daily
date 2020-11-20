@@ -130,9 +130,9 @@ function types
 
   The Layout Rule
   Whitespace is significant (block structure)
-    
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------    
 Lecture 03: Types
-------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Type		is a name for a set of related values with the same type: sample Bool True/False
 		Types are for the compiler to indicate when you try use a number for a boolean
@@ -219,3 +219,83 @@ homework: write the type of the following functions:
 
 		type		twice :: \x -> \x -> \x
 		expression	twice f x = f (f x)		
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Lecture 4 - Functions
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+abs :: Int -> Int // in Haskell Type definition of the function
+abs n = ...       // and function implementation are separate
+
+in other languages like c# or vb.net they intermingeleed:
+Function Abs(n as Int) as Int
+
+
+Haskell Guarded Equations:
+abs n 
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Lecture 5 - List Comprehensions - come from Set Comprehensions
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+sets do not have duplicates
+order is not import
+
+lists
+------------------------
+order mattersn
+duplicate are possible
+
+x <- [1..5] // x drawn from 1 to 5
+
+linq
+------------
+from x in Observable.Range(5)
+selec x*x
+
+concat (flatten 2 lists into one)
+------------------------------------
+Concat :: [ [a] ] -> [a]
+
+
+guards, give me all the values from 1 to 10 where the values are even
+----------------------------------------------------------------------
+
+factors :: Int -> [Int]
+factors x = 
+
+prime :: Int -> Bool (factors 1 and n)
+prime n = factors n == [1,n]
+
+zip :: ( [a] [b] ) -> [a,b]
+
+
+pairs ::    1 2 3 4 5
+            2 3 4 5
+           12,23,45,
+
+use cases:
+-----------------------------
+delta mouse moves
+check list is sorted, when each pair is sorted
+
+const dragBG$ = mousedown$
+    .switchMapTo(mousemove$
+        .pairwise()
+        .map(([[x1], [x2]]) => x2 - x1)
+        .takeUntil(mouseup$)
+    )
+    .scan((x, y) => x + y)
+    .do((x) => {
+        chart.transform({ x })
+    })
+
+
+zip with index
+---------------------
+
+"abc" :: string :: [Char]
+
+
+Leture 6 - lambda calculus
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
