@@ -296,6 +296,58 @@ zip with index
 "abc" :: string :: [Char]
 
 
-Leture 6 - lambda calculus
+Leture 6 - lambda calculus - Why functional programming matters, john hughes, 1984
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Recursive Functions - Function defined by other function, compose functions
+-------------------------------------------
+
+1 generate a list of n
+2 calculate product of the n  list
+
+  poroduct ( take n [1...]) // take n elements from the infinite list and calculate product
+
+  Expressions are evaluated by stepwise process of applyong functions to their arguments
+
+  for example:
+  
+  factorial 3 =
+  product [1..3} =
+  product [1,2,3] =
+  1 * 2 * 3 =
+  6
+
+  recursive definition of product with pattern matching over list, the empty list is 1, (head: tail) = head * product tail
+
+  product :: [Int] -> Int
+  product [] = 1
+  product ( x:xs) = x * product xs
+
+  recursion: replace loop (iteration)
+  you define a recursion in terms of itself, the loop is like a function in terms of itself, the loop gets smaller and smalller
+  you define a recursive function in terms of of a smaller version (in haskell list) of its arguments (in haskell: list in form of (head: tail))
+  function is solved by induction:
+  on the left side you define all cases : empty list,,,,
+  on the right side you are calling the function on the remainder of the list
+
+  in imperative programming: you set a breakpoint in the loop and examine the state of your variables
+  in functional progamming: you look at the expression and unfold the expression until you have a value
+
+  later we define a higher order function which capture the recursive iteration over a list
+  (fold)
+
+  unfolding definitons
+----------------------
+  evaluation and functional programming is unfolding defintions
+  where the order of evaluation is independent, which makes parallel execution possible
+
+
+Leture 7 - Higher Order Functions,abraction of common patterns,  Abstraction and Parameterization
+           Higher Order Functions: defining functions over lists using recursion
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  if i see something that i have seen before , i can abstract from the differences and
+  define a new function and then just recreate the expression by passing the extracted arguments
+  this is only possible because of lazy evaluation and purity, (there is no dependency of the order of evaluation)
+
+  abstraction: see what is the same and what is different, and factor out the difference to be a parameter
 
