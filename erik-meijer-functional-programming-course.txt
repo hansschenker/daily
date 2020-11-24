@@ -351,3 +351,57 @@ Leture 7 - Higher Order Functions,abraction of common patterns,  Abstraction and
 
   abstraction: see what is the same and what is different, and factor out the difference to be a parameter
 
+  Combinators are higher order functions: HOF
+  fn are first class
+  HOF is a function that takes a fn as argument or returns a fn
+  
+  samples:
+  ........
+  twice :: ( a -> a) -> a -> a // twice takes a fn as the first argimt
+  twice :: (a -> a) -> (a -> a)
+
+  twice f x = f(f x)
+
+  twice :: f . f
+
+  map
+
+  filter
+
+  reduce
+
+  The Foldr Function - captures a pattern with the help of recursion
+  ------------------------------------------------------------------------------------------
+  foldr (fold from left to right=^)
+  foldr is reduce, like a visitor fn which goes to a structure and applies a fn
+
+  a number of fns on lists can be defined using the following simple pattern of recursion
+  
+  f [] 	= v
+  f (x:xs) = x . f xs
+
+  f maps the empty list to some valuue and any non empty lisst
+  to some function appplied its head and f of its tail
+
+
+
+
+  Advantages of HOF
+  -----------------
+ - common programming idioms (loop, if ...) can be encoded as functions within the language itself
+ - core of language stays small
+ - domain specific languages can be defined as collections of HOF
+ - algebraic properties of HOF can be use to reason about programs
+
+  algebraic properties of foldr: fusion and banana split // performance benefit
+   fusion: combine two separate fns into one
+   sum . map ( _ -> 1)
+   foldr ( _ -> x -> (1+x) 0
+
+  point free programming makes it easier for algebraic reasoning
+
+  odd :: not 
+
+
+Leture 8 - Functional parser, parsers are combinators, combinators are higher order functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
