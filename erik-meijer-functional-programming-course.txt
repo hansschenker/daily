@@ -505,3 +505,133 @@ Leture 8 - Functional parser, parsers are combinators, combinators are higher or
 
 
 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Lecture 11 - Graham Hutton - The Countdown Problem
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Countdown Problem (Quizz Program on british television) basd on original french version: Des Chiffres et des Lettres
+
+  Problem:
+  - you are given 6 numbers: 1 3 7 10 25 50
+  - and the arithmetic operators: + - * /
+  - construct an expression whose value is 765
+
+  Rules:
+  - all the numbers including intermediate resullts must be positive natural numbers (1, 2, 3,...)
+  - each of the source nubrers can be used at most once , you need not use all numbers
+  - we abstract from other rules that are adopted on television for pragmatic reasons
+
+  Define solution in Haskell
+  -------------------------------
+
+  data Op = Add | Sub | Mul | Div // data - abstract data type
+  
+  define an Operator:
+
+  apply 		:: Op -> Int -> Int -> Int
+  apply Add x y		= x + y
+  apply Sub x y		= x - y
+  apply Mul x y		= x * y
+  apply Div x y 	= x / y
+
+  validation operator
+
+  valid			:: Op -> Int -> Int -> Int -> Bool
+  valid Add _ _		= True
+  valid Sub x y		= x > y
+  valid Mul _ _		= True
+  valid Div _ _		= x mod y === 0
+
+  define expression data type : Expr
+  ------------------------------------
+  data Expr = Val Int | App Op Expr Expr  // Val: value,  App application of Op, Val and App are constructors
+  sample: 1 + 2  : App Add (Val 1)(Val 2)  // Add needs an expression not a value like 1 or 2 -> (Val 1 ) (Val 2)
+
+  define an eval function
+  -----------------------
+  return the overall value of an expression, provided that it is a positive natural number
+
+  eval			:: Expr -> [Expr]
+  eval (Val n)		= [n | n > 0 ]  // eval (Val n) = if n > 0 then [n] else []
+
+                            apply the operation o to x and y
+  eval (App o l r)	= [ apply o x y | x <- eval l					// eval l if success -> x   -> [x] otherwise []
+                                        , y <- eval r					// eval r if success -> y   -> [y] otherwise []
+                                        , valid o x y}                                  // check if o is a valid operation -> [x o y] otherwise []
+
+   could also use the MayBe type instead of using the list comprehension syntax
+
+  either succeds and returns a singleton list or fails and returns the empty list
+
+  -------------------------
+  Formalizing the problem
+  ------------------------
+
+  return a list of all possibl ways of choosing zero
+  or more elements from a list:
+
+  choices		:: [a] -> [[a]]
+  
+  sample:
+  choices [1.2]		= [[],[1],[2],[1,2],[2,1]]
+
+  helper function values function which returns a list of all the values in an expression:
+
+  values		:: Expr -> [Int]
+  values (Val n)	= [n]
+  values (App _ l r)	= values l ++ values r
+  
+  solution function
+  ------------------
+  decide if an expressiion is a solution for a given list of source numbers and target number
+
+  solution		:: Expr -> [Int] -> Int -> Bool  // Expr: your expr , [Int] source numbers, Targetnuber, valid solutioh
+  solution e ns n	= elem (values e) (choices ns) && eval e == [n] // e: expr, ns: source numbers, n: targetnumber, expr meets targetnumber
+
+  --------------------------------------
+  Steps to solve the problem
+  --------------------------------------  
+
+  return a list of all possible ways of splitting a list into two non empty parts
+
+  split			:: [a] -> [([a],[a])]
+
+  sample:
+  --------
+  split [1,2,3,4]
+
+  [([1],[2,3,4]),([1,2],[3,4]),([1,2,3],[4])]
+
+
+  the key function for the solution:
+  -----------------------------------
+  return a list of all possible expressions whose values are preciseley a 
+  a given list of numbers (source numbers in order):
+ 
+  exprs			:: [In] -> [Expr]
+  exprs []		= []
+  exprs [n]		= [Val n]
+  exprs ns		= [ e | (ls,rs) <-	split ns
+                              , l	<-	exprs ls
+			      , r	<-	exprs rs
+                              , e	<-	combine l r ]
+
+  combine functipn as helper
+  ----------------------------
+
+  combine		:: Expr -> Expr -> [Expr]
+  combine l r		= [App o l r | o <- [Add, Sub, Mul, Div]]
+
+
+   solutions function:
+  ----------------------
+  return a list of all possible expressions that solve an 
+  instance of the countdown problem
+
+  solutions		:: [Int] -> Int -> [Expr] // [Int]: source numbers, Int: target number, [Expr]: all possible expressions
+  solutions ns n 	= [ e | ns' <-	choices ns
+                              , e   <-	exprs ns'
+                              , eval e == [n] ]
+
+
+                                                                                   	
