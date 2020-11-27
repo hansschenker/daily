@@ -405,3 +405,103 @@ Leture 7 - Higher Order Functions,abraction of common patterns,  Abstraction and
 
 Leture 8 - Functional parser, parsers are combinators, combinators are higher order functions
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Monads (Parser is a special case of a monad)
+
+  Parser is a program that analyses a piece of text to determine its syntactic structure
+
+  syntactic  structure
+  --------------------
+  - the study of the patterns of formation of sentences and phrases from words and of the rules for the formation of grammatical sentences in a language.
+    words, sentence, grammatic, language
+  - the patterns or rules so studied: English syntax
+  ¨
+  grammar
+  ------
+  the whole system and structure of a language or of languages in general, 
+  usually taken as consisting of 
+  - syntax and 
+  - morphology (including inflections) and sometimes also 
+  - phonology and 
+  - semantics.
+
+  syntax (rules, principles, processes) -> structure a sentence in a given language
+          ordering (syn tacere) the words of a sentence in a given language
+  ------
+   is the set of rules, principles, and processes that govern the structure of sentences (sentence structure) in a given language, 
+   usually including word order. The term syntax is also used to refer to the study of such principles and processes.
+
+  sentence
+  -------
+  grammatically correctly formulated idea (Subject - the noun,  Predicat - the verb, Adjective - the quality of the subject, adverb - quality of predicate)
+  semantics
+  ----------
+
+  program
+  -------
+  every program uses some form of parser to pre-process its input
+
+  parser :: Stringn -> Tree	// parser is a function that takes a string and produces a tree
+  --------
+  type Parser = String -> Tree
+
+  parser takes in a string in a structured form and outputs an abstruct syntax tree (AST)
+
+  The Parser type is a monad, a mathematical structure that has proved useful for modeling
+  many different kinds of computations.
+  - mathematical structure
+  - useful for modeling computations
+
+  Monad represents a computation that delivers a value of some kind
+  abstracts away the computation
+
+  Monad comprehension (needs bind, selectMany) are making the Monad composable
+  Parser can take in a Parser and produce another Parser (Higher Order Function)
+
+  EBNF
+  ----
+  In computer science, extended Backus–Naur form (EBNF) is a family of metasyntax notations, any of which can be used to express a context-free grammar. 
+  EBNF is used to make a formal description of a formal language such as a computer programming language. 
+
+
+
+
+
+  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Lecture 09 - IO Monad
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  read from keyboard, mouse, file and output to file , printer, display
+  
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Lecture 10 - Types and Classes
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  type Pos = { Int , Int}  // type is an alias for another type construction
+
+  tpe Pair = { a, b}
+
+  Type world and Value world
+
+  Abstract Data Type ADT - Data Declarations - data
+  ---------------------------------------
+  a completleyy new type can be defined by specifying its valuse using a data declaration (ADT)
+
+  data Bool = False | True // True and False are Type constructors
+
+  Bool is a new type with two new values False and True
+
+  In C# Bool is an abstract class with two subtypes
+
+  Pattern matching is downcasting from the base class to is subtype
+
+  Type and constructor names must be in Uppercase
+
+  data Answer = Yes | No | Unknown
+
+  answers :: [Answer]
+
+  answers = [Yes, No, Unknown]
+
+
+
