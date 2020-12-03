@@ -315,4 +315,121 @@ declare module "@ngrx/store" {
     export * from "ng2";
 }
 
-	
+
+rxjs convienience operators:
+----------------------------------
+startWith -> concatMap
+concatMap -> mergeMap
+
+import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
+import { isEqual, isNull, isUndefined } from 'lodash';
+import { Observable, OperatorFunction, defer, empty, of, merge } from 'rxjs';
+import { distinctUntilChanged, filter, map, shareReplay } from 'rxjs/operators';
+
+/**
+ * Convenience RxJS operator that filters out undefined & null and modifies the downstream type
+ * appropriately.
+ */
+export function exists<T>(): OperatorFunction<T | undefined | null, T> {
+  return filter(
+    (v: T | undefined | null): v is T => !isUndefined(v) && !isNull(v),
+  );
+}
+
+/**
+ * Get an observable for the latest value of a control including its initial value.
+ *
+ * @param source The AbstractControl itself or its ancestor in the hierarchy.
+ * @param path If included, the path from source to the control. If not included, then source is
+ * used directly.
+ */
+export function toValueOfControl<T>(
+  source: AbstractControl,
+  path?: string | (string | number)[],
+): Observable<T> {
+  const control = path ? source.get(path) : source;
+  if (!control) {
+    return empty();
+  }
+  // startWith evaluates immediately, but we need to get the value of the control at subscription
+  // time. Deferring allows us to get the updated value.
+  return merge(control.valueChanges, defer(() => of(control.value))).pipe(
+    distinctUntilChanged(isEqual),
+    shareReplay(1),
+  );
+}
+
+/**
+ * Get an observable for the latest raw value of a control including its initial raw value.
+ *
+ * @param source The AbstractControl itself or its ancestor in the hierarchy.
+ * @param path If included, the path from source to the control. If not included, then source is
+ * used directly.
+ */
+export function toRawValueOfControl<T>(
+  source: AbstractControl,
+  path?: string | (string | number)[],
+): Observable<T> {
+  const control = path ? source.get(path) : source;
+  if (!control) {
+    return empty();
+  }
+  if (isFormGroup(control) || isFormArray(control)) {
+    // startWith evaluates immediately, but we need to get the value of the control at
+    // subscription time. Deferring allows us to get the updated value.
+    return merge(control.valueChanges, defer(() => of(control.getRawValue()))).pipe(
+      // get the raw value that contains all of the children, even the disabled ones
+      map(_value => control.getRawValue()),
+      distinctUntilChanged(isEqual),
+      shareReplay(1),
+    );
+  } else {
+    // a FormControl doesn't distinguish between value and rawValue, so just use the other function.
+    return toValueOfControl(control);
+  }
+}
+
+/**
+ * An RxJS operator that emits true if the source string starts with any of the given prefixes.
+ * @param prefixes Array of string prefixes.
+ */
+export function startsWith(prefixes: string[]) {
+  return map<string, boolean>(type => prefixes.some(pre => type.startsWith(pre)));
+}
+
+function isFormGroup(control: AbstractControl): control is FormGroup {
+  return control instanceof FormGroup;
+}
+
+function isFormArray(control: AbstractControl): control is FormArray {
+  return control instanceof FormArray;
+}
+
+/**
+ * An RxJS operator for the common shareReplay use-case where
+ * refCount = true and bufferSize = 1. Equivalent to shareReplay(1) in older
+ * versions of rxjs.
+ */
+export function shareReplay1<T>() {
+  return shareReplay<T>({ refCount: true, bufferSize: 1 });
+}
+
+diff operator - Drew Wiens
+----------------------------------
+import { map, toPairs, fromPairs, differenceWith, isEqual } from 'lodash';
+import { OperatorFunction, pipe } from 'rxjs';
+import { pairwise } from 'rxjs/operators';
+
+/**
+ * RxJS operator that emits an object containing only the key-value pairs that changed. Does not
+ * emit anything until at least two values have been received.
+ */
+export function diff<T extends Record<string, any>>(): OperatorFunction<T, Partial<T>> {
+  return pipe(
+    map(toPairs),
+    pairwise(),
+    map(([prev, next]) => fromPairs(differenceWith(next, prev, isEqual)) as Partial<T>),
+  );
+}
+
+
