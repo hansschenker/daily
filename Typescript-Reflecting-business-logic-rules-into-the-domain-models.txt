@@ -1,0 +1,294 @@
+Typescript is a great and powerful tool for type checking but it could bother you if you don’t 
+define your type according to business logic rules.
+If your models don’t reflect business logic rules, after some time it will create a gap between 
+what business logic says and how your code behaves.
+Let’s explain this with an example.
+We need to define a model for storing Person data. the rules and constraints are:
+a person must have a first name with limited length 50
+a person must have a last name with limited length 50
+a person must have contact info. contact info could be Email or PostalCode or both.
+It seems very reasonable to model the Person model like this.
+type Person = {
+     firstName: string
+     lastName: string
+     email?: string
+     postalCode?: string
+}
+BUT there are some problems in this modeling.
+firstName and lastName are not any string. they could not have any length, they should have a limited length of 50.
+email is not any string. it should have some specific shape (has @ character and domain name in it)
+postalCode is not any string. it should contain 10 digits.
+how could we put these rules into our model?
+Discriminated Unions
+According to the docs
+You can combine singleton types, union types, type guards, and type aliases to build an advanced 
+pattern called discriminated unions, also known as tagged unions or algebraic data types.
+https://www.typescriptlang.org/docs/handbook/advanced-types.html#discriminated-unions
+Lets first fix firstName and lastName problems.
+We need a string that should have a limited length of 50. so we create a new type like:
+type String50 = {
+    kind: "String50"
+    value: string
+}
+And then we could redefine our Person model like this:
+type Person = {
+     firstName: String50
+     lastName: String50
+}
+Now we can understand that a person must have a first name and last name and both of these should have a limited length of 50.
+Now lets back to contact info rules.
+We can define Email and PostalCode as follow:
+type Email = {
+    kind: "Email"
+    value: string
+}
+type PostalCode = {
+    kind: "PostalCode"
+    value: string
+}
+Then we update the Person model:
+type Person = {
+     firstName: String50
+     lastName: String50
+     email?: Email
+     postalCode?: PostalCode
+}
+But there is a problem. do you see that?
+The business logic says that a person must have contact info and contact info could be Email or PostalCode or both.
+but in our model, a person may have not any contact info because they are both optional.
+So we change our model like this:
+type Person = {
+     firstName: String50
+     lastName: String50
+     email: Email
+     postalCode: PostalCode
+}
+It also has a problem. now a person must have both email and postal code!
+How should we fix that?
+Union types
+A Union type combines multiple types into one. This allows you to add together existing types 
+to get a single type that could be either one of them.
+You can read more about union type here:
+https://www.typescriptlang.org/docs/handbook/advanced-types.html#union-types
+For our case, we could define ContactInfo type like this:
+type ContactInfo =
+   | Email
+   | PostalCode
+It says ContactInfo could be either Email or PostalCode
+Now let’s redefine our Person model again:
+type Person = {
+     firstName: String50
+     lastName: String50
+     contactInfo: ContactInfo
+}
+type ContactInfo =
+   | Email
+   | PostalCode
+Let’s review our business rules:
+a person must have a first name with limited length 50
+a person must have a last name with limited length 50
+a person must have contact info. contact info could be Email or PostalCode or both.
+The last rule has some other constraint. Did you see that?
+We said ContactInfo could be Email or PostalCode.
+What if a person has both the email and postal code?
+We should create a new type for this case:
+type EmailAndPostalCode = {
+    email: Email
+    postalCode: PostalCode
+}
+And then update ContactInfo
+type ContactInfo =
+   | Email
+   | PostalCode
+   | EmailAndPostalCode
+Now contact info could be Email or PostalCode or both.
+Let’s review the business logic rules once again and check them with our types:
+type Person = {
+     firstName: String50
+     lastName: String50
+     contactInfo: ContactInfo
+}
+type ContactInfo =
+   | Email
+   | PostalCode
+   | EmailAndPostalCode
+type EmailAndPostalCode = {
+    email: Email
+    postalCode: PostalCode
+}
+a person must have a first name with limited length 50
+a person must have a last name with limited length 50
+a person must have contact info. contact info could be Email or PostalCode or both.
+As you can see now the Person model reflects all the business logic rules and it is very readable and clean code.
+Without any extra documents or comments or any if else statements, it shows the business logic rules and it is self-documented.
+In this episode, we learned how to use Discriminated Unions and Union Types to create readable and self-documented types.
+But they are just types. they do not do anything.
+In the next episode, we try to create some code to create and validate Person model.
+
+Bootstrap
+First, we need a typescript project. so let's create it.
+yarn init -y
+yarn add --dev typescript ts-node
+./node_modules/.bin/tsc --init
+Then we create our types.
+String50
+
+At the top, there is the type declaration. after that, there is the makeString50 function. 
+this function accepts any argument and tries to create String50 .
+It checks if the argument type is a string and its length is less than 50.
+If the argument doesn't satisfy the rules and constraint it will throw a CustomTypeError exception.
+And here is CustomTypeError
+
+It is just a simple class for showing errors.
+We use it in try catch blocks to handle our custom type errors.
+Let's continue to define other types.
+Email
+
+We used a regex to verify the argument is really an Email.
+PostalCode
+
+Just like the Email. using a regex to verify.
+EmailAndPostalCode
+
+First, we check if the argument is provided. then we use Email and PostalCode types to do the verifications.
+ContactInfo
+
+The ContactInfo type is a union type. it could be Email or PostalCode or both of them.
+in makeContactInfo function, first we try to make an Email , then try to make a PostalCode and finally, 
+
+we try to make EmailAndPostalCode .
+If all of them fail, then the exception will throw.
+Now we have all types we want and can create the Person model.
+Person
+
+In makePerson function all we need to do is call the type maker functions.
+If all of them return a validated value, we create our person model.
+Let's create persons using makePerson function and test what we created.
+
+The createAndLogPerson function only try to create a person and print the value. if it fails it will print the error.
+Let's see the output:
+
+person 1 is valid and has email for contact info
+person 2 is valid and has postal code for contact info
+person 3 is valid and has both email and postal code for contact info
+person 4 is not valid because it does not have anything for contact info. so it will throw an error
+person 5 is not valid because it has the email for contact info, but it is not a correct email format. so it will throw an error
+In this article, we make our types actually work and validate the input data.
+But as you can see it is a boring job to do.
+First, we need to declare the type and then we should write some function to make and validate it. 
+And this type of structure for our models only makes sense in our domain and in our projects. 
+What if we need to send this data to someone else. for example, what if we need to return this data as the response of a rest API call?
+We need another function to get Person as the argument and return a normal structure for it like:
+{
+    "firstName": "pf1",
+    "lastName": "pl1",
+    "email": "pf1@gmail.com",
+    "postalCode": "3483848392",
+}
+We need to define something like encodePerson function.
+As you can we have to createmake... and encode... functions for every type.
+We need some way to automate these functions
+
+Installation
+yarn add io-ts fp-ts
+So what is fp-ts ?
+fp-ts is a functional programming utility for typescript and is a peer dependency for io-ts .
+We are not going to talk about functional programming in this article.
+We only discuss a little about Either monad.
+Codec
+io-ts represent our type with something called Codec.
+A codec has decode and encode functions.
+We create and validate our input data with decode function and put back the data in normal shape using encode function.
+This is how a codec looks like:
+
+First, let's talk about generic types.
+Generic type A
+This is what we are modeling. for example in String50 type, the A represents:
+{
+     kind: "String50",
+     value: string,
+}
+Generic type O
+This is the output type. this indicates what the data should look like when we want to pass it to someone else.
+for example, we need to return String50 as API response. we should convert this type:
+{
+     kind: "String50",
+     value: string,
+}
+to some normalstring .
+So the output type in this example is string .
+Generic type I
+This is the input type. it indicates what shape of data can be validated for our type.
+Usually, It is an unknown type. because we want to make and validate our type from every possible data. we don't restrict the input data.
+Now we know about generic types. let's talk about the constructor function.
+To create a codec we need 4 parameters.
+Name
+A name for the codec
+Type-Gaurd function
+This function receives unknown input and evaluates if the input is of type A (remember the A is our modeling type like String50)
+Validate function
+This function is like make... functions in the previous article. It receives an argument of type I (the input type that usually is unknown) and try to validate and make the type.
+It will return t.success if the input is valid. otherwise, it will return t.failiur .
+Encode function
+This function receives an argument of type A (our modeling type) and return something of type O (the output type of the codec).
+For example, it will receive a String50 and return a normal string .
+Now let's define our base types one by one using codec.
+String50Codec
+
+The generic types:
+A => String50
+O => string
+I => unknown
+The type-guard function checks the input value shape to be like String50 .
+The validation function checks the input to be a string and has a maximum length of 50.
+This function is where we check our business logic rules.
+If the input is valid, it will return success, otherwise, it will return failure.
+The encode function should return a string . so it only needs to return the value property of String50 .
+Let's talk more about the validation function.
+In the previous article, we used CustomTypeError exception for representing failure state.
+But here we return t.success and t.failure.
+These functions are wrappers around the actual value.
+When we try to validate the input using decode function of the codec, 
+it will not throw an error for invalid input. instead, it will return an Either .
+WHAT IS EITHER?
+Either is a functional programming monad. we will not talk about functional programming here.
+Think of an Either as a box around the value. it has two states. left and right state. 
+we use Either.left to show failure state and Eihter.right to show success state.
+Just think of it as right is a success state and left is a failure state.
+So the validation function return right if the input is valid and return left if the input is invalid.
+We are going to define our next codec.
+EmailCodec
+
+PostalCodeCodec
+
+EmailAndPostalCodeCodec
+
+Here we used t.type from io-ts to create EmailAndPostalCodeCodec.
+It composes EmailCodec and PostalCodeCodec to create a new codec.
+Now its time to define the PersonCodec.
+PersonCodec
+
+In the previous article, we defined ContactInfo as:
+ContactInfo =
+    | Email
+    | PostalCode
+    | EmailAndPostalCode
+It was a union type and io-ts have a function to convert this type to a codec. It is called t.union .
+t.union receive an array of codecs and return a union type codec.
+Now our PersonCodec is completed. let's run the tests with these codecs.
+
+As you can see we removed the try catch blocks.
+Instead, we have a personEither returned from decode function.
+It is an Either monad and can be right (means success) or left (means failure)
+We checked if it is right using isRight function from fp-ts/Either library.
+Remember that I said Either is like a box around actual value. so to get the actual person value we used personEither.right to get the person.
+We printed both person value and person encoded value.
+PathReporter is a utility function to show us the error details.
+Let's see the output:
+
+You see the encoded value is like a normal value that you can pass to someone else (for example, return as API response).
+And the PathReporter showed a more detailed error. you can find what value and what field caused the error.
+This was the last part of Reflecting business logic rules into the domain models.
+I hope you learned something from these articles and write cleaner and self-documented codes.
+If you are interested in writing clean and human-readable codes, I highly recommend you to learn 
+about functional programming and using fp-ts library in your daily projects.
