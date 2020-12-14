@@ -1,3 +1,184 @@
+rxjs observable is a monad, louis atenico
+------------------------------------------
+interface Monad {
+    of(a): Monad<a>
+    map(a -> b): Monad<b>
+    flatMap(a -> M<b>): Monad<b>
+}
+
+Maybe is a monad
+-----------------------------------------------------
+interface MaybeObserver<T> {
+    void onSubscribe(Disposable d);
+    void onSuccess(T value);
+    void onError(Throwable error);
+    void onComplete();
+}
+
+Eiter is a monad
+-----------------------------------------------------
+"use strict"
+var R = require("ramda");
+var Sequelize = require("sequelize");
+var Either = require("fantasy-eithers");
+var Left = Either.Left
+var Right = Either.Right
+var Observable = require("rx").Observable;
+var rx = require("rx");
+var EitherHelpers = require("fantasy-contrib-either")
+
+Either.fromNullable = (v, e) => {
+  if (v === null || v === undefined){
+    return Left(e)
+  } else {
+    return Right(v)
+  }
+}
+
+Either.fromTryCatch = (f) => {
+  try {
+    return Right(f())
+  } catch (e) {
+    return Left(e)
+  }
+}
+
+Either.fromTryCatch1 = (f, args) => {
+  try {
+    return Right(f(args))
+  } catch (e) {
+    return Left(e)
+  }
+}
+
+Observable.of = Observable.just;
+Observable.prototype.chain = Observable.prototype.flatMap;
+
+let ObservableEither = Either.EitherT(Observable);
+
+ObservableEither.pure = function(x){
+  return ObservableEither(x);
+}
+
+Either.prototype.liftOE = function(){
+  return ObservableEither.pure(Observable.just(this));
+}
+
+Observable.prototype.liftOE = function(){
+  return ObservableEither.pure(this.map((v) => Right(v)));
+}
+
+Either.prototype.flatMap = Either.prototype.chain
+ObservableEither.prototype.flatMap = ObservableEither.prototype.chain
+
+Promise.prototype.liftOE = function(errorDescription){
+  return ObservableEither.pure(Observable.fromPromise(this).flatMap((v) => {
+    if (v instanceof Array){
+      return Observable.from(v).map((v) => Right(v))
+    } else {
+      return Observable.just(Either.fromNullable(v, errorDescription))
+    }
+  }).catch((e) => Observable.just(Left(e))))
+}
+Sequelize.Promise.prototype.liftOE = Promise.prototype.liftOE;
+ObservableEither.prototype.reduce = function(f, seed){
+  return ObservableEither.pure(this.run.reduce(f, seed))
+}
+
+ObservableEither.prototype.allRight = function(){
+  return this.reduce((prev, e) => {
+    let prevTrue = EitherHelpers.isRight(prev);
+    let eTrue = EitherHelpers.isRight(e);
+    if (prevTrue && eTrue){
+      return Right(true)
+    } else {
+      return Left(false)
+    }
+  }, ObservableEither.of(true))
+}
+
+ObservableEither.prototype.filter = function(f){
+  return this.flatMap((e) => {
+    if (f(e)){
+      return ObservableEither.of(e)
+    } else {
+      return Observable.empty().liftOE()
+    }
+  })
+}
+
+ObservableEither.prototype.zip = function(other, f){
+  return this.flatMap((e1) => {
+    return other.map((e2) => {
+      console.log(e1);
+      console.log(e2);
+      return f(e1, e2)
+    })
+  })
+}
+
+Sequelize.Model.prototype.tryTo = function(){
+  let method = R.take(1, arguments);
+  let methodArgsAndError = R.drop(1, arguments);
+  let methodArgs = R.dropLast(1, methodArgsAndError);
+  let error = R.takeLast(1, methodArgsAndError)[0];
+  try {
+    return this[method].call(this, ...methodArgs).liftOE(error);
+  } catch (e) {
+    return Left(e).liftOE()
+  }
+}
+
+module.exports = {
+  ObservableEither: ObservableEither
+}
+
+"use strict"
+var m = require("monet");
+var MonadT = m.MonadT;
+var IO = m.IO;
+var Observable = require("rx").Observable;
+
+class IOObs {
+  constructor(ioObservable){
+    this.value = ioObservable;
+  }
+
+  static of(x){
+    return new IOObs(IO(() => Observable.just(x)))
+  }
+
+  map(fn){
+    var newIOObs = this.value.map((observable) => observable.map(fn));
+    return new IOObs(newIOObs)
+  }
+
+  bind(fn){
+    var newIOObs = this.value.map((observableT) => {
+      return observableT.flatMap((t) => fn(t).run())
+    })
+    return new IOObs(newIOObs);
+  }
+}
+
+var f = function(i){
+  var inner = function(j){
+    return Observable.just(j+1); // Or you can do your async IO and return a promise or Observable,
+                                 //see https://github.com/Reactive-Extensions/RxJS/blob/master/doc/api/core/operators/selectmany.md
+  };
+  var innerAsIO = inner.io1()(i);
+  return innerAsIO;
+}
+
+var o = Observable.just(42);
+var ioObservable = new IOObs(IO(() => o));
+var newO = ioObservable.bind(f);
+var newOO = ioObservable.map((i) => i+2);
+newO.value.run().subscribeOnNext(console.log)
+newOO.value.run().subscribeOnNext(console.log)
+
+
+
 // fake api
 -------------------------------------------------------------------------------------------------------
 const fakeApi$ = of(Math.random()).pipe(
