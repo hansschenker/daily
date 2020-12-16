@@ -1,0 +1,127 @@
+Map operator - OperatorFunction<T, R>
+------------------------------------
+map :: T -> R
+map :: (t -> r)
+
+Applies a given project function to each value emitted by the source Observable, 
+and emits the resulting values as an Observable.
+
+map<T, R>(project: (value: T, index: number) => R, thisArg?: any): OperatorFunction<T, R>
+
+projectFn - Transformation Function
+-------------------------------------	
+The function to apply to each value emitted by the source Observable.
+ 
+The index parameter is the number i for the i-th emission 
+that has happened since the subscription, starting from the number 0.
+
+thisArg	
+Optional. Default is undefined.
+
+An optional argument to define what this is in the project function.
+
+Returns
+---------------------
+OperatorFunction<T, R>: 
+An Observable that emits the values from the source Observable transformed by the given project function.
+
+Description
+Like Array.prototype.map(), it passes each source value through a transformation function to get corresponding output values.
+
+
+
+
+1. Concat —
+--------------
+chain observables
+
+Subscribe to Observables in order but only when the previous completes, 
+let me know, then move to the next one.
+
+Use this operator when the order is important, 
+for example when you need to send HTTP requests that should be in order.
+
+// Simulate HTTP requests 
+const getPostOne$ = Rx.Observable.timer(3000).mapTo({id: 1});
+const getPostTwo$ = Rx.Observable.timer(1000).mapTo({id: 2});
+
+Rx.Observable.concat(getPostOne$, getPostTwo$).subscribe(res => console.log(res));
+
+2. forkJoin —
+-----------------------------------
+forkJoin is the Promise.all() of Rx.
+
+Don’t let me know until all the Observables are complete, 
+then give me all the values at once. ( Array )
+
+Use this operator when you need to run the Observables in parallel.
+
+const getPostOne$ = Rx.Observable.timer(1000).mapTo({id: 1});
+const getPostTwo$ = Rx.Observable.timer(2000).mapTo({id: 2});
+
+Rx.Observable.forkJoin(getPostOne$, getPostTwo$).subscribe(res => console.log(res)) 
+
+
+3. mergeMap —
+
+source observable
+-------------------
+Source ( or outer ) Observable — in this case, this is the post$ Observable.
+
+inner observable
+---------------------
+Inner Observable — in this case, this is the getPostInfo$ Observable.
+Only when the inner Observable emits, let me know by merging the value to the outer Observable.
+
+posts (source)
+  getPostComments (inner)
+
+const post$ = Rx.Observable.of({id: 1});
+const getPostInfo$ = Rx.Observable.timer(3000).mapTo({title: "Post title"});
+
+const posts$ = post$.mergeMap(post => getPostInfo$).subscribe(res => console.log(res));
+
+
+4. pairwise —
+------------------------
+
+Let me know when the Observable emits, but also give me the previous value. ( Array )
+
+// Tracking the scroll delta
+Rx.Observable
+  .fromEvent(document, 'scroll')
+  .map(e => window.pageYOffset)
+  .pairwise()
+  .subscribe(pair => console.log(pair)); // pair[1] - pair[0]
+
+5 switchMap
+-------------------------------
+
+
+
+
+const clicks$ = Rx.Observable.fromEvent(document, 'click');
+const innerObservable$ = Rx.Observable.interval(1000);
+
+clicks$.switchMap(event => innerObservable$)
+                    .subscribe(val => console.log(val));
+
+
+Like mergeMap but when the source Observable emits 
+cancel any previous subscriptions of the inner Observable.
+
+In our example, every time I’m clicking on the document, 
+the previous interval subscription will cancel, and a new one will start.
+
+6. combineLatest
+----------------------------------------
+
+const intervalOne$ = Rx.Observable.interval(1000);
+const intervalTwo$ = Rx.Observable.interval(2000);
+
+Rx.Observable.combineLatest(
+    intervalOne$,
+    intervalTwo$ 
+).subscribe(all => console.log(all));
+
+Let me know when any Observable emits but also give me the latest value from the others. ( Array )
