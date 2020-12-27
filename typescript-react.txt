@@ -1,0 +1,50 @@
+import { useReducer } from 'react'
+
+export function updateName(name: string) {
+  return <const>{
+    type: 'UPDATE_NAME',
+    name
+  }
+}
+
+export function addPoints(points: number) {
+  return <const>{
+    type: 'ADD_POINTS',
+    points
+  }
+}
+
+export function setLikesGames(value: boolean) {
+  return <const>{
+    type: 'SET_LIKES_GAMES',
+    value
+  }
+}
+
+export const initialState = {
+  name: '',
+  points: 0,
+  likesGames: true
+}
+
+type State = typeof initialState
+type Action = ReturnType<
+  typeof updateName | typeof addPoints | typeof setLikesGames
+>
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'UPDATE_NAME':
+      return { ...state, name: action.name }
+    case 'ADD_POINTS':
+      return { ...state, points: action.points }
+    case 'SET_LIKES_GAMES':
+      return { ...state, likesGames: action.value }
+    default:
+      return state
+  }
+}
+
+export default function useUserReducer(state = initialState) {
+  return useReducer(reducer, state)
+}
