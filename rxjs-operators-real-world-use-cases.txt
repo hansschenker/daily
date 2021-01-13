@@ -1,0 +1,1622 @@
+switchMao Brown is
+
+we can't map the value to a new
+observable and it switches to red then
+when you get a new route from a new
+observable and unsubscribe to that
+
+approvable
+
+and unsubscribe from anything else yeah
+
+so it only subscribes to one at a time
+
+and when a new a new value comes in and
+
+maps to that a new observable and
+
+unsubscribe from whatever it previously
+
+had if it has anything and now only
+
+subscribes to one another at a time but
+
+careful I need this thing is over when
+
+your new observable rights what did it
+
+switch matter search maps a gotcha one
+
+because a lot of examples show switch
+
+map with like HTTP GET and so people
+
+think oh it's good for HTTP and the
+
+problem is that if they're doing a post
+
+or a delete where you're doing actually
+
+doing something or updating on the
+
+server and then sometimes you update on
+
+the server and the the value is coming
+
+back in the response and you want to
+
+update your screen if you switch map you
+
+send the request and then you can get in
+
+a situation where you send another
+
+request and it cancels the previous one
+
+well that request still hits the server
+
+still updates the server but you never
+
+get the response back to update your
+
+screen so your your client gets out of
+
+sync with your with your server and it
+
+causes weird bugs that are real
+
+so in those situations you want to use
+
+kim catnap which is what we should
+
+probably talk about next but switch map
+
+is is bad for any sort of Ajax except
+
+forget unless unless you're doing like
+
+HTTP POST and you don't care about the
+
+response if you don't care about the
+
+response that's which matters probably
+
+fine but but yeah in most cases people
+
+care about the response in the ordering
+
+so we talked a little about this but you
+
+can explain it again on this video the
+
+so can you explain when you use this map
+
+so this is like your real world use case
+
+example the real world use case would be
+
+situations where you're just performing
+
+again you want the latest information
+
+and you don't care about like the
+
+information does it come back so like
+
+switch map is a decent one for like the
+
+look ahead like the autocompletes where
+
+you're typing into a text box and if for
+
+example someone says oh I typed into a
+
+text box and then it sends a request and
+
+they realize they miss typed a letter
+
+and they go back and another request
+
+like you don't care about the request
+
+that had the wrong letter in it you only
+
+care about the last one
+
+so that's like the ideal use case for
+
+switchman well here's a good one when do
+
+you not use switchable and I know you
+
+kind of explained look explain it in it
+
+you don't use and honestly in most cases
+
+you should probably be using a
+
+concatenate you don't want to use switch
+
+map if you're doing HTTP POST or HD if
+
+you get or or those sorts of things so
+
+these are the most common use cases of
+
+people doing HTTP requests with them so
+
+if you're doing any sort of stateful
+
+update to the server you do not want to
+
+use switch map so it's probably the
+
+other use case or switch map is if
+
+you're toggling between two streams
+
+you're toggling one stream on and off so
+
+let's say you've got a WebSocket you
+
+want to turn it on and off you might
+
+like link up button clicks to switch map
+
+into the stream from the WebSocket or to
+
+empty
+
+right so you can toggle between the
+
+otago on and off so that's those are
+
+that's another use case research map
+
+that's like maybe the second most common
+
+thing that people are doing with it and
+
+obviously like King cat map is not
+
+really going to work with that because
+
+concatenates waiting for a stream to end
+
+before it subscribes to the next one
+
+grace are then bringing us you want to
+
+say anything else about switch amount
+
+before you depart you can't not know I
+
+just the biggest thing is just people
+
+should use it cautiously with HTTP if
+
+they're not doing HTTP GET okay - cat
+
+Maddy
+
+you're Dianna me let's start with
+
+explanation in the morning well for me
+
+well it's like when I look at you since
+
+you're so old I just get tired like how
+
+you get around sleep like old people
+
+like sleepier that's horrifying Tracy oh
+
+I'm just anything I'm just teasing okay
+
+can't Matt explanation just so you know
+
+wake up Lego David Hasselhoff does not
+
+approve of what you said oh my does not
+
+sound like a kid it's really so so a
+
+layer of Lego link map yes
+
+so can cat map is probably the most
+
+common one people should use with HTTP
+
+requests and what it does is it only
+
+subscribes to one at a time but it will
+
+map every single value it gets into an
+
+observable and cue them up and play them
+
+into end and so it ensures that
+
+everything happens in the order that it
+
+was it arrived basically that's
+
+important for like lottery or like this
+
+one time when I was shopping
+
+I'm so mad then so I'm gonna tell you oh
+
+good I was shopping for Dillard's than
+
+my annual scale which is every New
+
+Year's okay so they say
+
+at  p.m. Central Time the sale
+
+starts okay so I'm like sitting there
+
+have everything queued up in my shopping
+
+cart have like  items to purchase okay
+
+ p.m. hits all of a sudden I cannot
+
+get into the website and it says don't
+
+refresh your screen because you'll lose
+
+your place in line you're in a queue and
+
+I'm like you are a load of crap you know
+
+my queue so I kept refreshing and
+
+refreshing and refreshing and then I
+
+open an incognito and I refresh that and
+
+I had like three computers open and my
+
+phone and I was like okay and some I
+
+refreshed time I didn't but it was a lie
+
+wasn't it but then I inspected that
+
+inspected element and like it seemed
+
+like it anyways I was very sad but this
+
+is kind of when you would want to really
+
+use can Catman like you don't want to
+
+use switch map because you care about
+
+the order that person is coming in also
+
+were they lying to me Ben so anyways you
+
+scan can't map any situations Ben you
+
+are not feeling my sad story no this is
+
+important I mean shopping at Dillard's
+
+is like a thing you would look so cute
+
+in Dillard's clothes look into it
+
+so yeah think about that sounds plays it
+
+end to end only subscribes one at a time
+
+in you you care it you care when it when
+
+you care about you a real world example
+
+it's just to say you have a list of you
+
+have a list of items on a screen and you
+
+have the delete button next to them so
+
+every single time you delete one it
+
+sends a delete HTTP request to the
+
+server and then the server responds with
+
+the updated list if you were to go
+
+through and say delete delete delete
+
+delete delete you would want to make
+
+sure that every single one of those
+
+things was being sent one after the
+
+other and that the updated list was
+
+updating one after the other because it
+
+you say used merge map for example merge
+
+map does not keep order so if one of
+
+those two let's say the third one after
+
+or like if you do five in around the
+
+third one for some reason takes much
+
+longer than all the other ones then the
+
+data that's going to be displayed in
+
+your screen will be the data from the
+
+third request and not from the very last
+
+one because it doesn't honor order at
+
+all where concatenate will force the
+
+order by only doing them one at one at a
+
+time one after the other so it builds up
+
+a buffer of
+
+what it's going to do and then it you
+
+know flushes them one at a time so
+
+whatever you just talked about like
+
+differences we're talking difference
+
+between this operator operates a lot of
+
+people always ask like when should I use
+
+X instead of X so can you talk through
+
+some of those example if you're if
+
+you're doing HTTP the safe bet it is
+
+concatenate the only time you might want
+
+to do switch map is if you're only
+
+getting data you're not posting data so
+
+in a CV you should be you never want to
+
+use merge map ever because it doesn't
+
+honor order and if you send seven
+
+requests like the first one can come in
+
+last so what I mean you're basically
+
+telling me that switch map doesn't even
+
+matter I mean I guess what you know
+
+switchback totally matters like there's
+
+there's really valid use cases for
+
+toggling streams on it off or toggling
+
+between two or three different streams
+
+like those are use cases for switch map
+
+that like no other operator can really
+
+do okay okay so toggling really yeah
+
+yeah and like it's it's it's in earnest
+
+which map becomes more interesting when
+
+you actually start dealing with like
+
+real streams of data so I HTTP request
+
+for a stream of one right like you get
+
+one piece of data back but if you're
+
+dealing with you know say like mouse
+
+movements or animations or you know
+
+WebSocket stuff or anything like that
+
+which is kind of more exciting stuff as
+
+people don't get to deal with it as much
+
+switch map is much more useful than
+
+kitkat map in a lot of cases dude you
+
+don't even talk about the switch mount
+
+of animation situation or anything like
+
+that well that's like a whole it's a lot
+
+of basically you can wrap an animation
+
+in an observable right so if you wanted
+
+to start something animated animating
+
+and then stop it you might you might use
+
+switch map in like the switch map like
+
+you could even say like oh whenever this
+
+observable tears down animate it back to
+
+wherever it was supposed to go or
+
+something like that so switch map would
+
+cause it to to come back like there's
+
+animations a whole different animal
+
+because you can compose so many things
+
+and it could mean anything like just
+
+moving things around so mm-hmm so um
+
+encampment up so when do you not use my
+
+camera
+
+oh let's see that's nice wait you're you
+
+can come up so you would not use
+
+concatenate you can't use cap map to
+
+toggle streams on and off you do not
+
+want to use can cap map with endless
+
+streams because any all of the King cat
+
+functionality and rx relies on the
+
+stream completing if the stream never
+
+completes then every subsequent can cat
+
+map is just gonna build up that buffer
+
+and those those other the other
+
+observables that is buffering up was are
+
+never gonna write us it's going to run
+
+the first one it hits and it's gonna
+
+wait for it to get done before it's
+
+going to try to do the next one and it
+
+never gets done so you're stuck so
+
+that's like pretty big that you always
+
+want to make sure that you have you
+
+always want to make sure that you're
+
+using that you have like an observable
+
+that concludes right like so like user
+
+events right like you would never you
+
+can tap map with user events like if you
+
+are like Mouse moves can cat map into
+
+this thing like there's no like
+
+concatenate or like button click can cat
+
+map Mouse moves like you click the
+
+button you start doing mouse movements
+
+and the next time you click the button
+
+you would never get the next set of
+
+mouse movements it just it just would
+
+never ever go and tell that so every
+
+every scene every single time you do can
+
+count now if you have to make sure the
+
+observable you're mapping to ends in
+
+some way like you ever taken too
+
+or something like that okay let's get
+
+into merge map next so explanation of
+
+merge map it's probably the simplest
+
+overall conceptually all it does is take
+
+every single value map it into an
+
+observable and subscribe to it and like
+
+pumping that the output right so like
+
+just output whatever is coming from this
+
+interval so it's like it's it's just
+
+kind of naively you're just taking every
+
+every single value mapping into an
+
+observable and merging that observables
+
+output into one observable so that you
+
+don't want to use that for HTTP
+
+basically ever because you don't know
+
+when a server is gonna respond
+
+if when it when one request is slow and
+
+the other ones not then they could come
+
+back out of order if you don't care
+
+about order then you could use it but
+
+that's really bad these are like really
+
+good simple like um you know as we're
+
+going through this it's like anybody
+
+once they kind of understand these small
+
+little nuances like what's a for HTTP
+
+can kind of like go in to any code base
+
+and be like oh well you're using this
+
+for this like it seems like really easy
+
+refactoring once you understand it just
+
+makes me happy
+
+real-world examples any places see
+
+real-world examples for a merge map
+
+really firm urge map you might you might
+
+use it with something like animations or
+
+starting multiple streams trying to
+
+think so if you if you were to have like
+
+an observable of like animations where
+
+you're just getting a bunch of
+
+coordinated coordinates to update
+
+multiple multiple sprites in the screen
+
+or something like that you might use a
+
+merge map you might use merge map for I
+
+know the the yeast cake honestly the use
+
+case is for a merge map are much more
+
+limited than the other than the other
+
+ones even though it's probably one of
+
+them
+
+common ones that people go to as far as
+
+like real-world applications with like
+
+HTTP requests and those sorts of things
+
+because you never want to use it with an
+
+HTTP request for the most part it core
+
+way
+
+what's the edge case the edge case is
+
+when you don't care about what order of
+
+things come back so let's just say that
+
+you were like oh well I I want to have
+
+these deletes fire and I don't really
+
+care whether or not like I'm not getting
+
+any data back from the server to update
+
+my view I'm just deleting things then
+
+you could like merge Malcolm just delete
+
+delete delete delete every single time
+
+someone hits the button that's going to
+
+delete as fast as possible as opposed to
+
+concatenate which is gonna delete delete
+
+delete it's done delete it's done
+
+delete it son right like so merge Maps
+
+kind of render them all as fast as it
+
+gets them and caps only gonna be one at
+
+a time well okay but like you're
+
+basically saying when you say like hey I
+
+don't care about the order and I think
+
+like okay well why not used in that
+
+situation why not you switch map why you
+
+smirch well why aren't you because you
+
+might know you might want to know if
+
+what errors come back from those
+
+requests right so if we switch map
+
+you're like oh if you say delete delete
+
+delete you sent all those requests off
+
+the server but if any of them come back
+
+with like a  error or something like
+
+that you won't know because you've
+
+already cancelled every one every one
+
+with the last one where with merge you
+
+can say delete delete delete delete and
+
+like if one of them has an error it's
+
+gonna you're gonna get an error back and
+
+you can handle it
+
+so you always have to like the switch
+
+map and automatically unsubscribes but
+
+like with merge map then how would you
+
+unsubscribe from all the things that are
+
+coming into that so that you have one
+
+output observable and you if you
+
+unsubscribe from that subscription
+
+it'll tear down all of the inner ones
+
+that are inside yeah but with switch
+
+wrapping off the unsubscribe - yeah so
+
+like switch map is so it's not thinking
+
+that map don't have like an inherent
+
+unsubscribe behavior like like I'm sorry
+
+can can map and merge map do not have an
+
+inherent unsubscribe or unsubscribe
+
+behavior like switch Memphis because
+
+with your output when you're doing an
+
+outfit on your unsubscribing from that
+
+output on such map here just unsubscribe
+
+you from one hopeless switch map and can
+
+can't map first sorry merge map and
+
+can't map you might be on subscribing
+
+for like  or something yeah if you
+
+unsubscribe from the results observable
+
+from any of them it's gonna unsubscribe
+
+every internal observable right like
+
+merge map is the only one that
+
+subscribes to multiple at the same time
+
+concatenate does one at a time
+
+switch map doesn't one at a time exhaust
+
+map does one at a time
+
+switch map is the only one that has an
+
+inherent unsubscribe behavior on the
+
+inside for the I only want this one no
+
+forget it now not only want this one no
+
+forget it
+
+cetera wait I was actually pretty
+
+important like there do you think it's
+
+important for people to understand like
+
+how many each subscribe to at a time
+
+yeah yeah I think so like basically all
+
+of them except for merge map only
+
+subscribe to one at a time and like all
+
+of them except for switch map don't have
+
+an inherent unsubscribe behavior on the
+
+inside like that but merge about the use
+
+case I'm sorry just go back to the use
+
+case for merge map is when you're
+
+sending if you want to send a bunch of
+
+requests as fast as possible and you
+
+care about whether or not they might
+
+error but you don't really care about
+
+the responses coming back like the order
+
+in which they come back then merge map
+
+is great but I would say the most common
+
+out of all three that we've discussed
+
+today the most common when people should
+
+be using a skin cap for the most well
+
+then put this into a sentence for me so
+
+we want to know as we're sort of like
+
+sorting this out the question is how
+
+many observable does each operator
+
+subscribe to at any given time yeah all
+
+of them every one of them except for
+
+motor family subscribes to one at a time
+
+but not every one of them just to say
+
+that I'm talking about yeah well we can
+
+also include exhaust map I mean that's
+
+another one we haven't talked about and
+
+it's pretty it's kind of useful but yeah
+
+that's
+
+it's the only other one that that kind
+
+of falls in there and only does one at a
+
+time anyway hold on said what why don't
+
+you give the explanation of exhaust man
+
+okay so exhaust map is kind of the
+
+opposite of switch map so switch map
+
+it's saying every time a new value
+
+arrives unsubscribe from what I have and
+
+subscribe to the new one I made and
+
+exhaust map says every time a value
+
+arrives if I've not already subscribed
+
+to something like map it into an
+
+observable and subscribe to that and
+
+then wait for that one to complete
+
+before I allow any more values to be
+
+mapped into a new observable so it waits
+
+till it maps into an observable and it
+
+waits for that to be exhausted before it
+
+allows any more values to come in so to
+
+use case examples for this would be like
+
+things like touch drag you would use
+
+exhaust map because you're saying you'll
+
+be like oh for every touch I want to
+
+take all of the mouse moves and I want
+
+to use exhaust map or all of the touch
+
+moves I want to use exhaust map for this
+
+until touch up and the reason you use
+
+exhaust map is there's a situation where
+
+you could touch and then touch again
+
+with a second finger and start dragging
+
+and you wouldn't want the second touch
+
+to cancel your mouse movements which is
+
+what would happen if you switched mouths
+
+right and merge map doesn't make any
+
+sense because then you have two things
+
+going on so you want to just have you
+
+want to say oh I'm I want to wait until
+
+there's a touch up and then unsubscribe
+
+from the not of the touch movements so
+
+that's that's a use case another one
+
+might be like if you have a button to
+
+submit like a payment and you don't want
+
+people double submitting right obviously
+
+you XYZ you should just just disable the
+
+button but like you can use rxjs to say
+
+well send this request and but send it
+
+with exhaust map and what that means is
+
+every other time someone pushes the
+
+button it won't do anything until that
+
+last request comes back successfully
+
+right so you can't possibly double
+
+submit in that case so that's another
+
+use case for exhaust man
+
+but yeah so it's it's useful in
+
+different than the other ones what's the
+
+difference between like so when should I
+
+use X instead of X when should I use
+
+exhaust map instead of whatever all
+
+right so you should use exhaust map in
+
+situations where you only want you only
+
+want one request or one one stream in
+
+flight and you do not you don't want any
+
+duplicates you know any duplicate effort
+
+you don't care about the latest one you
+
+just care about setting one off and
+
+having it successful to be successful so
+
+that's that's the exhaust map use case
+
+when do I not use this operator when you
+
+not use exhaust map wherever you seem
+
+like bad taste isn't exhaust one I
+
+haven't seen too many bad cases of it
+
+because I don't think enough people know
+
+about it to use it but or know what it
+
+does but you know you wouldn't want to
+
+use exhaust map for like deletes in a
+
+list or something like that right
+
+because you'd be like delete and then if
+
+that one didn't come back and you're
+
+like delete delete delete you'd be like
+
+delete I'm doing nothing nothing nothing
+
+this does nothing okay to leave like it
+
+just wouldn't doesn't make any sense so
+
+like I don't think many people are gonna
+
+make the mistake of using exhaust map in
+
+the wrong spot because most people use
+
+it for things yeah how about um how many
+
+how many observables does exhaust not
+
+subscribed at any given time just one
+
+okay so okay merge map merge and map
+
+let's talk about merge so like a lot of
+
+times people like will use Merc is it I
+
+mean I've seen it maybe I'm crazy but
+
+like a lot of times people use merge rap
+
+when they should have just used merge
+
+yes or no yeah I mean merge merge the
+
+operator is deprecated but there's like
+
+a static merge method and all it really
+
+does
+
+is it's it's it's a cousin to merge map
+
+basically it says hey you stay merge and
+
+then you give it so a bunch of
+
+observables and basically it says
+
+subscribe to all of these observables
+
+and take all their outputs and merge
+
+them into one observable that's that's
+
+what March does so every time I mean
+
+we're we're not telling people not to
+
+use mirth right no not at all
+
+murder tax a lot of these cases mergers
+
+just saying oh I want to subscribe to a
+
+whole bunch of observables at once but I
+
+want to do them in one subscribe column
+
+so that's that's one of the big use
+
+cases of merge and then can you explain
+
+what it is what create yeah kind of just
+
+explain emerges but okay I mean I'll
+
+just be kind of read or anyone already
+
+said like you take a bunch of other a
+
+bunch of herbals and you subscribe them
+
+all and all their values comes into one
+
+observer not all it does yeah that's it
+
+that's all it does so I merge and in
+
+fact a lot of times people use merge
+
+they don't even care about the values
+
+coming out of merge what they really
+
+cared about it is they wanted to
+
+subscribe to a bunch of observables at
+
+the same time because observables kind
+
+of side effects they don't necessarily
+
+it's not always about the values you get
+
+out of them um so that's like so then
+
+doing that is really the only real world
+
+example in use case of margin right yeah
+
+yeah that's that's the main that's the
+
+main use case of art it's just kind of
+
+like a primitive for kind of combining
+
+and joining observables together so like
+
+when should I aim not use my oh that's
+
+hard to say but other than like don't
+
+use merchants it doesn't make sense to
+
+use merch like you if you don't want to
+
+merge two observable together then don't
+
+use merge like okay um and then what
+
+about Matt Matt mappers the company's
+
+case is just transforming data so map is
+
+probably the most common operator in
+
+people's apps because you're just saying
+
+oh the stream
+
+data I've got isn't quite the right
+
+shape and I want to change it to some
+
+other shape that I care about let's map
+
+what sir cheese map for the place all
+
+right so the place I see people screw up
+
+and I've seen this many times is they'll
+
+get like an observable of a raise of
+
+data it's very common you'll go and
+
+you'll see requests and you get back
+
+this array of data and people will take
+
+that and they'll they'll try to take the
+
+array of data and split it up with Rx
+
+and then map each data piece with Rx and
+
+then like join it back together or
+
+something and send it out and in reality
+
+in most cases what you wanted to do is
+
+just use map and inside of the map like
+
+use a ray map or a raid filter or
+
+whatever you need to do and just use the
+
+array operations on your array of data
+
+and then send it back out like because
+
+it's way more efficient to do that but
+
+that's the only place I've seen people
+
+screw up with map is thinking they
+
+needed to use rx map to map arrays and
+
+that's just not true javascript has that
+
+built in what are some other things do
+
+we go through all the maps exhaust map
+
+merge map you can't map switch map
+
+what map are we there's I mean there's
+
+like expand but that's not really a map
+
+but that's a theme picture we go through
+
+expand you think the next one which
+
+there's our bus expand expand is it's
+
+it's basically it's basically a merge
+
+map only it's recursive so what that
+
+means is you take a value you map it
+
+into an observable subscribe to it and
+
+it emits all the values from that
+
+observable but also it takes all those
+
+values as they arrive and it pumps it
+
+back into the same mapping function so
+
+basically you get this this kind of
+
+recursive behavior where if you take if
+
+you say observable of one and then you
+
+then you expand that into observable of
+
+one comma two what it's going to do is
+
+it's going to come through with one map
+
+that into  comma  and then both
+
+one and two and then into that function
+
+wanted to both come in again and those
+
+double again so every single step it's
+
+going to double and keep going and keep
+
+going
+
+you're getting Stack Overflow if you do
+
+that but that's the but that's the ideas
+
+it's it's recursive so the use case for
+
+for expand would be full of this fat
+
+like Falco router at Netflix used to
+
+expand to basically crawl async graphs
+
+so if you have this async tree of data
+
+that you have to request then you might
+
+do you might do it so you request some
+
+data and you get like a node of the tree
+
+and it says oh there's these other
+
+nuggets over here and so you take those
+
+nodes and you send them back into expand
+
+and it goes and requests those nodes and
+
+those nodes say oh I've got these other
+
+nodes and they're over here and so you
+
+take those and you request em again
+
+eventually you get to the end of the
+
+tree so crawling trees crawling async
+
+trees in particular is a big use case
+
+for expand people right like a mile a
+
+code to get that done
+
+when expand is will do most of that
+
+usually in one line so is there ever
+
+like a I shouldn't use expand instead of
+
+like do people yeah oh yeah so you like
+
+people sometimes will write code that
+
+has they'll have like a subject that
+
+goes into like a merge map and then the
+
+merge map when it's done pumps back into
+
+the subject so they have this like cycle
+
+and if that's the case they probably
+
+could just use expand so there's code
+
+like that and refactor bit into  expand
+
+call but like when do they do that
+
+usually again it's usually in situations
+
+where like they say they request some
+
+data and they analyze the data and
+
+realize they need to request more data
+
+and they analyze that data and then they
+
+realize that need to request more data
+
+so they're like they're basically doing
+
+something where they're crawling
+
+asynchronous data or like fetching like
+
+say you're fetching imaginated results
+
+that's it that's a good example where
+
+you're like give me this page and that
+
+gives you a link to get the next
+
+give me the next page and then it gives
+
+you a link to get the next page give me
+
+the next page and so on and people what
+
+people commonly do is I have a subject
+
+and they'll say next I want one and then
+
+they'll merge map that into going and
+
+getting the data and when that comes
+
+back they'll analyze it and tell it and
+
+say hey subject next and what - and then
+
+it was kind of keep doing that and you
+
+can do that with expand and expand I'll
+
+do that and what line it makes it
+
+shorter when do you not use it most of
+
+the time okay it's it's mostly only
+
+useful when you are doing like you're
+
+getting it usually it's just to get when
+
+you're getting a stream of one piece of
+
+data or a few pieces of data and you
+
+need to analyze them in some way and
+
+send out and create more streams from
+
+what you got back
+
+so it's not a common use case oh do a
+
+lot of people just like not know expand
+
+they don't know it and or they don't
+
+have a use for it I think a lot of
+
+people don't know it because frequently
+
+I'll see code that people are using like
+
+a subject and merge map and then back
+
+into the subject instead of instead of
+
+using expand um well I'm just going
+
+through our list so how many observables
+
+does this one observe does expand
+
+subscribe to it ending everything
+
+how much observables couldn't observable
+
+observable I think thumbs are a little
+
+bit of their own observable yeah how
+
+many observables does expand subscribe
+
+to it any given time and any any number
+
+that ones that can subscribe to as many
+
+observables is what go through what
+
+other just hold up the most - oh I was
+
+smelling my lotion you go here holy up a
+
+moustache thank you it's Zara lotion
+
+bergamot it smells really good her
+
+mustache for me
+
+on those I'm gonna call David Hasselhoff
+
+you know what I've been doing lately is
+
+um Elliott won't uh yes
+
+I won't put beard oil in his beard
+
+because he's too lazy and he also won't
+
+pull he's gonna kill me because this is
+
+on the internet but only what do is just
+
+want Tom you can tell that be funny but
+
+okay so who doesn't put we'll put beard
+
+oil on and he also want lotion his
+
+elbows it drives me nuts because I have
+
+to stretch his elbow sometimes like
+
+sometimes I'll just give a scrape of
+
+elbow so every morning and night I like
+
+take oil and just stuck with on him with
+
+oil I'm like give me your album it's
+
+really fun we're just big children
+
+you're amused I am amused
+
+although now I'm worried that I need
+
+dealers in my elbows yeah dude
+
+maybe like you know if you ever see
+
+Jesse like avoiding you you'll be like
+
+do I have do I have crappy elbows you
+
+gotta get some lotion on those elbows
+
+do you have lotion good job good job
+
+good job
+
+okay okay what's another one we should
+
+do that's kind of like in the theme of
+
+all we've been talking about good job
+
+you got proper elbow elbow elbow and
+
+whisper sweet solution my elbows no no
+
+think about it
+
+yes I'm not gonna get it dicted to this
+
+and i lotioning your elbows and right
+
+Mike whoa wow I really feel like
+
+hopefully my elbows today they Bend so
+
+much better
+
+mmm we found smaller I know right I'm so
+
+tiny no I'm serious maybe it's the
+
+camera angle I'll get closer I got
+
+better that's better
+
+um okay so what other operators can
+
+talk about that's like in the theme
+
+that's really all of them and of that
+
+kind of vein of doing things
+
+what's the next team we should rotation
+
+pretty easy ones or should we be things
+
+like your time I catch error or talk
+
+about air handling next or either air
+
+handling or unsubscription well air
+
+handling
+
+observables are just air handling in
+
+general observables specifically errand
+
+handling no error handling are there is
+
+there a class of air handling
+
+observables yeah of operators yeah
+
+there's like yes thank you there's
+
+Priory pro and catcher retry retry when
+
+and catch error which other ones on
+
+error resume next I've never heard of
+
+that one okay okay
+
+start with retry oh we're still going I
+
+figured you're cutting off at eight
+
+o'clock I'm so sad we don't get to do
+
+round two this you're just gonna do them
+
+all in one day if you leave me now you
+
+think we should go for another 
+
+minutes
+
+are you free yeah I am not actually all
+
+right well end but I'm super-stoked
+
+round air handling operators for our
+
+next adventure okay say bye to the
+
+Internet but then stay on so we can say
+
+bye bye bye Internet
