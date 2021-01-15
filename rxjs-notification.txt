@@ -1,0 +1,69 @@
+http://www.omdbapi.com/?i=tt3896198&apikey=d62a4f32
+Here is your key: d62a4f32
+
+
+RxJs Notification sample for materialize
+------------------------------------------------------------------------------------------------------------------
+
+onCompleted() is by definition a terminal case so no you cannot receive onCompleted() directly in the outer Observable.
+
+You have a couple options depending on how you need to use the onCompleted.
+
+Either you could use .tapOnCompleted() or .finally() to handle a side effect of stream termination:
+
+var foo = Rx.Observable.range(0, 3)
+.select(function (x) { 
+    return Rx.Observable.range(x, 3)
+           .tapOnCompleted(function(){/*Apply side effect*/});
+          //Or .finally()
+
+})
+.switch();
+Or you will need to materialize the inner stream to handle the values:
+
+var foo = Rx.Observable.range(0, 3)
+.select(function (x) { 
+    var bar = Rx.Observable.range(x, 3)
+    .materialize();
+    return bar;
+})
+
+.switch()
+
+foo.subscribe(function(x) {
+  if (x.kind == 'N') {
+    process(x.value);
+  } else if (x.kind == 'C') { /*Do something else*/}
+});
+Note that in the example you gave when the switch occurs the Observable will not complete, only the last one will complete, because subsequent values are coming in too fast.
+
+If all of the sequences should be running until completed you should use concatAll() instead of switch()
+
+use case of RxJs Notification in Error case
+--------------------------------------------
+A use case: as errors or completions are propagated immediately, you can't for example delay them. To do so, you can try this approach:
+
+// sample stream
+interval(500).pipe(
+  mapTo('normal value'),
+  // sometimes value, sometimes throw
+  map(v => {
+    if (randomInt() > 50) {
+     throw new Error('boom!')
+    } else return v;
+   }),
+  materialize(),
+  // turns Observable<T> into Notification<Observable<T>>
+  // so we can delay or what you want
+  delay(500),
+  // and we need to do some magic and change Notification of error into
+  // Notification of value (error message)
+  map(n => n.hasValue? n : new Notification('N', n.error.message, null)),
+  // back to normal
+  dematerialize()
+)
+// now it never throw so in console we will have 
+// `normal value` or `boom!` but all as... normal values (next() emmision)
+// and delay() works as expected
+.subscribe(v => console.log(v))
+
