@@ -12,3 +12,347 @@ const dragBG$ = mousedown$
         chart.transform({ x })
     })
 
+
+ProgressService
+------------------------------------------------------------------------------------------------------------
+The service should track how many "things" are currently loading. 
+And have an isLoading() method that returns an Observable<boolean> to indicate if anything is loading at all.
+
+possible solution
+................
+
+enum ListAction {
+  Added,
+  Removed,
+  Empty,
+  Undefined
+}
+
+export class ProgressService {
+
+  constructor() { }
+
+  progress: Observable<number> = EMPTY; // value > 0 when something is loading
+
+  obsListChanged: BehaviorSubject<ListAction> = new BehaviorSubject<any>(ListAction.Undefined);
+  obsList: Array<Observable<boolean>> = [];
+
+  addLoadingProvider(lp: Observable<boolean>) {
+    // increment this.progress, when lp emits true
+    // decrease this.progress, when lp emits false
+    // nice to have: ignore if lp's first emitted value is false
+    this.obsList.push(lp);
+
+    this.obsListChanged.next(ListAction.Added);
+  }
+
+  removeLoadingProvider(lp: Observable<boolean>) {
+    // stop listening to lp
+    // clean up: decrease this.progress, if lp last emitted true
+    this.obsList = this.obsList.filter(i => i !== lp);
+    this.obsListChanged.next(ListAction.Removed);
+  }
+
+  isLoading(): Observable<boolean> {
+    // return this.progress.pipe(
+    //   map(val => val !== 0)
+    // );
+    return this.obsListChanged.pipe(
+      switchMap(() => {
+        return combineLatest(this.obsList);
+      }),
+      map(v => {
+        return v.some(loading => loading);
+      })
+    );
+  }
+}
+
+possible solution 2
+....................
+
+export class ProgressService {
+
+  constructor() { }
+
+  progress: Observable<number> = EMPTY; // value > 0 when something is loading
+
+  obsList$: BehaviorSubject<Array<Observable<boolean>>> = new BehaviorSubject<Array<Observable<boolean>>>([]);
+
+  addLoadingProvider(lp: Observable<boolean>) {
+    // increment this.progress, when lp emits true
+    // decrease this.progress, when lp emits false
+    // nice to have: ignore if lp's first emitted value is false
+    this.obsList$.next([...this.obsList$.getValue(), lp]);
+  }
+
+  removeLoadingProvider(lp: Observable<boolean>) {
+    // stop listening to lp
+    // clean up: decrease this.progress, if lp last emitted true
+    const removed = this.obsList$.getValue().filter(i => i !== lp);
+    this.obsList$.next(removed);
+  }
+
+  isLoading(): Observable<boolean> {
+    // return this.progress.pipe(
+    //   map(val => val !== 0)
+    // );
+    return this.obsList$.pipe(
+      switchMap(obs => {
+        return combineLatest(obs);
+      }),
+      map(v => {
+        return v.some(loading => loading);
+      })
+    );
+  }
+}
+
+startWithTimeout<T, 
+---------------------------------------------------------------------------------
+import { concat, OperatorFunction, race, SchedulerLike, timer } from "rxjs";
+import { mapTo, publish } from "rxjs/operators";
+
+function startWithTimeout<T, S = T>(
+  value: S,
+  duration: number | Date,
+  scheduler?: SchedulerLike
+): OperatorFunction<T, S | T> {
+  return (source) =>
+    source.pipe(
+      publish((published) =>
+        race(
+          published,
+          concat(timer(duration, scheduler).pipe(mapTo(value)), published)
+        )
+      )
+    );
+}
+
+multicast and publish to implement local sharing of a source observable
+---------------------------------------------------------------------------------------------------------
+hat means that multicast (and publish) can be used to 
+- easily implement the local sharing of a source observable.
+
+
+named observer function
+-----------------------
+The examples in this article use the following utility function to create named observers:
+
+function observer(name: string) {
+  return {
+    next: (value: number) => console.log(`observer ${name}: ${value}`),
+    complete: () => console.log(`observer ${name}: complete`)
+  };
+}
+
+                                           factoryFunction
+randomValue observable factory with defer(() => {  ... random number }) creates random number when subscribed to
+---------------------------------------------------------------------------------------------------
+import { defer, Observable, of, Subject } from "rxjs";
+
+-------------------------------------------------------------------
+const source = defer(() => of(Math.floor(Math.random() * 100)));
+------------------------------------------------------------------
+
+const subject = new Subject<number>();
+subject.subscribe(observer("a"));
+subject.subscribe(observer("b"));
+source.subscribe(subject);
+
+
+The examples in this article use the following utility function to create named observers:
+
+function observer(name: string) {
+  return {
+    next: (value: number) => console.log(`observer ${name}: ${value}`),
+    complete: () => console.log(`observer ${name}: complete`)
+  };
+}
+
+The source in the example is cold. 
+
+Each time an observer subscribes to the source, the factory function passed 
+to defer will create an observable that emits a random number and then completes.
+
+To multicast the source, the observers are subscribed to the subject, and the subject is then subscribed to the source. 
+The source will see only one subscription, will produce only one next notification — containing the random number — 
+and will produce only one complete notification. The subject will send those notifications to its observers and the output will look something like this:
+
+observer a: 42
+observer b: 42
+observer a: complete
+observer b: complete
+
+basic mental model for RxJS multicasting: 
+-------------------------------------------------
+- a source observable; 
+- a subject subscribed to the source; 
+- and multiple observers subscribed to the subject.
+
+RxJS includes a multicast operator that can be applied to an observable to make it hot. 
+The operator encapsulates the infrastructure that’s involved when a subject is used to multicast an observable.
+
+
+Specialised subjects
+----------------------------------------------------
+The publish operator has several variants and they all wrap multicast in a similar manner, 
+passing subjects rather than factory functions. However, they pass different kinds of subjects.
+
+The specialised subjects that the publish variants use include:
+
+the BehaviorSubject;
+---------------------
+const delayed = timer(1).pipe(switchMapTo(source));
+
+const p = delayed.pipe(publishBehavior(-1));
+p.subscribe(observer("a"));
+p.connect();
+
+p.subscribe(observer("b"));
+setTimeout(() => p.subscribe(observer("c")), 10);
+
+The example’s output will be something like this:
+
+observer a: -1
+observer b: -1
+
+observer a: 42
+observer b: 42
+
+observer a: 54
+observer b: 54
+
+observer a: complete
+
+observer b: complete
+
+observer c: complete
+
+a subscribes before the connect call, so it receives a next notification with subject’s initial value, 
+both of the next notifications from the source and the complete notification;
+
+b subscribes after the connect call, but before the subject receives the source’s first next notification, 
+
+so it receives a next notification with subject’s initial value, both of the next notifications from the source and the complete notification;
+
+c subscribes after the source observable has completed, so it receives only acomplete notification
+
+the ReplaySubject; and
+----------------------
+Instead of passing a Subject to multicast, publishReplay passes a ReplaySubject. As its name suggests, 
+a ReplaySubject will replay the specified number of next notifications whenever an observer subscribes.
+
+const p = source.pipe(publishReplay(1));
+p.subscribe(observer("a"));
+p.connect();
+
+p.subscribe(observer("b"));
+setTimeout(() => p.subscribe(observer("c")), 10);
+
+Using publishReplay, the example’s output will be something like this:
+
+observer a: 42
+observer b: 42
+observer a: 54
+observer b: 54
+observer a: complete
+observer b: complete
+observer c: 54
+observer c: complete
+The notifications received by the observables can be summarised as follows:
+
+a subscribes before the connect call, at which stage the subject has received no next notifications, 
+so a receives both of the next notifications from the source and the complete notification;
+
+b subscribes after the connect call, at which stage the subject has received the first next notification from the source, 
+so b receives the replayed next notification, the source’s second next notification and the complete notification;
+
+c subscribes after the source observable has completed, so it receives a replayed next notification and acomplete notification.
+Looking at the behaviour of observable c, it’s clear that — unlike the publish operator — the publishReplay operator is suited
+ for use with the refCount operator, as observers subscribing after the source completes will receive the replayed next notifications
+
+the AsyncSubject.
+------------------
+Instead of passing a Subject to multicast, publishLast passes an AsyncSubject. 
+The AsyncSubject is the most unusual of the specialised subjects. It does not emit a next notification until it completes, 
+at which time it emits the last next notification it received from the source observable — if it has received one — and a complete notification.
+
+const p = source.pipe(publishLast());
+p.subscribe(observer("a"));
+p.connect();
+
+p.subscribe(observer("b"));
+
+setTimeout(() => p.subscribe(observer("c")), 10);
+
+Using publishLast, the example’s output will be something like this:
+
+observer a: 54
+
+observer b: 54
+
+observer a: complete
+observer b: complete
+
+observer c: 54
+observer c: complete
+
+The notifications received by the observables can be summarised as follows:
+
+- a and b subscribe before the source completes, but receive no notifications until the source has completed, 
+  at which time they receive a next notification containing the second random number and a complete notification.
+
+- c subscribes after the source has completed and it, too, receives a next notification 
+  containing the second random number and a complete notification.
+  Like publishReplay, the publishLast operator is suited for use with the refCount operator, 
+  as observers subscribing after the source completes will receive the last next notification
+
+The share operator
+----------------------------------------------------------------------------------------------------------------
+The share operator is similar to using the publish and refCount operators. 
+However, share passes a factory function to multicast, which means that when a subscription is made after the reference count drops to zero, 
+a new Subject will be created and subscribed to the source observable.
+
+The use of a factory function makes observables composed using share retry-able: if an error occurs, any subscribers are unsubscribed 
+and the reference count drops to zero. If retried, re-subscription will see a new Subject created which will subscribe to the source.
+ With observables composed using publish, this will not happen: the Subject will simply re-emit the error notification.
+
+const s = source.pipe(share());
+s.subscribe(observer("a"));
+
+s.subscribe(observer("b"));
+
+setTimeout(() => s.subscribe(observer("c")), 10);
+
+Using share, the example’s output will be something like this:
+
+observer a: 42
+
+observer a: 54
+
+observer b: 54
+
+observer a: complete
+
+observer b: complete
+
+observer c: 6
+observer c: 9
+observer c: complete
+
+The notifications received by the observables can be summarised as follows:
+
+a subscribes and immediately the first next notification, followed by the second next notification and the complete notification;
+b receives only the second next notification and the complete notification;
+c subscribes after the source observable has completed; a new subject is created and subscribed to the source, 
+from which it immediately receives the first next notification, followed by the second next notification and the complete notification.
+In the examples we’ve used to look at the publish and share operators, observers a and b are unsubscribed automatically when the source observable completes. 
+They would also be unsubscribed automatically if the source were to error. That highlights another difference between the publish and share operators:
+
+if the source observable errors, any future subscriber to the observable returned by publish will receive the error;
+however, any future subscriber to the observable returned by share will effect a new subscription to the source, as the error 
+will have automatically unsubscribed any subscribers, dropping the reference count to zero.
+And that’s it; we’re at the end. We’ve looked at six operators, but they are all implemented in a similar manner and 
+they all fit the same basic mental model: a source observable; a subject subscribed to the source; and multiple observers subscribed to the subject.
+
