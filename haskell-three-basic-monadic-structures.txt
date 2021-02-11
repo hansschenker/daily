@@ -1,0 +1,62 @@
+
+Functor
+-------------------------------------------------
+fmap :: ( a -> b) -> ca -> cb
+--------------------------------------
+ - input: function: from a to b, 
+ - input: context with value a: a value a inside a given context c. ,context c implements type class fmap,
+ - output: a value b inside the same context
+fmap is a:
+-------------
+A functor is a type that wraps another type,
+and you can use fmap to apply functions inside.
+
+
+ap :: c (a -> b) -> ca -> cb // make types compatible to put them in same context, container (Maybe, List, Either, ...)
+-------------------------------
+ - input: function itself is inside the context c
+ - input:
+ - output:
+
+Applicative
+------------------------------------------------
+The point of ap is it takes a function inside the context,
+a value inside the context, and continues applying
+the values to the function.
+
+
+
+Monad
+----------------------------------------------------------
+bind :: (a -> cb) -> ca -> cb
+--------------------------------------
+ - input: takes a function, which is a chaining function
+ - input: it takes an a, which is not in the context,
+ - output: and returns a b inside the context.
+           And it combines it with a value a, which
+           is already in the context.
+
+a Monad is:
+ - a context that wraps values and in which you
+   build pipelines by chaining functions that keep returning
+   values inside that context.
+
+
+A monad has three building blocks:
+----------------------------------
+
+   return, of, identity
+   ---------------------
+ - A type constructor that produces the type of a computation, given the type of that computation’s result.
+   
+   map, fmap
+   ---------
+ - A function that takes a value, and returns a computation that—when executed—will produce that value.
+
+   bind, flatMap, concat
+   ---------------------
+ - A function that takes two computations and performs them one after the other, 
+   making the result of the first computation available to the second.
+
+
+

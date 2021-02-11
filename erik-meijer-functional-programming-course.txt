@@ -1,0 +1,637 @@
+pfunctional programming, programming with haskell, graham hutton
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+https://www.youtube.com/playlist?list=PLoJC20gNfC2gpI7Dl6fg8uj1a-wfnWTH8
+
+
+functional programming characteristic:
+
+- statically types, use compiler to catch your errors
+
+- lazy: 	     deferred expression evalution, if not used it is not computed
+                     makes accesssing infinite lists possible: because infinite list is not evaluate eagerly; take 5 from infinite list is possible
+		     pros: compiler has a lot of possibilites to optimize
+		     
+		     cons: memory pitfalls, you could fill up your memory with a giant expression			
+
+- purely functional: everything is a function: f :: Int -> Int, f x = x + 1
+                     everything is immutable, no assignment operations
+                     transforming data, not creating variables, transform data from  fn in -> out
+                     everything is a compression: if is an expression
+		     no usual control flow (switch loop)
+		     no effects, function totall depends on input parameters
+                     Side effects are explicitly stated: readFile ::  String -> IO String, IO is a special type, it is impure
+                     All Side effects are in IO
+		     Core logic of program is pure
+	 	     Impure effects are in the outer layer (main)
+                     a -> IO is possible
+                     IO -> a is not possible, form impute to pure
+
+function types
+----------------------------------------------------------------------------------------------------------------------------------------------
+                    f :: Int -> Int -> [Int] // function with 2 arguments, function that returns a function // currying, all functions are one argument fns
+                                                                                                            // which allows for partial application: bind one arg in a fn call
+                                                                                                            // f 1 :: (Int) -> [Int]
+                                                                                                            // (f 1) 2 :: [Int]
+		    f :: (Int) -> (Int) -> [Int] // () indiquates function call
+
+                    -> is right associative
+                    f 1 is left associative
+		   
+ 		    ???  ::  (a -> b) -> [a] -> [b]   // (a -> b) : is a function from type A to type B
+                                                      // [a] -> [b]     transforms a list of a into a list of b
+						      // ??? is map // lowercase letters are type parameters, uppercase letters are reserved for Types
+ 						     // a and b are generic , they do not have a type
+                    filter :: (a -> Bool ) -> [a] -> [a]
+
+
+
+
+- general purpose
+
+- no assignments: var a = 6;
+- pure functions
+- function compositon, sequence operators with transformation functions
+- point free style
+- chaining function calls
+- robert milner: generics, type inference,Algebraic Data Types, ML -> OCAML -> F#
+- steel good ideas is better than having bad ideas
+- function: you apply an argument to a function
+- lambda expression
+- expression based programmming, lazy evaluation
+- static typing, let compiler find your errors
+- 1987 Haskell: pure Lazy functional programming language
+- 1998 Haskell 1998, Haskell Specification
+
+- quick sort in haskell: [] empty list, 
+
+  pattern matching (case analysis)
+  sort empty list: f [] = [],
+  f (x:xs) = f ys ++ [x] ++ f zs
+             where
+               ys = [a | a <- xs, a <= x ]
+               zs = [b | b <- xs, b > x ]
+
+
+- expressions are possible to be evaluated in a REPL, because they are self contained
+
+- equational reasoning in functional programming
+
+  take n xs is equal to drop n xs
+
+  f xs <-> xs |> f // apply f on xs
+
+  OOP:   receiver.method(a, b , c) // object most important
+
+  FP     method receiver a b c     // method most important
+         pattern matching (based on dynamic types)
+
+
+  FP    List is the most important data structure (universal data block)
+
+  Synstax: Function Application
+ 
+  f(a,b) + c d // Apply the function f to a and b, and add the result to the product of c times d
+
+  f a b
+  f (a, b)
+
+	math			haskell
+	f(x)			f x
+	f(x,y)			f x y
+	f(g(x))			f (g x)
+       	f(x, g(y))		f x (g x)
+	f(x) g(y)		f x * g y
+
+	$ operator: right associative operator to make leave out ()
+
+
+  haskel scripts: file.hs
+
+  double x = x + x // compiler infers types: Num a -> a -> a
+
+  quadruble = double . double (compose double with double)
+
+  function testing is easier, they do not depend on external state (only parameter values and return value)
+
+  compositionl thinging only possible because of lazy functions (expressions) in FP
+ 
+  xs = take n [1..] // take from inifinite list
+
+  impperative - eager evaluation
+
+  functional - lazy evaluation
+
+  Naming requirements:
+  -  functions and argument names must begin with a locwercase letter
+  -  list names have by convention an s suffix: x -> xs, list of list xss
+  -  type names start with upercase
+
+  factorial n = product [1..n]
+
+  The Layout Rule
+  Whitespace is significant (block structure)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------    
+Lecture 03: Types
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Type		is a name for a set of related values with the same type: sample Bool True/False
+		Types are for the compiler to indicate when you try use a number for a boolean
+
+Type inference  you do not have to write the Type for the expression, the compiler can infer the type 
+
+Type errors	compiler uses knowledge on types to indicate you when you misuse a type
+
+Types		Bool, Char, String (list of Char), Int (fixed precision), Integer (arbitrary precison), Float
+
+List Types      a list is a sequence of values of the same type [bool, bool, bool] :: [Bool]
+
+		[1, 2, 3] :: [Int] 
+                             Type constructor: []
+                value constructor: []
+
+Tuple Type	(1, True, 'c') :: (Int, Bool, Char) 
+		- list of specific length, access by position or pattern matching
+		- order matters
+
+Function Type	mapping from one value to another value
+		\x -> ..x     // T1 -> T2, T1 can be a function and T2 a number
+
+
+		Func<T>  - () - T
+		Func<T,S> - S -> T
+		Action<T> - T => IO T
+
+		add :: (Int, Int) -> Int
+		add (x,y) = x + Y
+                add = \(x,y) -> x + y // es6: const add = (x,y) => x + y
+
+Functions are all in curried format: each function is a one argument function
+
+		add x y = x + Y
+
+arrows are right associative:
+		int -> int -> int -> int
+                int -> (int -> (int -> int))
+		Func<Int,Func<Int,Func<Int, Int>>>
+	       	
+function assiociate to the left: (f 5) is a closure or an anonymous function which can be passed around
+		f 3 2 1 - ((f 3) 2 ))
+type application assiociates to the left: int -> int -> int -> int
+
+		type structure = expression structure
+
+Polymorphic functions - Generics (parameteerized over types)
+---------------------------------------------------------------------------------------------------------
+
+		length :: [a] -> Int // a type variable
+                length [False, True]
+                length ['abc']
+
+		fst 	:: (a,b) -> a
+		head	:: [a] -> a
+		take	:: Int -> [a] -> [a]
+		zip	:: [a] -> {b] -> [(a,b)]
+		zip	:: ([a][b]) -> [(a,b)]
+		id	:: a -> ->
+
+
+
+Class		correspond to interfaces: sum	:: Num a -> [a] -> -> // Num correspond to Num Interface // Num class
+
+Good programming style: first write the type of your function
+
+homework: write the type of the following functions:
+-------------------------------------------------------
+		type:		second :: [a] -> a (a, [a])		
+		expression: 	second xs = head (tail, xx)
+		 
+		type:		swap :: (a,b) -> (b , a)
+		expression:	swap (x,y) = (y,x)
+
+		type:      	pair :: a -> b -> (a,b)
+		expression	pair x y = (x,y)
+
+		type		double :: Num a -> Int -> Int
+		expression	double x = x * 2
+
+		type
+		expression	palindrome xs = reverse xs == xs
+
+		type		twice :: \x -> \x -> \x
+		expression	twice f x = f (f x)		
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Lecture 4 - Functions
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+abs :: Int -> Int // in Haskell Type definition of the function
+abs n = ...       // and function implementation are separate
+
+in other languages like c# or vb.net they intermingeleed:
+Function Abs(n as Int) as Int
+
+
+Haskell Guarded Equations:
+abs n 
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Lecture 5 - List Comprehensions - come from Set Comprehensions
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+sets do not have duplicates
+order is not import
+
+lists
+------------------------
+order mattersn
+duplicate are possible
+
+x <- [1..5] // x drawn from 1 to 5
+
+linq
+------------
+from x in Observable.Range(5)
+selec x*x
+
+concat (flatten 2 lists into one)
+------------------------------------
+Concat :: [ [a] ] -> [a]
+
+
+guards, give me all the values from 1 to 10 where the values are even
+----------------------------------------------------------------------
+
+factors :: Int -> [Int]
+factors x = 
+
+prime :: Int -> Bool (factors 1 and n)
+prime n = factors n == [1,n]
+
+zip :: ( [a] [b] ) -> [a,b]
+
+
+pairs ::    1 2 3 4 5
+            2 3 4 5
+           12,23,45,
+
+use cases:
+-----------------------------
+delta mouse moves
+check list is sorted, when each pair is sorted
+
+const dragBG$ = mousedown$
+    .switchMapTo(mousemove$
+        .pairwise()
+        .map(([[x1], [x2]]) => x2 - x1)
+        .takeUntil(mouseup$)
+    )
+    .scan((x, y) => x + y)
+    .do((x) => {
+        chart.transform({ x })
+    })
+
+
+zip with index
+---------------------
+
+"abc" :: string :: [Char]
+
+
+Leture 6 - lambda calculus - Why functional programming matters, john hughes, 1984
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Recursive Functions - Function defined by other function, compose functions
+-------------------------------------------
+
+1 generate a list of n
+2 calculate product of the n  list
+
+  poroduct ( take n [1...]) // take n elements from the infinite list and calculate product
+
+  Expressions are evaluated by stepwise process of applyong functions to their arguments
+
+  for example:
+  
+  factorial 3 =
+  product [1..3} =
+  product [1,2,3] =
+  1 * 2 * 3 =
+  6
+
+  recursive definition of product with pattern matching over list, the empty list is 1, (head: tail) = head * product tail
+
+  product :: [Int] -> Int
+  product [] = 1
+  product ( x:xs) = x * product xs
+
+  recursion: replace loop (iteration)
+  you define a recursion in terms of itself, the loop is like a function in terms of itself, the loop gets smaller and smalller
+  you define a recursive function in terms of of a smaller version (in haskell list) of its arguments (in haskell: list in form of (head: tail))
+  function is solved by induction:
+  on the left side you define all cases : empty list,,,,
+  on the right side you are calling the function on the remainder of the list
+
+  in imperative programming: you set a breakpoint in the loop and examine the state of your variables
+  in functional progamming: you look at the expression and unfold the expression until you have a value
+
+  later we define a higher order function which capture the recursive iteration over a list
+  (fold)
+
+  unfolding definitons
+----------------------
+  evaluation and functional programming is unfolding defintions
+  where the order of evaluation is independent, which makes parallel execution possible
+
+
+Leture 7 - Higher Order Functions,abraction of common patterns,  Abstraction and Parameterization
+           Higher Order Functions: defining functions over lists using recursion
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  if i see something that i have seen before , i can abstract from the differences and
+  define a new function and then just recreate the expression by passing the extracted arguments
+  this is only possible because of lazy evaluation and purity, (there is no dependency of the order of evaluation)
+
+  abstraction: see what is the same and what is different, and factor out the difference to be a parameter
+
+  Combinators are higher order functions: HOF
+  fn are first class
+  HOF is a function that takes a fn as argument or returns a fn
+  
+  samples:
+  ........
+  twice :: ( a -> a) -> a -> a // twice takes a fn as the first argimt
+  twice :: (a -> a) -> (a -> a)
+
+  twice f x = f(f x)
+
+  twice :: f . f
+
+  map
+
+  filter
+
+  reduce
+
+  The Foldr Function - captures a pattern with the help of recursion
+  ------------------------------------------------------------------------------------------
+  foldr (fold from left to right=^)
+  foldr is reduce, like a visitor fn which goes to a structure and applies a fn
+
+  a number of fns on lists can be defined using the following simple pattern of recursion
+  
+  f [] 	= v
+  f (x:xs) = x . f xs
+
+  f maps the empty list to some valuue and any non empty lisst
+  to some function appplied its head and f of its tail
+
+
+
+
+  Advantages of HOF
+  -----------------
+ - common programming idioms (loop, if ...) can be encoded as functions within the language itself
+ - core of language stays small
+ - domain specific languages can be defined as collections of HOF
+ - algebraic properties of HOF can be use to reason about programs
+
+  algebraic properties of foldr: fusion and banana split // performance benefit
+   fusion: combine two separate fns into one
+   sum . map ( _ -> 1)
+   foldr ( _ -> x -> (1+x) 0
+
+  point free programming makes it easier for algebraic reasoning
+
+  odd :: not 
+
+
+Leture 8 - Functional parser, parsers are combinators, combinators are higher order functions
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Monads (Parser is a special case of a monad)
+
+  Parser is a program that analyses a piece of text to determine its syntactic structure
+
+  syntactic  structure
+  --------------------
+  - the study of the patterns of formation of sentences and phrases from words and of the rules for the formation of grammatical sentences in a language.
+    words, sentence, grammatic, language
+  - the patterns or rules so studied: English syntax
+  ¨
+  grammar
+  ------
+  the whole system and structure of a language or of languages in general, 
+  usually taken as consisting of 
+  - syntax and 
+  - morphology (including inflections) and sometimes also 
+  - phonology and 
+  - semantics.
+
+  syntax (rules, principles, processes) -> structure a sentence in a given language
+          ordering (syn tacere) the words of a sentence in a given language
+  ------
+   is the set of rules, principles, and processes that govern the structure of sentences (sentence structure) in a given language, 
+   usually including word order. The term syntax is also used to refer to the study of such principles and processes.
+
+  sentence
+  -------
+  grammatically correctly formulated idea (Subject - the noun,  Predicat - the verb, Adjective - the quality of the subject, adverb - quality of predicate)
+  semantics
+  ----------
+
+  program
+  -------
+  every program uses some form of parser to pre-process its input
+
+  parser :: Stringn -> Tree	// parser is a function that takes a string and produces a tree
+  --------
+  type Parser = String -> Tree
+
+  parser takes in a string in a structured form and outputs an abstruct syntax tree (AST)
+
+  The Parser type is a monad, a mathematical structure that has proved useful for modeling
+  many different kinds of computations.
+  - mathematical structure
+  - useful for modeling computations
+
+  Monad represents a computation that delivers a value of some kind
+  abstracts away the computation
+
+  Monad comprehension (needs bind, selectMany) are making the Monad composable
+  Parser can take in a Parser and produce another Parser (Higher Order Function)
+
+  EBNF
+  ----
+  In computer science, extended Backus–Naur form (EBNF) is a family of metasyntax notations, any of which can be used to express a context-free grammar. 
+  EBNF is used to make a formal description of a formal language such as a computer programming language. 
+
+
+
+
+
+  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Lecture 09 - IO Monad
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  read from keyboard, mouse, file and output to file , printer, display
+  
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Lecture 10 - Types and Classes
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  type Pos = { Int , Int}  // type is an alias for another type construction
+
+  tpe Pair = { a, b}
+
+  Type world and Value world
+
+  Abstract Data Type ADT - Data Declarations - data
+  ---------------------------------------
+  a completleyy new type can be defined by specifying its valuse using a data declaration (ADT)
+
+  data Bool = False | True // True and False are Type constructors
+
+  Bool is a new type with two new values False and True
+
+  In C# Bool is an abstract class with two subtypes
+
+  Pattern matching is downcasting from the base class to is subtype
+
+  Type and constructor names must be in Uppercase
+
+  data Answer = Yes | No | Unknown
+
+  answers :: [Answer]
+
+  answers = [Yes, No, Unknown]
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Lecture 11 - Graham Hutton - The Countdown Problem
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Countdown Problem (Quizz Program on british television) basd on original french version: Des Chiffres et des Lettres
+
+  Problem:
+  - you are given 6 numbers: 1 3 7 10 25 50
+  - and the arithmetic operators: + - * /
+  - construct an expression whose value is 765
+
+  Rules:
+  - all the numbers including intermediate resullts must be positive natural numbers (1, 2, 3,...)
+  - each of the source nubrers can be used at most once , you need not use all numbers
+  - we abstract from other rules that are adopted on television for pragmatic reasons
+
+  Define solution in Haskell
+  -------------------------------
+
+  data Op = Add | Sub | Mul | Div // data - abstract data type
+  
+  define an Operator:
+
+  apply 		:: Op -> Int -> Int -> Int
+  apply Add x y		= x + y
+  apply Sub x y		= x - y
+  apply Mul x y		= x * y
+  apply Div x y 	= x / y
+
+  validation operator
+
+  valid			:: Op -> Int -> Int -> Int -> Bool
+  valid Add _ _		= True
+  valid Sub x y		= x > y
+  valid Mul _ _		= True
+  valid Div _ _		= x mod y === 0
+
+  define expression data type : Expr
+  ------------------------------------
+  data Expr = Val Int | App Op Expr Expr  // Val: value,  App application of Op, Val and App are constructors
+  sample: 1 + 2  : App Add (Val 1)(Val 2)  // Add needs an expression not a value like 1 or 2 -> (Val 1 ) (Val 2)
+
+  define an eval function
+  -----------------------
+  return the overall value of an expression, provided that it is a positive natural number
+
+  eval			:: Expr -> [Expr]
+  eval (Val n)		= [n | n > 0 ]  // eval (Val n) = if n > 0 then [n] else []
+
+                            apply the operation o to x and y
+  eval (App o l r)	= [ apply o x y | x <- eval l					// eval l if success -> x   -> [x] otherwise []
+                                        , y <- eval r					// eval r if success -> y   -> [y] otherwise []
+                                        , valid o x y}                                  // check if o is a valid operation -> [x o y] otherwise []
+
+   could also use the MayBe type instead of using the list comprehension syntax
+
+  either succeds and returns a singleton list or fails and returns the empty list
+
+  -------------------------
+  Formalizing the problem
+  ------------------------
+
+  return a list of all possibl ways of choosing zero
+  or more elements from a list:
+
+  choices		:: [a] -> [[a]]
+  
+  sample:
+  choices [1.2]		= [[],[1],[2],[1,2],[2,1]]
+
+  helper function values function which returns a list of all the values in an expression:
+
+  values		:: Expr -> [Int]
+  values (Val n)	= [n]
+  values (App _ l r)	= values l ++ values r
+  
+  solution function
+  ------------------
+  decide if an expressiion is a solution for a given list of source numbers and target number
+
+  solution		:: Expr -> [Int] -> Int -> Bool  // Expr: your expr , [Int] source numbers, Targetnuber, valid solutioh
+  solution e ns n	= elem (values e) (choices ns) && eval e == [n] // e: expr, ns: source numbers, n: targetnumber, expr meets targetnumber
+
+  --------------------------------------
+  Steps to solve the problem
+  --------------------------------------  
+
+  return a list of all possible ways of splitting a list into two non empty parts
+
+  split			:: [a] -> [([a],[a])]
+
+  sample:
+  --------
+  split [1,2,3,4]
+
+  [([1],[2,3,4]),([1,2],[3,4]),([1,2,3],[4])]
+
+
+  the key function for the solution:
+  -----------------------------------
+  return a list of all possible expressions whose values are preciseley a 
+  a given list of numbers (source numbers in order):
+ 
+  exprs			:: [In] -> [Expr]
+  exprs []		= []
+  exprs [n]		= [Val n]
+  exprs ns		= [ e | (ls,rs) <-	split ns
+                              , l	<-	exprs ls
+			      , r	<-	exprs rs
+                              , e	<-	combine l r ]
+
+  combine functipn as helper
+  ----------------------------
+
+  combine		:: Expr -> Expr -> [Expr]
+  combine l r		= [App o l r | o <- [Add, Sub, Mul, Div]]
+
+
+   solutions function:
+  ----------------------
+  return a list of all possible expressions that solve an 
+  instance of the countdown problem
+
+  solutions		:: [Int] -> Int -> [Expr] // [Int]: source numbers, Int: target number, [Expr]: all possible expressions
+  solutions ns n 	= [ e | ns' <-	choices ns
+                              , e   <-	exprs ns'
+                              , eval e == [n] ]
+
+
+                                                                                   	

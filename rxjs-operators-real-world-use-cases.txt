@@ -1,0 +1,250 @@
+simple debug
+---------------------------------------------------------------
+export function show() {
+  return <T>(source$: Observable<T>) => {
+    return source$.pipe(tap(console.log, console.error, console.warn));
+  };
+}
+
+debug, angularuniversity
+--------------------------------------------------------------------------
+import {Observable} from 'rxjs';
+import {tap} from 'rxjs/operators';
+
+export enum RxJsLoggingLevel {
+    TRACE,
+    DEBUG,
+    INFO,
+    ERROR
+}
+
+let rxjsLoggingLevel = RxJsLoggingLevel.INFO;
+
+export function setRxJsLoggingLevel(level: RxJsLoggingLevel) {
+    rxjsLoggingLevel = level;
+}
+
+
+export const debug = (level: number, message:string) =>
+    (source: Observable<any>) => source
+        .pipe(
+            tap(val => {
+
+                if (level >= rxjsLoggingLevel) {
+                    console.log(message + ': ', val);
+                }
+            })
+        );
+
+
+
+stateful, fireship.io,
+------------------------------------------------------------------------
+import { Observable, pipe, interval, defer } from 'rxjs';
+import { map, share } from 'rxjs/operators';
+
+const stateful = () => {
+  return source => defer(() => {
+  let state = Math.random().toString();
+    return source.pipe(
+      map(next => {
+        state = state + '--' + next;
+        return state
+      }),
+      // tap( ...do something with state ),
+      // switchMap( ...do something with state),
+      // filter( ...do something with state )
+    )
+
+  })
+}
+Currently, each subscriber will see a different random number in the internal state. 
+If you need to share this data across all subscribers, you can pipe in the share operator.
+
+const obs = interval(1000).pipe(stateful(), share())
+
+obs.subscribe(console.log)
+obs.subscribe(console.log)
+
+
+
+polling, netanel basal
+---------------------------------------------------
+function polling<T>(stream: Observable<T>, period: number, initialDelay = 0) {
+  return timer(initialDelay, period).pipe(concatMapTo(stream));
+}
+
+
+
+filterKey, netanel basal,
+-----------------------------------------------------------
+type KeyboardEventKeys = 'Escape' | 'Enter';
+
+function filterKey(key: KeyboardEventKeys) {
+  return filter((event: KeyboardEvent) => event.key === key);
+}
+
+
+
+
+optiional debounce, netanel basal
+------------------------------------------------------------
+function optionalDebounce<T>(time?: number) {
+  return function<T>(source: Observable<T>): Observable<T> {
+    return time === undefined ? source : source.pipe(debounceTime(time));
+  };
+}
+
+
+
+debut , netanel basal
+------------------------------------------------------------
+function debug(tag: string) {
+  return tap({
+    next(value) {
+      console.log(`%c[${tag}: Next]`, "background: #009688; color: #fff; padding: 3px; font-size: 9px;", value)
+    },
+    error(error) {
+      console.log(`%[${tag}: Error]`, "background: #E91E63; color: #fff; padding: 3px; font-size: 9px;", error)
+    },
+    complete() {
+      console.log(`%c[${tag}]: Complete`, "background: #00BCD4; color: #fff; padding: 3px; font-size: 9px;")
+    }
+  })
+}
+
+
+
+filterNil , netanel basal
+----------------------------------------------------------
+function filterNil() {
+  return function<T>(source: Observable<T>): Observable<T> {
+    return new Observable(subscriber => {
+      const subscription = source.subscribe({
+        next(value) {
+          if(value !== undefined && value !== null) {
+            subscriber.next(value);
+          }
+        },
+        error(error) {
+          subscriber.error(error);
+        },
+        complete() {
+          subscriber.complete();
+        }
+      });
+
+      return () => subscription.unsubscribe(); <======
+    });
+  }
+}
+shorteer version
+---------------
+function filterNil() {
+  return function<T>(source: Observable<T>): Observable<T> {
+    return new Observable(subscriber => {
+      retrun source.subscribe({
+        next(value) {
+          if(value !== undefined && value !== null) {
+            subscriber.next(value);
+          }
+        },
+        ...
+      });
+    });
+  }
+}
+--------------------------------------------------------
+
+
+
+log operator , ferdinand malcher, angularschule.de
+--------------------------------------------------------
+import { OperatorFunction } from 'rxjs/interfaces';
+import { Observable } from 'rxjs/Observable';
+import { tap } from 'rxjs/operators';
+
+export function log1<T>(message?: string): OperatorFunction<T, T> {
+  return function(source$: Observable<T>): Observable<T> {
+    return new Observable<T>(observer => {  
+      const wrapper = {
+        next: value => {
+          console.log(message, value);
+          observer.next(value);
+        },
+        error: observer.error,
+        complete: observer.complete
+      }
+      return source$.subscribe(wrapper);
+    });
+  }
+}
+
+export function log2<T>(message?: string): OperatorFunction<T, T> {
+  return function(source$: Observable<T>): Observable<T> {
+    return source$.pipe(
+      tap(e => console.log(message, e))
+    );
+  };
+}
+
+export function log3<T>(message?: string): OperatorFunction<T, T> {
+  return tap(e => console.log(message, e));
+}
+
+
+
+tapOnce
+------------------------------------------
+function tapOnce<T>(label: string, fn: (value) => void) {
+  return source =>
+    defer(() => {
+      let first = true;
+      return source.pipe(
+        tap(payload => {
+          if (first) {
+            fn(payload);
+          }
+          first = false;
+        })
+      );
+    });
+}
+
+
+expand operator
+--------------------------------------------
+
+the expand operator is a
+flattening operator that takes its
+results and feeds it back into the
+mapping function that it has
+
+
+use cases
+--------
+
+other valid use cases for expand l
+different other like real world use
+
+cases for expand the honestly the top
+two cases for expand are 
+ - crawling anasynchronous trees
+
+- asynchronous process that needs to spawn
+  more copies of itself and in that case
+  you kind of are you have it feeding back
+  into the top and there's various reasons
+  that you might want to do something like
+
+rxjs recursion with expand
+---------------------------
+callService(ids).pipe(
+  expand(reqs => reqs.length === 0
+    ? empty()
+    : callService(
+        reqs.filter(req => req.status === 1).map(req => req.id)
+      ).pipe(delay(1000))
+  )
+).subscribe();
+

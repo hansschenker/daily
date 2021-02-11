@@ -1,0 +1,1584 @@
+I'm Nicholas I'm on the
+
+arc stress core team and I'm gonna be
+
+talking today about a concept that I
+
+call pluggable x' so what's a pluggable
+
+but usually when you're dealing with
+
+rxjs you
+
+normal rxjs pipeline
+-----------------------------------------
+composing behaviors out of individual
+operators and piping them together and
+to change the behavior you'll choose
+different operators
+
+rxjs pluggable operators
+-----------------------------------------
+pluggable is something into which you're
+
+actually going to insert an operator to
+
+change the behavior so a pluggable API
+
+provides some basic behavior that you
+
+can create very selves by passing in a
+
+different type of operator so our X J's
+
+itself has some pluggable api's it has
+
+subjects so subjects plug into multicast
+
+and give you a variety of different
+
+behaviors for sharing for publishing and
+
+also scheduler so schedule is plug into
+
+a bunch of api's to control how those
+
+API is work in a time basis so we'll
+
+have a look at some of the ways that you
+
+can use pluggable api's in your own
+
+applications and in particular we'll
+
+have a look at some pluggable api's 
+
+pluggable api's that are published in a
+
+package called rsjs pluggable z' so
+
+we'll go through a bunch of examples
+
+using these three api's and each of
+
+these examples will use angular and
+
+we'll use the github rest api so the
+
+first thing we'll look at is debouncing
+
+now debouncing is probably the classic
+
+use case for rxjs when you first start
+
+with angular one of the very first
+
+things that you think one of the very
+
+first things that I saw was taking in
+
+input taking the stream of values that
+
+were coming from that input debouncing
+
+them and then sending them to switch map
+
+to perform some sort of API call so
+
+we'll have a look at that with a mobile
+
+diagram and talk about some of the
+
+consequences of doing it so up the top
+
+we've got our inputs and down the bottom
+
+we've got our matches so in this case
+
+we're going to be taking an input and
+
+we're going to use it in a find user
+
+component so we'll take the input and
+
+we'll call github x'
+
+search api to get users that match the
+
+characters that have been entered so the
+
+user starts off and they type in addy
+
+now the DB arts implementation is going
+
+to have an internal time so we're using
+
+debounce time and that timer
+
+so long and when it gets to the end it
+
+will fire off a notification and we'll
+
+use that to use switch map to hit the
+
+gig
+
+the get out of API and pull back some
+
+information to find the users that match
+
+the character so if the user typed
+
+another character before that timeout
+
+has elapsed that time that's aborted a
+
+new one has started and this happens
+
+again okay so if the user takes longer
+
+to find the next character they want to
+
+type we've got de in the buffer if
+
+they're just looking for the next
+
+character and the timeout elapses that
+
+API call starts inside the switch map
+
+now that API call might take a bit of
+
+time and if during that time the user
+
+finds the key they were going to press
+
+and they press V so they've got dev in
+
+the input buffer now that comes through
+
+and we have another timer start in the
+
+debounce implementation but if our API
+
+call finishes while that timer has not
+
+yet elapsed we'll get a value from the
+
+API and that value will come through to
+
+our matches so we'll get the results for
+
+our search for de which was in the input
+
+buffer showing up in a user interface
+
+even though they've typed de vie now
+
+when the youth when the timer for the
+
+devious implementation for the dev key
+
+press it lapses will start off another
+
+API call get the result and then that
+
+result will be displayed in the user
+
+interface so this is all fine if the
+
+user is typing fairly quickly we're
+
+going to ignore most of the character
+
+presses we're not going to make as many
+
+we're not gonna make an API call for
+
+every single character pressed but if
+
+you look at the diagram there's
+
+something that's a little bit of miss
+
+we've got this result that's shown in
+
+the user interface even though the user
+
+has pressed the V character so they've
+
+typed dev and the user interface has
+
+shown them the results for de so that's
+
+not ideal what we would what would
+
+probably be better would be to not only
+
+cancel the switch switch map when the
+
+debounce timer elapses but also cancel
+
+it when a key is pressed whilst that API
+
+call is actually happen
+
+so in our find users component we'll use
+
+one of the pluggable AP is that have
+
+added to this package so we'll start off
+
+by looking at the templates it's a very
+
+simple form it doesn't have very much in
+
+it it has an input control and it has a
+
+list beneath the input controls it takes
+
+an observable of users and just shows
+
+the logins for each of those users so
+
+the component looks like this we're
+
+going to form up the top which contains
+
+the username control and we have our
+
+observable of users now the observable
+
+the user's observable is just derived
+
+directly from the value changes so as
+
+the values change we will get the users
+
+by running them through this pluggable
+
+operator which I've called switch map
+
+with and I passed the debounce time to
+
+switch map with now this is very similar
+
+to what you would be doing with switch
+
+map but ordinarily you would have the
+
+debounce time before the switch map so
+
+switch map with is a pluggable operator
+
+I'm taking the debounce time operator
+
+and I'm passing it to switch map with
+
+now the reason I'm doing this is because
+
+when we have a look at the
+
+implementation of switch map with you'll
+
+see that there's a bit of composition
+
+that goes on inside so that's the
+
+primary difference between debouncing
+
+using device type followed by switch map
+
+with the selector is going to be
+
+basically the same thing it's going to
+
+hit the guest the github API it hits the
+
+search endpoints it gets the users that
+
+match the username of the portion of the
+
+username that's being typed in so far
+
+and it displays the items beneath the
+
+input so if we have a look at the
+
+implementation of switch map with we'll
+
+see how it works and we'll see why you
+
+might want to choose this plug
+
+low-pressure so switch back with takes a
+
+project function the same way that
+
+switch map takes the projects but it
+
+also takes the operator and so it takes
+
+it before upper and that before operator
+
+is fitted into an internal pipeline so
+
+internally we use
+
+three three access operators to to build
+
+this so we cool we call publish on
+
+source to give us a shared version of
+
+the source
+
+now what publish does is it allows us to
+
+subscribe to the publish source as many
+
+times as we like inside the selector but
+
+only affecting a single subscription to
+
+the source so if you sub published twice
+
+inside this selector it's the source of
+
+the pipeline inside the selector and
+
+it's also used in take until so what
+
+this allows us to do is to use changes
+
+to the source to not only switch after
+
+the debounce time has elapsed but also
+
+to switch as soon as the key is pressed
+
+so when the user in our example presses
+
+the V key it will start a debounce time
+
+in the before but it will also finish
+
+any pending API calls of either taken
+
+till so what we can do with this is we
+
+can pass in an operator to do any of
+
+these sort of delaying things before the
+
+switch map so you could write your own
+
+debounce time that did this
+
+but bypass kin the operator it allows us
+
+to use this same structure basically
+
+publishing the source inserting the
+
+operator before the switch map and also
+
+using the published source with a take
+
+until operators determinated if a new
+
+values coming so the idea is we can pass
+
+in any sort of delaying operator where
+
+we know as soon as we've received some
+
+input any switch map that is currently
+
+pending should be ended so we can use it
+
+with debounce time we could use it with
+
+sample time we could use it with delay
+
+or we could use it with ordered time so
+
+we've got a fairly flexible operator
+
+that we can use to solve the problem of
+
+these results showing up when we know we
+
+don't want them so we know that the
+
+source has emitted another
+
+and we know that we can use that and
+
+take until to abort any API calls it
+
+happening so that's the a very simple
+
+pluggable API and that's the essence of
+
+what these things were about we want to
+
+pass in an operator so that we can have
+
+some structure and the structure in
+
+share with that switch map with is to
+
+set up the pipeline put their up road
+
+before the switch map and also use the
+
+tape until so it also means that we can
+
+test this so we can encapsulate this
+
+behavior this terminating the inner
+
+observable upon a new value coming from
+
+the source and we can test that and we
+
+can then go and use it on our
+
+application if we had this much code
+
+sort of inside an input inside beside an
+
+input inside the form it might be
+
+something she might look at in wonder if
+
+you need to test it but we can test this
+
+thing in isolation very easily so it
+
+gives us a nice encapsulation boundary
+
+around something that we can test and
+
+then something we can just go and use in
+
+a component and be very sure that it's
+
+going to work so the next of the api's
+
+that we're going to look at deals with
+
+graph traversal so a graph is something
+
+where you have nodes and those nodes are
+
+connected by edges so a graph doesn't
+
+have to be a tree structure pagination
+
+pagination is a graph so the API the
+
+plug of APL that does this is in
+
+packages called traverse and we'll have
+
+a look at how it works it's based upon
+
+using expand but in terms of the
+
+traversal the concept that it uses is
+
+other marker so a marker is basically
+
+something that gives you a reference to
+
+the next node it's something that goes
+
+from one node to another it's basically
+
+outlining an edge so when you start the
+
+traversal you had the marker is
+
+undefined so we start the traversal
+
+maybe have an API call in this case what
+
+we're going to be doing is we're going
+
+to be retrieving starred repos for a
+
+particular user so hit the API and we'll
+
+get these repos in pages so the first
+
+time we traveler film we start the
+
+traversal we're looking at the market
+
+will have undefined for the marker when
+
+we receive that page will also receive
+
+the marker for the next
+
+we can basically step through step
+
+through the pages receive them so expand
+
+does this first we can just allow this
+
+thing to chain and chain and it will
+
+just traverse through the entire set of
+
+pages now the example that I used when I
+
+was preparing the code for this I used
+
+Jason Miller's github account because he
+
+has something like , starred repos
+
+obviously you don't want expand to be
+
+going completely wild and retrieving
+
+, starred repos because there's an
+
+you can't display , items in a list
+
+in a user interface it makes no sense at
+
+all it's it's bonkers so what you want
+
+to be able to do is you want to be able
+
+to control how the pagination traversal
+
+is actually happening so we'll do that
+
+and we'll do that using an observable so
+
+we'll pass into a pluggable API the
+
+factory that retrieves these page and a
+
+notification observable that we can use
+
+to control the traversal so we don't
+
+immediately receive , repos will
+
+receive one page and then when we fire
+
+the notification observable we'll
+
+receive the next page we can iterate it
+
+that way another use case for Traverse
+
+is when you are retrieving information
+
+and then after the traversal excuse me
+
+you are doing something with the
+
+information that you've retrieved so
+
+you're performing another operation an
+
+example might be if you're retrieving
+
+the repos from github YC we retrieve the
+
+repos for each repo that you might
+
+retrieve you might want to retrieve the
+
+contributors and if you do that you're
+
+going to have a very slow process after
+
+your traversal which is to say the
+
+lookups for each repo that you get on
+
+each page is going to take a lot longer
+
+than the retrieval of the page of repos
+
+themselves and when that happens you end
+
+up in this situation where by the time
+
+you've actually done the operation to
+
+retrieve the contributors the expanders
+
+check through another bunch of pages and
+
+you're in this situation when you've got
+
+back pressure you've got these things
+
+building up and you're simply not going
+
+to be able to deal with them in time
+
+because you have a slow process after a
+
+fast process so there's a way that the
+
+pluggable Traverse API also lets you
+
+deal with these situations so we'll have
+
+a look at a component this component is
+
+just going to show a list of repos these
+
+will be the starred repos that we
+
+retrieve from the github API so we've
+
+got a list it's just going to have a
+
+synchronous observer Zobel of repos we
+
+used async pipe and we use a track by to
+
+make it reasonably official and beneath
+
+that we're gonna have a button the buns
+
+are going to do very much it's going to
+
+have a click handler this just going to
+
+next subject and that's going to be our
+
+notification so when this shows up in
+
+the user interface you'll be able to
+
+press the buttons there I want some more
+
+repos press it again more repos now the
+
+component looks like this so at the top
+
+we've got our observable repos we have a
+
+subject for our button and then we have
+
+a traverse call so at revert the
+
+traverse API is an observable it's it's
+
+the sign to the repos and it takes a
+
+factory that factory is going to work
+
+with the github API to retrieve each
+
+page so it's actually going to visit
+
+each node in the graph where the nodes
+
+in this particular API are the groups of
+
+repos the pages of repos and down the
+
+bottom we've got this bit that we will
+
+come back to it's going to take the
+
+results and turn them into right because
+
+Traverse when it chunks through these
+
+retrieves each page and then emits a
+
+repo so Traverse is going to be emitting
+
+a stream of repos and the scan down the
+
+bottom turns those into an array for our
+
+list so what happens in the factory is
+
+probably the most interesting part the
+
+factory gets passed the marker and as I
+
+said before the marker is what indicates
+
+the node so when we first start off
+
+we'll come into the factory of Traverse
+
+we'll call the factory and the marker
+
+will be undefined so in that case we're
+
+going to retrieve the first page
+
+which means we're going to use this URL
+
+to retrieve Jason's star repos we're
+
+going to call get using these options
+
+where we say we want to observe the
+
+response because we need the header so
+
+when we receive the response from the
+
+github API the headers that come with
+
+the response will include links and
+
+those links what in this example
+
+constitutes the marker so we take the
+
+response and we map it using a two node
+
+function there the two node function
+
+looks like this so it takes a HTTP
+
+response that's going to receive from
+
+github and it does two things the first
+
+thing it does is it looks through the
+
+headers it finds the link header because
+
+that's how git hubs API handles
+
+pagination you'll receive a response the
+
+response has a link header and that link
+
+contains two URLs it contains one where
+
+the rel is for the next page and it
+
+contains another where the rel indicates
+
+that it's the last page so this snippet
+
+of code goes through the link link
+
+header it extracts the URL that
+
+corresponds to the next row and if it's
+
+there we'll return that as the marker so
+
+if it's not there we have no markers and
+
+we know we've reached the end of our
+
+graph the values in this case the repos
+
+that are in the response body so this is
+
+how the factory drives the Traverse
+
+implementation it returns two things it
+
+returns two things to traverse it
+
+returns the markers and it returns the
+
+values so these are the markers and the
+
+values for a particular node in the tree
+
+so in this case the nodes are each page
+
+that we received from the github API and
+
+in that page will have the repos which
+
+are the values and will either have a
+
+URL for the next page or we won't so
+
+will either have one marker or none this
+
+is a general sort of structure so we can
+
+use this structure to traverse any type
+
+of graph so if you think of it's not
+
+always the case that you're going to
+
+have
+
+marker and multiple values you could
+
+have multiple markers and only one value
+
+if you think of a family tree family
+
+trees a graph if we were using Traverse
+
+to Traverse a family tree we would only
+
+have one value so in our factory we
+
+would return to the Traverse
+
+implementation the value which would be
+
+the person so we would have an array
+
+with one person in it and the markers
+
+would depend upon which direction you
+
+were traversing the family tree if
+
+you're heading upwards toward your
+
+ancestors then the markers would be the
+
+two nodes that represent your parents if
+
+you're heading the other direction the
+
+narcos might be the mode the nodes that
+
+represent your offspring so it's a
+
+general way of traversing drafts it
+
+works in this case because the github
+
+pagination API is a very simple linear
+
+graph so if we come back to the
+
+components we also pass in our subject
+
+as the notifier so what this lets us do
+
+is each time the user presses the button
+
+we fire off a notification from the
+
+subject and that is going to tell the
+
+Traverse implementation that it needs to
+
+move to the next market so we can
+
+control how the Traverse implementation
+
+is going to traverse the graph we can do
+
+every time we press the notify every
+
+time we take over the notifier it's
+
+going to move on to the next ya traverse
+
+an edge go the next node get the page
+
+and add that information to our list of
+
+repos so in this case we've used a
+
+subject and we've wired that subject up
+
+to a button but we could wire that
+
+subject up to a number of different
+
+mechanisms view doesn't have to
+
+necessarily be a button what we could do
+
+is we could base it on the scroll
+
+position so if we're scrolling through a
+
+list as we scroll to the bottom we could
+
+have a notifier that notices that you've
+
+reached the bottom of the list it fires
+
+the subject the subject notifies
+
+traverse the traverse implementation
+
+then gets the next page and adds
+
+mortally so you could use this
+
+implementation to implement an infinite
+
+list so if you have another look at the
+
+bit that was down the bottom
+
+the bit that's down the bottom uses an
+
+arc stress operator called scan to
+
+basically collect to accumulate all of
+
+the repos that are coming out of
+
+traverse because Traverse is just going
+
+to emit each repo that it receives from
+
+a node as it traverses the tree and
+
+we're going to use scan to collect those
+
+into an array so that we can use that
+
+array to feed our list now the way I'd
+
+use Traverse for pretty much things up
+
+until now up until writing this example
+
+for this talk was in a different way I
+
+wasn't actually accumulating things in
+
+an array so this is fairly tedious we
+
+shouldn't have to write you know take a
+
+scan on the end to get the results for
+
+our traversal every time you want to do
+
+it so I'm going to add to the API an
+
+option I'm going to add an accumulate
+
+option and if that accumulate option is
+
+true internally it will accumulate the
+
+repos or whatever it is you happen to be
+
+traversing and then we'll omit those so
+
+Italy emits an increase in an array
+
+that's going to grow instead of repo by
+
+Reaper and the reason I hadn't done this
+
+before is because most of the time I'd
+
+use Traverse it had been in the second
+
+of those scenarios that I mentioned when
+
+we looked at the diagram I've used
+
+Traverse when I've been performing
+
+operations on nodes that have been
+
+traversed and those operations were
+
+potentially slow and to avoid back
+
+pressure I wanted to make sure those
+
+operations were done as part of the
+
+Traverse so rather than adding the
+
+operator after Traverse which showed
+
+yeah which in which you saw we got into
+
+back pressure problems when we looked at
+
+the model diagram I wanted to have that
+
+operation happening during the Traverse
+
+so Traverse would move to a new node
+
+perform the operation on those new nodes
+
+and then when that operation had
+
+finished it would move on to the next
+
+day and it worked that way by accepting
+
+an operator the same way that we passed
+
+an operator to switch map with Traverse
+
+is not only pluggable and that we can
+
+plug in a factory
+
+we can plug in a notifier we can also
+
+plug in an operator so instead of
+
+passing a notifier to the traverse
+
+implementation you can pass in an
+
+operator and what the operator is it's
+
+an operator in the sense of any other
+
+access operator it receives an
+
+observable in this case it's going to
+
+receive an observable of repose and it's
+
+going to return an observable so you can
+
+receive an observable of repose and it
+
+might be returning an observable of say
+
+a contributors for those repose and then
+
+doing something else with them so we can
+
+use this mechanism to plug in to the
+
+Traverse implementation an operator that
+
+lets us do things while the Traverse is
+
+happening and avoid back pressure
+
+because we're controlling it essentially
+
+the operator that's plugged in
+
+internally is wired up to the notifier
+
+and the notification happens when the
+
+operation is finished so it allows us to
+
+take an observable operator and stick it
+
+in to the employ get into the
+
+implementation of Traverse which is
+
+really something I offend to be quite
+
+useful the third and last pluggable API
+
+that we'll look at deals with sharing
+
+the context we use for this is we'll
+
+imagine we have a repo service in our
+
+application and that repo service has to
+
+get repo function so we'll pass in the
+
+name of the repo we'll use the github
+
+API to retrieve information about that
+
+repo but we also have in our components
+
+we can imagine that we have components
+
+going to deal with the repos and several
+
+sub components in that component that
+
+also deal with pull requests so rather
+
+than have each of those sub components
+
+directly active access the repo service
+
+to retrieve the pull request will
+
+compose our pulls observable and we'll
+
+send that out of our repo service along
+
+with the repo data so sub components can
+
+grab pools and then they can retrieve
+
+the pull information so because multiple
+
+components in our component tree are
+
+going to be accessing the pulls
+
+we want to share those pools so the
+
+pools basically obtained using traverse
+
+then converting it to an array and to
+
+share it
+
+we'll use share replay and ref count so
+
+the ref count to share replay means that
+
+if the ref count drops to zero and the
+
+sauce hasn't completed it drops the
+
+subject and it'll restart next time
+
+someone connects but if the source
+
+completes as far as share replay is
+
+concerned that's it so it will keep
+
+those results it'll keep those pull
+
+requests for that repo forever or until
+
+their observables discovering you want
+
+to sometime that might be what you want
+
+but if you do have sub components where
+
+people won't be navigating to those sub
+
+components and you wanted to have the
+
+pool requests essentially up-to-date
+
+this might not be what you want so you
+
+might opt to use share instead so if you
+
+share the archives operator share it's
+
+completely ref counted so anytime the
+
+ref count drops to zero it will discard
+
+its subject and the next subscriber will
+
+effect a new subscription to the source
+
+so it will go back to the API traverse
+
+them get the ball request and return
+
+them to the subscriber so this will make
+
+sure that everyone's got up-to-date data
+
+but if we use this approach we could
+
+have more traversals and more retrievals
+
+of the pool request than we really need
+
+so something that's come up a few times
+
+in my experience has been people talking
+
+about wanting different sort of
+
+semantics for sharing observables in
+
+particular this solar sematic so the
+
+first subscriber to the shared
+
+observable effects an API call and
+
+whilst that API call is happening a
+
+second subscriber subscribes then the
+
+API call finishes but the shared
+
+observable doesn't immediately discard
+
+that
+
+it might keep it for a certain period of
+
+time so there's a bit of a delay before
+
+it lets the ref count drop to zero if
+
+nobody else subscribes during that delay
+
+it'll drop to zero and be discarded then
+
+next time someone subscribes it'll kick
+
+off a new subscription to the source but
+
+if someone does subscribe whilst that
+
+delay is still ongoing and hasn't
+
+elapsed that third subscriber receives
+
+they're already cashed already shared
+
+completed results now it's possible to
+
+build your own sort of reference
+
+counting in front of our X chances
+
+multicast and I've done that in the past
+
+but it's problematic and there's some
+
+edge cases and there are some bugs
+
+in particular the problematic part is
+
+that multicast will get rid of the
+
+subject when the source completes so if
+
+this were an implementation that was
+
+sitting on top of multicast when this
+
+third subscriber subscribes instead of
+
+receiving the payload that the first and
+
+the second subscribers received it
+
+connects and it gets a different subject
+
+it gets a different subject and that
+
+subject is a new subject that subject
+
+doesn't have the information that was
+
+retrieved from the source and in fact
+
+that subject won't receive any
+
+information from the source until
+
+somebody else subscribes to the shared
+
+observable so it's a bug and it's less
+
+than ideal so one of the other API is
+
+that I've added two rxjs pluggable is
+
+this API and it's called share with and
+
+share with takes a strategy and there
+
+are a bunch of these strategies this one
+
+is delayed ref count so it does what
+
+we're looking at in the diagram when the
+
+ref countdown drops to zero it will wait
+
+for the delay specified delay period
+
+before it goes and disconnects and
+
+reuses the subject which means we can
+
+use this as a fairly basic case so if we
+
+did it using share with with a delayed
+
+ref count
+
+every when a subcomponent connects and
+
+receives the repose those repose will
+
+stay available for the specified period
+
+and if another component connects it
+
+will get those repose that are engaged
+
+but if nothing happens for say 
+
+seconds and then another component
+
+connects it'll affect a new subscription
+
+to the source and it will retrieve those
+
+repose from the github API so there are
+
+a bunch of strategies that can be passed
+
+to share with there's the default
+
+reference count strategy which is
+
+essentially the same as you get with
+
+share there's the delayed ref count
+
+strategy that we've looked at here
+
+there's a limit limited ref count
+
+strategy which won't connect to the
+
+source until at least a certain number
+
+of subscribers have subscribed and
+
+there's a scheduled ref count strategy
+
+which subscribes and unsubscribes on a
+
+specified schedule so the way this works
+
+is the strategy that's passed to share
+
+with has this shape
+
+once again it's injecting an operator
+
+into the pluggable API so we're going to
+
+plug an operator in it's going to fit in
+
+with the infrastructure that's inside
+
+share with and it's going to coordinate
+
+with share with when it connects so
+
+share with way receives a strategy to
+
+create the operator it passes a connect
+
+function to a method returns the
+
+operator function which gives the
+
+operator which is going to mirror what
+
+it's received from the source the
+
+opportunity to do its own reference
+
+counting you can do it's a reference
+
+counting you can do whatever it likes it
+
+can call connect when it sees fit so the
+
+limited strategy will call connect once
+
+the limit wants the number of
+
+subscribers that have subscribed has
+
+reached the limit it's very flexible in
+
+terms of what you can do the second part
+
+of it is there's an API that's used
+
+internally inside share width which gets
+
+called to totem and whether or not a
+
+subject should be reused so in
+
+conjunction with passing in an operator
+
+and passing in this should reuse subject
+
+it gives a lot of control to strategies
+
+that can plug in to share with
+
+so to sum up the three AP is that we've
+
+looked at have used this concept of
+
+plugging in operators and factories and
+
+notifiers
+
+to encapsulate basic functionality of
+
+which we can drive which we can get
+
+variants so we've done that with
+
+cancellation by passing in a different
+
+delaying observe operator whether it's
+
+debounce time or at a time we've done it
+
+with back pressure and control graph
+
+traversal and we've done it with sharing
+
+so one of the reasons why I find this
+
+sort of approach useful is because it
+
+encapsulates the basic the basic
+
+approach the basic behavior but allows
+
+you to drive variance from it and then
+
+encapsulation helps in this case the
+
+three that we've used the three oh guys
+
+we've looked at a fairly common so it
+
+sort of makes sense to treat them as
+
+reusable which is why they're published
+
+in a package but I think this approach
+
+also makes sense for just using it as an
+
+encapsulation boundary within an
+
+application so you can to build the
+
+basic behavior that you want and you can
+
+use the injection of operators to inject
+
+app specific functionality into your
+
+behavior and the thing is that it makes
+
+that behavior testable and it makes that
+
+behavior testable apart from your
+
+application so if you have a component
+
+that's dealing with or or a service
+
+that's dealing with repos and particular
+
+api's testing traversal type behaviour
+
+is fairly complicated because you're
+
+dealing with not only the API you're
+
+dealing with the traversal so you could
+
+use this pluggable approach to create a
+
+testable encapsulation of the basic
+
+behavior test that separately and then
+
+have some confidence that you can use it
+
+in your application so I published a
+
+package called rxjs pluggable zits on
+
+github if you want to check it out the
+
+documentation is something that I'll be
+
+writing later today so there's not very
+
+much there at the moment but if you'd
+
+like to check it out
+
+explore the approach see if it'll work
+
+with you in terms of helping you create
+
+testable and capsulation
+
+inside your applications by all means
+
+have a look and see what you can do with
+
+it
+
+I'm on Twitter my DMS are open if I have
+
+time I'm happy to answer questions and
+
+things like that and I also look forward
+
+to seeing what questions you have for me
+
+after my talk so thanks for listening
+
+thanks think it was oh man we were up
+
+we're out of time but you were just
+
+killing it so I just couldn't interrupt
+
+you I'm sorry for everybody that's here
+
+and I was hoping for him to finish
+
+before I just couldn't stop you I'm
+
+definitely taking a look at that red
+
+book right away and now I'm gonna take
+
+you out of the stage Nikolas if that's
+
+okay with you and if anyone has a
+
+question for Nikolas please just drop a
+
+comment you're gonna be answer them as
+
+soon as possible if not here be a -
+
+you're right Nikolas yeah so excellent
+
+well let's bring you here cherry thank

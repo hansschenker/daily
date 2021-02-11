@@ -1,0 +1,92 @@
+Functors - Bartosz Milewski
+-------------------------------------------------------------------------------------------------
+A functor is a mapping between categories.
+( a functor applies a function to a context and returns a new context)
+
+a category is objects and morphisms (arrows) that connect them. 
+
+A functor also maps morphisms — it’s a function on morphisms
+
+erik meijer: Dual Interface to IEnumerable is IObservable
+------------------------------------------------------------------------------------------------
+enumerable collections exposed by the IEnumerable<T> and IEnumerator<T> pair of interfaces are dual to 
+observable collections exposed by the IObservable<T> and IObserver<T> pair of interfaces
+
+IEnumerable - IEnumerator
+------------------------
+embody the protocol for interactive
+computations where the consumer synchronously pulls data from the producer
+
+IObservable - IObserver
+-------------------------
+embody the protocol for reactive computations 
+where the producer asynchronously pushes data to the consumer
+
+the Observer and Iterator design patterns 
+are mathematical duals (you just flip the 
+
+Linq operators - standard sequence operators
+-----------------------------------------------
+
+Iterator interface
+------------------------------------------------
+
+interface IEnumerable<out T>
+{ IEnumerator<T> GetEnumerator()}
+ 
+interface IEnumerator<out T>: IDisposable
+ { bool MoveNext();
+ 
+// throws Exception
+ T Current { get; } }
+
+Observable interface
+----------------------------------------------------
+interface IObservable<out T>
+{
+ 
+IDisposable Subscribe(IObserver<T> observer) ;
+
+interface IObserver<in T>
+{  void OnCompleted();
+   void OnError(Exception exception);
+   void OnNext(T value);
+}
+
+IObservable<T> Where(this IObserver<T> source, Func<T, bool> predicate)
+{
+ 
+return Observable.Create<T>(observer =>
+ 
+{
+ 
+ 
+return source.Subscribe(Observer.Create<T>(value => 
+ 
+{ 
+ 
+try { if(predicate(value)) observer.OnNext(value); } 
+ 
+catch (Exception e) { observer.OnError(e); }
+ 
+});
+ 
+};
+}
+
+Thanks to the fact that subscribing to an observable returns a disposable object to unsubscribe, the above implementation is completely stateless, 
+there is no need for the inner observer keep track of its observers so that they can be removed. That responsibility is simply delegated to the 
+source observable, which ultimately bottoms out into a stateful object such as a .NET event source that maintains a list of observers:
+
+Based on the IObserver<T> and IObservable<T> interfaces we derived above, we have built a monadic LINQ-based framework for reactive 
+programming called Rx.
+
+Based on the IObserver<T> and IObservable<T> interfaces we derived above, we have built a monadic LINQ-based framework for reactive 
+programming called Rx
+
+Based on the IObserver<T> and IObservable<T> interfaces we derived above, we have built a monadic LINQ-based framework for reactive 
+programming called Rx
+
+When 
+converting a pull-based stream into a push-based stream we need to add concurrency to prevent the Subscribe method from blocking while the 
+values from the source stream are pushed on the target stream

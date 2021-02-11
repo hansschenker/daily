@@ -4,8 +4,11 @@ The goal of Rx is to
  (SMS messages, GPS coordinates, mouse moves and other UIevents, Web sockets,...)
 
 - this article shows how every developer could have
-invented Rx by crossing the standard JDK (Java Development Kit) Future<T>
-interface with the GWT (Google Web Toolkit) AsyncCallBack<T> interface to create
+invented Rx by crossing the standard JDK (Java Development Kit) 
+
+- Future<T>
+- AsyncCallBack<T> interface to create interface with the GWT (Google Web Toolkit)
+
 the pair of interfaces IObservable<T> and IObserver<T> that model asynchronous
 data streams with values of type T.
 
@@ -16,7 +19,7 @@ streams by introducing an additional container interface that represents the
 asynchronous computation itself and on which you register the callbacks to be
 notified about the results of the computation
 
-asynchronous computations as first￾class values in the form of the Future<T> interface
+- asynchronous computations as first￾class values in the form of the Future<T> interface
 
 asynchronous computations are assumed to return streams of
 multiple results.
@@ -80,6 +83,7 @@ The final Ajax program presented here is a dataflow pipeline that invokes the
 dictionary service only if there has not been a new distinct value fired by input in
 the last 10 milliseconds; and it ignores the result of the service if a new input
 value appears before the completion of the previous value has returned:
+
 TextChanges(input)
 .DistinctUntilChanged()
 .Throttle(TimeSpan.FromMilliSeconds(10))
@@ -97,8 +101,6 @@ method signatures, not guided by any operational intuition in the process.
 
 Schedulers
 ------------------------------------------------------------------
-We parameterize over concurrency and logical
-clocks by another interface IScheduler (slightly simplified here), which represents
-an execution context that has a local notion of time on which work can be
-scheduled in the future:
+We parameterize over concurrency and logical clocks by another interface IScheduler (slightly simplified here), which represents
+an execution context that has a local notion of time on which work can be scheduled in the future:
 

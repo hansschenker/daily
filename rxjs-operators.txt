@@ -1,30 +1,97 @@
+the expand operator is a
+flattening operator that takes its
+results and feeds it back into the
+mapping function that it has
+
+
+use cases
+--------
+
+other valid use cases for expand l
+different other like real world use
+
+cases for expand the honestly the top
+two cases for expand are 
+ - crawling anasynchronous trees
+
+- asynchronous process that needs to spawn
+  more copies of itself and in that case
+  you kind of are you have it feeding back
+  into the top and there's various reasons
+  that you might want to do something like
+
+
 The essential concepts in RxJS which solve async event management are:
 
 Observable is the producer (source observable)
 ----------------------------------------------------------------------
+
 represents the idea of an invokable collection of future values or events.
+
 - producer of valules,
 - 1 to 1 relationship between producer and consumber unicast
 - cold
 - hot
-Cold observables start running upon subscription, i.e., 
-the observable sequence only starts pushing values to the observers when Subscribe is called. (…) 
-This is different from hot observables such as mouse move events or stock tickers 
-which are already producing values even before a subscription is active.
+
+- Cold observables start running upon subscription, i.e., 
+  the observable sequence only starts pushing values to the observers when Subscribe is called. (…) 
+
+- Hot observables such as mouse move events or stock tickers or video hangout
+  are already producing values even before a subscription is active.
 
 Observer is the consumer or subscriber (interface with 3 callback functions for next, error and complete)
 -----------------------------------------------------------------------------------------------------------
 - collection of callbacks (next, error, complete) that listen to values delivered by the Observable.
 - consumer, subscriber
 
-Subscription is return from subscribe function, used to unsubscribe from Source Observable
+Subscription is return  subscribe function, used to unsubscribe  Source Observable
 ------------------------------------------------------------------------------------------------------
 represents the execution of an Observable, is primarily useful for cancelling the execution.
 
-Operators are pure functions that take an Observable as argument and return an Observable
+Operators are pure functions (Observable in - Observable out
 ------------------------------------------------------------------------------------------------------
+  (source: T ) => R
+
+  pure functions that take an Observable as argument and return an Observable
 - pure functions that enable a functional programming style of dealing 
 - operations like map, filter, concat, reduce, etc.
+
+  RxJS operator is simply a function which takes an observable as an input and returns an output stream, 
+  it all comes down to writing a simple JavaScript function.
+
+rxjs-dev
+---------
+
+interface UnaryFunction<T, R> {
+  (source: T): R
+
+
+interface Subscribable<T> {
+  subscribe(observer?: PartialObserver<T>): Unsubscribable
+
+
+class Observable<T> implements Subscribable {
+  static create: Function
+  static if: typeof iif
+  static throw: typeof throwError
+  constructor(subscribe?: (this: Observable<T>, subscriber: Subscriber<T>) => TeardownLogic)
+  _isScalar: boolean
+  source: Observable<any>
+  operator: Operator<any, T>
+  lift<R>(operator: Operator<T, R>): Observable<R>
+  subscribe(observerOrNext?: NextObserver<T> | ErrorObserver<T> | CompletionObserver<T> | ((value: T) => void), error?: (error: any) => void, complete?: () => void): Subscription
+  _trySubscribe(sink: Subscriber<T>): TeardownLogic
+  forEach(next: (value: T) => void, promiseCtor?: PromiseConstructorLike): Promise<void>
+  pipe(...operations: OperatorFunction<any, any>[]): Observable<any>
+  toPromise(promiseCtor?: PromiseConstructorLike): Promise<T>
+
+
+interface OperatorFunction<T, R> extends UnaryFunction, Observable> {
+
+  // inherited  index/UnaryFunction
+  (source: T): R
+
+
 
 Subject: is the equivalent to an EventEmitter, 
 -----------------------------------------------------------------------------------------------------
@@ -53,13 +120,13 @@ combineAll
 ----------
 Flattens an Observable-of-Observables by applying combineLatest when the Observable-of-Observables completes.
 
-combineAll takes an Observable of Observables, and collects all Observables from it. 
+combineAll takes an Observable of Observables, and collects all Observables  it. 
 Once the outer Observable completes, it subscribes to all collected Observables and 
 combines their values using the combineLatest strategy, such that:
 Every time an inner Observable emits, the output Observable emits
 
 When the returned observable emits, it emits all of the latest values by:
-If a project function is provided, it is called with each recent value from each inner Observable in whatever order they arrived, 
+If a project function is provided, it is called with each recent value  each inner Observable in whatever order they arrived, 
 and the result of the project function is what is emitted by the output Observable.
 If there is no project function, an array of all the most recent values is emitted by the output Observable.
 
@@ -68,14 +135,14 @@ Map two click events to a finite interval Observable, then apply combineAll
 
 combineLatest
 --------------
-combineLatest combines the values from all the Observables passed as arguments. 
+combineLatest combines the values  all the Observables passed as arguments. 
 
 Operator function:
 ------------------
 This is done by subscribing to each Observable in order and, whenever any Observable emits, 
-collecting an array of the most recent values from each Observable. [a, b]. So if you pass n Observables to operator, 
+collecting an array of the most recent values  each Observable. [a, b]. So if you pass n Observables to operator, 
 returned Observable will always emit an array of n values, in order corresponding to order of passed Observables 
-[a, b] or {a, b}
+[a, b] or {a, b
 
 Static version 
 --------------
@@ -92,13 +159,13 @@ before other Observables started emitting, all these values but the last will be
 No emitting if one does complete without emitting:
 --------------------------------------------------
 if some Observable does not emit a value but completes, resulting Observable will complete at the same moment 
-without emitting anything, since it will be now impossible to include value from completed Observable in resulting array. 
+without emitting anything, since it will be now impossible to include value  completed Observable in resulting array. 
 Also, if some input Observable does not emit any value and never completes, combineLatest will also never emit 
 and never complete, since, again, it will wait for all streams to emit some value.
 If at least one Observable was passed to combineLatest and all passed Observables emitted something, 
 resulting Observable will complete when all combined streams complete. So even if some Observable completes, 
 result of combineLatest will still emit values when other Observables do. In case of completed Observable, 
-its value from now on will always be the last emitted value. On the other hand, if any Observable errors, 
+its value  now on will always be the last emitted value. On the other hand, if any Observable errors, 
 combineLatest will error immediately as well, and all other Observables will be unsubscribed.
 
 combineLatest accepts as optional parameter project function, which takes as arguments all values 
@@ -107,10 +174,10 @@ that would normally be emitted by resulting Observable. project can return any k
 but values themselves. That means default project can be imagined as function that takes all its arguments and puts them into an array.
 
 
-withLatestFrom
+withLatest
 ---------------
-withLatestFrom combines each value from the source Observable (the instance) with the latest values 
-from the other input Observables only when the source emits a value, optionally using a project function 
+withLatest combines each value  the source Observable (the instance) with the latest values 
+ the other input Observables only when the source emits a value, optionally using a project function 
 to determine the value to be emitted on the output Observable. 
 Trigger:
 All input Observables must emit at least one value before the output Observable will emit a value.
@@ -256,7 +323,7 @@ windowTime
 windowToggle
 windowWhen
 
-withLatestFrom
+withLatest
 
 zip
 zipAll
