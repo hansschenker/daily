@@ -1,3 +1,60 @@
+Examples of streams
+-------------------------------------------------------------------------------------
+- http request
+- database access
+- socket connection
+- sensor data
+- UI events: button clicks, text input
+- Twitter feed
+- car dashboard (speed, rpm)
+-------------------------------------------------------------------------------------
+rename mergeMap, conatMap, exhaustMap, SwitchMap (Dean Radcliffe - rxjs-polyrhytmic)
+
+- concatMap 	serial
+- exhaustMap	mute , 
+- mergeMap	parallel 
+- switchMap	cutoff.(skip previous)
+
+No-Loss		Limit 1
+Parallel	Cutoff (replace)
+Serial		Mute (drop)
+
+
+- parallel 	is a fine default: just execute Jobs returned from Handlers with no fixed restriction. (Async lookups on a page)
+- serial 	Jobs aren't begun until the previous one has finished. (Adding a song to a playback queue)
+- cutoff 	A limit of 1 at a time - replacing any old Job with a new by canceling the first, then starting the new. (Autocomplete search results)
+- mute  	A limit of 1 at a time. Ignoring/dropping new Jobs while another is processing. (Elevator buttons)
+
+You might recognize these as corresponding to the RxJS operators mergeMap, concatMap, switchMap, and exhaustMap, only named friendlier :) 
+That's the RxHelper making it easier for you!
+-------------------------------------------------
+
+rxjs-Polyrhythm - library of Dean Radcliffe
+------------------------------------------
+
+
+Polyrhythm is the simultaneous use of two or more conflicting rhythms”. 
+Let’s take a 3 vs. 4 polyrhythm as an example: a 3/4 polyrhythm is when you hear 
+
+- 3 evenly spaced pulses in the same amount of time as / every 1/3 of a second
+- 4 evenly spaced pulses (and that sequence repeats). / every 1/4 of a second
+
+If a repeating cycle is 1 second long, one pulse would be heard at: 0 sec, 1/3 sec, 2/3 sec (every 1/3 of a second). 
+The second pulse would be heard at 0 sec, 1/4 sec, 2/4 sec and 3/4 sec (every 1/4 of a second).
+
+12 intervals (3*4=12): 1 2 3 4 / 1 2 3 4 / 1 2 3 4 / 1 2 3 4
+                      (1/12)
+----------------------------------------------------------------------------------------------
+A simple way to achieve this programmatically is to divide a cycle in 12 intervals (3*4=12), 
+and have a clock generating numbers at the beginning of each interval (if the cycle is 1 sec, 
+the interval would be 1/12 seconds long). We can then take those numbers as they are generated, 
+and if a number is divisible by 3 or 4, we play a sound.
+
+‍1 2 3 4 5 6 7 8 ...
+    s d   s   d ...
+
+
+-----------------------------------------------------------
 the expand operator is a
 flattening operator that takes its
 results and feeds it back into the
