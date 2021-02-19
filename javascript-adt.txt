@@ -1,0 +1,211 @@
+map :: Functor f => f a ~> (a -> b) -> f b
+I’ve written the signature above in the Hindley–Milner notation Fantasy Land uses. In TypeScript, it might look like this:
+
+interface Functor<A> {
+    map<B>(f: (a: A) => B): Functor<B>;
+}
+
+a.map(g).map(f) ≣ a.map(x => f(g(x)))
+
+
+const bases = ['ice cream', 'banana', 'strawberry'];
+const toppings = ['nuts', 'chocolate sauce', 'sprinkles'];
+
+const combine = a => b => `${a} with ${b}`;
+
+const basesWith = bases.map(combine);
+const combos = ap.call(toppings, basesWith);
+
+console.log(combos);
+// ["ice cream with nuts", 
+    "ice cream with chocolate sauce", 
+    "ice cream with sprinkles", 
+    "banana with nuts", 
+    "banana with chocolate sauce", 
+    "banana with sprinkles", 
+    "strawberry with nuts", 
+    "strawberry with chocolate sauce", 
+    "strawberry with sprinkles"]
+
+function chainOrFlatMap(x) {
+    return (typeof x.chain === 'function')   ? x.chain.bind(x)   :
+           (typeof x.flatMap === 'function') ? x.flatMap.bind(x) :
+           () => {throw new Error('We received an object that doesn’t have chain or flatMap defined')};
+}
+
+function ap(m) {
+    return chainOrFlatMap(m)(f => this.map(f));
+}
+
+there’s nothing specific to arrays or Maybe or Either or anything else in that code. 
+All it needs is .map() and .flatMap() (or .chain()). This code will work with anything 
+that implements those methods and obeys the laws. Anything. 
+It will work for arrays, Either, Maybe, Effect, Future, and so on. With no change.
+
+It gets better though. Because we can then write our own functions that use .map(), .ap() and .chain(). 
+If those methods are all we rely on, our new functions will work anywhere too.
+
+Type classes
+----------------
+-- Type signature of map for arrays/lists.
+map :: (a -> b) -> [a] -> [b]
+
+-- Type signature of map for Maybe
+map :: (a -> b) -> Maybe a -> Maybe b
+
+Languages with this feature use it to create algebraic structures. We can say, for example, 
+“I’m going to create a new instance of Functor. Here’s its map function.” In code, it might look like this: 1
+
+instance Functor List where
+    map :: (a -> b) -> [a] -> [b]
+    map f xs = foldl (\x arr -> arr ++ [f x]) [] xs
+And we could declare Maybe a functor too:
+
+instance Functor Maybe where
+    map :: (a -> b) -> Maybe a -> Maybe b
+    map f (Just a) = Just f a
+    map _ Nothing  = Nothing
+
+class Functor f where
+    map :: (a -> b) -> f a -> f b
+
+The important thing to understand is that it’s about polymorphism. 
+
+This particular kind is called parametric polymorphism. Type classes let us have many functions with the same name. 
+That is, so long as those functions handle different types. In practice, it allows us to think of all those map functions 
+as if it were one single function. And the Functor definition makes sure that they all do logically similar tasks.
+
+JavaScript doesn’t have type classes. At least, it has no built-in language support for them. 
+It is possible to create type classes in JavaScript. You can see an example in this type class implementation based on Sanctuary. 
+
+Instead of type classes, we use prototypical inheritance. This lets us pass around a bunch of methods along with a value. 
+As a result, we can write a map function (as opposed to a method) that works like this:
+
+const map = (f, x) => x.map(f);
+
+This is what makes libraries like Ramda, Sanctuary and Crocks so powerful. 
+It’s also another reason why that Fantasy Land specification is so important. 
+
+ADT - Algebraic Data Type
+----------------------------------------------------------------------
+what’s an algebraic data type?
+An algebraic data type is a structured type that’s formed by composing other types. Or, even shorter, 
+it’s a type made of other types. That’s it. Not super complicated at all. 
+If you’re a working programmer, you use them already every day.
+
+Arrays, Objects, Maps, WeakMaps, and Sets are all algebraic data types. 
+You can put values of many types ‘inside’ them (so to speak).
+
+“Those are all product types. 
+In functional programming we use sum types to model the business domain. 
+That’s where algebraic data types really shine.”
+
+product types
+-----------------------------------------------------------------------
+Product types allow you to have more than one value in a single structure, at the same time. 
+We already discussed how this includes things like arrays, objects, maps, and sets.
+
+Why do we call them product types? It’s all about the possibilities.
+
+sum types
+-------------------------------------------------------------------------------
+Sum types are types where your value must be one of a fixed set of options. You may have seen enum types in languages like C# or Java. 
+Sum types are similar, but more flexible. And if you’ve been following along, 
+we’ve already seen a classic sum type: Either.
+
+The Either type can hold a Left or Right value, but never both at the same time. 
+And it has functions that behave differently depending on which side the data lies. 
+
+If we map over a Left, it does nothing. 
+If we map over a Right, then we get a new Right with a (potentially) different value.
+
+So, Either has two possible tags: Left or Right. But there’s no reason we can’t create a type that has more tags. 
+For example, we could have a type that models directions for a game. 
+We might create tags for 
+
+North, South, East, and West. 
+
+Or, in a front-end application we might define states for a UI widget loaded via network request. 
+It might have states like Loading, Display, and LoadingError.
+
+import React, {useState, useEffect} from 'react';
+import Spinner from '@atlaskit/spinner';
+import {ProfileCard} from '@atlaskit/profilecard';
+
+import { CardState, Loading, LoadingError, Display } from "./states";
+
+// Simple function to build a URL.
+function apiURL(email) {
+  return `/data.json?email=${encodeURIComponent(email)}`;
+}
+
+// Load the data.
+function loadData(email, setState) {
+  fetch(apiURL(email))
+    .then(response => response.json())
+    .then(data => setState(new Display(data)))
+    .catch(err => setState(new LoadingError(err)));
+}
+
+// A component to display if we have an error.
+const ErrorCard = () => (
+  <ProfileCard errorType={{ reason: "default" }} hasError />
+);
+
+// Our display logic. We expect the state argument to be
+// a CardState instance
+function renderComponent(state) {
+  // Here we check the type of state. If it's not an instance
+  // of CardState, something is wrong.
+  if (!(state instanceof CardState)) {
+    throw new Error('State must be an instance of CardState');
+  };
+
+  // Create a mapping between  states and React elements to display.
+  const stateMap = {
+    Loading: () => <Spinner />,
+    LoadError: () => <ErrorCard />,
+    Display: s => <ProfileCard {...s.data} />,
+  };
+
+  // Select which element to render, based on current state
+  // or fall back to an error card.
+  const component = stateMap[state.constructor.name] || (() => <ErrorCard />);
+  return component(state);
+
+}
+
+// Our component with everything tied together.
+export function UserCard({ email }) {
+
+  // Initialise our hooks.
+  const [state, setState] = useState(new Loading());
+  useEffect(() => loadData(email, setState), [email]);
+
+  return renderComponent(state);
+}
+
+Algebraic Structures 
+------------------------------------------------------
+are a bit like code design patterns. Unlike design patterns though, they have a mathematical basis and are inter-related. 
+Hence why they’re called ‘algebraic’. Also, unlike design patterns, they have confusing names made up by mathematicians.
+
+Type classes 
+--------------------------------------------------------
+are a way of implementing polymorphism. They’re used in statically typed languages like Haskell or PureScript. 
+They let you define functions with the same name but different type signatures. They’re often used to implement algebraic structures. 
+So sometimes people use the terms interchangeably.
+
+Algebraic data types 
+--------------------------------------------------------
+are not the same as algebraic structures. What are they? They’re composite data types made out of other types. 
+There’s two main kinds of algebraic data types: Sum types and Product types. Together, 
+they’re like a dynamic duo for encoding business logic. They help us make good things possible, and bad things impossible.
+
+const Func = {
+    map:       f => g => x => f(g(x)),
+    contramap: g => f => x => f(g(x)),
+    promap:    f => g => h => Func.contramap(f)(Func.map(g)(h)),
+    ap:        f => g => x => f(x)(g(x)),
+    of:        x => () => x,
+};
