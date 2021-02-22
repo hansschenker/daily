@@ -1,0 +1,529 @@
+/**
+ * FUNCTIONAL COMPOSITION
+ * with static typing in TypeScript
+ *
+ * Tomasz Ducin
+ * http://ducin.it
+ * twitter: @tomasz_ducin
+ */
+
+import { Developer, Nationality } from './types'
+
+declare const devs: Developer[]
+
+console.log(devs.length)
+
+// 1. jumping over a fn signature (fn -> fn)
+// 2. pipe/compose
+
+type ConditionFn<T> = (t: T) => boolean
+type DeveloperConditionFn = ConditionFn<Developer>
+
+const earnsALot = (d: Developer) => d.salary > 8000
+const earnsCrap: DeveloperConditionFn = (d) => d.salary < 2000
+const knowsJavaScript: DeveloperConditionFn = (d: Developer) => d.skills.includes('JavaScript')
+
+const hasNationality = (n: Nationality): DeveloperConditionFn =>
+  (d: Developer) =>
+    d.nationality === n
+
+const all = <T>(...fns: ConditionFn<T>[]): ConditionFn<T> =>
+  (t: T) => !fns.find(cfn => !cfn(t))
+
+const candidateCriteriaMet = all(
+  earnsALot,
+  knowsJavaScript,
+  hasNationality('PL')
+)
+
+// or
+// atLeast
+
+type ComparatorFn<T> = (e1: T, e2: T) => number
+
+const earnsMoreThan: ComparatorFn<Developer> = (d1, d2) => d1.salary - d2.salary
+
+const reverse = <T>(cfn: ComparatorFn<T>) =>
+  (e1: T, e2: T) => -cfn(e1, e2)
+
+const earnsLessThan = reverse(earnsMoreThan)
+const isYoungerThan: ComparatorFn<Developer> = (d1, d2) => d2.personalInfo.age - d1.personalInfo.age
+
+const combinedSort = <T>(...cfns: ComparatorFn<T>[]): ComparatorFn<T> =>
+  (e1, e2) => {
+    const firstFn = cfns.find(cfn => !!cfn(e1, e2))
+    return firstFn ? firstFn(e1, e2) : 0
+  }
+
+const theOrderOfGod = combinedSort(
+  isYoungerThan,
+  reverse(earnsMoreThan),
+)
+
+// console.log(devs.filter(candidateCriteriaMet).length )
+console.log(devs.sort(theOrderOfGod)[0].personalInfo.age )
+
+function pipe<T, U, V>(
+  f: (t: T) => U,
+  g: (u: U) => V
+): (t: T) => V
+function pipe<T, U, V, W>(
+  f: (t: T) => U,
+  g: (u: U) => V,
+  h: (v: V) => W,
+): (t: T) => W
+function pipe<T, U, V, W, X>(f: (t: T) => U, g: (u: U) => V, h: (v: V) => W, i: (w: W) => X): (t: T) => X
+function pipe (...fns: Function[]) {
+  return (value) => fns.reduce((current, fn) => fn(current), value )
+}
+
+const filter = <T>(cfn: ConditionFn<T>) =>
+  (collection: T[]) =>
+    collection.filter(cfn)
+
+const getEasterBonus = pipe(
+  filter(all(
+    earnsCrap,
+    hasNationality('PL')
+  )),
+  devs => devs.map(d => d.salary / 4),
+  amounts => amounts.reduce((sum, n) => sum + n)
+)
+console.log('bonus!', getEasterBonus(devs))
+
+
+
+/**
+ * FUNCTIONAL COMPOSITION
+ *
+ * Tomasz Ducin
+ * http://ducin.it
+ * twitter: @tomasz_ducin
+ */
+
+// some initial stuff
+
+type ContractType = "contract" | "permanent";
+
+type Developer = {
+  "id": number;
+  "nationality": "PL" | "DE",
+  "salary": number;
+  "firstName": string;
+  "lastName": string;
+  "contractType": ContractType;
+  "skills": string[];
+};
+
+declare const devs: Developer[]
+
+///////////////////////////////////////
+
+let fn: Function
+type FnType = () => number 
+type Closure = () => () => () => number
+
+type NoopFn = () => void
+var noopFn: NoopFn = () => {}
+
+///////////////////////////////////////
+
+interface InterfaceFunction {
+  (): void
+  get: Function
+  post: Function
+}
+// $("div")
+// $.get(...)
+// $.post(...)
+// $.ajax(...)
+
+// TYPE INFERENCE
+// no inference for function params
+
+function add(a: number, b: number){
+  return a + b
+}
+
+// TYPE COMPATIBILITY
+
+type City = 'Warsaw' | 'Wrocław'
+type CityFn = (arg: City) => void
+type StringFn = (arg: string) => void
+
+var cityFn: CityFn
+var stringFn: StringFn
+
+cityFn = stringFn
+stringFn = cityFn // fails with strictFunctionTypes (contravariance)
+
+///////////////////////////////////////
+// GENERICS
+
+type FnParam<T> = (t: T) => boolean
+type FnGeneric = <T>(t: T) => boolean
+
+type DeveloperBoolFn = FnParam<Developer>
+var f5: FnGeneric = (d: Developer) => true // FAILS!
+// assigned function needs to have a generic, fails because it's a certain type, not a generic
+
+// only generic fn can be assigned to a generic-fn type
+declare const f6: FnGeneric;
+f6(devs[0])
+f6(1)
+
+// (1) input parameters and output type has to match
+// (2) you can pass a fn that accepts less params, but not more params
+
+const add1 = (a) => a + 1
+var arr = [1, 2, 3].map((a, idx, arr) => a + 1)
+
+///////////////////////////////////////
+// example 1: Composing Boolean Functions - negate
+
+type EntityBoolFn<T> = (t: T) => boolean
+// type DevBoolFn = (d: Developer) => boolean
+type DevBoolFn = EntityBoolFn<Developer>
+
+const devHasContractType =
+  (c: ContractType) =>
+    (d: Developer) => d.contractType === c
+const devIsContractor = devHasContractType("contract")
+// const devIsPermanent = devHasContractType("permanent")
+
+type BoolComposition = (dfn: DevBoolFn) => DevBoolFn
+const negate: BoolComposition =
+  (bfn: DevBoolFn) =>
+    (d) => !bfn(d)
+
+const devIsPermanent = negate(devIsContractor)
+
+///////////////////////////////////////
+// example 2: Composing Boolean Functions - all
+
+const all = (dfns: DevBoolFn[]): DevBoolFn =>
+  (d) => dfns.every(dfn => dfn(d))
+
+// 2nd : reduce
+// 3rd : recursion
+// 4th : some
+// 5th : find
+
+// /\/\/\
+// |____|
+// REDUCE
+
+// (bigger is NOT what we need here)
+let bigger = [1,2,3].every(a => a > 0)
+
+///////////////////////////////////////
+// example 3: Limitation of TS: mergeMultipleObjects
+// reduce ran against dynamic number of arguments, each with potentially different shape
+
+const merge2Objects = <T extends Object, U extends Object>
+  (obj1: T, obj2: U) =>
+    ({ ...obj1, ...obj2 })
+
+function mergeMultipleObjects<T extends Object, U extends Object>(t: T, u: U): T & U
+function mergeMultipleObjects<T extends Object, U extends Object, W extends Object>(t: T, u: U, w: W): T & U & W
+function mergeMultipleObjects<T extends Object, U extends Object, W extends Object, X extends Object>(t: T, u: U, w: W, x: X): T & U & W & X
+function mergeMultipleObjects(objects: []) {
+  return objects.reduce(merge2Objects)
+}
+
+let r1 = mergeMultipleObjects(
+  {name: 'John'},
+  {age: 40},
+  {city: "Liverpool"},
+  {band: "The Beatles"})
+
+console.log(devIsContractor(devs[1]) )
+console.log(devIsPermanent(devs[1]) )
+
+///////////////////////////////////////
+// example 4: Limitation of TS: pipe
+// the same limitation, reduce with different shapes (function signatures)
+
+function pipe<T, U, V>(
+  fn1: (t: T) => U,
+  fn2: (u: U) => V
+): (t: T) => V
+function pipe<T, U, V, W>(
+  fn1: (t: T) => U,
+  fn2: (u: U) => V,
+  fn3: (v: V) => W,
+): (t: T) => W
+function pipe<T, U, V, W, X>(
+  fn1: (t: T) => U,
+  fn2: (u: U) => V,
+  fn3: (v: V) => W,
+  fn4: (w: W) => X,
+): (t: T) => X
+function pipe(...fns: Function[]){ // left -> right
+  return (value) => fns.reduce( (v, fn) => fn(v), value )
+}
+
+let processing = pipe(
+  (devs: Developer[]) => devs.filter(d => d.nationality === 'PL'),
+  (devs) => devs.filter(d => d.skills.includes('TypeScript')),
+  (devs) => devs.reduce((maxSalaryDev, d) =>
+    maxSalaryDev.salary > d.salary ? maxSalaryDev : d, devs[0]), // max salary
+  (dev) => `${dev.firstName} ${dev.lastName}`
+)
+const endOfThisLiveCodingSession = processing(devs)
+
+// enjoy the magnificent types within the pipe!
+
+-------------------------------------------------------
+import { INC } from './constants';
+
+export const Inc = () => ({
+  type: INC as typeof INC
+})
+
+export type Actions =
+  | ReturnType<typeof Inc>
+
+-------------------------------------------------------
+
+const API_URL = 'http://localhost:3011/'
+
+const OfficeModel = {
+  getCollection(){
+    return fetch(`${API_URL}offices`)
+      .then(res => res.json())
+  },
+  async __extendOfficeWithEmployees(office){
+    const employees = await EmployeeModel.getCollection(office.city)
+    return { ...office, employees }
+  },
+  async getCollectionWithEmployees(){
+    const offices = await this.getCollection()
+    const promises = offices.map(this.__extendOfficeWithEmployees)
+    return Promise.all(promises)
+  },
+  async getItemWithEmployees(city){
+    const officeRes = await fetch(`${API_URL}offices?city=${city}`)
+    const office =  await officeRes.json()
+    return this.__extendOfficeWithEmployees(office[0])
+  }
+}
+
+const EmployeeModel = {
+  getCollection(office){
+    const query = office ? `?office_like=${office}` : ''
+    return fetch(`${API_URL}employees${query}`)
+      .then(res => res.json())
+  },
+  getItem(id){
+    return fetch(`${API_URL}employees/${id}`)
+      .then(res => res.json())
+  }
+}
+
+const ProjectModel = {
+  getCollection(){
+    return fetch(`${API_URL}projects`)
+      .then(res => res.json())
+  },
+  getItem(id){
+    return fetch(`${API_URL}projects/${id}`)
+      .then(res => res.json())
+  },
+  async __extendProjectWithEmployees(project){
+    const managerPromise = EmployeeModel.getItem(project.manager)
+    const teamPromises = project.team.map(member => EmployeeModel.getItem(member.id))
+    return { ...project,
+      manager: await managerPromise,
+      team: await Promise.all(teamPromises)
+    }
+  },
+  async getItemWithEmployees(id){
+    return this.__extendProjectWithEmployees(await this.getItem(id))
+  }
+}
+
+////////////////////////////////
+
+OfficeModel.getCollection()
+  .then(offices => console.log('offices', offices))
+
+EmployeeModel.getCollection()
+  .then(employees => console.log('employees', employees))
+
+ProjectModel.getCollection()
+  .then(projects => console.log('projects', projects))
+
+ProjectModel.getItemWithEmployees("579ef28f-c539-41ff-abe2-e4f6b1c1afed")
+  .then(project => console.log('project with employees', project))
+
+OfficeModel.getItemWithEmployees('Dallas')
+  .then(office => console.log('office with employees', office))
+
+OfficeModel.getCollectionWithEmployees()
+  .then(offices => console.log('all offices with employees', offices))
+
+----------------------------------------------------------------------------
+So the bottomline is: TypeScript doesn't currently provide a neat way to type the compose (pipe) itself. 
+The workaround is to provide function signature overloads. 
+And these have to support each cases separately (1 function composed, 2 functions composed, 3 functions composed... 
+and define as many as you can since there's no induction included LOL). These declarations grow to really big size.
+
+Take a look at these typedefs:
+
+Ramda compose utility
+lodash compose utility, which links to internal LodashFlowRight
+RxJS pipe operator
+For the lazy folks (or mobile readers) here you go what it looks like:
+
+export function pipe<T>(): UnaryFunction<T, T>;
+export function pipe<T, A>(fn1: UnaryFunction<T, A>): UnaryFunction<T, A>;
+export function pipe<T, A, B>(fn1: UnaryFunction<T, A>, fn2: UnaryFunction<A, B>): UnaryFunction<T, B>;
+export function pipe<T, A, B, C>(fn1: UnaryFunction<T, A>, fn2: UnaryFunction<A, B>, fn3: UnaryFunction<B, C>): UnaryFunction<T, C>;
+export function pipe<T, A, B, C, D>(fn1: UnaryFunction<T, A>, fn2: UnaryFunction<A, B>, fn3: UnaryFunction<B, C>, fn4: UnaryFunction<C, D>): UnaryFunction<T, D>;
+export function pipe<T, A, B, C, D, E>(fn1: UnaryFunction<T, A>, fn2: UnaryFunction<A, B>, fn3: UnaryFunction<B, C>, fn4: UnaryFunction<C, D>, fn5: UnaryFunction<D, E>): UnaryFunction<T, E>;
+export function pipe<T, A, B, C, D, E, F>(fn1: UnaryFunction<T, A>, fn2: UnaryFunction<A, B>, fn3: UnaryFunction<B, C>, fn4: UnaryFunction<C, D>, fn5: UnaryFunction<D, E>, fn6: UnaryFunction<E, F>): UnaryFunction<T, F>;
+export function pipe<T, A, B, C, D, E, F, G>(fn1: UnaryFunction<T, A>, fn2: UnaryFunction<A, B>, fn3: UnaryFunction<B, C>, fn4: UnaryFunction<C, D>, fn5: UnaryFunction<D, E>, fn6: UnaryFunction<E, F>, fn7: UnaryFunction<F, G>): UnaryFunction<T, G>;
+export function pipe<T, A, B, C, D, E, F, G, H>(fn1: UnaryFunction<T, A>, fn2: UnaryFunction<A, B>, fn3: UnaryFunction<B, C>, fn4: UnaryFunction<C, D>, fn5: UnaryFunction<D, E>, fn6: UnaryFunction<E, F>, fn7: UnaryFunction<F, G>, fn8: UnaryFunction<G, H>): UnaryFunction<T, H>;
+export function pipe<T, A, B, C, D, E, F, G, H, I>(fn1: UnaryFunction<T, A>, fn2: UnaryFunction<A, B>, fn3: UnaryFunction<B, C>, fn4: UnaryFunction<C, D>, fn5: UnaryFunction<D, E>, fn6: UnaryFunction<E, F>, fn7: UnaryFunction<F, G>, fn8: UnaryFunction<G, H>, fn9: UnaryFunction<H, I>): UnaryFunction<T, I>;
+export function pipe<T, A, B, C, D, E, F, G, H, I>(fn1: UnaryFunction<T, A>, fn2: UnaryFunction<A, B>, fn3: UnaryFunction<B, C>, fn4: UnaryFunction<C, D>, fn5: UnaryFunction<D, E>, fn6: UnaryFunction<E, F>, fn7: UnaryFunction<F, G>, fn8: UnaryFunction<G, H>, fn9: UnaryFunction<H, I>, ...fns: UnaryFunction<any, any>[]): UnaryFunction<T, {}>;
+As said, it is a limitation, but TypeScript libraries users don't suffer from it. Rather, TypeScript libraries/typedefs authors have to write it down. So the probability you'd fall into such situation is super small.
+
+EXAMPLE DATA STRUCTURE
+In the following sections we'll use the following data. We've got a collection of music bands with their names and genres assigned:
+
+type Genre = 'psychedelic' | 'progressive rock' | 'rock n\'roll' | 'classic rock'
+
+type Band = {
+  id: string
+  name: string
+  genres: Genre[]
+}
+
+const bands: Band[] = [{
+  id: '4cb87850-14e7-495d-99d6-50a2b09dfa2f',
+  name: 'Pink Floyd',
+  genres: ['psychedelic', 'progressive rock']
+}, {
+  id: 'dbdbb15a-b129-41c0-a9ce-df52bba6bcae',
+  name: 'The Beatles',
+  genres: ['rock n\'roll', 'psychedelic']
+}, {
+  id: 'befb6abb-8012-46de-a639-ebbc82c3fc8d',
+  name: 'King Crimson',
+  genres: ['progressive rock', 'classic rock']
+}, {
+  id: 'ffedad2c-c5ed-42fa-ba2e-a6091a4d7ad8',
+  name: 'The Rolling Stones',
+  genres: ['psychedelic', 'classic rock']
+}, {
+  id: 'e22ce329-f925-4020-9b61-f405e750fbf5',
+  name: 'The Doors',
+  genres: ['psychedelic', 'classic rock']
+}]
+We'll see them in action in a while.
+
+PROTOTYPE-BASED CHAINING
+One of the super-useful features of TypeScript is the ability to apply the correct types in chained operations 
+such as native Array methods or RxJS operators (until v5, where FP-based piping becomes the standard). 
+
+The mechanics is pretty simple - given a well-defined structure and an operation which we know what it returns, 
+we can perfectly determine what is the input of the next step.
+
+Let's start with something simple:
+
+const ids = bands.map(b => b.id)
+
+We know that bands is of type Band[]. We also know, that Array.prototype.map(cb) will transform T[] -> U[] 
+
+given a callback that can do: T -> U. In above case, T is Band and U is Band["id"], that is, a string. 
+So we're mapping an array of objects into array of strings. The ids variable is automatically assigned (inferred) 
+to be string (or Band["id"][], if we prefer it).
+
+Let's query all genres that we've got accessible now:
+
+const genres = bands.map(b => b.genres) // string[][]
+After the first line we've got a list of genres of all bands, which is a list of list of genres. Let's chain the operations:
+
+const genres = bands.map(b => b.genres) // string[][]
+  .flat() // string[]
+Now, the result is just flattened, so we have repetition. Which we now want to remove using ES6:
+
+const unique = (genres: string[]) => Array.from(new Set(genres))
+The unique function removs repetition according to the semantics of how do Set elements are stored 
+(we'll ignore the identity function for now). But we can do better, using generics:
+
+const unique = <T>(items: T[]) => Array.from(new Set(items))
+And we've got a more generic function that will remove our genres repetition:
+
+const genres = unique(
+    bands.map(b => b.genres) // string[][]
+    .flat() // string[]
+  ) // string[]
+The power of TypeScript is that above code doesn't have any explicit type definitions at all (no : string), but everything is type-safe.
+
+ARRAY.REDUCE AND THE ACCUMULATOR TYPE PROBLEM
+Let's carry on with Array methods, this time: reduce. Array reduce is special in a way that all other 
+Higher-order functions can be implemented using it. In other words, reduce is the most general out of all HOFs on arrays. 
+Reduce defines an iteration over a collection, where an accumulator (aggregate, whatever we call it) is passed between all steps. 
+A single step of the loop is performing an operation of the item of the collection being iterated over, 
+the aggregate is updated and returned to the next step. So the aggregate is passed through all the steps.
+
+In following example we want to create a map of genres (map is a key: value data structure), where values will be a list of bands that play that genre:
+
+const genreMap = bands.reduce((aggr, band: Band) => {
+  band.genres.forEach(g => {
+    if (!aggr[g]) {
+      aggr[g] = []
+    }
+    aggr[g].push(band)
+  })
+  return aggr
+}, {})
+Above code has band: Band set and, deliberately, the aggr is left for implicit typing. In a single step we apply that 
+certain genres do include the band we've got in this step.
+
+The important part here is we've got the aggregate in a couple of places:
+
+aggr in the top line (left for inference)
+the initial value at the bottom line, {}
+used i few places internally
+Using the TS typedef of the native Array.prototype.reduce, all these are the same thing (as a result, if we provide multiple 
+explicit type declarations, they have to be compatible).
+
+As we previously said, when we define an empty object, it's inferred just as an empty object: {}. 
+We can access its keys using the array notation, but we can't access it with an arbitrary field:
+
+genreMap['psychedelic'] // OK
+genreMap.psychedelic // FAIL! psychedelic doesn't exist on {}
+In case you've ever solved that issue using any: don't do that! Ever.
+
+Another issue we've got is that genreMap['psychedelic'] is inferred as any, since {} carries no information about the value type.
+
+What we can do in this situation is to define an index signature:
+
+type GenreMap = {
+  [genre: string]: Band[]
+}
+Now genreMap['psychedelic'] infers to Band[]. This is already better. Moreover, genreMap.psychedelic is correct. 
+But sometimes we can go even further, if we know that not all strings are allowed within the keys, just as our genres are limited to distinct 4 values. 
+An index signature based on string literal looks like the following:
+
+type GenreMap = {
+  [genre in Genre]: Band[]
+}
+Finally, we apply it to our reducer snippet:
+
+const genreMap = bands.reduce((aggr: GenreMap, band: Band): GenreMap => {
+  band.genres.forEach(g => {
+    if (!aggr[g]) {
+      aggr[g] = []
+    }
+    aggr[g].push(band)
+  })
+  return aggr
+}, {} as GenreMap)
+
+As you can see, I've placed the type in three places, but that's not necessary (the bottom line would be enough). 
+At the end of the article we'll cover how man places shall we hammer with explicit types 
+and which ones are good to left inferred automatically.
