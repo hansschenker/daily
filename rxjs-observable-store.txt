@@ -1,0 +1,81 @@
+// ultimatecourses.com - rxjs masterclass, brian troncone
+
+import { BehaviorSubject, Subject } from 'rxjs';
+import { map, distinctUntilKeyChanged, scan } from 'rxjs/operators';
+
+export class ObservableStore {
+  private _store: BehaviorSubject<any>;
+  private _stateUpdate = new Subject();
+
+  constructor(initialState) {
+    this._store = new BehaviorSubject(initialState);
+    this._stateUpdate.pipe(
+      scan((current, updated) => ( { ...current, ...updated } ), initialState)
+    ).subscribe(this._store);
+  }
+
+// model: interface Item { id:nuber, name:string }
+// viewmodel: interface Viewmodel<T> { selectedItem: T, items: T[] }
+-------------------------------------------------------------------
+map function and scan
+--------------------------------------------------------------------
+// type vmReducer = (vm: ItemVm) => ItemVm;
+// type vmReducer<T> = (vm: Viewmodel<T>) => Viewmodel<T>;
+
+// map( items =>     (vm: ItemVm) => ({...vm, items}) )
+
+// scan( (vm:ItemVm, vmReducer ) => vmReducer(vm), vm as ItemVm )
+
+
+
+  /*
+   * Update state with new object to merge.
+   */
+  updateState(newState: object) {
+    this._stateUpdate.next(newState);
+  }
+
+  /*
+   * Subscribe to any store state changes.
+   */
+  stateChanges() {
+    return this._store.asObservable();
+  }
+}
+
+
+-------------------------------------------------------------------------------------------------
+use observable store
+---------------------------------------------------------------------------------------------------
+/ begin lesson code
+import { ObservableStore } from './store';
+
+const store = new ObservableStore({
+  user: 'joe',
+  isAuthenticated: true
+});
+
+/*
+ * Select a slice of state from store.
+ */
+store.selectState('user').subscribe(console.log);
+
+/*
+ * Update a property with new value.
+ */
+store.updateState({
+  user: 'bob'
+});
+
+store.updateState({
+  isAuthenticated: true
+});
+
+/*
+ * Selected state above (user) only emits when value has changed
+ * for the requested property.
+ */
+store.updateState({
+  isAuthenticated: false
+});
+-------------------------------------------------------------------------

@@ -1,0 +1,93 @@
+-------------------------------------------------------------------------------------------------------------------
+import { of } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
+import { map, pluck, expand, take, scan, reduce, takeWhile, tap } from 'rxjs/operators';
+
+const baseUrl = 'https://api.github.com/repos/reactivex/rxjs/issues';
+let page = 1;
+
+const source = ajax(`${baseUrl}?page=${page}&per_page=50`).pipe(
+  expand(() => {
+    page += 1;
+    return ajax(`${baseUrl}?page=${page}&per_page=50`);
+  }),
+  tap(console.log),
+  pluck('response'),
+  takeWhile(response => response.length),
+  reduce<any>((a, b) => [...a, ...b], []),
+);
+
+source.subscribe(issues => console.log(issues.length));
+----------------------------------------------------------------------------------------------------------------
+
+* Returns an Observable that emits items based on 
+  applying a function that you supply to each item emitted by the source Observable, 
+  where that function returns an Observable, and then 
+  merging those resulting Observables and emitting the results of this merger. 
+
+*Expand* will re-emit on the output Observable every source value. 
+  Then, each output value is given to the `project` function 
+  which returns an inner Observable to be merged on the output Observable. 
+  Those output values resulting from the projection are also given to the `project` function 
+  to produce new output values. 
+  This is how expand* behaves recursively.
+ *
+ * ## Example
+-----------------------------------------------------------------------
+ * Start emitting the powers of two on every click, at most 10 of them
+-----------------------------------------------------------------------
+
+
+ * import { fromEvent, of } from 'rxjs';
+ * import { expand, mapTo, delay, take } from 'rxjs/operators';
+ *
+ * const clicks = fromEvent(document, 'click');
+ * const powersOfTwo = clicks.pipe(
+ *   mapTo(1),
+ *   expand(x => of(2 * x).pipe(delay(1000))),
+ *   take(10),
+ * );
+
+ * powersOfTwo.subscribe(x => console.log(x));
+-----------------------------------------------------------------------------------------------
+
+Expands an observable sequence by recursively invoking selector.
+
+Arguments
+------------------------------
+source:
+
+- selector (Function): Selector function to invoke for each produced element, 
+  resulting in another sequence to which the selector will be invoked recursively again.
+
+- sink: An observable sequence containing a single element determining whether all elements in the source sequence pass the test in the specified predicate.
+
+Example
+var source = Rx.Observable.return(42)
+    .expand(function (x) { return Rx.Observable.return(42 + x); })
+    .take(5);
+
+var subscription = source.subscribe(
+  function (x) {
+    console.log('Next: %s', x);
+  },
+  function (err) {
+    console.log('Error: %s', err);
+  },
+  function () {
+    console.log('Completed');
+  });
+
+// => Next: 42
+// => Next: 84
+// => Next: 126
+// => Next: 168
+// => Next: 210
+// => Completed
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Recursively projects each source value to an Observable which is merged in the output Observable.
+
+expand<T, R>(project: (value: T) => any): OperatorFunction<T, R>
+
+expand:: 

@@ -12,8 +12,11 @@
 --------------------------------
     // type scan mutation function (take a vm and return changed vm)
     // scan with a reducer function ( takes the previous state and a state mutation function and return the new state)
-    type VmFn = (vm: IViewModel) => IViewModel;
+    type VmFn<T>    = (vm: ViewModel<T>)   => ViewModel<T>;
+                      (vm:ViewModel) => ({...vm, users: [...vm.users ,{id:9, name:user}] })
+    type updater<V> = (state: T, value: V) => T
 
+                 
     // merge action streams into one
     // and track state with the help of scan operator
     this.vm$ = merge(
