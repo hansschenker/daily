@@ -1,0 +1,462 @@
+schematics collection
+{
+    "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
+    "schematics": {
+      "schematic-one": {
+        "aliases": [ "one" ],
+        "description": "A schematic description.",
+        "factory": "./schematic-one/index#schematicOne",
+        "schema": "./schematic-one/schema.json"
+     },
+     "schematic-two": {
+       "description": "Another schematic description.",
+       "factory": "./schematic-two/index#schematicTwo",
+       "schema": "./schematic-two/schema.json",
+       "hidden": true
+     }
+}
+
+schema.json
+-------------------------------------------------------------
+{
+ 2   // JSON schema location (optional)
+ 3   "$schema": "http://json-schema.org/schema",
+ 4 
+ 5   // ID which points to a schematic.
+ 6   "id": "SchematicOne",
+ 7 
+ 8   // Schematic title.
+ 9   "title": "Schematic One Options Schema",
+10 
+11   /*
+12    Type of the options which will get passed into our schematic.
+13    */
+14   "type": "object",
+15 
+16   /*
+17     An object which defines both command-line arguments and other
+18     options which may get passed in by another schematic.
+19   */
+20   "properties": {
+21 
+22     // Example option
+23     "path": {
+24       "type": "string",
+25       "format": "path",
+26       "description": "The path to run schematic one."
+27     },
+
+
+Now let’s view our schema.d.ts file. 
+This file will be used directly by our schematic’s RuleFactory to validate it’s options.
+
+1 export interface Schema {
+2   name: string;
+3   workspace?: string;
+4   path?: string;
+5 }
+
+create a schematics
+------------------------------------------------------------
+schematics blank schematics-cookbook
+
+schematics directory
+------------------------------------------------------------
+/schematics-cookbook
+   /src
+       /schematic-one
+       /schematic-two
+   collection.json
+   package.json
+
+run a schematics
+-----------------------------------------------------------
+schematics collection_name:schematics_name --args --go --here
+
+
+RuleFactory
+-------------------------------------------------------------
+ import {
+ 2     apply,
+ 3     mergeWith,
+ 4     chain,
+ 5     move,
+ 6     Rule,
+ 7     template,
+ 8     url,
+ 9     Tree,
+10     SchematicContext
+11 } from '@angular-devkit/schematics';
+
+12 import { strings } from '@angular-devkit/core';
+13 import { SchematicOneOptions } from './schema';
+14 
+15 export default function schematicOne(options: SchematicOneOptions): Rule {
+16 
+17     return (host: Tree, context: SchematicContext) => {
+18       const templateSource = apply(url('./files'), [
+19         template({
+20           ...strings,
+21           ...options
+22         }),
+23         move(options.path ? options.path : `/{options.name}`)
+24       ]);
+25 
+26       const rule = chain([
+27           mergeWith(templateSource),
+28       ]);
+29 
+30       return rule(host, context);
+31     }
+32 }
+
+Schematic Templating
+-----------------------------------------------------------------
+- /files directory houses template files/directories 
+   which the schematic can use to generate custom code/files
+
+Tree
+-----------------------------------------------------------------
+The Tree, simply put, is an abstraction of a filesystem. Trees are like a virtual, in-memory snapshot of a filesystem
+
+Tree Modifications
+------------------------------------------------------------------
+
+
+- tree.create(path: string, content: Buffer | string): void
+  This method creates a file at a given path containing the given content.
+
+- tree.delete(path: string): void
+  This method deletes a file at a given path.
+
+- tree.rename(from: string, to: string): void
+  This method renames a file in the tree.
+
+- tree.overwrite(path: string, content: Buffer | string): void
+
+Tree Helpers I
+-------------------------------------------------------------------
+
+- tree.branch(): Tree
+  This method creates a copy of the current Tree.
+
+- tree.merge(other: Tree, strategy?: MergeStrategy): void
+  This method merges two Trees using an optional MergeStrategy.
+
+  MergeStrategies:
+  --------------------------------------------------------------------
+- Default: Overwrites are not allowed (The safest!)
+- Error: This strategy errors out if two files have identical paths
+- ContentOnly: Only overwrite file contents
+- Overwrite: Allow overwrite, creation and deletion conflicts
+- AllowOverwriteConflict: Only allow overwrite conflicts
+- AllowCreationConflict: Only allow creation conflicts
+- AllowDeleteConflict: Only allow deletion conflicts
+
+- tree.apply(action: Action, strategy?: MergeStrategy): void
+  This method applies a given Action to the Tree using an optional MergeStrategy. 
+  There is more on what an Action is in the “The Action and the Sink” section.
+
+Tree Helpers II
+-----------------------------------------------------------------------------
+The following methods are other helpers which you may find of 
+use when using Trees in your schematics.
+
+- tree.exists(path: string): boolean
+  This method determines whether a given directory/file exists at a given path.
+
+- tree.get(path: string): FileEntry | null
+  This method fetches a FileEntry from a given Tree if it exists.
+
+- tree.getDir(path: string): DirEntry
+  This method fetches a DirEntry from a given tree.
+
+The Rule (RuleFactory)
+---------------------------------------------------------------------------
+- Rules are simply functions that operate on Trees and return a new Tree with modifications
+  Rule:: Tree SchematicContext -> Tree
+
+Rule Factories
+--------------------------------------------------------------------------
+
+- noop(): Rule
+  This RuleFactory returns an empty Rule. This is useful within boolean contexts.
+
+- chain(rules: Rule[]): Rule
+  This is an oft-used RuleFactory which returns a final Rule after chaining all Rules that are passed in to it.
+
+- mergeWith(source: Source, strategy?: MergeStrategy): Rule
+  This function, at its core, merges two Trees with an optional MergeStrategy. 
+  The first Tree in the merge is taken from calling the Source function that is passed in to 
+  mergeWith (more on the Source later). The second Tree is passed in to the resulting Rule. 
+  This function is incredibly useful when it comes to templating!
+
+- branchAndMerge(rule: Rule, strategy?: MergeStrategy): Rule
+  This function branches the current Tree (creating a performant, virtual copy) 
+  and merges it with the given Rule whilst using an optional MergeStrategy.
+
+- filter(predicate: FilePredicate<boolean>): Rule
+  In the filter function, the passed in FilePredicate is itself a function that takes in 
+  a path as a string and returns a boolean. This function is useful for filtering out files from a Tree. 
+  
+  An example FilePredicate could look like the following:
+  (path: string) => !path.endsWith('.spec.ts')
+  The above FilePredicate filters out test files from a Tree’s directory structure.
+
+- forEach(operator: FileOperator): Rule
+  This function returns a Rule after applying the given FileOperator to every file in the Tree.
+
+- move(input: string): Rule
+  This function simply moves every file from the current Tree into the given input path.
+
+The Source (creates a new Tree from an empty filesystem)
+-------------------------------------------------------------------------
+- Source a “function that creates an entirely new Tree from an empty filesystem”.
+- A Source’s single purpose is to return a Tree. Sources work in conjunction with Rules in order to create and transform Trees. 
+  The Schematics library provides the following Source factories which help creators of schematics with most, basic operations. These factories include:
+
+- source(tree: Tree): Source
+  This factory returns a Source that itself returns the input Tree.
+
+- empty(): Source
+  This factory returns a Source that returns an empty Tree.
+
+- apply(source: Source, rules: Rule[]): Source
+  This function applies a list of Rules to a Source and returns a new Source.
+
+- url(url: string): Source
+  This function returns a Source that returns a Tree with files loaded from the give URL.
+
+Other Helpers
+----------------------------------------------------------------------------
+- asSource(rule: Rule): Source
+  This function transforms the given Rule into a Source.
+
+The Action (atomic file opertion)
+--------------------------------------------------------------------------------
+Actions are simply atomic, file operations. Actions can be applied and committed to a Tree.
+
+Angular Schematics comes with the following, self-explanatory Actions. 
+All of these Actions implement the base class - Action.
+
+CreateFileAction
+
+DeleteFileAction
+
+OverwriteFileAction
+
+RenameFileAction
+
+The Sink
+------------------------------------------------------------------------------------
+Sinks are responsible for validating and committing Actions.
+
+The Schematics library provides three separate Sinks for use. These include the 
+- HostSink, the 
+- FileSystemSink and the 
+- DryRunSink. 
+  Each of these Sinks are implementations of the abstract base class SimpleSinkBase which provides 
+  a number of different methods that help schematic developers customize the validation and 
+  committal of Actions in their schematics. For most use cases, there shouldn’t be the need 
+  to utilize Sinks directly. The only time that a developer would want to directly use 
+  a Sink would be when there are requirements to directly alter/use a Sink’s provided commit hooks. 
+  Here are the available Sinks along with their descriptions:
+
+- HostSink
+  This sink is the parent class of both the FileSystemSink and the DryRunSink. You shouldn’t use this directly.
+
+- FileSystemSink
+  This Sink is an extension of the HostSink and is the the provided Sink implementation that will directly alter the host filesystem.
+
+- DryRunSink
+  This Sink is an extension of the HostSink that effectively allows dry-running Actions against a Tree. 
+  This ensures that changes are not actually made to the host filesystem.
+
+Templating in Angular Schematics
+---------------------------------------------------------------------
+- \files : Schematic templates are located in an individual schematic’s files directory 
+
+
+Angular Schematics provides two templates:
+-------------------------------------------
+
+- contentTemplate<T>(options: T): Rule
+  You can think of the contentTemplate as an EJS template that can only be applied to text files. 
+  This template is responsible for templating the actual content located within the files that are found in your schematic’s files directory.
+  Here is an example file,
+
+\files
+ __componentName@dasherize__.component.ts
+
+__componentName@dasherize__.component.ts
+
+
+1 import { Component, OnInit } from '@angular/core';
+2 
+3 @Component({
+4     selector: '<%=dasherize(componentName)%>',
+5     templateUrl: '<%=dasherize(componentName)%>.component.html',
+6 })
+7 export class <%= classify(componentName) %>Component {
+8     constructor() {}
+9 }
+
+anything between the EJS bracket syntax (<%= %>) will be evaluated and replaced 
+
+import { Component, OnInit } from '@angular/core';
+ 2 
+ 3 @Component({
+ 4     selector: '<%=dasherize(componentName)%>',
+ 5     templateUrl: '<%=dasherize(componentName)%>.component.html',
+ 6 })
+ 7 export class <%= classify(componentName) %>Component {
+ 8     constructor() {
+ 9         <% if (logConstruction) { %>
+10             console.log('Created component: <%=dasherize(componentName)%>');
+11         <% } %>
+12     }
+13 }
+
+- pathTemplate<T extends PathTemplateData>(options: T): Rule
+  The pathTemplate is similar to the contentTemplate except that it is responsible for templating file/directory path names. 
+  This template is solely responsible for reading in file/directory names and replacing any instances of __Z__ 
+  with the appropriate value. pathTemplate does this by looking at the options passed into it via the tempalate() Rule . 
+  If this template sees that the value of ‘Z’ in __Z__ has a corresponding option then this template will replace __Z__ with the value of the option.
+
+Apart from this, if the value of ‘Z’ 
+- is a function, then this template will call that function and replace __Z__ with the resulting value. 
+  See the available utility functions section below to see what functions Angular Schematics makes available for use with templates.
+
+- Functions can also be used alongside option values like this:
+
+__componentName@dasherize__.component.ts
+  Here, our template will pass the value of the componentName option into the dasherize function and 
+  replace the __componentName@dasherize__ portion of the file’s name with the resulting value.
+
+- template<T>(options: T): Rule
+  This Rule applies the templates pathTemplate and contentTemplate to the Tree using the given options. 
+  
+ 1 import { mergeWith, apply, url, template, Rule } from '@angular-devkit/schematics';
+ 2 import { ExampleOptions } from './schema';
+ 3 
+ 4 export default function (options: ExampleOptions): Rule {
+ 5     return mergeWith(apply(url('./files'), [
+ 6             template({
+ 7                 ...options
+ 8             })
+ 9         ])
+10     );
+11 }
+
+Template utility functions
+-------------------------------------------------------------------------------
+ 1 /*
+ 2     This function converts a camelized string into a lower case,
+ 3     underscore-delimited string.
+ 4 */
+ 5 decamelize('helloWorld');   // 'hello_world'
+ 6 
+ 7 
+ 8 /*
+ 9     This function converts underscores, spaces and camel-case with
+10     dashes - producing a dash-delimited string.
+11 */
+12 dasherize('helloWorld');    // 'hello-world'
+13 dasherize('hello_world');  // 'hello-world'
+14 
+15 /*
+16     This function produces a camelized string.
+17 */
+18 camelize('hello-world');    // 'helloWorld'
+19 camelize('hello_world');  // 'helloWorld'
+20 
+21 
+22 /*
+23     This function produces an upper-camel-case string.
+24 */
+25 classify('hello-world');    // 'HelloWorld'
+26 classify('hello_world');  // 'HelloWorld'
+Here is a simple, example schematic that demonstrates the use of the template Rule:
+
+ 1 import { mergeWith, apply, url, template, Rule } from '@angular-devkit/schematics';
+ 2 import { ExampleOptions } from './schema';
+ 3 
+ 4 export default function (options: ExampleOptions): Rule {
+ 5     return mergeWith(apply(url('./files'), [
+ 6             template({
+ 7                 ...options
+ 8             })
+ 9         ])
+10     );
+11 }
+
+Available Templating Utility Functions
+----------------------------------------------------------------------------------
+In this section we digress into the available utility functions that Angular provides for templating and various other use cases. 
+Please feel free to use this sub-section as a quick reference to find out what’s quickly available while templating.
+
+NOTE: These functions are available through the @angular-devkit/core NPM package - NOT the Schematics library.
+
+ 1 /*
+ 2     This function converts a camelized string into a lower case,
+ 3     underscore-delimited string.
+ 4 */
+ 5 decamelize('helloWorld');   // 'hello_world'
+ 6 
+ 7 
+ 8 /*
+ 9     This function converts underscores, spaces and camel-case with
+10     dashes - producing a dash-delimited string.
+11 */
+12 dasherize('helloWorld');    // 'hello-world'
+13 dasherize('hello_world');  // 'hello-world'
+14 
+15 /*
+16     This function produces a camelized string.
+17 */
+18 camelize('hello-world');    // 'helloWorld'
+19 camelize('hello_world');  // 'helloWorld'
+20 
+21 
+22 /*
+23     This function produces an upper-camel-case string.
+24 */
+25 classify('hello-world');    // 'HelloWorld'
+26 classify('hello_world');  // 'HelloWorld'
+27 classify('helloWorld');  // 'HelloWorld'
+28 
+29 
+30 /*
+31     This function produces an underscore-delimited string.
+32 */
+33 underscore('hello-world');    // 'hello_world'
+34 underscore('helloWorld');  // 'hello_world'
+35 
+36 
+37 /*
+38     This function capitalizes a string.
+39 */
+40 capitalize('hello-world');    // 'Hello-world'
+41 capitalize('helloWorld');  // 'HelloWorld'
+
+The above helper functions, along with any other user-created functions are made available to the template Rule 
+by simply passing them in to the Rule via the options argument. Here’s an example:
+
+ 1 import { mergeWith, apply, url, template, Rule } from '@angular-devkit/schematics';
+ 2 import { ExampleOptions } from './schema';
+ 3 import * as stringUtils from '@angular-devkit/core/src/utils/string';
+ 4 
+ 5 export default function (options: ExampleOptions): Rule {
+ 6     return mergeWith(apply(url('./files'), [
+ 7             template({
+ 8                 ...stringUtils,
+ 9                 ...options
+10             })
+11         ])
+12     );
+13 }
+
+Here we make all of the above helper functions available to the contentTemplate and pathTemplate templates 
+
+by passing each of them in to the template() Rule. Please note the deconstruction of the stringUtils object!
+
