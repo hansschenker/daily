@@ -1,19 +1,58 @@
+set PATH=%ConEmuBaseDir%\Scripts;%PATH%
+ 
+# set ConEmuPromptNames=NO
+# set ConEmuPromptNL=NO
+# set ConEmuSudoSplit=NO
+# set ConEmuSudoConfirm=NO
+ 
+# set LANG=ru_RU.utf8
+# set LANG=ru_RU.CP1251
+ 
+# alias cdc=cd /d "%ConEmuDir%"
+# alias cd~=cd /d "%UserProfile%"
+# alias gl=git-log
+# alias glb=git-log --branches --date-order
+  
+# make directories
+alias mdcd=alias md $* && cd $*
+ 
+#show directories
+alias dirtsch=dir $*  *schematics*.txt
+alias dirtang=dir $*  *angular*.txt
+alias dirtngrx=dir $*  *ngrx*.txt
+alias dirtrxjs=dir $*  *rxjs*.txt
+alias dirtxt=dir $* healt*.txt
+# navigate directories
+alias cb=cd ..
+alias cbb=cd .. && cd ..
+alias cbh=cd C:\Users\HS
+alias cdir= cd $* && dir
+ 
+# files
+alias np=notepad $*
+alias tf=type $*
+alias tt=type tasks.txt 
+ 
 conemu cli
 ------------------------------------------------------------------------------------
 alias et=echo $1 $2
  
-directories
+#directory navigation and creation 
 alias mdcd=md $* && cd $*
 alias cb=cd..
 alias cbb=cd.. && cd.. 
 alias dirp= dir $** / p 
-alias webdir= cd D:\A10-projects\web
+ 
  
 alias up=${1^^} 
 alias dp=dir /p
 alias la= ls -al
-alias t= type $*
  
+#type aliases
+----------------------------------------------------------
+alias t= type $*
+alias td= type daily.txt
+alias tp=type package.json
 alias nuance="C:\Program Files (x86)\Nuance\Power PDF 21\bin\nuancepdf.exe"
  
 alias grp=grep '$*' *.txt
@@ -22,7 +61,8 @@ alias ec= echo $*
 daily.txt entries
 ---------------------------------------------------------------------------
 alias ecd= echo $* >> daily.txt 
-
+alias cwd=cd C:\Users\HS\Web\Daily
+ 
  
 vs code
 --------------------------------------
@@ -37,19 +77,25 @@ alias npd=notepad.exe daily.txt
 alias npp=notepad.exe pys.txt
  
  
- 
+#angular cli
+-------------------------------------------------------------------------------
+alias ngmini=ng new $*  --minimal --strict --skip-tests --style scss --routing false --prefix hs
+alias ngws=ng new $* --create-application false --strict --style scss --routing --minimal --skip-tests
 angular directories
 ------------------------------------------
-alias cwa= cd c:\Users\HS\web\frontend\javascript\frameworks\angular && dir /p
-alias cwanx= cd c:\Users\HS\web\frontend\javascript\frameworks\angular-nx && dir /p
-alias cwah=cd c:\Users\HS\web\frontend\javascript\frameworks\angular\hans && dir /p
-alias cward= cd c:\Users\HS\web\frontend\javascript\frameworks\angular-redux && dir /p
-alias cwarx= cd c:\Users\HS\web\frontend\javascript\frameworks\angular-rxjs && dir /p
-alias cwaf=cd c:\Users\HS\web\frontend\javascript\frameworks\angular-fire && dir /p
-alias cwam=cd c:\Users\HS\web\frontend\javascript\frameworks\angular-material && dir /p
-alias cwangrx=cd c:\Users\HS\web\frontend\javascript\frameworks\angular-ngRx && dir /p
-alias cwagm= cd c:\Users\HS\web\frontend\javascript\frameworks\angular-google-maps 
- 
+alias cwa= cd c:\Users\HS\web\frontend\javascript\angular && dir /p
+alias cwanx= cd c:\Users\HS\web\frontend\javascript\angular-nx && dir /p
+alias cwah=cd c:\Users\HS\web\frontend\javascript\angular\hans && dir /p
+alias cward= cd c:\Users\HS\web\frontend\javascript\angular-redux && dir /p
+alias cwarx= cd c:\Users\HS\web\frontend\javascript\angular-rxjs && dir /p
+alias cwaf=cd c:\Users\HS\web\frontend\javascript\angular-fire && dir /p
+alias cwam=cd c:\Users\HS\web\frontend\javascript\angular-material && dir /p
+alias cwangrx=cd c:\Users\HS\web\frontend\javascript\angular-ngRx && dir /p
+alias cwagm= cd c:\Users\HS\web\frontend\javascript\angular-google-maps 
+
+# hans schematics
+------------------------------------------------------------------------------------------
+alias ngf=schematics nxp-feature:nxp-feature --name $*
  
 mobile directories
 --------------------------------------------------------
@@ -81,7 +127,7 @@ alias ngap=ng g application $* --routing --style scss --skip-tests --prefix nxp
 alias ngo=ng serve -o
 alias ngn=ng new $* --routing --style scss --prefix hs && dir && cd $* && ng g c home && ng g c path-not-found && cd $* && code . && ng serve -o
 alias ngnm=ng new $* --routing --style scss --strict --prefix hs --minimal --skipTests false && dir && cd $* && code . && ng serve -o
-
+ 
 # angular module
 alias ngc=ng g c $*
 alias ngm=ng g m $*s --export $* -m app && ng g c $*s && ng g c $*s/components/$*-list --prefix="" -m=$*s && ng g pipe $*s/components/$*-filter  && ng g c $*s/components/$*-add -m=$*s/$*s && ng g c $*s/components/$*-form --prefix="" -m=$*s/$*s && ng g c $*s/components/$*-item --prefix="" -m=$*s/$*s && ng g s $*s/$*  && touch src/app/$*s/$*s.json && echo { "$*s": [{ "id": "1", "name": "$*": "1" },{ "id": "2", "name": "$* 2" },{ "id": "3", "name": "$* 3" }] } >>  src/assets/$*s.json
@@ -90,10 +136,10 @@ alias ngma=ng g m auth --routing && ng g c auth -m=auth && ng g c auth/component
 ngrx
 -------------------------
 alias ngrxi=npm install @ngrx/schematics --save-dev && ng config cli.defaultCollection @ngrx/schematics
-
+ 
 alias ngrxsms = ng g store AppState --root --module app.module.ts
 alias ngrxsme = ng g effect App --root --module app.module.ts
-
+ 
 #ngrx feature and selectors
 alias ngrxf = ng g feature $*s/state/$* -m $*s/$*s --reducers ../../reducers/index.ts 
 alias ngrxfs = echo "import { createFeatureSelector, createSelector } from "@ngrx/store"; import * as from$* from "./$*.reducer"; export const select$*State = createFeatureSelector<from$*.State>("$*"); export const getSelected$*Id = (state: from$*.State) => state.selected$*Id; export const select$*Ids = createSelector(select$*State,from$*.select$*Ids); export const select$*Entities = createSelector(select$*State,from$*.select$*Entities);export const selectAll$*s = createSelector(select$*State,from$*.selectAll$*s); export const select$*Total = createSelector(select$*State,from$*.select$*Total); export const selectCurrent$*Id = createSelector(select$*State,from$*.getSelected$*Id);export const selectCurrent$* = createSelector(select$*Entities,selectCurrent$*Id,(entities, id) => entities[id]);" >> $s*/state/$*.selector.ts
