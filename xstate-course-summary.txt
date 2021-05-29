@@ -1,3 +1,124 @@
+Xstate Glossary
+-------------------------------------------------------------------------------------------------------------
+
+Action - is a Side Effect - no return value
+-------------------------------------------------------
+An action is an effect that is executed as a reaction to a state transition. 
+- Actions are fire-and-forget; that is, 
+- they are executed without needing to wait for a response.
+
+#Actor
+-------------------------------------------------------
+An actor is an entity that 
+- can send messages to other actors, 
+- receive messages, 
+
+and designate its next behavior in response to a message, 
+which may include spawning other actors.
+
+#Atomic state has no child states
+-------------------------------------------------------
+An atomic state is a state node that has no child states.
+
+#Compound state - has child states
+-------------------------------------------------------
+A compound state has one or more child states. 
+- One of these child states must be the initial state, 
+  which is the default state node entered when the parent compound state is entered.
+
+#Condition - when condition is met transition to next state
+-------------------------------------------------------
+See guard.
+
+#Entry action
+-------------------------------------------------------
+An entry action is an action that is executed when its parent state is entered.
+
+#Event - state machine is sent an Event which causes a transition
+-------------------------------------------------------
+An event is an indication that something happened at a specific moment in time. 
+Events are what state machines receive, and are what cause transitions to potentially be taken.
+
+#Eventless transition
+-------------------------------------------------------
+An eventless transition is a transition that is automatically taken when its parent state is active.
+
+#Exit action
+An exit action is an action that is executed when its parent state is exited.
+
+#External transition
+-------------------------------------------------------
+In SCXML, an external transition is a transition that exits the source state when the target state is a 
+descendant of the source state. See selecting transitions (SCXML) (opens new window)for details.
+
+#Final state
+-------------------------------------------------------
+A final state is an indication that the state is "done", and no more events will be handled from it.
+
+#Guard
+-------------------------------------------------------
+A guard is a Boolean expression that determines whether a transition is enabled (if the condition evaluates to true) 
+or disabled (false). Also known as a condition.
+
+#History state
+-------------------------------------------------------
+A history state is a pseudo-state that will remember and transition to the most recently 
+active child states of its parent state, or a default target state.
+
+#Initial state
+-------------------------------------------------------
+The initial state of a compound state is the default child state that is entered when the compound state is entered.
+
+#Internal event - event raised by the state machine
+-------------------------------------------------------
+An internal event is an event that is raised by the state machine itself. 
+Internal events are processed immediately after the previous event.
+
+#Internal transition
+-------------------------------------------------------
+In SCXML, an internal transition is a transition that transitions to a descendant target state without exiting the source state. 
+This is the default transition behavior. See selecting transitions (SCXML) (opens new window)for details.
+
+#Orthogonal state
+-------------------------------------------------------
+See parallel state.
+
+#Parallel state
+-------------------------------------------------------
+A parallel state is a compound state where all of its child states (known as regions) are active simultaneously.
+
+#Pseudostate
+-------------------------------------------------------
+A transient state; e.g., an initial state or a history state.
+
+#Raised event
+-------------------------------------------------------
+See internal event.
+
+#Service
+-------------------------------------------------------
+A service is an interpreted machine; i.e., an actor that represents a machine.
+
+#State machine
+-------------------------------------------------------
+A state machine is a mathematical model of the behavior of a system. 
+It describes the behavior through states, events, and transitions.
+
+#State
+-------------------------------------------------------
+A state represents the overall behavior of a state machine. In statecharts, the state is the aggregate of all active states 
+(which can be atomic, compound, parallel, and/or final).
+
+#Transient state
+-------------------------------------------------------
+A transient state is a state that only has eventless transitions.
+
+#Transition
+-------------------------------------------------------
+A transition is a description of which target state(s) and actions a state machine will immediately be in 
+when a specific event is taken in the transition's source state.
+
+
 Xstate course on Frontendmasters David Khourshid
 ---------------------------------------------------
 
@@ -135,4 +256,173 @@ State with
   exit action
 
 
-  
+Machine
+---------------------------------------------------------------------------
+Properties
+ - id
+ - initial (state)
+ - states: object notation
+ - options: object notation
+
+
+const optionsMachine = createMachine({
+  id: 'options',
+  initial: 'first',
+  states: {
+    first: {},
+    second: {},
+    third: {}
+  },
+  on: {
+    SELECT_FIRST: { target: '.first' }, // resolves to 'options.first'
+    SELECT_SECOND: { target: '.second' }, // 'options.second'
+    SELECT_THIRD: { target: '.third' } // 'options.third'
+  }
+});
+
+on: {
+  SELECT_FIRST: {
+    target: { target: '.first' },
+    internal: false // external transition, will exit/reenter parent state node
+  }
+}
+
+const lightMachine = createMachine({
+  id: 'light',
+  initial: 'green',
+  states: {
+    green: {
+      // custom identifier
+      id: 'greenLight',
+      on: {
+        // target state node by its ID
+        TIMER: { target: '#yellowLight' }
+      }
+    },
+    yellow: {
+      id: 'yellowLight',
+      on: {
+        TIMER: { target: '#redLight' }
+      }
+    },
+    red: {
+      id: 'redLight',
+      on: {
+        // relative targets will still work
+        TIMER: { target: 'green' }
+      }
+    }
+  }
+});
+
+If you don't want to use strings for identifying states, object getters (opens new window)can be used to directly reference the target state:
+
+const lightMachine = createMachine({
+  id: 'light',
+  initial: 'green',
+  states: {
+    green: {
+      on: {
+        // Use a getter to directly reference the target state node:
+        get TIMER() {
+          return { target: lightMachine.states.yellow };
+        }
+      }
+    },
+    yellow: {
+      on: {
+        get TIMER() {
+          return { target: lightMachine.states.red };
+        }
+      }
+    },
+    red: {
+      on: {
+        TIMER: {
+          // Also works with target as a getter
+          get target() {
+            return { target: lightMachine.states.green };
+          }
+        }
+      }
+    }
+  }
+});
+
+
+
+States
+---------------------------------------------------------------------------
+
+
+
+
+State Nodes
+---------------------------------------------------------------------------
+
+
+
+
+Events
+---------------------------------------------------------------------------
+
+
+
+Transitons
+---------------------------------------------------------------------------
+
+Hierarchical State Nodes
+---------------------------------------------------------------------------
+
+
+Parallel State Nodes
+---------------------------------------------------------------------------
+
+
+Effects
+---------------------------------------------------------------------------
+
+
+Actions
+---------------------------------------------------------------------------
+
+
+Guarded Transitions
+---------------------------------------------------------------------------
+
+Context
+---------------------------------------------------------------------------
+
+
+Models
+---------------------------------------------------------------------------
+
+
+Activities
+---------------------------------------------------------------------------
+
+
+Invoke Object (invoking services)
+---------------------------------------------------------------------------
+
+
+
+Actors
+---------------------------------------------------------------------------
+
+
+
+Delayed Events and Transitons
+---------------------------------------------------------------------------
+
+
+Final States
+---------------------------------------------------------------------------
+
+History State (Pseudo State)
+---------------------------------------------------------------------------
+
+
+Identifying State Nodes
+---------------------------------------------------------------------------
+
