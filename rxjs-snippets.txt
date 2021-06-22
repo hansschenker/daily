@@ -647,3 +647,15 @@ function pausable() {
     return pausable as PausableObservable<T>;
   };
 }
+
+-----------------------------------------------------
+const counter$ = Observable
+  .merge(
+    Observable.fromEvent(upButton, "click").map(1),
+    Observable.fromEvent(downButton, "click").map(-1)
+  )
+  .startWith(0)
+  .scan((prev, x) => prev + x);
+
+counter$.subscribe(renderMyComponent);
+------------------------------------
