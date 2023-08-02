@@ -1,0 +1,16 @@
+// pattern matching
+let [a, _, b, _] = [4,5,6,7];
+console.log(a, b);
+
+// call next on Subject
+subject.next( [...subject.getValue(), ...newVal] )
+
+obsList$: BehaviorSubject<Array<Observable<boolean>>> = new BehaviorSubject<Array<Observable<boolean>>>([]);
+
+  addLoadingProvider(lp: Observable<boolean>) {
+    // increment this.progress, when lp emits true
+    // decrease this.progress, when lp emits false
+    // nice to have: ignore if lp's first emitted value is false
+    this.obsList$.next([...this.obsList$.getValue(), lp]);
+  }
+

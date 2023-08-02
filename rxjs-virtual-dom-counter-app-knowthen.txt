@@ -1,0 +1,33 @@
+const { h, diff, patch, create: createElement } = require('virtual-dom');
+const { BehaviorSubject, interval } = require('rxjs');
+const { scan, startWith } = require('rxjs/operators');
+
+// Model - State
+const initialState = 0
+let state = new BehaviorSubject(initialState);
+// State Update function
+let updateState = new BehaviorSubject((state) => state);
+// Subscribe to the update function to trigger updates to the model
+updateState.pipe(
+    startWith(state.getValue()),  				
+    scan((state, changeFn) => changeFn(count))  		
+).subscribe(state);
+// View function
+function view(count) {
+    return h('div', [
+        h('h1', `Count: ${count}`),
+        h('button', { onclick: () => updateState.next((count) => count + 1) }, 'Increment'),
+        h('button', { onclick: () => updateState.next((count) => count - 1) }, 'Decrement')
+    ]);
+}
+// initial render
+let tree = view(state.getValue()); 				
+let rootNode = createElement(tree); 				
+document.body.appendChild(rootNode); 				
+// subsequent render whenever the state updates -> update the view
+state.subscribe(state => {
+    let newTree = view(state);
+    let patches = diff(tree, newTree);
+    rootNode = patch(rootNode, patches);
+    tree = newTree;
+});

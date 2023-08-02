@@ -1,0 +1,33 @@
+---------------------------------------------------------------------------------------------------------------
+UnaryFunction - INTERFACE
+-------------------------
+A function type interface that describes a function that accepts one parameter T and 
+returns another parameter R.
+Usually used to describe OperatorFunction - it always takes a single parameter (the source Observable) 
+and returns another Observable.
+
+interface UnaryFunction<T, R> {(source: T): R}
+type      UnaryFunction<T,R> = (src:T) => R
+
+Child Interfaces
+OperatorFunction
+MonoTypeOperatorFunction
+
+interface MonoTypeOperatorFunction<T> extends OperatorFunction<T, T> {(source: T): R}
+type      MonoTypeOperatorFunction<Observable<T> , Observable<T>> = (src:T) => T
+
+OperatorFunction - Interface (Observable in - Observable out)
+-----------------------------
+interface OperatorFunction<T, R> extends UnaryFunction<Observable<T>, Observable<R>> {(source: T): R}
+type      OperatorFunction<Observable<T> , Observable<R>> = (src:T) => R
+
+Child Interfaces
+MonoTypeOperatorFunction
+
+map<T, R>(project: UnaryFunction<T,R>): OperatorFunction<T, R>
+Applies a given project function to each value emitted by the source Observable, and emits the resulting values as an Observable
+hakell map definition
+--------------------
+map :: (a -> b) -> [a] -> [b]
+bind :: Monad m => m a -> (a -> m b) -> m b
+ap :: Monad m => m (a -> b) -> m a -> m b

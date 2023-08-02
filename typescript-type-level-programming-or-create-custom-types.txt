@@ -1,0 +1,15 @@
+see blog article: A Sherif, https://dev.to/busypeoples/notes-on-typescript-pick-exclude-and-higher-order-components-40cp
+
+keyof T - is structure preserving (homomorphic)
+  meaning if a property is optional ? then this is preserved
+  you can remove the optional with -?
+
+generic FilterKeys type
+--------------------------------------
+  T type, V value (string, number, boolean,,,)
+
+ type FilterKeys<T,V> = {
+   [K keyof T]-?: T[K] extends V ? K : never
+ }[keyof T]
+  with [keyof T] we get the value out this mapping and filtering
+

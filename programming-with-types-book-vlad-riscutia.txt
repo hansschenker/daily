@@ -1,0 +1,60 @@
+Type composition
+--------------------------------------------------------------------
+
+- primitive types are the building blocks of a type system
+- compound types group values of several types (product types)
+- either types, choice types (sum types)
+
+Compound types
+---------------------------------------------------------------------
+- most basic compound type is the pair, a type with 2 elements
+  
+
+Tuples
+--------------------------------------------------------------------
+- Tuple types consist of a set of component types, which we can access
+  by their position in the tuple.
+- Tuples provide a way to group data in an ad hoc way.
+- Tuples are also useful when we need to return multiple values from
+  a function (React hooks: useState,)
+
+
+
+problem: compute the distance between 2 points (
+
+record
+------------------------------------
+type Point = {x:number, y:number}
+
+tuple
+------------------------------------
+type Point = [number, number] // access tuple by postion (fst, snd)
+
+function distance(start:Point, end:Point):number {
+
+  return Math.sqrt( (start.x - end.x)**2 + (start.y - end.y) **2)
+  
+}
+
+Pair
+---------------------------------------
+Generic tuple with 2 component types, also known as pair
+
+class Pair<T1, T2> {
+  m0:T1,
+  m1:T2
+
+  constructor(m0:T1,m1:T2){
+    this.m0 = m0
+    this.m1 = m1
+  }
+
+}
+
+type Point = Pair<number, number>
+
+function distance(p1: Point, p2:Point):number {
+  return Math.sqrt( (p1.m0 - p2.m0)**2 + (p1.m1 - p2.m1) **2)
+  
+}
+

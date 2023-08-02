@@ -1,0 +1,288 @@
+It’s basically a library. That’s an important thing, it’s not a change to the runtime or language, 
+it’s a library that runs both on the .NET framework and JavaScript and in the future most likely 
+in native code as well, that actually 
+
+- allows you to compose computations over asynchronous event streams of data. 
+- "complex event processing", "query operations", all of that apply to streams of data that can have a 
+   timing characteristic associated with them that of course carry data, like if you do things in the UI, 
+   like mouse moves, you have data and you have timing information.
+
+You have the same for 
+- stock tickers, it’s like a unification of all those asynchronous ways to get to 
+  data streams of multiple values with timing characteristics and all of that. 
+- We have a rich algebra on top of that, 
+- a rich set of query operators that allow you to do filtering, sorting, grouping, all of that - 
+- buffering with time, overlaps in time. Everything that you really think of when you think about 
+  complex event processing, you will actually find in the reactive extensions.
+
+Yes, sure. The problem with LINQ is that people think about LINQ in different terms. It’s obviously 
+LIN and it’s Q - it’s "language integrated" and it’s "query". Nowhere in the language specification does it say 
+anything about being 
+
+- tied to a IEnumerable[T], which is the canonical interface that you use for pull-based synchronous data retrieval, 
+  where you say "Move next" and get the next element, which is a very synchronous way of getting to data, 
+  because you are sort of pulling at the data source. 
+
+- As a consumer, you are saying "Move next" and if the source says "I don’t have data yet, 
+  I’m still working on it", you’re blocked til the resource comes back. 
+
+It happens that the first implementation of LINQ was LINQ to objects, LINQ to SQL, LINQ to the entity framework - 
+those are all pull-based synchronous data retrieval mechanisms. LINQ is historically unrelated to the way that you 
+acquire data - I call it the "data acquisition" mode.
+
+- LINQ really is, is about describing the operations on top of data, like filtering and sorting and grouping 
+  and projecting and all of that. 
+
+Where RX comes in is first of all it’s about operations over asynchronous streams of data that are push-based, 
+meaning that you subscribe to an event stream as opposed to pulling things out using 
+
+- a subscription and at some point in the future the call-back, which is specified as a lambda expression, 
+  will basically come back to you and do stuff. 
+- It happens of course, that all those operations that you can do over push-based and pull-based data streams are the same.
+
+- In the asynchronous world you might have more time-centric operations, but nothing prevents us from implementing those 
+  in a pull-based world as well. You could say "I’m doing a move next, but please timeout after 30 seconds." 
+
+- You can perfectly have a sequence and do a .timeout on that, which enforces that policy. 
+  So RX is about the asynchronous event stream thing and where it meets with things like IEnumerable[T] 
+  is really the common expressiveness on top of that. If you talk about 
+- LINQ as a language feature, definitely it applies to RX all the way through, like all the things you can do in LINQ, you 
+  can actually do in RX as well, so they map directly. Other than that, I would also say that you could coin RX as LINQ to events.
+
+- LINQ to objects which is like LINQ to sequences of data that are IEnumerable-based, you can now do that same 
+  over event streams of data, which are what we call "IObservable-based" which is the interface. 
+  So, at the language level it’s the same feature, at the underlying library level that the language binds to it can be really anything. 
+ We’ve just provided 
+- the second implementation of the query operators that now happens to work with push-based asynchronous streams of data.
+
+The syntax can totally be used, other than "Order by". The "Order by" is kind of funky because 
+- "Order by" implies that you have a finite sequence. 
+  Having a finite sequence of event streams is far or less common than having a finite sequence of enumerable streams. 
+
+It just happens that enumerable streams are things like List[T]. List[T] has a finite number of elements, 
+hence we can sort them hence we can ever come back from that thing. If you want to sort the mouse moves that come from your 
+Windows Form or WPF application, 
+- sorting the mouse moves is not going to happen because it never completes. We don’t have 
+"Order by" there. We could, but it’s like an obvious feature that would give you a memory leak. It’s like "I’m going to 
+order something and 90% of the time it’s infinite, so it’s never going to return just accumulate memory.
+
+But we could totally implement that or somebody else could implement the "Order by" method and the language syntax will 
+totally bind against that. On the other side, I would also like to say we have things that are maybe a little less obvious, 
+like you have "Where" and "Select". That’s totally obvious. For the mouse moves you could do "Where", the X and Y coordinate 
+is the same, and "Select" the distance to the origin - it’s all the same kind of stuff. "Group by" is very similar. 
+It’s something that you can do over an IEnumerable and an IObservable. The thing that’s maybe less expected is the notion of joining. 
+You can join two observable sequences together. What does that mean? - Typically join on enumerable sequences means you extract some 
+key and if the keys are the same, then you call a combiner function to combine the two elements. In the observable world, we’re 
+overloading the syntax to do "Join" so you can write something like "From X in Xs, join Y in Ys on" and then you have to express 
+the two keys that need to be equal.
+
+In Rx we actually implement that as overlap in time. So you can basically use the join syntax to express streams of events and 
+when two events coincide, if two events which are not point events but time span events overlap somewhere, we call the "Combiner" 
+function. So we can actually use that syntax for something that’s slightly different that just an equality check on keys that we 
+can use the syntax to express overlapping and time intervals essentially.
+
+The notion of time is kind of an interesting aspect in Rx as well. Let me step back a little bit: if you have an IObservable [T], 
+time is implied, meaning something happens and there is some wall clock time at which point something happens - like a stock ticker 
+comes into the system or a tweet comes on the internet, but it’s all reactive stuff, observable stuff. There is a wall clock time 
+associated with the time that things happen, but those are just points in time, like you have a single thing happening at some point. 
+
+- You can also model things that have a duration. Modeling things that have duration you can do in a variety of ways: you can have two 
+  streams; you can have one stream that says when things begin and one stream that says when things end. That’s one way to model it.
+
+The way that we choose to model durations of time in Rx is actually based on the notion of inner sequences. So basically you have an 
+outer sequence, which could be for example - canonical example- "People entering the room". Meaning "Bart enters the room here", 
+"John enters the room there" and so on. Then what we really do is to associate an inner sequence with that, like "Bart enters the room" 
+and here is the sequence that represents how long he stays in the room. When something happens there that means "Bart is leaving the room". 
+That’s actually how we can get to overlap, because like every point event here corresponds to a little inner sequence that actually 
+denotes when things end. So now we have that time interval sitting there. All of that really happens based on the wall clock time.
+
+In Rx you can go one step further, because we have abstracted the whole time notion behind something called schedulers. Typically you don’t 
+need to know anything about those. A regular programmer of Rx doesn’t need to see schedulers at all. If I side- step a little bit, 
+the layering of Rx is really like, you have query operators like "Where" and "Select" and do things based on time like Total and Sample 
+and all of those operators. 
+
+- Those basically rely on schedulers to do work. That’s very much like in a relational database where you have 
+  the query expression of what you want to do and then that turns into some query plan that executes with very low level primitives like 
+  "Do a table scan on that table. 
+   Look in a B-Tree" and that kind of stuff. 
+
+It’s pretty much the same with Rx" you write your query in a very abstract high level DSL, 
+if I even want to go that far. It’s like chaining methods together or using LINQ syntax and internally 
+that turns into little pieces of work that I scheduled on IScheduler implementations, which is the interface we use for that.
+
+Those implementations could be based on the threads pool or the task pool or the UI loop or a cloud scheduler. All of those things 
+really can be represented as an IScheduler interface. Where that’s going is the scheduler has a number of things: it has a way to 
+take work - you say "Schedule something and here is the delegate to execute at some point." It can also schedule based on time, 
+where you say "Here I have an action for you. Please do it within 30 seconds from now." So you say 30 seconds from now it needs to work. 
+That’s relative time. Then we have schedule based on absolute time. You say "Please schedule the action that will deliver a present 
+to my girlfriend on Christmas day, next year." You just say that’s the time it needs to happen. There is a fourth thing on the 
+IScheduler interface, which is really the wall clock time.
+
+You can go up to a scheduler and ask "What’s the time?" and so there is a "now" property on that that actually reveals the time. 
+The interesting thing is that we have something called "The Virtual Time Scheduler" where you can basically do testing by 
+virtualizing the time. What you do is you write your query exactly as you did before, but now you say "Please Rx, execute all of 
+that stuff not on my regular scheduler" which is like using the .NET thread pool or the task pool or any of the built-in primitives, 
+but you say "I want to do it based on virtual time." What you do there is basically DateTime.Now. The Now scheduler property doesn’t 
+just return something that represents 2011, some month and some day, it’s something that returns some value that just happens to define 
+the causality between events. So it’s just a relative ordering that’s being maintained in the scheduler. At that point you have totally 
+abstracted away the time notion, things are still happening relative to each other in the right ordering and now you can do testing based 
+on the work that’s happening in the scheduler and sort of record when things are happening.
+
+You can do all of those things based on virtual time. That’s really where the power comes in as well, it’s the fact that we abstract over 
+both the observable nature of things which is subscribe things and push things, that kind of mechanism. But we also abstract over the 
+notion to introduce work into the system which is the scheduling part because you have so many ways of doing it. As a result of that this 
+whole virtual time thing came out of it which is very useful not only for testing, it is also useful for places where you have historical 
+data that you want to replay, but you don’t want to replay in real time because it might take two years to replay the whole thing. You want 
+to condense it and then replay it and catch up with real time even do handoffs between schedulers where you say "This thing happens in 
+historical time and now we sort of caught up with the whole history, we have rolling averages for stock trades of yesterday all caught up 
+in the system". And now realtime data starts coming in at realtime so you can blend these two worlds quite easily.
+
+So it’s really like a virtual execution system or a runtime, the high level of constructions produce those smaller units of work that 
+are being scheduled, and some schedulers queue those things up, batches of work that they need to do somewhere in the future, some spawn 
+timer threads, it just depends how they're implemented but it’s really, that’s the relationship you know, we don’t expect people to do 
+low level things even if you look at what the scheduler is doing, like you don’t have any idea what they are doing so make little pieces 
+of work that are being scheduled there and that can be interleaved because multiple things are happening in the same scheduler. But that 
+is really the relationship; it is like high level, abstractions and expressiveness boils into those low level primitives.
+
+And there we have things like recursive scheduling for example, which is very important for things like, for example, observable or timer 
+or time interval basically produces a sequence of longs, 64 bits integers, and they start with zero and after the time elapsed it goes to 
+1 and then 2 and then 3 and then 4 and so on, there are some states that’s happening between all those things, of course, like there is 
+some counting happening like +1,+1,+1, the thing is the whole thing needs to be asynchronous, so if you implement it as a for loop, you 
+basically pump out value zero and then Thread.sleep for a second then go to the next thing, well you can't unsubscribe from that sequence 
+because you are basically sitting there and waiting for the thing to go to the next stage.
+
+So instead what happens is we schedule recursively the same action just with the value incremented plus 1, so we basically schedule that 
+thing on the scheduler and it will happen in one second from now. But the thing is whenever we schedule something the return of the scheduling 
+is an IDisposable which is a way to cancel work, so now you have some ticket in your hand that you can say "I’m not interested in the timer 
+anymore, you can basically call dispose on that thing it will get it out of the scheduler and it will not happen anymore". So, to be in that 
+world of nonblocking we need to have those very small fine grained pieces of work that happen on the scheduler and each of those pieces of 
+work you can call dispose on, saying "I don’t want you anymore".
+
+So that’s what the operators ultimately go into, you can see the layers of composition here: on the very high level you have the pipelines 
+of queries, start with the source, do select, some time based operations and grouping all of that stuff, at the end that thing hasn’t done 
+anything just yet, it’s only when you start doing subscribe on it, it starts working, it’s lazily evaluated, it’s totally lazy. So if you do 
+subscribe on it what you get back is an IDisposable that allows you to unsubscribe. Unsubscribing means telling the scheduler not to do stuff 
+that’s still queued up, it’s just that IDisposable is that your ticket to cancel out how many items that might have been scheduled in order to 
+make that query execute. So basically we can compose not only on the sequences using those query operators like have two observables and merge 
+them together like composition of multiple sequences, you can also compose those cancellation mechanisms.
+
+We do a little piece of work in that scheduler and a bit in that one over there, and we bundle all those things together into one IDisposable 
+that we give to you and do subscribe and call cancel on that it just propagates trough the system and cancels out all of the things that are 
+operational artifacts of executing that query and that’s a very nice way of composing in both directions.
+
+Yes, should we really go there? Let’s maybe talk briefly what the interpretation of a monad is. So monad is this thing called, a functional 
+construct and functional languages that allows you, I will paraphrase it using my own words, it’s about threading some computational aspects 
+to your code. Typical sample is nullability or option types, they will say "I still want to write my huge amount of code here in the assumption 
+that the thing coming in is not null, the thing coming out of the first function call is not null, and the thing coming out of the second 
+function call is not null. I just want to write f of g of h of x, if any of those things is null, just propagate the null thing, just propagate 
+the fact that there is no result", don’t let me do something like "If x is not null than call h of x assign it to a temp" "If the temp is not 
+null than do the next thing" and so on and so on. So you want to hide that complexity behind something, and monads are very good at doing that.
+
+For example the monad of IEnumerable [T], the sequence thing, the synchronous sequence of multiple values actually has some operations called 
+"Select many". "Select many" is the monadic bind operator in .NET. What that means for an IObservable[T] or a IEnumerable [T] is really you’re 
+foreach-ing over the outer sequence and then you’re basically invoking some function for the inner sequence, you’re doing a foreach over that 
+and then you call some function. So for the monad of "Select many" is about getting rid of those foreach things, you are basically saying that’s 
+an aspect if you’re dealing with sequences somebody will have to go over all the elements, but don’t let every single user do that, we just can compose it.
+
+A typical example here is products and suppliers. Typically, in classical imperative C# you utilize something like foreach product in products, 
+for each supplier in the current products.suppliers, we would have this nested loop where the outer loop’s product has a little function mapping 
+it on to the supplier, and for every supplier for that particular product you can do something like ConsoleWriteLine product is shipped by that 
+supplier and that kind of thing. In LINQ you can write something like products.SelectMany of product goes to product.suppliers and then you have 
+an IEnumerable of suppliers, that basically corresponds to all the suppliers across al the products.
+
+So you get this kind of flattening thing in there as well, you have inner sequences for every product but they all sort of get projected on to 
+the same flat sequence. So, that is what "select many" really does. Now in observables we have "Select many" as well, the only two things you 
+need for a monad, you have two different definitions, but I will use one definition of a monad that says one thing you need is return - that 
+is basically, given a single value, that’s not yet in the monad, please bring it in there. So for example, for IEnumerables, the way to do return is - 
+I have a single product here, I want to make an IEnumerable products out of that. Well, how do you do that, you allocate a single cell array, 
+and then you have your IEnumerable of products and you can do lots of stuff. So that’s basically a way to jump on the boat, jump in the ship. 
+Then, "Select many" is the monadic bind operator that I just explained here, given a sequence and a function that maps every element on the 
+inner sequence I can give you the flat projection of all the inner sequences, but there is only one sequence again.
+
+In Observable we have exactly the two things. Observable.return is much like a single cell array but it’s an asynchronous thing, it’s not like 
+an array, an array is pull based and synchronous, so the way that observable return works is you basically get the sequence that when you 
+subscribe you get a single value thrown at you in your continuation, in your event handler, that’s the end of it, you get your single value, 
+just like foreach over the cell array, it just loops once. So that’s what we have there. For "Select many" we have basically just that thing; 
+what "Select many" is about nested subscriptions, a sample is dictionary suggest, dictionary suggest looks as follows, you say for every word 
+the user writes in the textbox, I want to do a web service call and then get all the words that start with the entry of the user. So the user 
+types "reac", you get reaction, reactor, reactive, all of those things.
+
+That’s a pretty typical sample, that’s a about this nesting, you say outer sequence is what the user is typing in the textbox, and that changes 
+every second or so because the user is doing stuff and then whenever it changes we fire up the web service call that basically starts processing 
+results and then bumps them out. Now the question is how does the result look, because the user might be typing one word now and then half a second 
+later another word, what’s really going on there? Because it’s asynchronous, what does it mean to flatten the results of those inner sequences 
+that correspond to the web service calls? Well the answer is they just overlap, they just get merged in time, that means they those two web 
+services calls for the first request and for the second request of the user are just in flight at the same time and whenever the results come 
+back on those two sequences that are in flight we just project them out to the resulting sequence.
+
+That is what really means to do monadic composition with observable, you say given an observable sequence and they a way to map every element 
+of that sequence onto an internal inner stream please give me a stream that collects all the results of the inner streams. So that is what 
+"select many" does, takes an observable, a function of an elements to another observable and it returns the flattened view of the observable 
+collections that come out of the functions being called for the outer elements. That’s something that most people don’t need to know about 
+actually, because the beauty is in LINQ this totally gets abstracted behind the from keyword. So you can write from words in textbox, 
+from suggestion in the web service call of the words, select suggestion and the result is an IObservable of suggestions. Whenever the user types 
+we start up that internal web service call thing which is "Web service call of words", I think I call it, so that thing is going and just bumps 
+out its results to your subscription, to your event handler.
+
+And so, you don’t really need to see that, but it’s one of those operators that is very powerful, it can actually implement like 90% of common 
+operators using that, Where and Select, those two ones are just very special cases of a "select many" call, it’s left as an exercise to build that, 
+but it’s interesting to see how powerful its single operator is.
+
+Good question. We could talk in a number of dimensions here, first of all there is definitely a trend in the industry to go for JavaScript, you have 
+JavaScript on every browser, every client, every device, you know, JavaScript, HTML 5, there is no reason why we shouldn’t have observables there, 
+it allows you to express your code much more concisely, you don’t have all those callback thingies, you have lots of things that are inherently about 
+multiple values. You could go to the JavaScript committee and say "C# is doing this await thing, you should have something very similar there" but 
+that doesn’t help with multiple values things, like say you have a Twitter stream and you’re getting callbacks from a tweet that you’re following or 
+a Twitter stream that you are following, you want to render them in HTML somewhere in some nice way, so you have to deal with multiple values. 
+The expressiveness of LINQ kind of things is very well there; so that’s the rational of doing it, there is a need there.
+
+Secondly it’s definitely a jungle out there, if you look at the amount, or the number of ways to do asynchronous it’s kind of funny, in JavaScript 
+you can’t really do the blocking thing, everything is built around asynchrony and asynchrony is everywhere. At the same time they don’t 
+have anything in the language that helps to do that, you have to do it this way, but we won’t help you so it’s like, your loss, so it already 
+falls down there and people are doing it in all sorts of frameworks - jQuery and Dojo and XJS and Node.js and all those things are all doing 
+asynchronous but in a different way. By slamming the observable interface, if I can even talk about interfaces in JavaScript, they simply don’t 
+have types, if you say like those things 'implement' IObservable and we give you a common set of operators you can glue all those things together.
+
+I’m totally fine if you’re using that framework and that framework, but don’t punish the poor middle guy that has to put all those ingredients 
+together and find a solution, you basically say "All of those are observables, here is your set of 50 query operators that you can use to combine 
+them, and just use those", and so you’re pushing the headaches to the people writing the asynchronous libraries to bring the things together you 
+can just compose them seamlessly. That’s really where the whole thing comes from. Of course we can only go that far in the sense that JavaScript 
+has, well what JavaScript has, they don’t have a way to introduce concurrency in the system other than using timers.
+
+Our notion of an IScheduler is something that in .NET makes a lot of sense because you have, if I think about it 4 or 5 or maybe 6 ways that you 
+can introduce concurrency, you can spawn a new thread, you can use the thread pool, you can use a task pool, you can use synchronization context, 
+WPF dispatch, WinForms dispatch, you can introduce concurrency by saying I am just going to execute it and some queue on the current thread, you 
+have all those ways of doing it. In JavaScript you just have one, that abstraction makes a little less sense in that world although we still carry 
+it forward so that you can do things like virtual time scheduling and testing. It makes sense to still have the abstraction there but there is 
+definitely a different balance in the weights, in Javascript it’s a lot more about creating bridges to asynchronous API’s to make it easier for 
+you to compose those using Rx and observables rather than abstracting over a lot of ways to do concurrency in the system because there is just less of that.
+
+In .NET is sort of the opposite of that. There are maybe 3 or 4 ways to do asynchronous stuff in .NET currently, like events and asynchronous 
+methods pairs and tasks, that are the three basic things, we have bridges for those but you have 7 or 8 ways of introducing concurrency, so the 
+balance is different but the library is exactly the same. Everything you can do in JavaScript you can do in .NET and vice versa the query operators 
+it’s really the essence because concurrency is something we have to deal with, it’s just nasty business that’s there so we abstract over that and 
+then we are done with that, and the existing world - well we can’t change that so we just slam the IObservable interface on top of that.
+
+But ignoring those two touches with reality, if you will, the core of the library, the expressiveness over those sequences using all those operators 
+is exactly the same in both worlds, so that helps a lot with people I think, even carrying code forwards and backwards between the two platforms, 
+if you say today I am doing a lot of things in Silverlight but tomorrow maybe I want to do parts of that in HTML5 and JavaScript, well we can do that, 
+saying I want to lighten up some of my web apps using Silverlight because I am just falling off a cliff here using what they have in the browser, 
+I want to create some application in my enterprise using the same logic but now based on .NET, well you can take the JavaScript code, it almost 
+looks the same as C#, you can take that code paste it in your .NET editor, just tweak it syntactically a little bit and it will be the same code, 
+the same level of abstraction, it should be really simple to carry forward things between both languages.
+
+There is one thing that is unfortunate about JavaScript is that they don’t support overloading very well, like single method 15 overloads, in the 
+.NET version we do have that because it’s very convenient to have something like the buffer operator for example, observable.Buffer has maybe 10 
+overloads, one that buffers with time, one that buffers with count, one that has a maximum size of the buffer, this and that. So you have a lot 
+of these things over there which are just hidden behind the single thing in the menu, like buffer. In JavaScript you can’t even check on the types 
+of parameters, the number of parameters that needs to be dynamic so it doesn’t really work very well to slam everything behind the same thing, 
+so you might find more method names or function names in JavaScript that actually specify what you are doing, so you will have things like buffer 
+with time and buffer with count.
+
+Originally we did have those in the .NET version but then we said overloading is the way of doing things there, to bundle things together that are 
+semantically the same thing, just with variations in the way you want to parameterize the thing, we go for overloading in that world and in the 
+other world, well we can’t do that, just surrender and say this is the best approximation, so that’s really where we are with that.
+
+Ok, it’s very interesting, we will definitely look at Rx [Editor's note: 
+The official Rx site: http://msdn.microsoft.com/en-us/data/gg577609 ] 
+and the JavaScript people here, there is a Javascript version, you don’t have to be a .NET user. Thank you Bart de Smet.

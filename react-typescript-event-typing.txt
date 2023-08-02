@@ -1,0 +1,96 @@
+AnimationEvent, 
+ChangeEvent, 
+ClipboardEvent, 
+CompositionEvent, 
+DragEvent, 
+FocusEvent, 
+FormEvent, 
+KeyboardEvent, 
+MouseEvent, 
+PointerEvent, 
+TouchEvent, 
+TransitionEvent, 
+WheelEvent. 
+
+As well as SyntheticEvent,
+
+React Typescript Events
+
+
+    //
+    // Event Handler Types
+    // ----------------------------------------------------------------------
+
+    type EventHandler<E extends SyntheticEvent<any>> = { bivarianceHack(event: E): void }["bivarianceHack"];
+
+    type ReactEventHandler<T = Element> = EventHandler<SyntheticEvent<T>>;
+
+    type ClipboardEventHandler<T = Element> = EventHandler<ClipboardEvent<T>>;
+    type CompositionEventHandler<T = Element> = EventHandler<CompositionEvent<T>>;
+    type DragEventHandler<T = Element> = EventHandler<DragEvent<T>>;
+    type FocusEventHandler<T = Element> = EventHandler<FocusEvent<T>>;
+    type FormEventHandler<T = Element> = EventHandler<FormEvent<T>>;
+    type ChangeEventHandler<T = Element> = EventHandler<ChangeEvent<T>>;
+    type KeyboardEventHandler<T = Element> = EventHandler<KeyboardEvent<T>>;
+    type MouseEventHandler<T = Element> = EventHandler<MouseEvent<T>>;
+    type TouchEventHandler<T = Element> = EventHandler<TouchEvent<T>>;
+    type PointerEventHandler<T = Element> = EventHandler<PointerEvent<T>>;
+    type UIEventHandler<T = Element> = EventHandler<UIEvent<T>>;
+    type WheelEventHandler<T = Element> = EventHandler<WheelEvent<T>>;
+    type AnimationEventHandler<T = Element> = EventHandler<AnimationEvent<T>>;
+    type TransitionEventHandler<T = Element> = EventHandler<TransitionEvent<T>>;
+--------------------------------------------------------------------------------------------------
+
+
+handleInputChange
+----------------
+const App = () => {
+  const [value, setValue] = React.useState('');
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value);
+  };
+
+  return (
+    <>
+      <h1>Hi {value} 👋</h1>
+      <input value={value} onChange={handleInputChange} />
+    </>
+  );
+};
+
+------------------
+Alternative interfaces
+
+Instead of applying the type to the argument of the function, you can also apply a type to the handler itself.
+
+import React, { ChangeEventHandler, ChangeEvent } from 'react';
+
+// This
+const handleInputChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+
+// is the same as this
+const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+Both ways of doing this are fine, what you choose to use in the end comes down to personal preference.
+--------------------------
+
+handleClick
+-------------------------
+import React from 'react';
+
+const App = () => {
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    console.log(event.target);
+    console.log(event.currentTarget);
+  };
+
+  return (
+    <div>
+      <button onClick={handleClick}>Click</button>
+    </div>
+  );
+};
+
+export default App;
+
+-------------------------------------------------------------

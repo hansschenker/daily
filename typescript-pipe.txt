@@ -1,0 +1,61 @@
+const repeat = str => `${str}, ${str}`;
+const capitalize = str => str[0].toUpperCase() + str.substring(1);
+const exclaim = str => `${str}!`;
+
+const result = 'hello'
+  |> repeat
+  |> capitalize
+  |> exclaim
+
+console.log(result) // "Hello, hello!"
+
+----------------------
+const double = x => x + x;
+const add = (x, y) => x + y;
+const bound = (min, max, score) => Math.max(min, Math.min(max, score));
+
+const person = { score: 49 }
+
+const result = person.score
+  |> double
+  |> (score => add(5, score))
+  |> (score => bound(0, 50, score))
+
+console.log(result) // 50
+
+// As opposed to
+const result = bound(0, 50, add(5, double(person.score)) )
+
+---------------------------
+const double = x => x + x;
+const add = (x, y) => x + y;
+const bound = (min, max, score) => Math.max(min, Math.min(max, score));
+
+const person = { score: 49 }
+
+const result = person.score
+  |> double
+  |> add(5, ?)
+  |> bound(0, 50, ?)
+
+console.log(result) // 50
+------------------------------
+const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x)
+
+const repeat = str => `${str}, ${str}`;
+const capitalize = str => str[0].toUpperCase() + str.substring(1);
+const exclaim = str => `${str}!`;
+
+const result = pipe(repeat, capitalize, exclaim)('hello')
+
+console.log(result) // "Hello, hello!"
+----------------------------------
+const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x)
+
+const add = x => y => x + y;
+const subtract = x => y => y - x;
+
+const result = pipe(add(3), subtract(2), add(9))(0)
+
+console.log(result) // 10
+-----------------------

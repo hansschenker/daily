@@ -1,0 +1,752 @@
+primitive types: boolean, string, bigint, symbol, null, undefined, unknown, any
+                 unknown is the root type, all types can be assigned to unknown
+
+classes
+-----------------------------
+RegeExp, Set
+
+custom class
+---------------
+
+class Queue<T> {
+
+  private data: T[]
+  push(item: T) { this.data.push(item);}
+  pop(item: T): T | undefined { return this.data.shift(); }
+}
+
+Arrays
+-----------------------
+numbers = [1, 2];
+
+let tuple: [number, number]
+
+type aliases: give a name to a collection of types
+similair to giving a variable a name: const distance:number = 0
+-----------------------------
+allow us to express an intent
+
+type Point = {x: number, y:number}
+
+const point: Point = {x:0, y:0}
+
+Functions
+-------------------------------------
+function add(a:number, b:number): number {
+  return a+b
+}
+
+function sum(...values: number[]) { 
+  return values.reduce(  (acc, curr) => prev + curr  )
+}
+
+Functions are first class in Typescript
+-----------------------------------------
+
+type Add = (a: number, b:number) => number
+
+const add:Add = (a,b) => a + b:
+
+
+Structural Typing with Interfaces and Types
+--------------------------------------------
+
+type Point2D = {x:number, y: number};
+type Point3D = {x:number, y: number, z:number};
+
+point2D = point3D // is ok , same structure: x,y
+
+function takkesPoint2D(point: Point2D) {}
+takesPoint2D(point3D) // is ok, same structure, x, y
+
+Compiler options
+--------------------------------------------------------
+compilerOpions: {
+  "target":"ES2015"
+}
+
+Generics
+----------------------------------------------------------
+
+any, unknown (universal super types)
+------------------------------------------------------
+
+use unknown to omit null, you can use it in unsafe manner, you
+have to check first for type safety
+
+use unknow instead of any
+
+Use Typescript in Frontend Dev
+---------------------------------------------------------------
+
+create react project with Typescript
+
+create-react-app with --typescript flag
+
+npm run build
+
+npx serve build
+
+Type assertions
+---------------------------------------------------------------
+typeof:  	check type of a variable with typeof
+instanceof: 	check type of a class
+
+let hello = load() // string data
+
+const trim = (hello as string).trim()
+
+const trim = (<string>hello).trim()
+
+Type casting
+------------------------------------------------------------------
+
+
+Modules: export , import
+--------------------------------------------------------------------
+
+export function isPalindrome(word: string) : boolean {
+  return word === word.split("").reverse().join('')
+}
+
+Declaration of a external type in library or node where you do not have d.ts file
+---------------------------------------------------------------
+
+  console.log('logged in user:', process.env.USER)
+
+  declare const process:any
+
+  npm i @types/node
+
+
+  express
+  npm i @types/express
+
+ crete4 Npm Package for Typescript written libray which you want to 
+ publish to Npm
+---------------------------------------------------------------------------
+  npm init --y
+  
+
+  npx tsc --init --rootDir src --outDir lib --sourceMap --declaration --declarationMap
+
+  package.json
+  -----------
+  scripts: 
+  build: tsc
+  main: lib
+  types: lib
+
+  npm publish
+
+  Async / Await
+----------------------------------------------------------------------------------------
+
+ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+ const delays = async () => {
+  await delay(1000);
+  await delay(2000);
+  await delay(3000);
+  await delay(4000);
+  await delay(5000);
+  
+
+}
+  
+ts-node
+------------------------------------------------------------------------------------------
+run tsc comile and run node: npx ts-node, npm i ts-node
+
+package.json
+  scripts:
+    sart: ts-node src/index.ts
+
+---------------------------------------------------------------------------------------------------------------------------------
+ Section II - Intermediate
+---------------------------------------------------------------------------------------------------------------------------------
+
+lexical this
+-------------------------------------------------------------------------------------------
+two ways:
+- lexical scoped
+- calling context
+
+calling context:
+-----------------------------------------------
+ call the object method: person.age,         person is the context on which age is a property
+
+lexical scoped
+-------------------------------------------------
+functions are first class and they can be stored in a variable
+
+ const growOlder = person.age + 1
+ growOlder(); // peron context is not defined!!!
+
+ this error occcurs when you store an class method in a variable
+ and call it outside  its original context
+
+ context is also lost when you call it in async function like setTimeout person.age()
+
+ arrow function capture lexical scope
+
+ ReadOnly modifiers
+  -------------------------------------------------------------
+ type Point = {
+  readonly x: number,
+  readonly y: number
+}
+
+  in types and classes
+
+  Union Types
+  --------------------------------------------------------------------------------------------
+ 
+  function formatCommandline (input: string | string[]) {
+
+  let line = ''
+  if (typeof input === 'string') {
+    line = input.trim()
+  } else {
+    line = input.map( x => x.trim()).join('')
+  }
+  return line
+}
+
+  function padLeft(input: string, padding:number | string) {
+  if (typeof padding === 'number') {
+    return Array(padding + 1).join(' ' ) + value
+  }
+  if (typeof padding === 'string') {
+    return padding + input
+  }
+  throw new Error(`Expected a number or a string, got `${padding}`.`0)
+}
+  
+  possible typing: type Padding = number | string
+                   type  Padding = 
+                     | number
+                     | string
+
+ Literal types
+ ----------------------------------------------------------------
+ 
+ const direction : 'North' | 'East' | 'South' | 'West'
+
+ or as type
+  -----------
+ type Direction = 'North' | 'East' | 'South' | 'West'
+
+ function move(distance: number, direction: Direction) {
+
+  console.log('moving:', distance, direction)
+ }
+
+ type DiceNumber = 1 | 2| 3| 4| 5| 6
+ function rollDice() {
+   return (Math.floor(Math.random() * 6 ) + 1) as DiceNumber
+ }                      
+
+  type narrowing with typeof for primitve types 
+  ----------------------------------------------
+
+ Compiler option: strict true
+
+  class Point {
+    x: number = 0,
+    y: number = 0
+    
+    move(x:number, y:number) {
+      this.x += x
+      this.y += y
+    }
+  }
+
+  narowing between classes with instanceo
+  ---------------------------------------
+  type Animal = Cat | Dog
+
+  if instance of Cat
+
+  objects that are not created from classes
+  ----------------------------------------
+  type Square
+
+  type Rectangle 
+
+  type Shape = Square | Rectancle
+
+ if ('size' in shape) {
+  return shape.size * shape.size
+ }
+ if ('width' in shape) {
+  return shape.width * shape.height
+ } 
+
+ as discriminated union: add a field with string type to each shape
+ -------------------------------------------------------------------------
+  type Square kind:'square'
+  type Rectangle kind: 'rectangle'
+
+  if (kind === 'square')
+
+
+  
+  type ValidationSuccess = {
+    isValid: true,
+    value: string
+  }
+  type ValidationFailure = {
+    isValid: false,
+    error: string
+  }
+
+  type Validation = 
+    | ValidationSuccess
+    | ValidationFailure;
+
+  function logValidation(validation: Validation) {
+    if (validation.isValid) {
+      console.log('success:', validation.value)
+    }
+    if (validation.isValid === false) {
+      console.log('falilure:', validation.error)
+    }
+  }
+
+  Class Parameter Properties (29)
+  ----------------------------------------------------------
+
+    class Person {
+      constructor(public name:string, public age: number)
+    }
+
+
+  Compiler strict option:
+  strict: true , includes
+  noImplicitAny: true,
+  strictFunctionTypes: true,
+  strictBindCallApply: true
+  strictPropertyInitializer: true,
+  noImplicitThis: true,
+  alwaysStrict: true
+
+
+  Null versus Undefinde
+  -----------------------------------
+  
+  function logVowels(word: string) {
+    console.log( word.match(/[aeiou]/gi)  )  // hello e o,  sky null
+
+  null == null // check for null or undefined
+
+  exclude null and undefined: !=null
+  strict must be set
+
+  Intersection Types
+  -------------------------------------------------------
+  Point2D, Point3D 
+  combine two given types
+  type Point3D = Point2D & { z: number }
+
+  create bigger types from smaller types
+  ---------------------------------------
+
+  type Person = { name: string}
+  type Email = { email: string}
+  type Phone = { phone: string }
+
+  type Contact = Person & Email & Phone
+
+  const contact(details: Contact) {
+     console.log('contact:', details.name
+  }
+
+  Type Modifiers: readOnly, optional (partial), 
+
+  Non-null Assertion Operator
+  -----------------------------
+
+  point.!x
+  point.!y
+  avoid non-null assertion operator
+
+
+  Interfaces: operate on body block, define the shape of an object
+  ----------------------------------------------------------------
+  define the structure of an object (structural typing)
+  - mimic object hierarchy
+  - define extensible, plugable api (see Express Request Object extended by middleware
+
+  Interface Declaration Merging
+  --------------------------------------
+  interfaces with the same name merge into one
+  it allows for structural extension similar to an Object Hierachy with inheritance
+  (sample: Express framework: middleware can merge into Request interface
+
+  Types versus Interfaces 
+ ------------------------------------------
+  type alias: union, intersection, primitves, shorthand functions (function typing), advanced type functions
+  interface: structural typing, define shape of an object, extend structure via interface merging
+
+  never type
+  -------------------------------------
+  indicate that a code part can never occur, function will never return
+
+  never can only be assigned to never, ensure that all important use cases are handled
+
+  at the end of a code block when you handled all cases 
+
+  only after you handled all possible cases you assign case variable to never and it should
+  be true because you handled all cases this part can never be reached.
+  you assign never to to that case variable: const ensureNever:  never = case variable
+  
+  leave the never assignment at the end, if a new case has to be handled, it errors if that new case i
+  is not handled
+
+Improved union/intersection type inference
+------------------------------------------------------------------------------------------------------------------------
+TypeScript 1.8 improves type inference involving source and target sides that are both union or intersection types. 
+For example, when inferring from string | string[] to string | T, we reduce the types to string[] and T, thus inferring string[] for T.
+
+Example
+type Maybe<T> = T | void;
+
+function isDefined<T>(x: Maybe<T>): x is T {
+  return x !== undefined && x !== null;
+}
+
+function isUndefined<T>(x: Maybe<T>): x is void {
+  return x === undefined || x === null;
+}
+
+function getOrElse<T>(x: Maybe<T>, defaultValue: T): T {
+  return isDefined(x) ? x : defaultValue;
+}
+
+function test1(x: Maybe<string>) {
+  let x1 = getOrElse(x, "Undefined"); // string
+  let x2 = isDefined(x) ? x : "Undefined"; // string
+  let x3 = isUndefined(x) ? "Undefined" : x; // string
+}
+
+function test2(x: Maybe<number>) {
+  let x1 = getOrElse(x, -1); // number
+  let x2 = isDefined(x) ? x : -1; // number
+  let x3 = isUndefined(x) ? -1 : x; // number
+}
+
+--------------------------------------------------------------------------------------------------------------------------------------
+Section III Advanced Types
+--------------------------------------------------------------------------------------------------------------------------------------
+39 implemnets keyword
+--------------------------------------------------------------------------------------------------------------------------------------
+animal, cat, dog , name, voice
+
+
+40 - Definite Assignment and Assertion: !
+--------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+41 - User Defined Type Guards: is
+--------------------------------------------------------------------------------------------------------------------------------------
+ isSquare(shape:Shape):shape is Square {
+  return 
+ }
+
+
+42 - Assertion Functions
+--------------------------------------------------------------------------------------------------------------------------------------
+
+ function assert(condition: unknown, message:string): asserts condition {
+
+  if (!condition) throw new new Error(message)
+ }
+
+ function assertDate(value: unknown): asserts value is Date {
+
+  if (value instanceof Date) {
+  return true } else
+  throw new Error('value is not a Date')
+ 
+ }
+
+  use User Defined Type Guard in Application Code
+  use Assertion Functions is TDD
+
+43 - Function Overloading
+--------------------------------------------------------------------------------------------------------------------------------------
+ place function types in front of the function to be overloaded
+ makeDate() 
+ makeDate(year)
+ makeDate(year,month)
+ makeDate(year,month, day)
+
+44 - Call Signature
+--------------------------------------------------------------------------------------------------------------------------------------
+ type Operation = (a:number, b:number) : number
+
+ call signature:
+ -----------------------------
+ type Operation = {
+  (a: number, b: number): number
+  // function overlaoding can be used here too
+ }
+
+ // call signature for a class
+ type PointConstructor = new (x: number, y: number) => new {x: number, y: number} 
+ const Point:PointConstruction = class { .. }
+
+45 . Abstract Classe
+-------------------------------------------------------------------------------------------------------------------------------------
+
+ abstract class Command {
+   execute( {...}
+ }
+
+
+
+
+46  - Index Signatures: [key:string ] Person
+--------------------------------------------------------------------------------------------------------------------------------------
+ sort, and reverse methods mutate the input array
+
+
+
+
+47 - Readonly Arrays and Tuples
+--------------------------------------------------------------------------------------------------------------------------------------
+
+ type Point = readonly [number, number]
+
+ funcion move(point: Point, x: number, y: number) {
+  return [point[0] + x, point[1] + y]
+
+ }
+
+
+
+48 - Double Assertion
+ --------------------------------------------------------------------------------------------------------------------------------------
+
+  person as unknown as Point3D (double assertion: first all values can be assigned, second: unknown can be asserted Point3D 
+  (do not use double assertions, helps while migration)
+
+
+49 - const Assertion
+  --------------------------------------------------------------------------------------------------------------------------------------
+
+   {name: 'John', role:'drummer'} as const, all is readonly, as const can be applied to any value
+
+   
+
+
+50 - this parameter
+--------------------------------------------------------------------------------------------------------------------------------------
+ this, is the calling context in  js
+ the left side of a method call is the calling context, mynumber.double()
+ calling context is lost in async functions like setTimeout
+
+ // fix this by typing this, this must be the first parameter
+ function double(this: {a: number}) {
+  this.a = this.a * 2
+ }
+
+
+
+51 - Generic Constraints: T extends ...
+----------------------------------------------------------------------------------------------------------------------------------------  
+ T
+
+
+
+52 - typeof type operator
+----------------------------------------------------------------------------------------------------------------------------------------  
+ const center = {
+ x: number, 
+ y: number,
+ z: number, 
+ }
+
+ type Point = typeof center
+
+ const unit:Point = {
+  x: center.x + 1,
+  y: center.y + 1,
+  z: center.z + 1,
+
+ }
+
+ json is valid javascript:  sample dowload json 
+
+ const personResponse = {
+  "name": "john",
+  "email": "john@mail.com"
+ }
+
+ type PersonResponse = typeof personResponse
+
+
+
+53 - Lookup Types: lookup a type in an object
+----------------------------------------------------------------------------------------------------------------------------------------  
+ type PaymentRequest = SubmitRequest["payment"]
+ type PreviousAliases = SubmitRequest["payment"]["previousAliases"]
+
+
+-----------------------------------------------------------------------------------------------------------------------
+ type operators
+----------------------------------------------------------------------------------------------------------------------
+TypeScript’s type system is very powerful because it allows expressing types in terms of other types. 
+Although the simplest form of this is generics, we actually have a wide variety of type operators available to us.
+It’s also possible to express types in terms of values that we already have.
+
+By combining various type operators, we can express complex operations and values in a succinct, 
+maintainable way. In this chapter we’ll cover ways to express a type in terms of an existing type or value.
+
+The typeof type operator
+JavaScript already has a typeof operator you can use in an expression context:
+
+// Prints "string"
+console.log(typeof "Hello world");
+
+Type Operators
+There are a collection of operators available which can assist you when working with objects in TypeScript. 
+Operators such as typeof, instanceof, in, and delete are the examples of Type operator. 
+The detail explanation of these operators is given below.
+
+Operator_Name			Description			Example
+------------------------------------------------------------------------------------------------------------------
+in			
+------------
+It is used to check for the existence of a property on an object.	
+let Bike = {make: 'Honda', model: 'CLIQ', year: 2018};
+console.log('make' in Bike);   // 
+Output:
+true
+
+delete	
+-------------
+It is used to delete the properties from the objects.	
+let Bike = { Company1: 'Honda',
+             Company2: 'Hero',
+             Company3: 'Royal Enfield'
+           };
+delete Bike.Company1;
+console.log(Bike);   // 
+Output:
+{ Company2: 'Hero', Company3: 'Royal Enfield' }
+
+typeof	
+---------
+It returns the data type of the operand.	
+let message = "Welcome to " + "JavaTpoint";
+console.log(typeof message);  // 
+Output:
+String
+
+instanceof	
+------------
+It is used to check if the object is of a specified type or not.	
+let arr = [1, 2, 3];
+console.log( arr instanceof Array ); // true
+console.log( arr instanceof String ); // false
+
+
+
+
+
+54 - keyof type operator
+----------------------------------------------------------------------------------------------------------------------------------------  
+
+ type Location = {
+
+  latitude: number,
+  longitude: number
+ }
+
+ type Person = { 
+  name: string,
+  age: number,
+  location: Location
+ }
+
+ type PersonKeys = keyof Person
+
+ function getProperty<T, Key extends keyof T>(obj:T,key: Key) {
+  const value = obj[key]
+  console.log("Accessing:", key, value)
+  return obj[key]
+ }
+ function setProperty<T, Key extends keyof T>(obj:T,key: Key, value: obj[key]) {
+  obj[key] = value
+  console.log("Setting:", key, value)
+  
+ }
+
+55 - Conditional Types: create conditional logic in Typescript Type System
+----------------------------------------------------------------------------------------------------------------------------------------  
+ type isNumber<T> = T extends number
+                   ? 'number'
+                   : 'other'
+
+ type TypeName<T> = 
+   T extends number?    'string':
+   T extends number?    'number':
+   T extends boolean?   'boolean' :
+   T extends undefined? 'undefined':
+   T extends symbol?    'symbod':
+   T extends bigint?    'bigint':
+   T extends Function   'function':
+   T extends null?      'object'
+
+  // null returns 'object'
+
+ function typeName<T>(t: T) : TypeName<T> {
+    return typeof t as TypeName<T>
+ }
+
+ function createPerson (fn: string, ln: string) {
+
+	return {fn, ln, fullname: `${fn} ${ln} `}
+ }
+
+ function logPerson(person: ReturnType<typeof createPerson>)
+
+56 - infer keyword used in ReturnType
+----------------------------------------------------------------------------------------------------------------------------------------  
+
+
+
+57 - Mapped Types: readonly, partial
+----------------------------------------------------------------------------------------------------------------------------------------  
+
+ type Readonly<T> = {
+  readonly [P in keyof T]: T[P]
+ }
+
+58 - Mapped type modifiers
+----------------------------------------------------------------------------------------------------------------------------------------  
+
+ class State<T> {
+  constructor(public current: T) {}
+  update(next: Partial<T>) {
+    this.current = {...this.current, ...next}
+  }
+  select(key: keyof T) {
+   return this.current[key]
+ }																		
+
+ }
+
+var isEven: (v: number) => boolean = a => (a % 2 === 0);
+
+// Get to the const values of any object
+type Values<T> = T[keyof T];
+
+// niklas wortmann rxjs-web
+type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
+	{
+		[K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
+	}[Keys];

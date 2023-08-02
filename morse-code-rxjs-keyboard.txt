@@ -1,0 +1,16 @@
+const result$ = new Subject<string>();
+
+fromEvent(window, 'keyup').pipe(
+  exhaustMap(key => fromEvent(window, 'keyup').pipe(
+    takeUntil(result$),
+    startWith(key),
+    map((event: KeyboardEvent) => event.key),
+    scan((acc, curr) => acc + curr),
+    debounceTime(500),
+    tap(val => result$.next(val)),
+  )),
+).subscribe();
+
+result$.subscribe(console.log); // here you would do your request logic, 
+                                // and make sure to set it to unsubscribe 
+                                // (with a takeUntil and a destroy$ Subject, for example).

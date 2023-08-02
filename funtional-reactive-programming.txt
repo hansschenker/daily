@@ -1,0 +1,59 @@
+The goal of Rx is to 
+
+- coordinate and 
+- orchestrate event-based and asynchronous computations 
+
+such as 
+
+- low-latency sensor streams, 
+- Twitter messages 
+- social media status updates, 
+- SMS messages, 
+- GPS coordinates, 
+- mouse moves
+- UI events, 
+- Web sockets,
+- high-latency http calls 
+
+using standard object-oriented programming languages such as Java, C#, or Visual Basic.
+
+There are many ways to derive Rx, some involving category theory and appealing to mathematical duality, 
+but this article shows how every developer could have invented Rx by crossing the standard JDK (Java Development Kit) 
+
+- Future<T> interface with the GWT (Google Web Toolkit) 
+- AsyncCallBack<T> interface to 
+
+- create the pair of interfaces 
+  - IObservable<T> and 
+  - IObserver<T> that model asynchronous data streams with values of type T. 
+
+This corresponds to the well-known Subject/Observer design pattern. 
+The article then shows how to write a simple Ajax-style application by 
+
+- exposing UI events and Web services as asynchronous data streams and composing them using a fluent API.
+
+Historically, we did not discover the Rx interfaces by the refactorings performed in this article. 
+Instead we applied the definition of categorical duality from Wikipedia literally to the 
+
+- IEnumerable<T> and 
+- IEnumerator<T> interfaces for pull-based collections, and thus derived the 
+
+- IObservable<T> and 
+- IObserver<T> interfaces completely mechanically by swapping the arguments and results of all method signatures, 
+  not guided by any operational intuition in the process.
+
+Note that our model of asynchronous data streams makes 
+- no special assumptions about time. This makes the approach different from the typical reactive programming approaches 
+
+in functional programming such as Fran or FlapJax that emphasize (continuous) time-varying values, called behaviors, 
+and SQL-based complex event-processing systems such as StreamBase and StreamInsight that also emphasize time in their semantic model. 
+
+Instead clocks and timers are treated just as regular asynchronous data streams of type 
+- IObservable<DateTimeOffset>. 
+  We parameterize over concurrency and logical clocks by another interface 
+
+- IScheduler (slightly simplified here), 
+  which represents an execution context that has a local notion of time on which work can be scheduled in the future:
+
+
+

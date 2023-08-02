@@ -1,0 +1,380 @@
+Angular is 5D and 5G:
+
+D1: Directives			DSL in HTML
+D2: Data Binding		View - Model
+D3: Decorators			Metaprogramming	
+D4: Dependency Injection	SOLID Principle	
+D5: Dirty Checking		Browser API's Monkey Patching
+
+5 Giants behind Angular:
+G1: Misko Hevery		Angular Creator
+G2: Anders Heilsberg 		Typescript Creator
+G3: Erik Meijer 		RxJs Creator
+G4: Tobias Kopper 		Webpack Creator
+G5: Victor Savkin 		Angular Router Creator and Nrwl Nx Monorepos
+
+HTML
+---------------------------------------------------------------------------------------------
+Attribute
+Element
+
+DOM
+-------------------------------------------------------------------------------------------
+Property
+Node
+
+SPA
+-------------------------------------------------------------------------------------------
+A single-page application (SPA) is a web application or website that interacts with the user by dynamically 
+rewriting the current web page with new data from the web server, instead of the default method 
+of a web browser loading entire new pages. 
+The goal is faster transitions that make the website feel more like a native app.
+
+In a SPA, all necessary HTML, JavaScript, and CSS code is either retrieved by the browser 
+with a single page load,[1] or the appropriate resources are dynamically loaded and added 
+to the page as necessary, usually in response to user actions. The page does not reload 
+at any point in the process, nor does it transfer control to another page, although the location hash 
+or the HTML5 History API can be used to provide the perception 
+and navigability of separate logical pages in the application.[2]
+
+MVC
+------------------------------------------------------------------------------------------
+MVC Framework
+---------------
+Model–view–controller
+From Wikipedia, the free encyclopedia
+Jump to navigationJump to search
+
+Diagram of interactions within the MVC pattern
+Model–view–controller (usually known as MVC) is a software design pattern[1] commonly used for developing 
+user interfaces that divides the related program logic into three interconnected elements. 
+This is done to separate internal representations of information from the ways information 
+is presented to and accepted from the user.[2][3]
+
+Traditionally used for desktop graphical user interfaces (GUIs), this pattern has become popular 
+for designing web applications.[4] Popular programming languages like JavaScript, Python, Perl, 
+Object Pascal/Delphi, Ruby, PHP, Java, C#, Swift, and Elixir have MVC frameworks that are used 
+for web or mobile application development straight out of the box.
+
+---------------------------------------------------------------------------------------------
+Model		the data shown to the user in the view and with which the user interacts
+
+View		what the user sees (the DOM)
+
+Data Binding	sync data between the model and the view
+
+Controller	the business logic behind views
+
+Scope		context where the model is stored so that controllers, directives and expressions can access it
+
+Expressions	access variables and functions from the scope
+
+---------------------------------------------------------------------------------------------
+
+
+Template	HTML with additional markup
+-----------------------------------------------------------------------------------------------
+When AngularJS starts your application, it parses and processes this new markup from the template using the compiler. 
+The loaded, transformed and rendered DOM is then called the view.
+
+Template creates context,
+Template Reference Variable is valid only inside its context
+
+Directives	extend HTML vocabulary with custom attributes and elements
+----------------------------------------------------------------------------------------------
+ Directive is a selector on a DOM Element that tells Angular HTML Compiler to attach a specific
+ behavior to that DOM Element
+
+Built-in Directives
+-------------------
+NgClass—adds and removes a set of CSS classes.
+NgStyle—adds and removes a set of HTML styles.
+NgModel—adds two-way data binding to an HTML form element
+
+Forms Module Directives
+------------------------
+
+
+Router Module Directives
+------------------------
+
+
+Template Directives
+-----------------------
+This section introduces the most common built-in structural directives:
+
+NgIf—conditionally creates or disposes of subviews from the template.
+NgFor—repeat a node for each item in a list.
+NgSwitch—a set of directives that switch among alternative views.
+
+Hosting a directive without a DOM element
+---------------------------------------------
+The Angular <ng-container> is a grouping element that doesn't interfere with styles or layout because Angular doesn't put it in the DOM.
+
+You can use <ng-container> when there's no single element to host the directive.
+
+
+Dependency Injection Directives
+------------------------------
+
+The first kind of new markup are the directives. They apply special 
+
+- behavior to attributes or , extend element
+- behavior to elements,     , create elment
+- behavior to templates     , create a view
+
+- ng-app attribute, which is linked to a directive that automatically initializes our application. 
+- ng-model directive stores/updates the value of the input field into/from a variable.
+
+  The ngModel directive binds an input,select, textarea (or custom form control) to a property on the scope using NgModelController, 
+  which is created and exposed by this directive.
+
+ngModel is responsible for:
+------------------------------
+- Binding the view into the model, which other directives such as input, textarea or select require.
+- Providing validation behavior (i.e. required, number, email, url).
+- Keeping the state of the control (valid/invalid, dirty/pristine, touched/untouched, validation errors).
+- Setting related css classes on the element (ng-valid, ng-invalid, ng-dirty, ng-pristine, ng-touched, ng-untouched, ng-empty, ng-not-empty) including animations.
+- Registering the control with its parent form.
+
+ Note: ngModel will try to bind to the property given by evaluating the expression on the current scope. 
+ If the property doesn't already exist on this scope, it will be created implicitly and added to the scope
+
+ Complex models:
+ By default, ngModel watches the model by reference, not value. 
+ This is important to know when binding inputs to models that are objects (e.g. Date) or collections (e.g. arrays). 
+ If only properties of the object or collection change, ngModel will not be notified and so the input will not be re-rendered.
+
+The model must be assigned an entirely new object or collection before a re-rendering will occur.
+
+ Binding expressions: ngModel	expression	= ng-model="expression">
+
+ ---------------------
+1 - Attribute Binding (html attribute)
+    ----------------------------------------------------------------------
+    Attribute binding syntax resembles property binding, but instead of an element property between brackets, 
+   you precede the name of the attribute with the prefix attr, followed by a dot. 
+   Then, you set the attribute value with an expression that resolves to a string.
+   sample: <p [attr.attribute-you-are-targeting]="expression"></p>
+   <!-- create and set an aria attribute for assistive technology -->
+   <button [attr.aria-label]="actionName">{{actionName}} with Aria</button>
+<!--  expression calculates colspan=2 -->
+   <tr><td [attr.colspan]="1 + 1">One-Two</td></tr>
+   -------------------------------------------------------------------------------
+    Attribute binding syntax is like property binding. In property binding, we only specify the element between brackets. 
+    But in the case of attribute binding, it starts with the prefix attar, followed by a dot (.), and the name of the attribute
+    Attributes are defined by HTML. 
+    Properties are accessed from DOM (Document Object Model) nodes. 
+    While writing HTML code, you can define attributes on your HTML elements.
+
+    Attributes initialize DOM properties and you can configure them to modify an element's behavior. 
+    Properties are features of DOM nodes.
+
+    A few HTML attributes have 1:1 mapping to properties; for example, id.
+    Some HTML attributes don't have corresponding properties; for example, aria-*.
+    Some DOM properties don't have corresponding attributes; for example, textContent, innerHtml
+
+2 - Property Binding (DOM Property): [] - component to element property.
+
+3 - Event Binding (DOM Event)
+
+4 - Class Binding (DOM CSS Classlist)
+5 - Style Binding (DOM Style property)
+
+- expressions are like JavaScript expressions with the following differences:
+
+- Context: JavaScript expressions are evaluated against the global window. 
+            In AngularJS, expressions are evaluated against a scope object.(component class = model + view functions)
+
+- Forgiving: In JavaScript, trying to evaluate undefined properties generates ReferenceError or TypeError. 
+             In AngularJS, expression evaluation is forgiving to undefined and null.
+
+- Filters:   You can use filters within expressions to format data before displaying it.
+
+- No Control Flow Statements: You cannot use the following in an AngularJS expression: conditionals, loops, or exceptions.
+
+- No Function Declarations: You cannot declare functions in an AngularJS expression, even inside ng-init directive.
+
+- No RegExp Creation With Literal Notation: You cannot create regular expressions in an AngularJS expression. 
+  An exception to this rule is ng-pattern which accepts valid RegExp.
+
+- No Object Creation With New Operator: You cannot use new operator in an AngularJS expression.
+
+- No Bitwise, Comma, And Void Operators: You cannot use Bitwise, , or void operators in an AngularJS expression.
+
+If you want to run more complex JavaScript code, you should make it a controller method and call the method from your view. If you want to
+
+----------------------------------------------------------------------------------------------
+Component and its Lifecycle
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Lifecycle event sequence
+---------------------------
+After your application instantiates a component or directive by calling its constructor, 
+Angular calls the hook methods you have implemented at the appropriate point in the lifecycle of that instance.
+
+Angular executes hook methods in the following sequence. You can use them to perform the following kinds of operations.
+
+Hook method	Purpose	Timing
+ngOnChanges()	
+-------------------------------
+Respond when Angular sets or resets data-bound input properties. The method receives a 
+SimpleChanges object of current and previous property values.
+
+Note that this happens very frequently, so any operation you perform here impacts performance significantly. 
+See details in Using change detection hooks in this document.
+
+Called before ngOnInit() and whenever one or more data-bound input properties change.
+
+Note that if your component has no inputs or you use it without providing any inputs, the framework will not call ngOnChanges().
+
+ngOnInit()
+----------------------------------	
+Initialize the directive or component after Angular first displays the data-bound properties and 
+sets the directive or component's input properties. See details in Initializing a component or directive in this document.
+
+Called once, after the first ngOnChanges().
+
+ngDoCheck()	
+---------------------------------
+Detect and act upon changes that Angular can't or won't detect on its own. See details and example in 
+Defining custom change detection in this document.
+
+Called immediately after ngOnChanges() on every change detection run, and immediately after ngOnInit() on the first run.
+
+ngAfterContentInit()
+---------------------------------	
+Respond after Angular projects external content into the component's view, or into the view that a directive is in.
+
+See details and example in Responding to changes in content in this document.
+
+Called once after the first ngDoCheck().
+
+ngAfterContentChecked()	
+--------------------------------
+Respond after Angular checks the content projected into the directive or component.
+
+See details and example in Responding to projected content changes in this document.
+
+Called after ngAfterContentInit() and every subsequent ngDoCheck().
+
+ngAfterViewInit()
+-------------------------------	
+Respond after Angular initializes the component's views and child views, or the view that contains the directive.
+
+See details and example in Responding to view changes in this document.
+
+Called once after the first ngAfterContentChecked().
+
+ngAfterViewChecked()	
+----------------------------------
+Respond after Angular checks the component's views and child views, or the view that contains the directive.
+
+Called after the ngAfterViewInit() and every subsequent ngAfterContentChecked().
+
+ngOnDestroy()	
+-----------------------------------
+Cleanup just before Angular destroys the directive or component. Unsubscribe Observables and detach 
+event handlers to avoid memory leaks. See details in Cleaning up on instance destruction in this document.
+
+Called immediately before Angular destroys the directive or component.
+
+Lifecycle example set
+The live example / download example demonstrates the use of lifecycle hooks through a series of exercises 
+presented as components under the control of the root AppComponent. In each case a parent component serves 
+as a test rig for a child component that illustrates one or more of the lifecycle hook methods.
+
+The following table lists the exercises with brief descriptions. The sample code is also used 
+to illustrate specific tasks in the following sections.
+
+Component	Description
+Peek-a-boo	
+Demonstrates every lifecycle hook. Each hook method writes to the on-screen log.
+
+Spy	
+Shows how you can use lifecycle hooks with a custom directive. The SpyDirective implements the ngOnInit() 
+and ngOnDestroy() hooks, and uses them to watch and report when an element goes in or out of the current view.
+
+OnChanges	
+Demonstrates how Angular calls the ngOnChanges() hook every time one of the component input properties 
+changes, and shows how to interpret the changes object passed to the hook method.
+
+DoCheck	
+Implements the ngDoCheck() method with custom change detection. Watch the hook post changes to a log to see how often Angular calls this hook.
+
+AfterView	
+Shows what Angular means by a view. Demonstrates the ngAfterViewInit() and ngAfterViewChecked() hooks.
+
+AfterContent	
+Shows how to project external content into a component and how to distinguish projected content 
+from a component's view children. Demonstrates the ngAfterContentInit() and ngAfterContentChecked() hooks.
+
+Counter	
+Demonstrates a combination of a component and a directive, each with its own hooks.
+
+Initializing a component or directive
+Use the ngOnInit() method to perform the following initialization tasks.
+
+Perform complex initializations outside of the constructor. Components should be cheap and safe to construct. 
+You should not, for example, fetch data in a component constructor. You shouldn't worry that a new component 
+will try to contact a remote server when created under test or before you decide to display it.
+
+An ngOnInit() is a good place for a component to fetch its initial data. For an example, see the Tour of Heroes tutorial.
+
+Set up the component after Angular sets the input properties. Constructors should do no more than set the 
+initial local variables to simple values.
+
+Keep in mind that a directive's data-bound input properties are not set until after construction. 
+If you need to initialize the directive based on those properties, set them when ngOnInit() runs.
+
+The ngOnChanges() method is your first opportunity to access those properties. Angular calls ngOnChanges() 
+before ngOnInit(), but also many times after that. It only calls ngOnInit() once.
+
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+Compiler	parses the template and instantiates directives and expressions
+		- compile phase (parse and run directive code)
+		- link: apply data binding
+
+Filter		formats the value of an expression for display to the user
+
+
+Dependency 	Creates and wires objects and functions
+Injection	
+
+Injector	dependency injection container
+
+Module		a container for the different parts of an app including 
+		- controllers, 
+		- services, 
+		- filters, 
+		- directives which configures the Injector
+
+Service		reusable business logic independent of views
+
+
+
+
+
+Angular Template Syntax
+----------------------------------------------------------------------------------------
+In Angular, a template is a chunk of HTML. 
+ HTML syntax is valid template syntax
+Within a template, you can use 
+
+- special syntax to leverage many of Angular's features.
+- data binding syntax
+
+Angular View
+----------------------------------------------------------------------------------------
+Each Angular template in your gets rendered into an Angular View
+A view is a dynamic part in the the DOM with Bindings. These bindings make the view dynamic.
+Embedded View
+--------------------
+
+Host View
+--------------------

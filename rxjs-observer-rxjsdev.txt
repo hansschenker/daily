@@ -1,0 +1,75 @@
+Observer
+--------------------------------------------------------------------------------------------------
+What is an Observer? An Observer is a consumer of values delivered by an Observable. 
+Observers are simply a set of callbacks:
+-  next, 
+- error, and 
+- complete. 
+
+The manifestation of a consumer. A type that may have some (or all) handlers for each type of notification: 
+- next, 
+- error
+- complete 
+
+"full observer": 	Having all three types of handlers generally, 
+"partial observer": 	where if it is missing any of the notification handlers
+--------------------------------------------------------------------------------------------------
+An object interface that defines a set of callback functions a user can use to get notified 
+of any set of Observable notification events.
+
+interface Observer<T> {
+  next: (value: T) => void
+  error: (err: any) => void
+  complete: () => void
+}
+
+Child Interfaces
+---------------------------------
+TapObserver
+SubjectLike
+TapObserver
+
+Subscriber (internal API) is an Observer
+----------------------------------------------
+Implements the Observer interface and extends the Subscription class. 
+While the Observer is the public API for consuming the values of an Observable, 
+all Observers get converted to a Subscriber, in order to provide Subscription-like capabilities 
+such as unsubscribe. 
+
+Subscriber is a common type in RxJS, and crucial for implementing operators, 
+but it is rarely used as a public API.
+
+
+const observer:Observer<string> = {
+    next: value => console.log('next', value),
+    error: error => console.log('error', error),
+    complete: () => console.log('complete!')
+};
+
+const observable = new Observable(subscriber => {
+    subscriber.next('Hello');
+    subscriber.next('World');
+    /*
+     * Once complete is called, observable will be cleaned up
+     * and no future values delivered.
+     */
+    subscriber.complete();
+    /*
+     * These values will not be logged as the observable
+     * has already completed.
+     */
+    subscriber.next('Hello');
+    subscriber.next('World');
+});
+
+To use the Observer, provide it to the subscribe of an Observable:
+
+Observers are just objects with three callbacks, one for each type of notification that an 
+Observable may deliver.
+
+Observers in RxJS may also be partial. If you don't provide one of the callbacks, the execution 
+of the Observable will still happen normally, except some types of notifications will be ignored, 
+because they don't have a corresponding callback in the Observer.
+
+Internally in observable.subscribe, it will create an Observer object using the callback argument 
+as the next handler.

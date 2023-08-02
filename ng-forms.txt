@@ -1,0 +1,469 @@
+Forms
+------------------------------------
+Web applications heavily rely on forms. In many ways Angular is so successful because 
+two-way bindings and ng-model made creating dynamic forms easy.
+
+Although very flexible, the AngularJS 1.x approach has some issues: 
+the data flow in complex user interactions is hard to understand and debug.
+
+Angular 2.x+ builds up on the ideas from AngularJS 1.x: it preserves the ease of 
+creating dynamic forms, but avoids the issues making data flow hard to understand.
+
+In this chapter we will look at how form handling (or input handling) works in Angular.
+
+Two Modules
+-------------------------------
+In AngularJS 1.x, the ng-model directive was baked into the core framework. This is no longer the case. 
+The @angular/core package doesn’t contain a form-handling library. 
+It only provides the key primitives we can use to build one.
+
+FormsModule (template driven)
+------------------------------------------
+Of course, making everyone to build their own would not be practical. And that’s why the Angular team built 
+the @angular/forms package with two modules: FormsModule and ReactiveFormsModule.
+
+FormsModule implements AngularJS-style form handling. We create a form by placing directives in the template. 
+We then use data bindings get data in and out of that form.
+
+ReactiveFormsModule (module driven)
+--------------------------------------
+is another take on handling input, where we 
+
+- define a form in the component class and 
+- bind it to elements in the template. 
+
+We tend to use reactive programming to get data in and out of the form, hence the name “reactive”.
+
+At first glance, these two modules seem very different. But once we understand the underlying mechanisms, 
+we will see how much they have in common. In addition, 
+
+it will give us an idea of how to build our own form-handling module if needed.
+
+High-Level Overview
+------------------------------------------------------
+App Model
+-----------------
+The app model is an object provided by the application developer. It can be a JSON object fetched from the server, 
+or some object constructed on the client side. Angular doesn’t make any assumptions about it.
+
+Form Model
+------------------
+The form model is a UI-independent representation of a form. It consists of three building blocks: 
+
+- FormControl, 
+- FormGroup, and 
+- FormArray. 
+
+Both FormsModule and ReactiveFormsModule use this model.
+
+Form Directives connecting: DOM <- Form Directive <- Form Model <- App Model
+------------------------------------------------------------
+These are the directives connecting the form model to the DOM (e.g., NgModel). 
+FormsModule and ReactiveFormsModule provide different sets of these directives.
+
+DOM
+----------------
+These are ours inputs, checkboxes, and radio buttons.
+
+Form Model
+----------------
+o make form handling less UI-dependent, @angular/forms provides a set of primitives for modelling forms: FormControl, FormGroup, and FormArray.
+
+Form Control
+FormControl is an indivisible part of the form, an atom. It usually corresponds to a simple UI element, such as an input.
+
+const c = new FormControl('Init Value', Validators.required);
+A FormControl has a value, status, and a map of errors:
+
+expect(c.value).toEqual('Init Value');
+expect(c.errors).toEqual(null); //null means 'no errors'
+expect(c.status).toEqual('VALID');
+Form Group
+FormGroup is a fixed-size collection of controls, a record.
+
+const c = new FormGroup({
+  login: new FormControl(''),
+  password: new FormControl('', Validators.required)
+});
+A FormGroup is itself a control, and, as such, has the same methods as FormControl.
+
+expect(c.value).toEqual({login: '', password: ''});
+expect(c.errors).toEqual(null);
+expect(c.status).toEqual('INVALID');
+The value of a group is just an aggregation of the values of its children. 
+Any time the value of a child control changes, the value of the group will change as well.
+
+In opposite to the value, the form group doesn’t aggregate the errors of its children. 
+It has its own validators and its own collection of errors.
+
+The status of a group is calculated as follows: * If one of its children is invalid, the group is invalid. 
+* If all of its children are valid, but the group itself has errors, the group is invalid. 
+* If all of its children are valid, and the group has no errors, the group is valid.
+
+Since a form group acts like a control, we can nest form groups in arbitrary ways.
+
+const c = new FormGroup({
+  login: new FormControl(''),
+  passwords: new FormGroup({
+    password: new FormControl(''),
+    passwordConfirmation: new FormControl('')
+  })
+});
+
+Form Array
+------------------------------------------
+Whereas FormGroup is a collection of different control types of fixed length, 
+FormArray is a collection of the same control type of a variable length.
+
+const c = new FormArray([
+  new FormControl('one', Validators.required),
+  new FormControl('two', Validators.required)
+]);
+All the considerations regarding FormGroup’s value, status, and errors apply here as well.
+
+Updating Form Model
+---------------------------------------
+const c = new FormGroup({
+  login: new FormControl(''),
+  passwords: new FormGroup({
+    password: new FormControl(''),
+    passwordConfirmation: new FormControl('')
+  }),
+  notes: new FormArray([
+    new FormControl('Buy wine'),
+    new FormControl('Buy cheese')
+  ])
+});
+
+There are two ways to update the value of a form: setValue and patchValue:
+
+The setValue method is strict and requires the value to match the structure of the form.
+
+c.setValue({
+  login: 'newLogin',
+  password: {
+    password: 'newPassword',
+    passwordConfirmation: 'newPassword'
+  },
+  notes: [
+    'buy wine!!!',
+    'buy cheese!!!'
+  ]
+});
+If we try to set the value of a control that doesn’t exist, or if we exclude the value of a control, setValue will fail.
+
+The patchValue method works as setValue except that it doesn’t throw when the value is a superset or a subset of the form.
+
+c.patchValue({
+  login: 'newLogin',
+  password: {
+    passwordConfirmation: 'newPassword'
+  },
+  somethingEntirelyDifferent: true
+});
+
+By default updating a control will update its parents. We can prevent the change from propagating 
+through the parents by passing onlySelf: true:
+
+c.setValue('newLogin', {onlySelf: true});
+
+Disabling Form Model
+--------------------------------
+const c = new FormGroup({
+  login: new FormControl(''),
+  password: new FormControl('', Validators.required),
+  acceptTerms: new FormControl(null)
+});
+const acceptTerms = c.get('acceptTerms');
+acceptTerms.disable();
+
+expect(c.value).toEqual({login: '', password: ''});
+This exempts acceptTerms validation checks and excludes it from the aggregate value of any parent. 
+Its status gets set to DISABLED.
+
+Async Validations
+--------------------------------
+The required validator we have used throughout the chapter is synchronous. 
+The moment we set value, the moment the control goes into the 
+
+- VALID or 
+- INVALID state. 
+
+Some validations, however, have to be asynchronous. A good example is the uniqueness of the login.
+
+const login = new FormControl('', null, uniqLoginValidator); 
+// null is sync validator
+login.setValue('john66');
+
+This will set the status of the control and its parents to PENDING. And, once the promise returned 
+by uniqLoginValidator resolves, the status will be set to either INVALID or VALID.
+
+In addition to declarative validators, we can always set the errors on the control imperatively.
+
+login.setErrors({uniq: false});
+
+Composing Validators
+------------------------------
+A validator is just a function that takes a control and returns a map of errors.
+
+class Validators {
+  static required(control): {[key: string]: any} {
+    return isEmptyInputValue(control.value) ? {'required': true} : null;
+  }
+}
+The value doesn’t have to be a boolean. We can provide extra information to create a more meaningful error message.
+
+class Validators {
+  static minLength(minLength: number): ValidatorFn {
+    return (control): {[key: string]: any} => {
+      const length: number = control.value ? control.value.length : 0;
+      return length < minLength ?
+          {'minlength': {'requiredLength': minLength, 'actualLength': length}} :
+          null;
+    };
+  }
+}
+Since the return value of a validator is a “map”, and not a single value, it’s easy to compose multiple validators into one.
+
+const between3And30: ValidatorFn = Validators.compose([
+  Validators.minLength(3),
+  Validators.maxLength(30)
+]);
+The provided compose function will execute all the validators and merge the errors. We can, of course, 
+implement our own compose function that, for instance, will execute validators until the first failure.
+
+Listening to Changes
+-----------------------------------
+Any time a control updates, it will emit the value.
+
+const login = new FormControl('');
+const password = new FormControl('', Validators.required);
+const c = new FormGroup({login, password});
+
+login.valueChanges.subscribe(c => console.log("login value updates to", c));
+login.statusChanges.subscribe(c => console.log("login status updates to", c));
+
+password.valueChanges.subscribe(c => console.log("password value updates to", c)\
+);
+password.statusChanges.subscribe(c => console.log("password status updates to", \
+c));
+
+c.valueChanges.subscribe(c => console.log("form value updates to", c));
+c.statusChanges.subscribe(c => console.log("form status updates to", c));
+
+login.setValue('newLogin');
+password.setValue('newPassword');
+
+// will print:
+// login value updates to 'newLogin'
+// form value updates to {login: 'newLogin', password: ''}
+// password value updates to 'newPassword'
+// password status updates to 'VALID'
+// form value updates to {login: 'newLogin', password: 'newPassword'}
+// form status updates to 'VALID'
+As you can see the value of the form has been updated twice. We can prevent this by setting the value on the form itself.
+
+const c = new FormGroup({login, password});
+c.setValue({login: 'newLogin', password: 'newPassword'});
+
+// will print:
+// login value updates to 'newLogin'
+// password value updates to 'newPassword'
+// password status updates to 'VALID'
+// form value updates to {login: 'newLogin', password: 'newPassword'}
+// form status updates to 'VALID'
+We can also prevent the events from being emitted altogether by passing emitEvent: false.
+
+Power of RxJS
+-----------------------------------------
+Since valueChanges and statusChanges are RxJS observables, we can use the rich set of RxJS combinators 
+to implement powerful user interactions in a just a few lines of code.
+
+Why Form Model?
+-----------------------------------------
+The form model is a UI-independent way to represent user input comprising simple controls (FormControl) 
+and their combinations (FormGroup and FormArray), where:
+
+Each control has a value.
+
+Any time a control updates, it will emit the value.
+
+const login = new FormControl('');
+const password = new FormControl('', Validators.required);
+const c = new FormGroup({login, password});
+
+login.valueChanges.subscribe(c => console.log("login value updates to", c));
+login.statusChanges.subscribe(c => console.log("login status updates to", c));
+
+password.valueChanges.subscribe(c => console.log("password value updates to", c)\
+);
+password.statusChanges.subscribe(c => console.log("password status updates to", \
+c));
+
+c.valueChanges.subscribe(c => console.log("form value updates to", c));
+c.statusChanges.subscribe(c => console.log("form status updates to", c));
+
+login.setValue('newLogin');
+password.setValue('newPassword');
+
+// will print:
+// login value updates to 'newLogin'
+// form value updates to {login: 'newLogin', password: ''}
+// password value updates to 'newPassword'
+// password status updates to 'VALID'
+// form value updates to {login: 'newLogin', password: 'newPassword'}
+// form status updates to 'VALID'
+As you can see the value of the form has been updated twice. We can prevent this by setting the value on the form itself.
+
+const c = new FormGroup({login, password});
+c.setValue({login: 'newLogin', password: 'newPassword'});
+
+// will print:
+// login value updates to 'newLogin'
+// password value updates to 'newPassword'
+// password status updates to 'VALID'
+// form value updates to {login: 'newLogin', password: 'newPassword'}
+// form status updates to 'VALID'
+We can also prevent the events from being emitted altogether by passing emitEvent: false.
+
+Power of RxJS
+-------------------
+Since valueChanges and statusChanges are RxJS observables, we can use the rich set of 
+RxJS combinators to implement powerful user interactions in a just a few lines of code.
+
+Why Form Model?
+------------------------
+The form model is a UI-independent way to represent user input comprising simple controls (FormControl) 
+and their combinations (FormGroup and FormArray), where:
+
+Each control has a value.
+Each control has a status.
+Each control has validators and errors.
+Each control can be disabled.
+Each control emits events.
+
+Having this model has the following advantages:
+
+Form handling is a complex problem. Splitting it into UI-independent and UI-dependent parts makes them easier to manage.
+We can test form handling without rendering UI.
+Having the form model makes reactive forms possible (see below).
+
+Form Directives (connect to UI)
+---------------------------------------------------
+Abstractly describing input is all well and good, but at some point we will need to connect it to the UI.
+
+First, we import ReactiveFormsModule, which provides, among others, the formGroup and formControlName directives.
+
+Second, we manually construct a form model.
+
+filters = new FormGroup({
+  speaker: new FormControl(),
+  title: new FormControl(),
+  highRating: new FormControl(false),
+});
+
+Third, we bind the constructed form to the div using formGroup. 
+Then we use formControlName to bind the title, speaker, 
+and highRating to the three inputs. 
+The name suffix indicates that we need to pass the name of a field of the containing group.
+
+When using ReactiveFormsModule we are responsible for creating the form model. 
+We use the directives merely to bind the form to elements in the UI.
+
+Then we use the constructed form model directly to synchronize it with the client model or trigger events. 
+And we often do it by subscribing to the valueChanges and statusChanges observables.
+
+FormsModule
+---------------------------------------------
+This is similar to AngularJS 1.x. We use the [()] syntax (see Chapter 6) to bind the speaker, title, 
+and highRating properties of the filters component to the three inputs.
+ We then invoke the applyFilters method when the user submits the form.
+
+Even though it’s not seen in the example, the following form group still gets created:
+
+filters = new FormGroup({
+
+  speaker: new FormControl(),
+  title: new FormControl(),
+  highRating: new FormControl(false),
+});
+The difference is that it does not get created by the application developer, but by the NgModel and NgForm directives.
+
+The NgForm directive gets instantiated at <form (submit)="applyFilters()">. This directive creates an empty FormGroup.
+The NgModel directive gets instantiated at <input [(ngModel)]="speaker" name="speaker" placeholder="Speaker">. 
+This directive creates a FormControl and adds it to the FormGroup created by the encompassing NgForm.
+How is it possible?
+
+If you have read the chapter on change detection carefully, you probably wonder how this works. Shouldn’t the following fail?
+      <input ngModel name="highRating" type="checkbox">High Rating
+    </form>
+  `
+})
+export class FiltersCmp {
+  //...
+}
+
+If NgModel and NgForm were implemented naively, the {{f.controls.speaker == null}} binding would evaluate to true the first time, 
+when the group is empty, and will evaluate to false once NgModels add their form controls to the group. This change from true 
+to false will happen within a change detection run, which, in opposite to AngularJS 1.x, is disallowed in Angular 2.x+. 
+The value of a binding can change only between change detection runs.
+
+To make it work, NgModel doesn’t add a form control synchronously–it does it in a microtask. In the example above, 
+the three ngModels will schedule three microtasks to add the speaker, title, and highRating controls.
+
+During the first change detection run, the form will always be empty and {{f.controls.speaker == null}} 
+will always evaluate to true. Then, after the three microtasks, Angular will run change detection again, 
+and {{f.controls.speaker == null}} will evaluate to false.
+
+This is how we can preserve all the guarantees of Angular 2.x+ and still make the API feel AngularJS-like.
+
+Accessing Form Model When Using FormsModule
+---------------------------------------------
+We can still access the form model by either querying for the NgForm directive or by referencing it in the template.
+
+Once we get the model, we can interact with it imperatively or subscribe to its observables.
+
+The DOM
+-----------------------------------------------
+The ngModel, ngControlName and other form directives bind the form model to UI elements, 
+which are often native to the platform (e.g., <input>), but they do not have to be. 
+For instance, NgModel can be applied to an Angular component.
+
+<md-input [(ngModel)]="speaker" name="speaker" placeholder="Speaker">
+A ControlValueAccessor is a directive that acts like a adapter connecting a UI element to NgModel. 
+It knows how to read and write to the native UI-element.
+
+The @angular/forms package comes with value accessors for all built-in UI elements (input, textarea, etc). 
+But if we want to apply an NgModel to a custom element or an Angular component, 
+we will have to provide a value accessor for it ourselves.
+
+@Component({
+  selector: 'custom-input',
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => CustomInputCmp),
+      multi: true
+    }
+  ]
+})
+class CustomInputCmp implements ControlValueAccessor {
+  //...
+}
+
+Wrapping Up
+----------------------------------------------------------------------------------------
+Form handling is a complex problem. One of the main reasons AngularJS got so successful is 
+that two-way bindings and ng-model provided a good solution for it. But there were some downsides, 
+mainly complex forms built with ng-model made the data flow of the application hard to follow and debug. 
+Angular 2.x+ builds up on the ideas from Angular 1, but avoids its problems.
+
+NgModel and friends are no longer part of the core framework. The @angular/core package only contains 
+the primitives we can use to build a form-handling module. Instead, Angular has a separate package–@angular/forms–that 
+comes with FormsModule and ReactiveFormsModule that provide two different styles of handling user input.
+
+Both the modules depend on the form model consisting of FormControl, FormGroup, and FormArray. 
+Having this UI-independent model, we can model and test input handling without rendering any components.
+
+Finally, @angular/forms comes with a set of directives to handle build-in UI elements 
+(such as <input>), but we can provide our own.

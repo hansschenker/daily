@@ -1,0 +1,60 @@
+
+class Counter {
+public vm$ : Observable<ICounterVm>;
+public incrSubj = new Subject<number>;
+public decrSubj = new Subject<number>;
+constructor() {
+
+  const incr$ = this.incrSubj.pipe(
+    map( delta => (vm:ICounterVm) => ({...vm, counter:vm.counter+delta}) )
+  );
+  const decr$ = this.decrSubj.pipe(
+    map( delta => (vm:ICounterVm) => ({...vm, counter:vm.counter-delta}))
+  );
+
+  this.vm$ = merge(of({counter:0}), incr$, decr$).pipe(
+    scan( (prevVm:ICounterVm, mutationFn:(vm:ICounterVm)=>ICountVm) 
+      => mutationFn(prevVm)
+    )
+  )
+} // constructor
+
+} // class
+
+
+interface IPersonVm {
+  persons:IPerson[];
+  personDetail:IPersonDetail;
+}
+
+class Person {
+
+
+public personDetailSubj = new Subject<IPerson>();
+public vm$ : Observable<IPersonVm>;
+
+constructor(private personService:PersonService) {
+
+  // retrieving list of persons (could be a http request)
+  const personList$ = this.personService.getPersons().pipe(
+    map( persons => (vm:IPersonVm) => ({...vm, persons}) )
+  );
+
+  // select a person, get detail and set it on viewmodel
+  const personDetail$ = this.personDetailSubj.pipe(
+    mergeMap( person => this.personService.getPersonDetail(person.id) ),
+    map( personDetail => (vm:IPersonVm) => ({...vm, personDetail }))
+  );
+
+  // in this example the initial viewmodel state is provided with the second 
+  // parameter of the scan function. Alternatively one could provide an initial 
+  // state with the rxjs of function 
+  const vm$ = merge(personList$, personDetail$).pipe(
+    scan( (vm:IPersonVm, mutationFn:(vm:IPersonVm)=>IPersonVm)
+       => mutationFn(vm), {persons:[], personDetail:null}
+    )
+  )
+  
+} // constructor
+
+} // class

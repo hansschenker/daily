@@ -1,0 +1,106 @@
+The goal of Rx is to 
+- coordinate and orchestrate event-based 
+- and asynchronous computations 
+ (SMS messages, GPS coordinates, mouse moves and other UIevents, Web sockets,...)
+
+- this article shows how every developer could have
+invented Rx by crossing the standard JDK (Java Development Kit) 
+
+- Future<T>
+- AsyncCallBack<T> interface to create interface with the GWT (Google Web Toolkit)
+
+the pair of interfaces IObservable<T> and IObserver<T> that model asynchronous
+data streams with values of type T.
+
+- Subject/Observer design pattern.
+
+The next section shows how to make asynchronous data
+streams by introducing an additional container interface that represents the
+asynchronous computation itself and on which you register the callbacks to be
+notified about the results of the computation
+
+- asynchronous computations as first￾class values in the form of the Future<T> interface
+
+asynchronous computations are assumed to return streams of
+multiple results.
+
+interface IObservable<T>
+{
+IDisposable Subscribe(IObserver<T> observer);
+}
+interface IObserver<T>
+{
+void OnNext(T value);
+void OnError(Exception error);
+void OnCompleted();
+}
+interface IDisposable
+{
+void Dispose();
+}
+
+* The sequence of calls to an instance of the IObserver<T> interface should follow
+the regular expression OnNext(t)* (OnCompleted() | OnError(e))?. In other
+words, after zero or more OnNext calls, either one of OnCompleted or OnError will
+optionally be called
+
+FLUENTLY CREATING, COMPOSING, AND CONSUMING ASYNCHRONOUS
+DATA STREAMS
+
+GUI controls assources of asynchronous data streams. 
+--------------------------------------------------------
+- wrap the text￾changed event of a TextField control in Java as an asynchronous data stream
+
+Observable<string> TextChanges(JTextField tf){
+return new ObservableBase<string>(){
+Closable subscribe(Observer<string> o){
+DocumentListener l = new DocumentListener(){
+void changedUpdate(DocumentEvent e {
+o.OnNext(tf.getText());};
+tf.addDocumentListener (l);
+return new Closable() {
+void close()
+{tf.removeDocumentListener(l);}}}}}
+
+GUI controls assources of asynchronous data streams. 
+--------------------------------------------------------
+You can thus view a UI control, the mouse, a text field, or a button as a streaming
+database that generates an infinite collection of values for each time the
+underlying control fires an event. Conversely, objects with settable properties
+such as lists and labels can be used as observers for such asynchronous data
+streams.
+
+Asynchronous data streams represented by the IObservable<T> interface (or
+Observable<T> in Java) behave as regular collections of values of type T, except
+that they are push-based or streaming instead of the usual pull-based collections
+such as arrays and lists that implement the IEnumerable<T> interface (or in Java
+iterable<T>). This means that you can wire asynchronous data streams together
+using a fluent API of standard query operators to create 
+complex event￾processing systems in a highly composable and declarative way.
+
+
+The final Ajax program presented here is a dataflow pipeline that invokes the
+dictionary service only if there has not been a new distinct value fired by input in
+the last 10 milliseconds; and it ignores the result of the service if a new input
+value appears before the completion of the previous value has returned:
+
+TextChanges(input)
+.DistinctUntilChanged()
+.Throttle(TimeSpan.FromMilliSeconds(10))
+.Select(word=>Completions(word))
+.Switch()
+.Subscribe(ObserveChanges(output));
+
+Historically, we did not discover the Rx interfaces by the refactorings performed
+in this article. Instead we applied the definition of categorical duality from
+Wikipedia literally to the IEnumerable<T> and IEnumerator<T> interfaces for pull￾based collections, 
+and thus derived the IObservable<T> and IObserver<T>
+interfaces completely mechanically by swapping the arguments and results of all
+method signatures, not guided by any operational intuition in the process.
+
+
+Schedulers
+------------------------------------------------------------------
+We parameterize over concurrency and logical clocks by another interface IScheduler (slightly simplified here), which represents
+an execution context that has a local notion of time on which work can be scheduled in the future:
+

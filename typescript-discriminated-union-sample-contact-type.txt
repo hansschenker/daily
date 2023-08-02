@@ -1,0 +1,44 @@
+interface EmailContact {
+    kind: 'email';
+    email: string;
+}
+
+interface PhoneContact {
+    kind: 'phone';
+    phone: number;
+}
+  
+type Contact = EmailContact | PhoneContact;
+
+interface Customer {
+    name: string;
+    contact: Contact;
+}
+
+function printCustomerContact({ contact }: Customer) {
+    if (contact.kind === 'email') {
+        // Type of `contact` is `EmailContact`!
+        console.log(contact.email);
+    } else {
+        // Type of `contact` is `PhoneContact`!
+        console.log(contact.phone);
+    }
+}
+
+type Contact =
+    | { kind: 'email', email: string }
+    | { kind: 'phone', phone: number };
+
+
+Infer Parameters of a Function
+-------------------------------------------------------------------------------------------------
+type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never;
+
+const sayHello = (name: string, age: number) => `Hello ${name}, your age is ${age}`;
+type SayHelloParams = Parameters<typeof sayHello>; // [string, number]
+
+---
+ T must be a function type ((...args: any) => any).
+ P is not a type argument, it’s like a type variable which will hold the actual type of function parameters (as a tuple)
+ infer keyword lets us unwrap a type argument and pick a consistent part
+ T is matched against the (...args: infer P) => any pattern

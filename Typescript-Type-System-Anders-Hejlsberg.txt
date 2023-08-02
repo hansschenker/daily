@@ -1,0 +1,470 @@
+Typescript CRUD
+-----------------------------------------------------------------------------------------
+ - create Types: Type Constructors
+ - access Types: index type  and indexed access type
+ - update Types: mapped types,conditional types 
+ - delete Types: conditional types
+
+The Typescript type system is unique and multifaceted, combining 
+- object-oriented and 
+- functional programming concepts. 
+
+Over time, it has evolved into 
+- a complex, gradual, and structural type system. 
+- extensive type inference, 
+- control flow-based type analysis, and 
+- various type constructors.
+
+********* Create Types
+---------------------------------------------------------------------------------------
+
+Typescript type constructors:
+------------------------------
+
+Object type:
+-----------------------------------
+{x:T, y:U}
+
+Union types: 
+---------------------------------
+Combine different types, enabling the representation of multiple possible types for a value. 
+Union types interact with intersection types and can distribute over intersections.
+
+Intersection types: 
+---------------------------------
+Represent the combination of multiple types, allowing for more precise type relationships.
+
+Conditional types: 
+---------------------------------
+A forthcoming addition to the type system that introduces non-uniform mappings. It allows for advanced type manipulations based on conditions, such as extracting or excluding specific types from unions.
+
+Mapped types
+---------------------------------
+
+
+
+
+-------------------------------------------------------------------------------------------
+
+
+******** Access Properties of a Type
+-----------------------------------------------------------------------
+Index access with keyof T and indexed type access with T[P in keyof T]:P
+
+
+The Typescript team aims to 
+- enhance expressiveness and 
+- capture real-world patterns in JavaScript. 
+They prioritize gradual adoption of new type checks using the strict flag. Furthermore, 
+- conditional types enable developers to create their own type operators and 
+- perform complex type transformations.
+
+Despite the intricacy of the type system, it elegantly emerges from a small set of foundational type constructors. This design philosophy leads to powerful and flexible type checking while maintaining 
+a coherent and beautiful underlying structure.
+
+The speaker provided an overview of TypeScript and its unique type system. They mentioned that TypeScript's type system is both gradual and structural, combining object-oriented and functional programming concepts. 
+They introduced the concept of "novel type constructors" that allow for expressive type manipulations. 
+Here are some key points from their discussion:
+
+Type System Overview:
+TypeScript's core is its type system, which is unlike any other type system the speaker has seen. 
+It's gradual, structural, and generic, allowing extensive type inference and control flow-based type analysis. TypeScript combines object-oriented and functional programming paradigms.
+
+Novel Type Constructors:
+TypeScript's type system is based on novel type constructors that define and manipulate types. These constructors include object types, function types, union types, intersection types, mapped types,
+ conditional types, key types, and index access types.
+
+Mapped Types:
+Mapped types transform existing object types into new types by applying modifications to each property. Examples include the Partial type, which makes properties optional.
+
+Conditional Types:
+Conditional types create non-uniform type mappings based on conditions. They allow for sophisticated type transformations, where the output type depends on the input type's characteristics.
+
+Expressiveness and Complexity:
+The speaker emphasized TypeScript's expressiveness, enabling developers to capture intricate patterns that occur in JavaScript. They mentioned challenges in designing the type system to handle infinite types, structural typing, and generic types.
+
+Strictness and Control:
+TypeScript allows developers to control the level of strictness in type checking through flags like strict. This helps balance error detection with compatibility during updates.
+
+Upcoming Features:
+The speaker introduced upcoming features, such as conditional types, which enable non-uniform mappings and advanced type manipulations. They demonstrated how these features can be used to create custom type operators and showed examples like excluding, extracting, and inferring constituent types.
+
+Elegance and Simplicity:
+Despite the complexity of the type system, the speaker highlighted the elegance and simplicity of TypeScript's type operators. They noted that the entire system emerges from a small set of foundational type constructors.
+
+Overall, the speaker conveyed TypeScript's innovative approach to typing in the context of JavaScript, showcasing its flexibility, power, and potential for expressing complex type relationships.
+
+you can create your own Typescript Type operators with the help of Condtitional Types
+ChatGPT
+Yes, you're correct! You can create your own TypeScript type operators by using conditional types. Conditional types are a powerful feature of TypeScript that allow you to define custom type transformations based on conditional checks. By leveraging conditional types, you can effectively create your own type operators to perform specific type manipulations.
+
+Here's a simplified example of how you might create a custom type operator using conditional types:
+
+typescript
+Copy code
+type MyCustomOperator<T> = T extends string ? `Hello, ${T}` : never;
+
+type Result = MyCustomOperator<"Alice">; // Result will be "Hello, Alice"
+In this example, MyCustomOperator is a custom type operator that takes a type T as its parameter. It uses a conditional type to check whether T extends string. If it does, it transforms the type to a new string type that includes a greeting. If not, it returns never.
+
+This showcases the basic concept of creating your own type operators using conditional types. You can define more complex and sophisticated type operators by combining conditional types with other TypeScript features like mapped types, template literal types, and more.
+
+Remember that while you can create custom type operators, TypeScript already provides a rich set of built-in type operators and utility types that cover many common scenarios. However, if you encounter a specific use case that is not covered by the built-in types, creating your own type operator using conditional types can be a valuable approach.
+
+
+
+
+User
+Typescript Utility Types are custom type operators created from Conditional types
+----------------------------------------
+While TypeScript utility types often make use of conditional types under the hood, it's important to note 
+that they are not directly created from conditional types. 
+
+Utility types 
+-------------------------------------------
+are pre-defined type transformations provided by TypeScript to simplify common type manipulations. 
+These utility types are built-in and can be used without explicitly defining conditional type logic.
+
+Utility types are pre-defined type operators
+--------------------------------------------
+are essentially higher-order types that take one or more types as input and produce a 
+new type as output. 
+
+They are not directly created by developers but are part of the TypeScript language itself. 
+Some examples of TypeScript utility types include Partial, Required, Pick, Record, ReturnType, and more.
+
+Here's an example of how you might use a TypeScript utility type:
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+type PartialUser = Partial<User>;
+
+In this example, Partial is a TypeScript utility type that transforms the User type into a type where all properties are optional.
+
+On the other hand, conditional types allow you to create 
+custom type transformations based on specific conditions. 
+They are a more flexible mechanism for defining types that depend on runtime conditions. 
+
+type MyCustomOperator<T> = T extends string ? `Hello, ${T}` : never;
+
+type Result = MyCustomOperator<"Alice">; // Result will be "Hello, Alice"
+
+In summary, utility types are pre-defined type operators provided by TypeScript for common use cases, while conditional types allow you to create your own custom type operators based on specific conditions. While utility types might use conditional types internally, they are distinct concepts within the TypeScript type system.
+
+Is a Typescript Type Operator just a generic Function
+-------------------------------------------------
+Yes, a TypeScript type operator is conceptually similar to a generic function, 
+but it operates on types rather than values. 
+Just like a function takes one or more values as input, processes them, and produces an output value, 
+a type operator takes one or more types as input, performs transformations on them, and produces an output type.
+
+TypeScript type operators are often implemented using conditional types and mapped types to manipulate and transform existing types into new types. These operators can perform a wide range of type manipulations, such as making properties optional, extracting specific properties, transforming union types, inferring types from functions, and more.
+
+Here's an example of a simple type operator implemented using a conditional type:
+
+typescript
+Copy code
+type Pluralize<T> = T extends string ? `${T}s` : never;
+
+type Result = Pluralize<"apple">; // Result will be "apples"
+In this example, Pluralize is a type operator that takes a string type and returns a new string type with an added "s" at the end.
+
+Just like functions, type operators are a way to abstract and reuse common type transformations throughout your codebase. They allow you to create more expressive and reusable type definitions in TypeScript.
+
+The speaker discusses TypeScript's unique type system, emphasizing its novelty and versatility compared to other systems like Java or C#. TypeScript's type system is gradually typed, structurally typed, and relies heavily on type inference. It employs control flow-based type analysis and introduces novel type constructors and distinct namespaces for types and values.
+
+The speaker highlights that TypeScript is both object-oriented and deeply functional, enabling mainstream functional programming techniques. They explore TypeScript's gradual type system, which is less constrained than traditional systems, enabling more exploration of type system capabilities. TypeScript leverages JavaScript's meaningful semantics and defines soundness based on well-defined behavior, rather than strict proofs.
+
+The speaker explains that 
+- TypeScript's type system operates on sets of possible values, 
+  using concepts like 
+- Union types and 
+- Intersection types. 
+
+They introduce 
+- type operators like 
+  - keyof, 
+  - index access types, and 
+  - conditional types, 
+
+which allow for powerful type transformations and reasoning about higher-order type equivalences. This 
+- enables better statement completion and advanced features like 
+- non-nullable types, 
+- return types, and more.
+
+Overall, TypeScript's type system is a dynamic and evolving tool that empowers developers to 
+- express complex type relationships and provides 
+- advanced static analysis capabilities.
+
+
+How can I narrow a Typescript union type
+--------------------------------------------------------------------------------------------------
+
+Narrowing a TypeScript union type involves 
+- using conditional statements or 
+- type guards to refine the type of a variable based on runtime checks. 
+
+This allows you to work with more specific types within the union, taking advantage of TypeScript's type inference.
+
+Here's how you can narrow a union type in TypeScript:
+
+Using Type Guards:
+-----------------------
+Type guards are functions that return a boolean indicating whether a value matches a specific type. 
+TypeScript uses this information to narrow the type of a variable within a conditional block. 
+
+Common type guards include 
+- typeof, 
+- instanceof, and 
+- user-defined type guards.
+
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isNumber(value: unknown): value is number {
+  return typeof value === 'number';
+}
+
+function processValue(value: string | number) {
+  if (isString(value)) {
+    // Here, TypeScript knows `value` is of type `string`
+    console.log(value.toUpperCase());
+  } else if (isNumber(value)) {
+    // Here, TypeScript knows `value` is of type `number`
+    console.log(value.toFixed(2));
+  }
+}
+
+Using typeof and instanceof Checks:
+-------------------------------------
+You can also use the typeof and instanceof operators directly within conditional statements:
+
+
+function processValue(value: string | number) {
+  if (typeof value === 'string') {
+    console.log(value.toUpperCase());
+  } else if (typeof value === 'number') {
+    console.log(value.toFixed(2));
+  }
+}
+
+Using switch Statement:
+------------------------
+A switch statement can be used to narrow the type within different case blocks:
+
+
+function processValue(value: string | number) {
+  switch (typeof value) {
+    case 'string':
+      console.log(value.toUpperCase());
+      break;
+    case 'number':
+      console.log(value.toFixed(2));
+      break;
+  }
+}
+
+Using in Operator:
+--------------------------------------
+The in operator can be used to check if a property exists on an object, 
+which can help narrow the type within conditional statements:
+
+
+function processValue(value: string | number) {
+  if ('toUpperCase' in value) {
+    console.log(value.toUpperCase());
+  } else if ('toFixed' in value) {
+    console.log(value.toFixed(2));
+  }
+}
+
+Choose the approach that best fits your scenario. 
+
+- Type guards provide the most flexibility and are especially useful when dealing 
+  with custom types or complex unions. 
+  These techniques allow you to narrow union types and work with more specific types within your code.
+
+Typescript discriminated union is also a possibility to narrow a union type
+----------------------------------------------------------------------------
+
+discriminated unions also known as  
+
+- tagged unions or 
+- algebraic data types 
+
+are a powerful way to narrow union types. 
+Discriminated unions involve using a common property, known as 
+- a discriminant, to distinguish between the different possible types within the union. 
+This allows TypeScript to automatically narrow the type based on the discriminant property.
+
+Here's how you can use a discriminated union to narrow a union type:
+
+
+// Define a discriminated union
+type Shape =
+  | { kind: 'circle'; radius: number }
+  | { kind: 'rectangle'; width: number; height: number }
+  | { kind: 'triangle'; base: number; height: number };
+
+// Function that processes different shapes
+function processShape(shape: Shape) {
+  switch (shape.kind) {
+    case 'circle':
+      // Here, TypeScript knows `shape` is a circle
+      console.log(`Circle with radius ${shape.radius}`);
+      break;
+    case 'rectangle':
+      // Here, TypeScript knows `shape` is a rectangle
+      console.log(`Rectangle with width ${shape.width} and height ${shape.height}`);
+      break;
+    case 'triangle':
+      // Here, TypeScript knows `shape` is a triangle
+      console.log(`Triangle with base ${shape.base} and height ${shape.height}`);
+      break;
+  }
+}
+
+// Usage
+const circle: Shape = { kind: 'circle', radius: 5 };
+const rectangle: Shape = { kind: 'rectangle', width: 4, height: 3 };
+const triangle: Shape = { kind: 'triangle', base: 6, height: 2 };
+
+processShape(circle);
+processShape(rectangle);
+processShape(triangle);
+In this example, the kind property serves as the discriminant. TypeScript uses the kind property to narrow the type of the shape parameter within each case block of the switch statement.
+
+Using discriminated unions is a clean and type-safe way to narrow union types based on specific properties. It enhances code readability and helps prevent runtime errors by ensuring that the correct type is handled in each case.
+
+What are Typescript Type Guards
+-----------------------------------------------------------------------------------------------------------
+
+TypeScript type guards are a way to narrow down the type of a value within a conditional statement. They are used to refine the type information of a variable so that TypeScript's type checker knows more about the actual type of the variable within a certain block of code.
+
+Type guards are particularly useful when dealing with union types, where a variable can have multiple potential types. By using type guards, you can check the value of certain properties or perform certain checks to narrow down the possible types and work with the variable in a more specific way.
+
+Here are some common ways to perform type guards in TypeScript:
+
+Typeof Type Guards:
+--------------------------
+
+function doSomething(value: number | string) {
+  if (typeof value === 'number') {
+    // TypeScript knows value is a number here
+  } else {
+    // TypeScript knows value is a string here
+  }
+}
+
+Instanceof Type Guards:
+--------------------------
+
+class Animal {}
+class Dog extends Animal {}
+
+function processAnimal(animal: Animal) {
+  if (animal instanceof Dog) {
+    // TypeScript knows animal is an instance of Dog here
+  } else {
+    // TypeScript knows animal is an instance of Animal here
+  }
+}
+Custom User-Defined Type Guards:
+You can define your own functions that act as type guards using the is keyword:
+
+typescript
+Copy code
+function isNumber(value: any): value is number {
+  return typeof value === 'number';
+}
+
+function doSomething(value: number | string) {
+  if (isNumber(value)) {
+    // TypeScript knows value is a number here
+  } else {
+    // TypeScript knows value is a string here
+  }
+}
+Property Existence Type Guards:
+
+typescript
+Copy code
+interface Car {
+  make: string;
+  model?: string;
+}
+
+function processCar(car: Car) {
+  if (car.model) {
+    // TypeScript knows car has a model property here
+  } else {
+    // TypeScript knows car doesn't have a model property here
+  }
+}
+Type guards are a powerful tool for making your TypeScript code more precise and less error-prone. They enable the type system to infer types more accurately and help catch potential bugs at compile time by narrowing down the possible types of values.
+
+
+Type Guards are the means to narrow Typescript Union types
+-----------------------------------------------------------------------------------------------------------
+Yes, exactly! Type guards are a key mechanism in TypeScript for narrowing down union types. They allow you to check the specific type of a value within a conditional statement, and based on that check, TypeScript updates its understanding of the variable's type within the block of code where the type guard is applied.
+
+Type guards are particularly useful when dealing with union types, which represent variables that can hold values of multiple types. By using type guards, you can determine which specific type a variable has at a certain point in your code, and TypeScript will adjust its type inference accordingly.
+
+Type guards help you write more type-safe and precise code by enabling the type system to accurately infer and validate types at compile time. This helps catch potential type-related errors and provides better autocompletion and tooling support in your development environment.
+
+
+Typescript Control Flow Type analysis is based on type guards
+-----------------------------------------------------------------------------------------------------------
+
+Yes, you're absolutely correct! TypeScript's control flow type analysis is heavily based on the usage of type guards. When you use type guards, TypeScript is able to perform more accurate type inference and narrowing of union types. This is crucial for writing type-safe code and allowing the compiler to understand the flow of your program.
+
+TypeScript's type analysis examines the flow of your code and takes into account the conditions and operations that occur. 
+
+When you use an if statement with a type check (type guard), TypeScript understands that 
+- within the true branch of the if statement, the variable's type has been narrowed down to the checked type. 
+This allows you to safely access properties and methods specific to that type without TypeScript reporting errors.
+
+interface Circle {
+  kind: 'circle';
+  radius: number;
+}
+
+interface Square {
+  kind: 'square';
+  sideLength: number;
+}
+
+type Shape = Circle | Square;
+
+function getArea(shape: Shape): number {
+  if (shape.kind === 'circle') {
+    // TypeScript knows that shape is a Circle here
+    return Math.PI * shape.radius * shape.radius;
+  } else {
+    // TypeScript knows that shape is a Square here
+    return shape.sideLength * shape.sideLength;
+  }
+}
+In this example, shape is of type Shape, which is a union type. By using the shape.kind property in the type guard (if (shape.kind === 'circle')), TypeScript narrows down the type of shape within each branch of the if statement.
+
+Typescript Type Inference is the result of Control flow type analysis and type guards together
+------------------------------------------------------------------------------------------------
+Control flow type analysis and type guards together enable TypeScript to provide better type inference and catch potential type-related errors, improving the reliability and safety of your code.
+
+***** Extract Types
+------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+******* Remove Types
+------------------------------------------------------------------------------------------

@@ -1,0 +1,94 @@
+const tick$ = interval(SPEED);
+
+const keyDown$ = fromEvent<KeyboardEvent>(document.body, 'keydown');
+
+// directions from arrows
+--------------------------------------------------------------------------------
+const direction$ = keyDown$
+  .pipe(
+	directionsFromEvent,
+        moveInDirection
+  );
+
+const directionFromEvent = (src:Observable<KeyboardEvent> ):Observable<Direction> = > {
+
+  src.pipe(
+    map((e: any) => DIRECTIONS[e.keyCode]),
+    filter(Boolean),
+    startWith(INITIAL_DIRECTION), //  INITIAL_DIRECTIO 40: { x:  0, y:  1 }, // move down
+  )
+
+}
+
+const moveInDirection = (src:Observable<Direction>) => {
+    scan(nextDirection),
+    distinctUntilChanged()
+}
+
+
+// snake grow
+---------------------------------------------------------------------------------------------------
+const snakeGrowState = new BehaviorSubject(0);
+const snakeGrowChanges = snakeGrowState
+  .pipe(
+    scan((length, grow) => length + grow, SNAKE_LENGTH)
+  );
+
+
+const snakePosition = tick$
+  .pipe(
+    withLatestFrom(
+      direction$,
+      snakeGrowChanges,
+      (_, direction, snakeGrow) => ({ direction, snakeGrow })
+    ),
+    scan(move, generateSnake(SNAKE_LENGTH))
+  );
+
+
+// apples 
+-------------------------------------------------------------------------------------------------------
+const apples$ = snake$
+  .pipe(
+    scan(eat, generateApples(APPLE_COUNT)),
+    distinctUntilChanged(compareObjects),
+    share()
+  );
+
+// apples eaten -> snakeGrowState
+---------------------------------------------------------------------------------------------------------
+const applesEaten$ = apples$
+  .pipe(
+    skip(1),
+    map(_ => GROW_PER_APPLE)
+  )
+  .subscribe(v => snakeGrowState.next(v));
+
+// Score from apples eaten
+-------------------------------------------------------------------------------------------------------------
+const score$ = snakeGrowChanges
+  .pipe(
+    skip(1),
+    startWith(0),
+    scan((score, _) => score + POINTS_PER_APPLE)
+  );
+
+// Scene from snakePosition, apples, score
+----------------------------------------------------------------------------------------------------------------
+const scene$ = combineLatest(
+  snakePositions, apples$, score$,
+  (snakePosition, apples, score) => ({ snake, apples, score })
+);
+
+// Game 
+-------------------------------------------------------------------------------------------------------------------
+const game$ = tick$
+  .pipe(
+    withLatestFrom(scene$, (_, scene) => scene),
+    takeWhile(scene => checkSnakeCollision(scene.snake))
+  );
+
+game$.subscribe(scene => render(ctx, scene));
+
+
+

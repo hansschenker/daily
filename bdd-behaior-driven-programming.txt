@@ -1,0 +1,202 @@
+What Behavioral Programming is about?
+-------------------------------------------------------
+- which enables incremental development in a natural way. 
+- A behavioral application consists of threads of behavior 
+- each of which represents an independent scenario that the system should and shouldn’t follow. 
+- These independent behavior threads are interwoven at run-time yielding integrated system behavior. 
+
+Thomas Petricek (book page 428(
+---------------------------------
+WHAT IS A BEHAVIOR? 
+Behavior is a time-varying value. It can be represented as a composite value, whose 
+actual value may be different depending on the time. We talked about composite values 
+earlier in the book, so for example Option<int> is a composite value that can have 
+actual value of type integer or a special value None. Similarly, we'll have a type 
+Behavior<int>, whose actual integer value can be different depending on the time
+
+Behaviors are an essential part of our animation framework, because we can use them 
+for specifying locations of objects. When the location changes depending on the time, it 
+means that the whole object will be moving
+
+I said that behavior is a composite value and I 
+draw the similarity between Behavior<int> and Option<int>. Both of these types 
+are composite values that contain some value, but in some unusual way. The option type is 
+unusual, because it may be empty and behavior is unusual, because the value depends on 
+the time. 
+
+Declarative Programming Style using higher order functions
+------------------------------------------------------------
+- that one way for making code declarative is to use higher order functions
+
+For example, in a game-playing application, 
+--------------------------------------------------------
+- each game rule, and 
+- each playing strategy would be programmed separately and independently with little or no awareness of other modules.
+
+scenario-based programming
+-------------------------------
+Since a scenario usually involves multiple objects—“one story for all relevant objects” 
+(Harel and Marelly [2003], p. 4)—scenario-based programming is interobject by nature. 
+Returning to the ATM, a scenario-based specification of an ATM 
+will describe the ATM as a collection of such interobject scenarios.
+
+Short note on Behavioral Model
+Difficulty Level : Basic
+Last Updated : 17 Jun, 2020
+Overall behavior of a system can be fully understood by Behavioral model.
+
+Behavioral Model is specially designed to make us understand behavior and factors that influence behavior of a System. Behavior of a system is explained and represented with the help of a diagram. This diagram is known as State Transition Diagram. It is a collection of states and events. It usually describes overall states that a system can have and events which are responsible for a change in state of a system.
+
+So, on some occurrence of a particular event, an action is taken and what action needs to be taken is represented by State Transition Diagram.
+
+Example :
+Consider an Elevator. This elevator is for n number of floors and has n number of buttons one for each floor.
+Elevator’s working can be explained as follows :
+
+Elevator buttons are type of set of buttons which is there on elevator. For reaching a particular floor you want to visit, “elevator buttons” for that particular floor is pressed. Pressing, will cause illumination and elevator will start moving towards that particular floor for which you pressed “elevator buttons”. As soon as elevator reaches that particular floor,
+illumination gets canceled.
+Floor buttons are another type of set of buttons on elevator. If a person is on a particular floor and he wants to go on another floor, then elevator button for that floor is pressed. Then, process will be same as given above. Pressing, will cause illumination and elevator to start moving, and when it reaches on desired floor, illumination gets canceled.
+When there is no request for elevator, it remains closed on current floor.
+State Transition Diagram for an elevator system is shown below –
+
+
+
+Advantages :
+
+- Behavior and working of a system can easily be understood without any effort.
+- Results are more accurate by using this model.
+- This model requires less cost for development as cost of resources can be minimal.
+- It focuses on behavior of a system rather than theories.
+- new behavior can be added very easily 
+- later, either during development or at run-time, simply by using a list of functions
+
+
+Disadvantages :
+
+- This model does not have any theory, so trainee is not able to fully understand basic principle and major concept of modeling.
+- This modeling cannot be fully automated.
+- Sometimes, it’s not easy to understand overall result.
+- Does not achieve maximum productivity due to some technical issues or any errors.
+
+
+Behavior in Functional Programming (Petricek)
+----------------------------------
+ 
+- a rule defines a behavior
+- a state change defines a behavior
+- a function can represent a behavior
+- a user action represents a behavor
+- a system behavior (timer, browser,...)
+
+Function represents a Behavior
+- the simplest way for representing behavior in a functional language is to use a function.
+- key aspects of behavior-oriented programs is the ability to add new behavior easily. 
+- an object-oriented way to understand a function is to think of it as an interface with a single method
+- decision tree, which combines data and behaviors in a single data type. 
+
+Listing 8.2 Loan suitability tests using a list of functions (C#) 
+
+class Client { #1 
+ 
+public string Name { get; set; } 
+ 
+public int Income { get; set; } 
+ 
+public int YearsInJob { get; set; } 
+ 
+public bool UsesCreditCard { get; set; } 
+ 
+public bool CriminalRecord { get; set; } 
+} 
+
+test if client is worthy getting a credit
+--------------------------------------------------------
+static List<Func<Client, bool>> GetTests() { #A 
+ 
+return new List<Func<Client, bool>> { #2 
+ cl => cl.CriminalRecord, #B 
+ cl => cl.Income < 30000, #B 
+ cl => !cl.UsesCreditCard, #B 
+----------------------------------------------------------
+
+#1 Method that tests the client 
+#A Each test is represented by a single class 
+#2 Body of the concrete test
+ 
+When working with tests implemented like this, we would create a collection containing 
+elements of the interface type (#1) (for example List<IClientTest>) and then add an 
+instance of each class implementing the interface to this collection. It is worth noting that we 
+have to create a separate class for every test, even though the condition itself is just a 
+simple expression (#2). 
+-----------------------------------------------------
+Instead of using the interface type, we now use a type Func<Client, bool>
+class Client { #1 
+ 
+public string Name { get; set; } 
+ 
+public int Income { get; set; } 
+ 
+public int YearsInJob { get; set; } 
+ 
+public bool UsesCreditCard { get; set; } 
+ 
+public bool CriminalRecord { get; set; } 
+} 
+static List<Func<Client, bool>> GetTests() { #A 
+ 
+return new List<Func<Client, bool>> { #2 
+ cl => cl.CriminalRecord, #B 
+ cl => cl.Income < 30000, #B 
+ cl => !cl.UsesCreditCard, #B 
+
+--------------------------------------------------------
+#1 Stores information about the client 
+#A Returns a list of tests 
+#2 Create new list using collection initializer 
+#B Several test checking loan suitability 
+
+> let tests = #1 
+ [ (fun cl -> cl.CriminalRecord = true); 
+ (fun cl -> cl.Income < 30000); 
+ (fun cl -> cl.UsesCreditCard = false); 
+ (fun cl -> cl.YearsInJob < 2) ];; 
+val tests : (Client -> bool) list #2 
+> let testClient(client) = 
+ 
+let issues = tests |> List.filter (fun f -> f client) #3 
+ 
+let suitable = issues.Length <= 1 #A 
+ printfn "Client: %s\nOffer a loan: %s (issues = %d)" client.Name #A 
+ (if (suitable) then "YES" else "NO") issues.Length;; #A 
+val testClient : Client -> unit 
+> testClient(john);; 
+Client: John Doe 
+Offer a loan: YES (issues = 1) 
+#1 Create a list of tests 
+#2 Inferred signature of the list 
+#3 Filter tests and get a list of issues 
+#A Count the issues and print the result 
+
+
+
+State and Behavior
+-------------------
+
+Object Oriented style 
+--------------------
+- the same number of methods and methods have almost the same name
+- how we deal with the data. The way we manage data or state in the is very different
+- data or state resides in the instance of the class.
+-classes have a control over what data to reveal to the outside world and what data not to reveal
+
+Procedural style 
+---------------------
+- the same number of methods and methods have almost the same name
+- how we deal with the data. The way we manage data or state in the is very different
+- the data or the state is at the global level and that'
+-  state globally available means that we have less control over how that data is accessed
+
+
+- software engineering world methods are also called "behaviors" and data is also called "state". 
+  That's why whe you read about Object Oriented then you will hear a lot about "data" and "behavior".
+

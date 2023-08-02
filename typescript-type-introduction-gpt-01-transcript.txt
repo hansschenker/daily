@@ -1,0 +1,253 @@
+
+Search in video
+Type system
+0:05
+of course sort of with one of the basic
+0:07
+type Constructors we have which is
+0:09
+object types you know X colon T and Y
+0:11
+colon U up there but over time we have
+0:14
+added more and more of these type
+0:16
+Constructors we've added Union types
+0:17
+intersection types uh index index access
+0:20
+and so forth and I'll give you some
+0:22
+examples of what these are and how it is
+0:25
+that this makes it a very different uh
+0:27
+type system so at the very bottom of
+0:33
+JavaScript and typescript we have values
+0:36
+and that's sort of where where
+0:38
+javascript's runtime Dynamic type system
+0:41
+and typescript static type system meet
+0:43
+they meet soda at the bottom where there
+0:45
+are values JavaScript programs are all
+0:47
+about producing values and writing logic
+0:50
+that can make new values out of existing
+0:52
+values right like and there are groups
+0:54
+of values in there
+0:56
+um like strings and numbers and trues
+0:59
+and falses and whatever now in
+1:02
+typescript all of these values are also
+1:04
+types
+1:06
+there's a type called
+1:08
+42 and it has one possible value the
+1:12
+value 42. and these are called Unit
+1:14
+types and everything sort of comes from
+1:17
+that and then there are
+1:18
+different categories of types so the
+1:22
+string type is actually all unit types
+1:26
+of that are strings and the number
+1:28
+category is all unit types that are
+1:31
+numbers and and then we have type
+1:33
+Constructors that allow you to make more
+1:35
+complex types out of that like
+Union types
+1:38
+true or false that is actually exactly
+1:42
+the same as the built-in Boolean type it
+1:45
+has two possible values and it's a union
+1:48
+of either true or false right and that's
+1:50
+sort of how everything builds up if you
+1:53
+will here's another type zero or false
+1:56
+or undefined uh you know and you can
+1:58
+make types in in any combination you
+2:00
+want this is very unlike
+2:03
+C sharp or Java where everything is sort
+2:06
+of single rooted and then as a base
+2:08
+class and whatever that's not how this
+2:10
+works this this works this is really
+2:11
+more like
+2:14
+reasoning about sets of possible values
+2:17
+that's really what what the type system
+2:18
+is doing and of course it gets
+2:20
+particularly interesting here like you
+2:22
+can build types like string or number or
+2:25
+undefined right and Union types are this
+2:28
+deep enabler that we use in control flow
+2:30
+based type analysis because we
+2:32
+understand now what JavaScript statement
+2:35
+constructs what effects they have on
+2:38
+types if for example I have a variable
+2:40
+whose type is string or number undefined
+2:42
+say it's X call it X and I say if x open
+2:45
+curly well we know that that construct
+2:48
+removes the type undefined because that
+2:52
+would not execute and that means we can
+2:54
+restrict the union type down to string
+2:56
+and number and that's this narrowing the
+2:58
+control flow based type analysis does
+3:00
+and that's really in a sense where where
+3:03
+the type Checker magically knows what
+3:05
+what values could your variables have
+3:07
+and it can prove you know this is the
+3:09
+Deep enabler for uh non-nullable types
+3:13
+for example um and many other features
+3:15
+in in the language
+Union and intersection types
+3:18
+we also have this feature called
+3:20
+intersection types which are in a sense
+3:22
+they're just the opposite of Union types
+3:24
+imagine we have two types a colon string
+3:26
+and B colon string when you define an
+3:29
+object type a colon string you're really
+3:31
+just saying this is any object that has
+3:34
+a property named a of type string and
+3:36
+then some other set of properties that
+3:38
+is unconstrained so you're basically
+3:41
+dealing with an infinitely large number
+3:43
+of possible objects but they all have a
+3:46
+property of type A that that is of type
+3:49
+stream sorry our name d and the same for
+3:51
+b
+3:52
+um
+3:54
+but now we can we get intersection types
+3:56
+which is you know those those objects
+3:58
+that have an A and A B and some people
+4:01
+have sort of commented why is it that
+4:03
+when I intersect
+4:05
+um
+4:06
+two object types that I end up with a
+4:09
+union of the property names
+4:12
+well it's because you're actually
+4:14
+constraining it more for every property
+4:16
+declaration you add there are a few of
+4:18
+possible values right
+4:21
+the most possible values is Curly curly
+4:23
+there are no constraints on any of the
+4:25
+properties and the more declarations you
+4:26
+add the more you're actually
+4:27
+constraining the values into smaller the
+4:29
+set gets and that's why it's it's an
+4:31
+intersection
+4:32
+um
+4:33
+so this is sort of the mental state that
+4:36
+if you want to understand the
+4:37
+terminology of why the type system looks
+4:40
+this way
+4:41
+um now over time then we've added a
+4:43
+bunch of interesting uh new type
+4:46
+Constructors like index and index access
+4:48
+types
+4:49
+um were added in in the in the last year
+4:51
+or so
+4:52
+um and this is the ability now to

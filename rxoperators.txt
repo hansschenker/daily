@@ -1,0 +1,118 @@
+rxjs operators udemy course 
+
+import Rx from "rxjs"
+
+
+Basic Operators
+---------------------------------------------------------------------------------------------------------------------------------------
+
+1 range(nbr, nbr)
+
+2 of( any nbr of args) // types of args do not matter
+
+3 from(array, promise, iterator)
+
+4 fromPromise() // specific for promises
+
+5 interval(duration)
+
+6 timer(duration, [interval])
+
+7 empty() // completes right away with not emitting any value
+
+
+8 map(turn everyl element of the list)
+
+9 mapTo(to a constant value)
+
+10 filter(predicate) // create new list from values which passes the predicate test
+
+11 do, tap(do something) // doing sideffects
+ 
+12 pluck(get one property of an object)
+
+13 first(find one) // as soon first is found the observable completes
+
+14 startWith(provideaValue) ()
+
+15 create() // create new observable only use it when no other operator fits
+
+16 every(predicate) // emits true if every element passes the test, as soon as a value does not pass the test it completes
+
+17 distinctUntilChanged() // emits the latest value if it is different than the one before
+
+18 defaultIfEmpty() // if completes before emitting any values, emits the provided value
+
+Intermediate Operators
+-------------------------------------------------------------------------------------------------------------------------------------
+
+19 delayWhen() // instead of a number , you pass a method which returns the duration
+20 delay // emits values only after a specified duration has passed (duration is an number)
+
+21 take(n)  // take the first n values
+
+22 takeWhile(predicate) // emits only if predicate test to true
+
+23 takeUntil() // sample: take until a specified time has passed (timer)
+
+24 throw() // immediately enters an error state whhile emitting no values
+
+25 fromEvent() // read from standard in
+
+25 skip(predicate ) // inverse of take 
+
+26 skipWhile(condition)
+
+27 skipUntil(timer)
+
+28 last(predicate)  // last value which passes predicate , last only fires when observable complestes, with take(1) the observable completes
+
+29 obs1.concat(obs2) // concats 2 obs in order first obs1 when complete then obs2
+
+30 concatAll()    // emits values when all obs are completed
+
+31 concatMap()      // like map, but the value returned from mutator must be an observable
+
+32 sample() // emits latest element at a specified interval
+
+31 reduce() // aggregate all elements of an obs after it completes
+ 
+32 scan() // aggregated value every time an element is published
+
+33 // groupBy() // after obs completes returns a obs
+
+34 timeout() // errors if 2 consequent elements timeout a specified duration
+
+usage in the browser
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+34 fromEvent(element, event) //
+
+35 merge()  // does not care about order, combine source and provider
+
+36  mergeMap() // source obs
+ 
+37 mergeAll() // merge all obs
+
+38 buffer() // collects values from source until provided obs emits
+
+39 bufferCount()
+
+40 bufferTime()
+
+41 bufferTogggle()
+
+42 bufferWhen()
+
+43 partition() // returns 2 0obslike filter, but the filtered out in a special array
+
+44 throttle() // emits only after specified time, only emits last value
+
+45 throttleTime() // emitts only last value after passed time
+
+46 zip()
+
+
+
+section 4: advanced operators
+-----------------------------------------------------------------------------------------------------------------------------------------------

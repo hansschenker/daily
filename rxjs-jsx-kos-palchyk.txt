@@ -1,0 +1,256 @@
+Recks-rxjs library
+--------------------
+We only need to know Observables, they are lingua franca in Recks.
+
+In this framework I wanted to make this flow more transparent and adjustable: 
+you directly manipulate the output stream based on the input stream, 
+using well known RxJS operators: 
+filter, debounce, throttle, audit, sample, scan, buffer and many-many others.
+
+You decide when and how to update your component!
+
+
+I've built this rendering engine
+React made DOM "first-class citizen" in our JS code (via virtual DOM).
+We can create vDOM anywhere in our structure and then pass it around.
+
+React's components are basically a mapping of properties to vDOM:
+// React
+(props: Object) => vDOM
+
+Angular deeply integrated Observable streams
+Observables let us easily operate and coordinate async events and updates, spread in time
+
+Recks maps properties to vDOM
+Only here we fully control update and render streams. 
+We take the input stream of props and map them to the output stream of vDOM:
+
+// This framework
+(props$: Observable<Object>) => Observable<vDOM>
+	 Stream in.             Stream out
+all inputs are converted to streams
+all outputs are streams
+
+simple App
+----------------------------------
+import { of } from 'rxjs';
+
+function App() {
+  // output stream
+  return of(<h1>Hello world!</h1>)
+}
+
+A Timer
+----------------------------------
+import { timer } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+function TimerApp() {
+  // timer input
+  return timer(0, 1000).pipe(
+    // every tick an output jsx is emitted
+    map(tick =>
+      <div>
+        <h1>{ tick }</h1>
+        <p>seconds passed</p>
+      </div>
+    )
+  )
+}
+
+A Timer shorter
+------------------------------------------
+import Recks from 'recks';
+import { timer } from 'rxjs';
+
+function TimerApp() {
+  const ticks$ = timer(0, 1000);
+
+  return <div>
+    <h1>{ ticks$ }</h1>
+    <p>seconds passed</p>
+  </div>
+
+Note that the component function will be called only once. 
+When the Observable timer(0, 1000) emits a value — 
+the vDOM will be updated in place, 
+without recalculating or updating other parts of the tree
+
+App with State
+------------------------------------------------
+import { Subject } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
+
+function GreetingApp() {
+  const name$ = new Subject();
+  const view$ = name$.pipe(
+    map(x => x ? `Hello, ${x}!` : ''),
+    startWith('')
+  );
+
+  return <div>
+    <input
+      placeholder="enter your name"
+      onInput={e => name$.next(e.target.value)}
+    />
+    { view$ }
+  </div>
+}
+-----------
+In the example above when the text field emits an input event — we push its value to name$ stream. 
+view$ stream that we display derives from name$ input stream.
+
+Note that we are using a startWith operator for the view$: to optimize rendering the engine 
+waits for the first emission from all children before rendering them. 
+
+So if we remove the startWith — <div> will be rendered empty, 
+until the view$ emits a value. 
+
+Therefore we need to either add a startWith operator or to wrap the Observable child 
+with a static child, e.g. <span>{ view$ }</span>
+
+Counter sample
+----------------------------------------------
+And a more conventional example with a counter:
+function CounterApp() {
+  const input$ = new Subject();
+  const view$  = input$.pipe(
+      startWith(0),
+      scan((acc, curr) => acc + curr)
+    );
+
+  return <div>
+    <button onClick={ ()=>input$.next(-1) }>minus</button>
+    { view$ }
+    <button onClick={ ()=>input$.next( 1) }>plus</button>
+  </div>
+}
+run the counter example
+In this example again we have an input$ Subject that we'll push updates to. 
+The view$ Observable accumulates emissions from the input$ using scan operator 
+and will display our state. E.g. when we push 1, 1, 1 to the input$ — 
+we get a 1, 2, 3 on the view$.
+
+When we need to interact with DOM API.
+------------------------------------------------
+We only need to provide the engine with a place for references to be pushed to - a Subject. 
+The engine will push the HTML element to it once it is attached to the real DOM. 
+Thus we get a stream of HTMLElements and can apply our logic either 
+to each update or to the latest reference.
+
+Here we'll focus the <input /> each time the <button/> is clicked:
+
+// This framework
+function TextInputWithFocusButton() {
+
+  const ref$    = new Subject();
+  const clicks$ = new Subject();
+
+  clicks$
+    .pipe(withLatestFrom(ref$, (_, ref) => ref))
+    .subscribe(ref => ref.focus());
+
+  return (
+    <div>
+      <input ref={ref$} type="text" />
+      <button onClick={ ()=>clicks$.next(null) }>Focus the input</button>
+    </div>
+  );
+}
+
+Parent to Child
+---------------------------------------------------
+Subcomponents
+So far we had components that only returned Observable results, and didn't have to react to any input. 
+Here's an example of a parent component providing properties to a child component:
+
+import { timer } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+
+function Parent () {
+
+  return <div>{
+      timer(0, 1000).pipe(
+      map(i => <Child index={i} />)
+    )
+  }</div>
+
+}
+
+function Child (props$) {
+  const animal$ = props$.pipe(
+    map(props => props.index % 2 ? '🐱' : '🐭')
+  )
+
+  return <h1 style="text-align: center;">{animal$}</h1>
+}
+
+When a Parent is rendering a Child for the first time — it's rendering <Child index={ 0 } />. 
+The engine will create a Child and push the { index: 0 } props object 
+to the subcomponent's props$ Observable. The child will immediately react with a mouse 🐭.
+
+Later when the timer ticks again and emits <Child index={ 1 } /> — the engine will 
+only push { index: 1 } to the existing Child props$.
+
+The Child will now produce a cat 🐱.
+
+The Store sample
+--------------------------------------------------------------------------------------------------
+Redux
+For bigger apps, we'll need a bit more sophisticated state management, 
+then just a bunch of Subjects. Any implementation that outputs in an observable 
+way would work with Recks! Let's try redogs state manager — it's redux, redux-observable 
+and typesafe-actions in one small package. 
+
+Redogs outputs to an Observable, so we'll easily integrate it!
+
+Let's be innovative and create a simple To Do List app as an example 🙂
+
+First, we'll create the store:
+
+import { createStore } from 'redogs';
+import { reducer } from './reducer';
+import { effects } from './effects';
+
+export const store = createStore(reducer, effects);
+
+// Now we can access the state changes of the store in our components:
+
+import { store } from './store';
+
+function ItemListComponent() {
+  const items$ = store.state$.pipe(
+    map(state =>
+      state.items.map(item => (
+        <ItemComponent key={item.id} data={item} />
+      ))
+    )
+  );
+
+  return <div>{items$}</div>;
+}
+
+// Or dispatch events to it:
+--------------------------------------------------------------
+import { store } from './store';
+
+function AddItemComponent() {
+
+  // input observable
+  const addItem = event => {
+    event.preventDefault();
+    const input = event.target['title'];
+    store.dispatch(addItemAction({ title: input.value }));
+    input.value = '';
+  };
+  // output observable
+  return (
+    <form onSubmit={addItem}>
+      <input name="title" type="text" autocomplete="off" />
+      <button type="submit">Add</button>
+    </form>
+  );
+}
+
+------------------------------------------------------------------

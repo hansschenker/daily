@@ -1,0 +1,50 @@
+angular-bindings,             	
+----------------------------------------
+Mental model of Html Attributes and DOM properties: 
+
+- Html Attributes initialize DOM properties and then they are done. 
+- DOM Property values can change; attribute values can't.
+
+There is one exception to this rule. 
+Attributes can be changed by setAttribute(), which re-initializes corresponding DOM properties.
+
+
+Binding types and targets
+---------------------------------------------------------------
+The target of a data-binding is something in the DOM. Depending on the binding type, the target can be a 
+- DOM Property (element, component, or directive), an event (element, component, or directive), or sometimes an attribute name. 
+The following table summarizes the targets for the different binding types.
+
+Type			Target				Examples
+------------------------------------------------------------------------------
+Property		Element property
+Component property
+Directive property	src, hero, and ngClass in the following:
+
+<img [src]="heroImageUrl">
+<app-hero-detail [hero]="currentHero"></app-hero-detail>
+<div [ngClass]="{'special': isSpecial}"></div>
+
+Event			Element event
+----------------------------------------------------------------------------
+Component event
+Directive event		click, deleteRequest, and myClick in the following:
+
+<button (click)="onSave()">Save</button>
+<app-hero-detail (deleteRequest)="deleteHero()"></app-hero-detail>
+<div (myClick)="clicked=$event" clickable>click me</div>
+
+Two-way	Event and property	
+------------------------------
+<input [(ngModel)]="name">
+Attribute	Attribute (the exception)	
+
+<button [attr.aria-label]="help">help</button>
+
+Class	class property	
+-----------------------
+<div [class.special]="isSpecial">Special</div>
+
+Style	style property	
+-------------------------------------------------
+<button [style.color]="isSpecial ? 'red' : 'green'">

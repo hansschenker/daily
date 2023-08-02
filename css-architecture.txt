@@ -1,0 +1,167 @@
+sitepoint css architecture course
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+bem
+
+selector is evaluated from right to left
+	div li // find all li in the document !!!!!!
+
+do not use id selector, if possible
+
+specificity: 1 id, 4 classes, number of 3 elements, number of 4 attribues
+             1    4      3                   4 = 1434
+
+use classes, they are reusable
+
+do bem notation: block, element , modifier
+		orderform__textinput--required
+
+Principles of CSS Architecture (Zolt Nagy)
+--------------------------------------------
+
+- 3.1 single responsibility, use @extend feature of SASS // http://tinyurl.com/css-arch-10, css-arch-11, css-arch-12, css-arch-13, css-arch-14
+- 3.2 open/closed 
+- 3.3 dry css
+- 3.4 sepparation of concerns
+- 3.5 css code smells
+- 3.6 ITCSS
+
+
+3.1 Single Responsibilty
+--------------------------------------
+- classes for styling
+- classes for functionality
+
+- hierarchical styles: class="blogpost blogpost--featured"
+
+- create module
+
+- formulate reusable abstractions (classes)
+
+.blogpost
+
+.blogpost--featured$
+  @extend .blogpost;
+  ...
+
+.blogpost-normal  // only colors, background
+  @extend .blogpost
+
+.blogpost__thmbnail
+
+Differenet responsibilities rules
+-------------------------------------------------------
+
+Rules for:
+--------------------
+- box-model related properties
+- typegraphy  properties
+- colors and background properties
+- position and display properties
+- tables
+- lists
+- ...
+
+3.2 Open/Closed Principle // SRP (one thing) + OCP (base object is closed for modification, modification goes to extensions
+-----------------------------------------------------------------------------------------------------------------------------
+open for extension, closed for modifications
+
+.blogpost // open for extension and closed for modificaton
+  .blogpost-normal
+  .blogpost-featured
+  .blogpost-premium
+
+Practices
+-----------------------------
+create a multipurpose base class, base class should have all the general attributes of that class 
+  (base box has display block and a default padding)
+  and add modifications in the extension classes
+
+.box 
+  display:block
+  padding:10px // .75rem for relative units
+
+.box--large
+  padding:20px
+
+
+3-3 Dry CSS - Single Source of Truth, Do not Repeat Yourself - DRY
+--------------------------------------------------------------------------------------------------------------------------------
+
+types of abstraction:
+  Inheritance:
+  ------------
+- create a hierchy with inheritance, .blogpost .blogpost-normal, .blogpost-featured, ...
+
+  Composition
+  -----------
+- Typography + Code formatter mixin + Box model mixin + Image mixin + ...
+
+  Composition over Inheritance
+  -----------------------------
+  compose only what you need: typography + image, ...
+
+  base class: .rectangle
+  .rectangle-rounded
+  .rectangle-green
+
+  better:
+  .rounded
+  .green
+  .rounded .green
+
+  css-arch-16,17
+  corporate css identity with all colors typography with SASS
+
+3.4 Separation of Concerns, css-arch-19
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+What are the concerns: a set of features in Box model, Typography, Colors, ....
+
+concern on higher abstraction: html, css, js
+- html markup
+- html separate from styling
+- styling classes separate from js style classes
+
+concern level
+ - class level, class selectors
+ - avoid html tags in stylesheet
+ - html is for structure, css is for styling
+ - exceptions apply: base element styles
+ - id attributes should also refer to structure, we do not need singleton styles
+
+3.5 ITCSS Architectue: itcss.io, github.com/ahmadajmi/awesome-itcss, inuitcss
+.............................................................................................................................................
+IT: iverted triangle- from generic to specific: Settings, Tools, Generic, Elements, Objects, Components, Trumps
+
+
+- Setting
+-----------------------------------------------
+- global variables
+
+- Tools
+-----------------------------------------------
+functions, mixins
+
+- Generic
+-----------------------------------------------
+resetsm, normalizer
+
+- Elements
+-----------------------------------------------
+bae elements, tag names, default base styles
+
+- Objects
+-----------------------------------------------
+all classes we define, bem , smacss, ocsss
+
+- Components
+-----------------------------------------------
+styles for ui components, may use object definitions
+
+
+- Trumüs
+-----------------------------------------------
+helper classes for states
+
+
+

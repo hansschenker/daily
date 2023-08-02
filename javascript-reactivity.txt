@@ -1,0 +1,148 @@
+ryan carniato, mostly as a reactivity super fan,    https://indepth.dev/posts/1280/exploring-the-state-of-reactivity-patterns-in-2020
+------------------------------------------------------------------------------------------------------
+tracking reactive atoms and the propagation of their change 
+through wrapping their execution in computed expressions.
+
+What they all have in common are their roots in functional programming
+
+You probably use Monads or Lenses daily but didn’t stop to learn a bunch of theory behind them
+
+let view = fn(state);
+
+ transforming data to an interactive view 
+
+ 2020 with React, a non-reactive library.
+
+React Hooks acted like a catalyst for the whole set of changes 
+that would follow the next couple of years
+
+Hooks are not that different than lifecycle methods for Components on the surface. 
+Except they offer the ability to register as many as you want
+
+This declarative data pattern allows composition in a very similar way you compose 
+the view out of components
+
+Hooks are data primitives
+--------------------------
+React had effectively introduced new data primitives to construct your applications with
+hooks are localized to components 
+
+From MobX to Hooks
+----------------------------
+observer 	=> React.memo
+observable 	=> useState
+computed 	=> useMemo
+autorun => 	useEffect
+
+
+-------------------------------------------------------------
+// React atom
+const [count, setCount] = useState(0);
+
+// React memo(derivation)
+const double = useMemo(() => count * 2, [count]);
+
+// React effect(reaction)
+useEffect(() => console.log(double), [double]);
+
+// update atom
+setCount(c => c + 1);
+----------------------------------------------------------------
+
+React DOM Diffing
+--------------------
+React is designed to execute top-down creating a Virtual DOM representation 
+and efficiently diffing and patching the real DOM
+
+Reactivity is pure overhead over a Virtual DOM if it is already setup to update this way. 
+Nothing is going to beat React’s own update cycle in React
+
+Recoil new State library for React
+----------------------------------
+ Recoil, released by a team at Facebook. It uses state atoms and selectors (lenses) 
+which again are analogous with reactive libraries and update at the component granularity
+
+/ Recoil atom
+const count = atom({  key: 'count',  default: 0});
+
+// Recoil selector (derivation)
+const double = selector({  key: 'double',  get: ({get}) => get(count) * 2});
+
+// reaction (React always re-renders)
+const doubleValue = useRecoilValue(double);
+console.log(doubleValue);
+
+// update atom
+const setCount = useSetRecoilState(count);
+setCount(c => c + 1);
+
+--------------------------------------------------------------------------------------------------
+It should start to be clear the tradeoffs that come with mixing a VDOM with reactivity
+
+
+Vue 3 based on proxies
+-------------------------
+Vue 3 and it’s a big step forward. This is built on a truly reactive approach using proxies and 
+I’ve truly enjoyed seeing how it has been progressing.
+/ reactive atom
+const count = ref(0);
+
+// derivation
+const double = computed(() => count.value * 2);
+
+// reaction
+watchEffect(() => console.log(double.value));
+
+// update atom
+count.value++;
+----------------------------------------------------------------------------------------------------
+
+SolidJs
+-----------------------------------------
+more granular templates and compiled JSX
+you don't need a VDOM to get the full flexibility of JavaScript
+
+Solid is influenced by functional programming paradigms like React
+uses a compiler like Svelte, but still uses proxies like Vue
+
+Solid’s structure isn’t tied to its components but reactive scope itself
+
+at runtime it flattens to a single reactive graph. The compiler just handles 
+the JSX transformation similar to other reactive template DSLs
+
+benefit there is support for syntax highlighting, tooling, and TypeScript is almost free
+
+
+// reactive atom
+const [count, setCount] = createSignal(0);
+
+// reactive memo(derivation)
+const double = createMemo(() => count() * 2);
+
+// reactive effect(reaction)
+createEffect(() => console.log(double()));
+
+// update atom
+setCount(count() + 1);
+
+---------------------------------------------------------------------
+Solid also supports proxies, but there are no special helpers needed 
+as you just wrap with a thunk () => state.count
+
+The render system lazily evaluates props meaning that components are ephemeral factory functions 
+whose only purpose is to create closures to wrap over the state.
+
+religiously stands on read/write segregation and unidirectional data flow at the cost of ease of use
+like React it uses array tuples to avoid naming collisions and allow the ability to read and write be passed separately
+
+Some key developments to pay attention to:
+
+Increased capabilities of Template DSLs. Expect to see better tooling support and TypeScript coming soon. 
+Previously thought impossible JS DSLs like JSX are on the table now, bringing a 
+whole new level of flexibility to this space.
+
+More use of compilation. Svelte’s animation’s comes to mind. But there are many applications. 
+Compilation is the perfect balance to the usually heavier setup cost of reactivity.
+
+Performance and flexibility of granular approaches. Don’t believe this just about doing the most granular updates.
+ Libraries in this space are looking at ways to control reactive boundaries to reduce creation and synchronization costs.

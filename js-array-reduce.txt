@@ -1,0 +1,35 @@
+The Array prototype’s reduce method takes an array instance and accumulates 
+it into a single value. If we wish to total up an array of numbers, one could follow this approach:
+
+The reducer function takes four arguments:
+
+Accumulator (acc)
+Current Value (cur)
+Current Index (idx)
+Source Array (src)
+
+acc:	Your reducer function's returned value is assigned to the accumulator, 
+	whose value is remembered across each iteration throughout the array, 
+	and ultimately becomes the final, single resulting value.
+
+The first time the callback is called, accumulator and currentValue can be one of two values. 
+initialValue:	 is provided in the call to reduce(), then accumulator will be equal to initialValue, 
+currentValue:	 will be equal to the first value in the array. If 
+
+no initialValue:	 is provided, then accumulator will be equal to the first value in the array, and 
+currentValue:		 will be equal to the second.
+
+start index 1:		If initialValue is not provided, reduce() will execute the callback function starting at index 1, 
+start index 0		initialValue is provided, it will start at index 0.
+
+[0, 1, 2, 3, 4].reduce(function(acc, curr, idx, src) {
+  return acc + curr
+})
+
+The callback would be invoked four times, with the arguments and return values in each call being as follows:
+
+callback iteration	accumulator	currentValue	currentIndex	array	return value
+first call	0	1	1	[0, 1, 2, 3, 4]	1
+second call	1	2	2	[0, 1, 2, 3, 4]	3
+third call	3	3	3	[0, 1, 2, 3, 4]	6
+fourth call	6	4	4	[0, 1, 2, 3, 4]	10

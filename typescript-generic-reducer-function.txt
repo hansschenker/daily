@@ -1,0 +1,15 @@
+type Actions<T> = {
+    type: typeof POINT_UPDATED;
+    payload: {
+        id: string;
+        category: Category;
+        newValues: Partial<T>;
+    }
+}
+
+const genericReducer = <T extends A | B>(
+  state: MyState,
+  action: Actions<T>,
+  points: T[],
+  category: Category
+): T[]

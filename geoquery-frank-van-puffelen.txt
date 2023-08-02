@@ -1,0 +1,622 @@
+Html
+-----------------------------------------------------------------
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="Geoquerying on Firestore">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+<script defer async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDefA6KLchy-KFDVkbFDFCzTvWW3ywcCyE"></script>
+<script src="https://www.gstatic.com/firebasejs/4.7.0/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.7.0/firebase-firestore.js"></script>
+  <title>Geoquerying on Firestore</title>
+</head>
+<body>
+  <select id="state"><option>[Pick a state]</option></select>
+  <select id="distance"><option value='10'>10km</option><option value='25'>25km</option><option value='50'>50km</option><option value='5000'>5000km</option></select>
+  <span>green pins are in range, red are out of range (but in geoquery)</span>
+  <div id="map" style="min-height: 500px"></div>
+  <span id="summary"></span>
+  <script>function initMap() {}</script>
+
+</body>
+</html>
+
+
+
+
+
+
+Javascript
+----------------------------------------------------------------
+var config = {
+    apiKey: "AIzaSyDdoix2XvC2r_xyIDtOFL5Hzjb0uMP-XZU",
+    authDomain: "large-firestore.firebaseapp.com",
+    databaseURL: "https://large-firestore.firebaseio.com",
+    projectId: "large-firestore",
+    storageBucket: "large-firestore.appspot.com",
+    messagingSenderId: "238599175308"
+};
+firebase.initializeApp(config);
+//firebase.firestore.setLogLevel('debug');
+
+// data generator: https://jsbin.com/zogeyar/edit?js,console
+
+
+/// geohashUtils.js
+
+// Default geohash length
+var g_GEOHASH_PRECISION = 10;
+
+// Characters used in location geohashes
+var g_BASE32 = "0123456789bcdefghjkmnpqrstuvwxyz";
+
+// The meridional circumference of the earth in meters
+var g_EARTH_MERI_CIRCUMFERENCE = 40007860;
+
+// Length of a degree latitude at the equator
+var g_METERS_PER_DEGREE_LATITUDE = 110574;
+
+// Number of bits per geohash character
+var g_BITS_PER_CHAR = 5;
+
+// Maximum length of a geohash in bits
+var g_MAXIMUM_BITS_PRECISION = 22*g_BITS_PER_CHAR;
+
+// Equatorial radius of the earth in meters
+var g_EARTH_EQ_RADIUS = 6378137.0;
+
+// The following value assumes a polar radius of
+// var g_EARTH_POL_RADIUS = 6356752.3;
+// The formulate to calculate g_E2 is
+// g_E2 == (g_EARTH_EQ_RADIUS^2-g_EARTH_POL_RADIUS^2)/(g_EARTH_EQ_RADIUS^2)
+// The exact value is used here to avoid rounding errors
+var g_E2 = 0.00669447819799;
+
+// Cutoff for rounding errors on double calculations
+var g_EPSILON = 1e-12;
+
+Math.log2 = Math.log2 || function(x) {
+  return Math.log(x)/Math.log(2);
+};
+
+/**
+ * Validates the inputted key and throws an error if it is invalid.
+ *
+ * @param {string} key The key to be verified.
+ */
+var validateKey = function(key) {
+  var error;
+
+  if (typeof key !== "string") {
+    error = "key must be a string";
+  }
+  else if (key.length === 0) {
+    error = "key cannot be the empty string";
+  }
+  else if (1 + g_GEOHASH_PRECISION + key.length > 755) {
+    // Firebase can only stored child paths up to 768 characters
+    // The child path for this key is at the least: "i/<geohash>key"
+    error = "key is too long to be stored in Firebase";
+  }
+  else if (/[\[\].#$\/\u0000-\u001F\u007F]/.test(key)) {
+    // Firebase does not allow node keys to contain the following characters
+    error = "key cannot contain any of the following characters: . # $ ] [ /";
+  }
+
+  if (typeof error !== "undefined") {
+    throw new Error("Invalid GeoFire key '" + key + "': " + error);
+  }
+};
+
+/**
+ * Validates the inputted location and throws an error if it is invalid.
+ *
+ * @param {Array.<number>} location The [latitude, longitude] pair to be verified.
+ */
+var validateLocation = function(location) {
+  var error;
+
+  if (!Array.isArray(location)) {
+    error = "location must be an array";
+  }
+  else if (location.length !== 2) {
+    error = "expected array of length 2, got length " + location.length;
+  }
+  else {
+    var latitude = location[0];
+    var longitude = location[1];
+
+    if (typeof latitude !== "number" || isNaN(latitude)) {
+      error = "latitude must be a number";
+    }
+    else if (latitude < -90 || latitude > 90) {
+      error = "latitude must be within the range [-90, 90]";
+    }
+    else if (typeof longitude !== "number" || isNaN(longitude)) {
+      error = "longitude must be a number";
+    }
+    else if (longitude < -180 || longitude > 180) {
+      error = "longitude must be within the range [-180, 180]";
+    }
+  }
+
+  if (typeof error !== "undefined") {
+    throw new Error("Invalid GeoFire location '" + location + "': " + error);
+  }
+};
+
+/**
+ * Validates the inputted geohash and throws an error if it is invalid.
+ *
+ * @param {string} geohash The geohash to be validated.
+ */
+var validateGeohash = function(geohash) {
+  var error;
+
+  if (typeof geohash !== "string") {
+    error = "geohash must be a string";
+  }
+  else if (geohash.length === 0) {
+    error = "geohash cannot be the empty string";
+  }
+  else {
+    for (var i = 0, length = geohash.length; i < length; ++i) {
+      if (g_BASE32.indexOf(geohash[i]) === -1) {
+        error = "geohash cannot contain \"" + geohash[i] + "\"";
+      }
+    }
+  }
+
+  if (typeof error !== "undefined") {
+    throw new Error("Invalid GeoFire geohash '" + geohash + "': " + error);
+  }
+};
+
+/**
+ * Validates the inputted query criteria and throws an error if it is invalid.
+ *
+ * @param {Object} newQueryCriteria The criteria which specifies the query's center and/or radius.
+ */
+var validateCriteria = function(newQueryCriteria, requireCenterAndRadius) {
+  if (typeof newQueryCriteria !== "object") {
+    throw new Error("query criteria must be an object");
+  }
+  else if (typeof newQueryCriteria.center === "undefined" && typeof newQueryCriteria.radius === "undefined") {
+    throw new Error("radius and/or center must be specified");
+  }
+  else if (requireCenterAndRadius && (typeof newQueryCriteria.center === "undefined" || typeof newQueryCriteria.radius === "undefined")) {
+    throw new Error("query criteria for a new query must contain both a center and a radius");
+  }
+
+  // Throw an error if there are any extraneous attributes
+  var keys = Object.keys(newQueryCriteria);
+  var numKeys = keys.length;
+  for (var i = 0; i < numKeys; ++i) {
+    var key = keys[i];
+    if (key !== "center" && key !== "radius") {
+      throw new Error("Unexpected attribute '" + key + "'' found in query criteria");
+    }
+  }
+
+  // Validate the "center" attribute
+  if (typeof newQueryCriteria.center !== "undefined") {
+    validateLocation(newQueryCriteria.center);
+  }
+
+  // Validate the "radius" attribute
+  if (typeof newQueryCriteria.radius !== "undefined") {
+    if (typeof newQueryCriteria.radius !== "number" || isNaN(newQueryCriteria.radius)) {
+      throw new Error("radius must be a number");
+    }
+    else if (newQueryCriteria.radius < 0) {
+      throw new Error("radius must be greater than or equal to 0");
+    }
+  }
+};
+
+/**
+ * Converts degrees to radians.
+ *
+ * @param {number} degrees The number of degrees to be converted to radians.
+ * @return {number} The number of radians equal to the inputted number of degrees.
+ */
+var degreesToRadians = function(degrees) {
+  if (typeof degrees !== "number" || isNaN(degrees)) {
+    throw new Error("Error: degrees must be a number");
+  }
+
+  return (degrees * Math.PI / 180);
+};
+
+/**
+ * Generates a geohash of the specified precision/string length from the  [latitude, longitude]
+ * pair, specified as an array.
+ *
+ * @param {Array.<number>} location The [latitude, longitude] pair to encode into a geohash.
+ * @param {number=} precision The length of the geohash to create. If no precision is
+ * specified, the global default is used.
+ * @return {string} The geohash of the inputted location.
+ */
+var encodeGeohash = function(location, precision) {
+  validateLocation(location);
+  if (typeof precision !== "undefined") {
+    if (typeof precision !== "number" || isNaN(precision)) {
+      throw new Error("precision must be a number");
+    }
+    else if (precision <= 0) {
+      throw new Error("precision must be greater than 0");
+    }
+    else if (precision > 22) {
+      throw new Error("precision cannot be greater than 22");
+    }
+    else if (Math.round(precision) !== precision) {
+      throw new Error("precision must be an integer");
+    }
+  }
+
+  // Use the global precision default if no precision is specified
+  precision = precision || g_GEOHASH_PRECISION;
+
+  var latitudeRange = {
+    min: -90,
+    max: 90
+  };
+  var longitudeRange = {
+    min: -180,
+    max: 180
+  };
+  var hash = "";
+  var hashVal = 0;
+  var bits = 0;
+  var even = 1;
+
+  while (hash.length < precision) {
+    var val = even ? location[1] : location[0];
+    var range = even ? longitudeRange : latitudeRange;
+    var mid = (range.min + range.max) / 2;
+
+    /* jshint -W016 */
+    if (val > mid) {
+      hashVal = (hashVal << 1) + 1;
+      range.min = mid;
+    }
+    else {
+      hashVal = (hashVal << 1) + 0;
+      range.max = mid;
+    }
+    /* jshint +W016 */
+
+    even = !even;
+    if (bits < 4) {
+      bits++;
+    }
+    else {
+      bits = 0;
+      hash += g_BASE32[hashVal];
+      hashVal = 0;
+    }
+  }
+
+  return hash;
+};
+
+/**
+ * Calculates the number of degrees a given distance is at a given latitude.
+ *
+ * @param {number} distance The distance to convert.
+ * @param {number} latitude The latitude at which to calculate.
+ * @return {number} The number of degrees the distance corresponds to.
+ */
+var metersToLongitudeDegrees = function(distance, latitude) {
+  var radians = degreesToRadians(latitude);
+  var num = Math.cos(radians)*g_EARTH_EQ_RADIUS*Math.PI/180;
+  var denom = 1/Math.sqrt(1-g_E2*Math.sin(radians)*Math.sin(radians));
+  var deltaDeg = num*denom;
+  if (deltaDeg  < g_EPSILON) {
+    return distance > 0 ? 360 : 0;
+  }
+  else {
+    return Math.min(360, distance/deltaDeg);
+  }
+};
+
+/**
+ * Calculates the bits necessary to reach a given resolution, in meters, for the longitude at a
+ * given latitude.
+ *
+ * @param {number} resolution The desired resolution.
+ * @param {number} latitude The latitude used in the conversion.
+ * @return {number} The bits necessary to reach a given resolution, in meters.
+ */
+var longitudeBitsForResolution = function(resolution, latitude) {
+  var degs = metersToLongitudeDegrees(resolution, latitude);
+  return (Math.abs(degs) > 0.000001) ?  Math.max(1, Math.log2(360/degs)) : 1;
+};
+
+/**
+ * Calculates the bits necessary to reach a given resolution, in meters, for the latitude.
+ *
+ * @param {number} resolution The bits necessary to reach a given resolution, in meters.
+ */
+var latitudeBitsForResolution = function(resolution) {
+  return Math.min(Math.log2(g_EARTH_MERI_CIRCUMFERENCE/2/resolution), g_MAXIMUM_BITS_PRECISION);
+};
+
+/**
+ * Wraps the longitude to [-180,180].
+ *
+ * @param {number} longitude The longitude to wrap.
+ * @return {number} longitude The resulting longitude.
+ */
+var wrapLongitude = function(longitude) {
+  if (longitude <= 180 && longitude >= -180) {
+    return longitude;
+  }
+  var adjusted = longitude + 180;
+  if (adjusted > 0) {
+    return (adjusted % 360) - 180;
+  }
+  else {
+    return 180 - (-adjusted % 360);
+  }
+};
+
+/**
+ * Calculates the maximum number of bits of a geohash to get a bounding box that is larger than a
+ * given size at the given coordinate.
+ *
+ * @param {Array.<number>} coordinate The coordinate as a [latitude, longitude] pair.
+ * @param {number} size The size of the bounding box.
+ * @return {number} The number of bits necessary for the geohash.
+ */
+var boundingBoxBits = function(coordinate, size) {
+  var latDeltaDegrees = size/g_METERS_PER_DEGREE_LATITUDE;
+  var latitudeNorth = Math.min(90, coordinate[0] + latDeltaDegrees);
+  var latitudeSouth = Math.max(-90, coordinate[0] - latDeltaDegrees);
+  var bitsLat = Math.floor(latitudeBitsForResolution(size))*2;
+  var bitsLongNorth = Math.floor(longitudeBitsForResolution(size, latitudeNorth))*2-1;
+  var bitsLongSouth = Math.floor(longitudeBitsForResolution(size, latitudeSouth))*2-1;
+  return Math.min(bitsLat, bitsLongNorth, bitsLongSouth, g_MAXIMUM_BITS_PRECISION);
+};
+
+/**
+ * Calculates eight points on the bounding box and the center of a given circle. At least one
+ * geohash of these nine coordinates, truncated to a precision of at most radius, are guaranteed
+ * to be prefixes of any geohash that lies within the circle.
+ *
+ * @param {Array.<number>} center The center given as [latitude, longitude].
+ * @param {number} radius The radius of the circle.
+ * @return {Array.<Array.<number>>} The eight bounding box points.
+ */
+var boundingBoxCoordinates = function(center, radius) {
+  var latDegrees = radius/g_METERS_PER_DEGREE_LATITUDE;
+  var latitudeNorth = Math.min(90, center[0] + latDegrees);
+  var latitudeSouth = Math.max(-90, center[0] - latDegrees);
+  var longDegsNorth = metersToLongitudeDegrees(radius, latitudeNorth);
+  var longDegsSouth = metersToLongitudeDegrees(radius, latitudeSouth);
+  var longDegs = Math.max(longDegsNorth, longDegsSouth);
+  return [
+    [center[0], center[1]],
+    [center[0], wrapLongitude(center[1] - longDegs)],
+    [center[0], wrapLongitude(center[1] + longDegs)],
+    [latitudeNorth, center[1]],
+    [latitudeNorth, wrapLongitude(center[1] - longDegs)],
+    [latitudeNorth, wrapLongitude(center[1] + longDegs)],
+    [latitudeSouth, center[1]],
+    [latitudeSouth, wrapLongitude(center[1] - longDegs)],
+    [latitudeSouth, wrapLongitude(center[1] + longDegs)]
+  ];
+};
+
+/**
+ * Calculates the bounding box query for a geohash with x bits precision.
+ *
+ * @param {string} geohash The geohash whose bounding box query to generate.
+ * @param {number} bits The number of bits of precision.
+ * @return {Array.<string>} A [start, end] pair of geohashes.
+ */
+var geohashQuery = function(geohash, bits) {
+  validateGeohash(geohash);
+  var precision = Math.ceil(bits/g_BITS_PER_CHAR);
+  if (geohash.length < precision) {
+    console.warn("geohash.length < precision: "+geohash.length+" < "+precision+" bits="+bits+" g_BITS_PER_CHAR="+g_BITS_PER_CHAR);
+    return [geohash, geohash+"~"];
+  }
+  geohash = geohash.substring(0, precision);
+  var base = geohash.substring(0, geohash.length - 1);
+  var lastValue = g_BASE32.indexOf(geohash.charAt(geohash.length - 1));
+  var significantBits = bits - (base.length*g_BITS_PER_CHAR);
+  var unusedBits = (g_BITS_PER_CHAR - significantBits);
+  /*jshint bitwise: false*/
+  // delete unused bits
+  var startValue = (lastValue >> unusedBits) << unusedBits;
+  var endValue = startValue + (1 << unusedBits);
+  /*jshint bitwise: true*/
+  if (endValue >= g_BASE32.length) {
+    console.warn("endValue > 31: endValue="+endValue+" < "+precision+" bits="+bits+" g_BITS_PER_CHAR="+g_BITS_PER_CHAR);
+    return [base+g_BASE32[startValue], base+"~"];
+  }
+  else {
+    return [base+g_BASE32[startValue], base+g_BASE32[endValue]];
+  }
+};
+
+/**
+ * Calculates a set of queries to fully contain a given circle. A query is a [start, end] pair
+ * where any geohash is guaranteed to be lexiographically larger then start and smaller than end.
+ *
+ * @param {Array.<number>} center The center given as [latitude, longitude] pair.
+ * @param {number} radius The radius of the circle.
+ * @return {Array.<Array.<string>>} An array of geohashes containing a [start, end] pair.
+ */
+var geohashQueries = function(center, radius) {
+  validateLocation(center);
+  var queryBits = Math.max(1, boundingBoxBits(center, radius));
+  var geohashPrecision = Math.ceil(queryBits/g_BITS_PER_CHAR);
+  var coordinates = boundingBoxCoordinates(center, radius);
+  var queries = coordinates.map(function(coordinate) {
+    return geohashQuery(encodeGeohash(coordinate, geohashPrecision), queryBits);
+  });
+  // remove duplicates
+  return queries.filter(function(query, index) {
+    return !queries.some(function(other, otherIndex) {
+      return index > otherIndex && query[0] === other[0] && query[1] === other[1];
+    });
+  });
+};
+
+/**
+ * Encodes a location and geohash as a GeoFire object.
+ *
+ * @param {Array.<number>} location The location as [latitude, longitude] pair.
+ * @param {string} geohash The geohash of the location.
+ * @return {Object} The location encoded as GeoFire object.
+ */
+function encodeGeoFireObject(location, geohash) {
+  validateLocation(location);
+  validateGeohash(geohash);
+  return {
+    ".priority": geohash,
+    "g": geohash,
+    "l": location
+  };
+}
+
+/**
+ * Decodes the location given as GeoFire object. Returns null if decoding fails.
+ *
+ * @param {Object} geoFireObj The location encoded as GeoFire object.
+ * @return {?Array.<number>} location The location as [latitude, longitude] pair or null if
+ * decoding fails.
+ */
+function decodeGeoFireObject(geoFireObj) {
+  if (geoFireObj !== null && geoFireObj.hasOwnProperty("l") && Array.isArray(geoFireObj.l) && geoFireObj.l.length === 2) {
+    return geoFireObj.l;
+  } else {
+    throw new Error("Unexpected GeoFire location object encountered: " + JSON.stringify(geoFireObj));
+  }
+}
+
+/**
+ * Returns the key of a Firebase snapshot across SDK versions.
+ *
+ * @param {DataSnapshot} snapshot A Firebase snapshot.
+ * @return {string|null} key The Firebase snapshot's key.
+ */
+ function getKey(snapshot) {
+   var key;
+   if (typeof snapshot.key === "function") {
+     key = snapshot.key();
+   } else if (typeof snapshot.key === "string" || snapshot.key === null) {
+     key = snapshot.key;
+   } else {
+     key = snapshot.name();
+   }
+   return key;
+ }
+
+///
+
+/// Part from geoFire.js
+
+/**
+ * Static method which calculates the distance, in kilometers, between two locations,
+ * via the Haversine formula. Note that this is approximate due to the fact that the
+ * Earth's radius varies between 6356.752 km and 6378.137 km.
+ *
+ * @param {Array.<number>} location1 The [latitude, longitude] pair of the first location.
+ * @param {Array.<number>} location2 The [latitude, longitude] pair of the second location.
+ * @return {number} The distance, in kilometers, between the inputted locations.
+ */
+distance = function(location1, location2) {
+  validateLocation(location1);
+  validateLocation(location2);
+
+  var radius = 6371; // Earth's radius in kilometers
+  var latDelta = degreesToRadians(location2[0] - location1[0]);
+  var lonDelta = degreesToRadians(location2[1] - location1[1]);
+
+  var a = (Math.sin(latDelta / 2) * Math.sin(latDelta / 2)) +
+          (Math.cos(degreesToRadians(location1[0])) * Math.cos(degreesToRadians(location2[0])) *
+          Math.sin(lonDelta / 2) * Math.sin(lonDelta / 2));
+
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return radius * c;
+};
+
+///
+
+var db = firebase.firestore();
+var collection = db.collection("10k");
+var states = {"Alabama":{"name":"Alabama","abbreviation":"AL","population":4858979,"capital":{"name":"Montgomery","location":{"lat":32.361538,"lon":-86.279118}}},"Alaska":{"name":"Alaska","abbreviation":"AK","population":738432,"capital":{"name":"Juneau","location":{"lat":58.301935,"lon":-134.419740}}},"Arizona":{"name":"Arizona","abbreviation":"AZ","population":6828065,"capital":{"name":"Phoenix","location":{"lat":33.448457,"lon":-112.073844}}},"Arkansas":{"name":"Arkansas","abbreviation":"AR","population":2978204,"capital":{"name":"Little Rock","location":{"lat":34.736009,"lon":-92.331122}}},"California":{"name":"California","abbreviation":"CA","population":39144818,"capital":{"name":"Sacramento","location":{"lat":38.555605,"lon":-121.468926}}},"Colorado":{"name":"Colorado","abbreviation":"CO","population":5456574,"capital":{"name":"Denver","location":{"lat":39.7391667,"lon":-104.984167}}},"Connecticut":{"name":"Connecticut","abbreviation":"CT","population":3590886,"capital":{"name":"Hartford","location":{"lat":41.767,"lon":-72.677}}},"Delaware":{"name":"Delaware","abbreviation":"DE","population":945934,"capital":{"name":"Dover","location":{"lat":39.161921,"lon":-75.526755}}},"Florida":{"name":"Florida","abbreviation":"FL","population":20271272,"capital":{"name":"Tallahassee","location":{"lat":30.4518,"lon":-84.27277}}},"Georgia":{"name":"Georgia","abbreviation":"GA","population":10214860,"capital":{"name":"Atlanta","location":{"lat":33.76,"lon":-84.39}}},"Hawaii":{"name":"Hawaii","abbreviation":"HI","population":1431603,"capital":{"name":"Honolulu","location":{"lat":21.30895,"lon":-157.826182}}},"Idaho":{"name":"Idaho","abbreviation":"ID","population":1654930,"capital":{"name":"Boise","location":{"lat":43.613739,"lon":-116.237651}}},"Illinois":{"name":"Illinois","abbreviation":"IL","population":12859995,"capital":{"name":"Springfield","location":{"lat":39.783250,"lon":-89.650373}}},"Indiana":{"name":"Indiana","abbreviation":"IN","population":6619680,"capital":{"name":"Indianapolis","location":{"lat":39.790942,"lon":-86.147685}}},"Iowa":{"name":"Iowa","abbreviation":"IA","population":3123899,"capital":{"name":"Des Moines","location":{"lat":41.590939,"lon":-93.620866}}},"Kansas":{"name":"Kansas","abbreviation":"KS","population":2911641,"capital":{"name":"Topeka","location":{"lat":39.04,"lon":-95.69}}},"Kentucky":{"name":"Kentucky","abbreviation":"KY","population":4425092,"capital":{"name":"Frankfort","location":{"lat":38.197274,"lon":-84.86311}}},"Louisiana":{"name":"Louisiana","abbreviation":"LA","population":4670724,"capital":{"name":"Baton Rouge","location":{"lat":30.45809,"lon":-91.140229}}},"Maine":{"name":"Maine","abbreviation":"ME","population":1329328,"capital":{"name":"Augusta","location":{"lat":44.323535,"lon":-69.765261}}},"Maryland":{"name":"Maryland","abbreviation":"MD","population":6006401,"capital":{"name":"Annapolis","location":{"lat":38.972945,"lon":-76.501157}}},"Massachusetts":{"name":"Massachusetts","abbreviation":"MA","population":6794422,"capital":{"name":"Boston","location":{"lat":42.2352,"lon":-71.0275}}},"Michigan":{"name":"Michigan","abbreviation":"MI","population":9922576,"capital":{"name":"Lansing","location":{"lat":42.7335,"lon":-84.5467}}},"Minnesota":{"name":"Minnesota","abbreviation":"MN","population":5489594,"capital":{"name":"Saint Paul","location":{"lat":44.95,"lon":-93.094}}},"Mississippi":{"name":"Mississippi","abbreviation":"MS","population":2992333,"capital":{"name":"Jackson","location":{"lat":32.320,"lon":-90.207}}},"Missouri":{"name":"Missouri","abbreviation":"MO","population":6083672,"capital":{"name":"Jefferson City","location":{"lat":38.572954,"lon":-92.189283}}},"Montana":{"name":"Montana","abbreviation":"MT","population":1032949,"capital":{"name":"Helana","location":{"lat":46.595805,"lon":-112.027031}}},"Nebraska":{"name":"Nebraska","abbreviation":"NE","population":1896190,"capital":{"name":"Lincoln","location":{"lat":40.809868,"lon":-96.675345}}},"Nevada":{"name":"Nevada","abbreviation":"NV","population":2890845,"capital":{"name":"Carson City","location":{"lat":39.160949,"lon":-119.753877}}},"New Hampshire":{"name":"New Hampshire","abbreviation":"NH","population":1330608,"capital":{"name":"Concord","location":{"lat":43.220093,"lon":-71.549127}}},"New Jersey":{"name":"New Jersey","abbreviation":"NJ","population":8958013,"capital":{"name":"Trenton","location":{"lat":40.221741,"lon":-74.756138}}},"New Mexico":{"name":"New Mexico","abbreviation":"NM","population":2085109,"capital":{"name":"Santa Fe","location":{"lat":35.667231,"lon":-105.964575}}},"New York":{"name":"New York","abbreviation":"NY","population":19795791,"capital":{"name":"Albany","location":{"lat":42.659829,"lon":-73.781339}}},"North Carolina":{"name":"North Carolina","abbreviation":"NC","population":10042802,"capital":{"name":"Raleigh","location":{"lat":35.771,"lon":-78.638}}},"North Dakota":{"name":"North Dakota","abbreviation":"ND","population":756927,"capital":{"name":"Bismarck","location":{"lat":48.813343,"lon":-100.779004}}},"Ohio":{"name":"Ohio","abbreviation":"OH","population":11613423,"capital":{"name":"Columbus","location":{"lat":39.962245,"lon":-83.000647}}},"Oklahoma":{"name":"Oklahoma","abbreviation":"OK","population":3911338,"capital":{"name":"Oklahoma City","location":{"lat":35.482309,"lon":-97.534994}}},"Oregon":{"name":"Oregon","abbreviation":"OR","population":4028977,"capital":{"name":"Salem","location":{"lat":44.931109,"lon":-123.029159}}},"Pennsylvania":{"name":"Pennsylvania","abbreviation":"PA","population":12802503,"capital":{"name":"Harrisburg","location":{"lat":40.269789,"lon":-76.875613}}},"Rhode Island":{"name":"Providence","abbreviation":"RI","population":1056298,"capital":{"name":"Providence","location":{"lat":41.82355,"lon":-71.422132}}},"South Carolina":{"name":"South Carolina","abbreviation":"SC","population":4896146,"capital":{"name":"Columbia","location":{"lat":34.000,"lon":-81.035}}},"South Dakota":{"name":"South Dakota","abbreviation":"SD","population":858469,"capital":{"name":"Pierre","location":{"lat":44.367966,"lon":-100.336378}}},"Tennessee":{"name":"Tennessee","abbreviation":"TN","population":6600299,"capital":{"name":"Nashville","location":{"lat":36.165,"lon":-86.784}}},"Texas":{"name":"Texas","abbreviation":"TX","population":27469114,"capital":{"name":"Austin","location":{"lat":30.266667,"lon":-97.75}}},"Utah":{"name":"Utah","abbreviation":"UT","population":2995919,"capital":{"name":"Salt Lake City","location":{"lat":40.7547,"lon":-111.892622}}},"Vermont":{"name":"Vermont","abbreviation":"VT","population":626042,"capital":{"name":"Montpelier","location":{"lat":44.26639,"lon":-72.57194}}},"Virginia":{"name":"Virginia","abbreviation":"VA","population":8382993,"capital":{"name":"Richmond","location":{"lat":37.54,"lon":-77.46}}},"Washington":{"name":"Washington","abbreviation":"WA","population":7170351,"capital":{"name":"Olympia","location":{"lat":47.042418,"lon":-122.893077}}},"West Virginia":{"name":"West Virginia","abbreviation":"WV","population":1844128,"capital":{"name":"Charleston","location":{"lat":38.349497,"lon":-81.633294}}},"Wisconsin":{"name":"Wisconsin","abbreviation":"WI","population":5771337,"capital":{"name":"Madison","location":{"lat":43.074722,"lon":-89.384444}}},"Wyoming":{"name":"Wyoming","abbreviation":"WY","population":586107,"capital":{"name":"Cheyenne","location":{"lat":41.145548,"lon":-104.802042}}}};
+
+var statesElm = document.getElementById("state");
+Object.keys(states).forEach(function(state) {
+  var optionElm = document.createElement("option");
+  optionElm.innerText = state;
+  statesElm.appendChild(optionElm);
+});
+statesElm.addEventListener("change", function(e) {
+  showMapForState(statesElm.value, distanceElm.value);
+});
+var distanceElm = document.getElementById("distance");
+distanceElm.addEventListener("change", function(e) {
+  showMapForState(statesElm.value, distanceElm.value);
+});
+var summaryElm = document.getElementById("summary");
+
+
+
+function getQueriesForDocumentsAround(ref, center, radiusInKm) {
+  var geohashesToQuery = geohashQueries([center.lat, center.lon], radiusInKm*1000);
+  console.log(JSON.stringify(geohashesToQuery));
+  return geohashesToQuery.map(function(location) {
+    return ref.where("geohash", ">=", location[0]).where("geohash", "<=", location[1]);
+  });
+}
+
+function showMapForState(state, MAX_DISTANCE) {
+  var map;
+  var resultCount = 0, totalDistanceKm = 0, matchCount = 0, matchDistanceKm = 0, docs = {}, maxDistanceKm = 0;
+  var center = states[state].capital.location;
+  document.getElementById('map').innerHTML = "";
+
+  var queries = getQueriesForDocumentsAround(collection, center, MAX_DISTANCE);
+  queries.forEach(function(query) {
+    query.get().then(function(querySnapshot) {
+      if (!map) {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: center.lat, lng: center.lon},
+          zoom: 8
+        });
+      }
+      querySnapshot.forEach(function(doc) {
+        var data = doc.data();
+        resultCount++;
+        var dist = distance([center.lat, center.lon], [data.location.latitude,data.location.longitude]);
+        if (dist <= MAX_DISTANCE && !docs[doc.id]) {
+          docs[doc.id] = doc.data();
+          matchCount++;
+          matchDistanceKm += dist;
+          //console.log("This one is IN range: "+data.location.latitude+","+data.location.longitude);
+        }
+        totalDistanceKm += dist;
+        if (dist > maxDistanceKm) {
+          maxDistanceKm = dist;
+        }
+        //console.log(doc.id+": "+data.location.latitude+","+data.location.longitude+" at "+dist);
+        var marker = new google.maps.Marker({
+          position: new google.maps.LatLng(data.location.latitude, data.location.longitude),
+          map: map,
+          icon: 'https://maps.google.com/mapfiles/ms/icons/'+(dist <= MAX_DISTANCE?'green':'red')+'-dot.png',
+          title: doc.id
+        });
+      });
+      console.log("The total "+resultCount+" query results are a total of "+Math.round(totalDistanceKm)+"km from the center, docs.length="+Object.keys(docs).length+" matchCount="+matchCount+" matchDistance="+Math.round(matchDistanceKm)+"km");
+      summaryElm.innerText = "The total "+resultCount+" query results are a total of "+Math.round(totalDistanceKm)+"km from the center, docs.length="+Object.keys(docs).length+" matchCount="+matchCount+" matchDistance="+Math.round(matchDistanceKm)+"km";
+      //console.log(docs);
+    });
+  })
+}

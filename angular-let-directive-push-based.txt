@@ -1,0 +1,194 @@
+import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+
+/**
+ * This interface represents context of the directive.
+ *
+ * It defines two properties ($implicit and viLet) which enables same behavior with different syntax.
+ * It is not required to have both, it is just a way to provide support for both syntax.
+ */
+interface LetContext<T extends { [key: string]: unknown }> {
+  /**
+   * Current item exposed in implicit value variable.
+   * This enables us to use the let syntax
+   *
+   * @example
+   * <ng-container *viLet="data$ | async; let data">
+   *   Data: {{data}}
+   * </ng-container>
+   */
+  $implicit?: T; // current item exposed as implicit value
+  /**
+   * Current item exposed as key matching the directive name.
+   * This adds support for `as` syntax in template.
+   *
+   * @example
+   * <ng-container *viLet="data$ | async as data">
+   *   Data: {{data}}
+   * </ng-container>
+   */
+  viLet?: T;
+  
+  [key: string]: unknown;
+}
+
+@Directive({
+  selector: '[viLet]',
+})
+export class LetDirective<T> {
+  private readonly context: LetContext<T> = {};
+
+  constructor(
+    private readonly viewRef: ViewContainerRef,
+    private readonly templateRef: TemplateRef<LetContext<T>>,
+  ) {
+    this.viewRef.createEmbeddedView(this.templateRef, this.context);
+  }
+
+  @Input()
+  set viLet(o: T) {
+    this.context.viLet = this.context.$implicit = o;
+    Object.entries(o || {}).map(([key, value]) => (this.context[key] = value));
+  }
+}
+
+------------------
+html for directive
+
+<h1
+  *viLet="{
+    click: mouseClick$ | async,
+    move: mouseMove$ | async,
+    interval: interval$ | async
+  } as mouse"
+>
+  click [{{ mouse?.click?.screenX }}, {{ mouse?.click?.screenY }}]
+  <br />
+  move [{{ mouse?.move?.screenX }}, {{ mouse?.move?.screenY }}]
+  <br />
+  seconds from start {{ mouse?.interval }}
+  <br />
+</h1>
+
+<h1
+  *viLet="
+    {
+      click: mouseClick$ | async,
+      move: mouseMove$ | async,
+      interval: interval$ | async
+    };
+    click as click;
+    move as move;
+    interval as interval
+  "
+>
+  click [{{ click?.screenX }}, {{ click?.screenY }}]
+  <br />
+  move [{{ move?.screenX }}, {{ move?.screenY }}]
+  <br />
+  seconds from start {{ interval }}
+  <br />
+</h1>
+
+<h1
+  *viLet="
+    {
+      click: mouseClick$ | async,
+      move: mouseMove$ | async,
+      interval: interval$ | async
+    };
+    let click = click;
+    let move = move;
+    let interval = interval
+  "
+>
+  click [{{ click?.screenX }}, {{ click?.screenY }}]
+  <br />
+  move [{{ move?.screenX }}, {{ move?.screenY }}]
+  <br />
+  seconds from start {{ interval }}
+  <br />
+</h1>
+
+<ng-container *viLet="(mouseClick$ | async) as click">
+  <ng-container *viLet="(mouseMove$ | async) as move">
+    <h1 *viLet="(interval$ | async) as interval">
+      click [{{ click?.screenX }}, {{ click?.screenY }}]
+      <br />
+      move [{{ move?.screenX }}, {{ move?.screenY }}]
+      <br />
+      seconds from start {{ interval }}
+      <br />
+    </h1>
+  </ng-container>
+</ng-container>
+
+-------------------------
+
+range directive
+--------------
+/**
+ * This interface represents context of the directive
+ */
+interface RangeContext {
+  $implicit: number; // current item exposed as implicit value, enables declaring in template variable via let keyword
+  index: number;     // current index of the item
+  first: boolean;    // indicates if the item is first in the collection
+  last: boolean;     // indicates if the item is last in the collection
+}
+
+@Directive({
+  selector: '[appRange]'
+})
+export class RangeDirective {
+  @Input()
+  set appRange(value: [number, number] | number) {
+    this.viewRef.clear();
+
+    const [from, to] = Array.isArray(value) ? value : [0, value];
+    const range = this.generateRange(from, to);
+
+    range.forEach(
+      (itemNumber, index) => this.viewRef.createEmbeddedView(this.templateRef, {
+        $implicit: itemNumber,
+        index,
+        first: index === 0,
+        last: index + 1 === range.length,
+      })
+    );
+  }
+
+  constructor(private readonly viewRef: ViewContainerRef,
+              private readonly templateRef: TemplateRef<RangeContext>) {
+  }
+
+  /**
+   * Generates and array of N items (N is difference between to and from).
+   * Item values are starting at `from` value and ending with `to` value.
+   *
+   * @param from - default is 0
+   * @param to   - items will be generated up to this value
+   *             - example: 7 will result in output [..., 4, 5, 6]
+   */
+  private generateRange(from: number = 0, to: number): number[] {
+    return Array.from({length: (to - from)}, (_, index) => index + from);
+  }
+}
+
+-----------------------------------
+
+range directive in template
+-----------------
+<div *appRange="maxElements; let num; let i = index">
+  index: {{i}} | element: {{num + 1}} of {{maxElements}}
+</div>
+
+<label>
+  Year:
+  <select>
+    <ng-container *appRange="[2005, 2018]; let num">
+      <option [value]="num">{{num}}</option>
+    </ng-container>
+  </select>
+</label>
+
+-------------------------

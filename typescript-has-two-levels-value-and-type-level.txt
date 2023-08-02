@@ -1,0 +1,134 @@
+based on blog article:https://dev.to/macsikora/typescript-is-more-than-you-think-2nbf
+
+Structural Typing
+-------------------------------
+TS introduces structural types = type equivalence by the type properties
+
+Two spaces
+-------------------------------
+TS has two separated parts:
+ - type space 
+ - value space
+ and annotation syntax which connects type space with value space
+
+ // type space 🔵
+ type X = {a: string}
+
+ // value space 🟡
+ let x = { a: "a", b: "b" }
+
+// basic type definition
+type X = string;
+type Y = number;
+type Z = boolean;
+
+// value level:
+const a: boolean = true;
+
+
+
+// literal types = elements of string, number or bool type
+type True = true;
+type False = false;
+type One = 1;
+type Name = "Maciej";
+
+Value Level and Type Level
+------------------------------------------------------------------------------------
+Anders Hejlsberg:
+--------------------
+Ts is a functional Programming Language:
+And indeed our type system is now a it's a little functional programming language.
+
+Values are types
+-----------------
+the values in this functional programming language are types and 
+
+Functions
+----------------
+you write functions by implementing generic types or parametric types, 
+where the parameters are, other types, and to wit normal functional
+
+Recursion
+---------------------
+programming language, techniques such as recursion are equally applicable here.
+
+Recursive Algorithmic Types
+---------------------------
+So you can write recursive algorithmic types that then compute new types, by iterating.
+
+Types are sets of values, where values are types
+--------------------------------------------------
+In Typescript types are sets of values, where the values are types
+Typescript is a functional programming language
+
+TypeScript like every statically typed language has two levels - 
+- value level: simply considered as just JavaScript (js syntax and types)
+
+- type level : syntax and grammar which was created specially for TypeScript
+               creating and transforming types
+
+TS has even more, we can distinguish three levels of the language 
+- Type System Language, creating and transforming types
+- Type Annotations, place where type system meets JS
+- JavaScript, js syntax and types
+
+a Programming Language has:
+-------------------------------------------------------------------------------------
+- values, 
+- variables, 
+- expressions, 
+- operators, 
+- functions. We have tools for 
+- can performing data flow, we 
+- can branch the flow by conditions, we 
+- can iterate the flow by iterations or recursions.
+
+		Typescript						Javascript
+---------------------------------------------------------------------------------------------------------
+type:           sets of values,where values are types,                  sets of values where the values are strings, numbers,...
+                follows set theory, union, intersection			
+
+variabel: 	type Hello = string;					const hello:string
+
+value:		is a type						is a number, string, boolean, object
+
+expression:
+
+operators:
+
+assign		A = B assign
+
+intersection	A & B 
+
+union		A | B 
+
+keyof A
+
+A extends B ? C : D condition
+
+iteration      [Key in keyof X] 
+
+function:    	generics allow us to parameterize types			functions parameterize their income values
+
+data flow:
+
+conditions:	conditional type: T extends string,			if, switch, 
+
+iteration:
+
+recursion:
+
+Typescript Language
+---------------------------------------------------------------------------------------
+- a value in Ts is a type, value at this level is represented as a type. 
+- assing operator:  We can assign the value to the variable by typical assign operator.
+  type Person = {name:string,age:number}
+  type X = string;
+  type Y = number;
+  type Z = boolean;
+type alias is const in Javascript
+
+type:	 is the same thing as value
+value:	 is the same thing as type
+kind:	 is a type of the type

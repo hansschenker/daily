@@ -1,0 +1,27 @@
+import react, { useState } from "react";
+
+const usePartialState = <T extends Partial<T>>(): [T | {}, (fieldName: string, value: any) => void, (state: T) => void] => {
+    const [state, setState] = useState<T | {}>({});
+
+    const setStateByFiled = (fieldName: string, value: any) => {
+        setState(_s => {
+            return {
+                ..._s,
+                [fieldName]: value,
+            };
+        });
+    }
+
+    const setEntireState = (data: T) => {
+        setState(data);
+    }
+
+    return [
+        state,
+        setStateByFiled,
+        setEntireState
+    ];
+}
+
+export default usePartialState;
+----------------------------------------------

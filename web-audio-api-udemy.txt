@@ -1,0 +1,129 @@
+Html5 Audio Element - audio tag
+-------------------------------------------------
+audio controls src="...pathtoaudiofile"
+ - audio, autoplay, muted, loop, preload=auto,
+   audio
+     source src="" type="audio/mpeg"
+     source src="" type="audio/ogg"
+   audio
+
+audio in script
+---------------
+const audio = new Audio()
+audio.load()
+
+- play only one track at a time
+
+
+Web Audio API
+------------------------------------------
+
+synthesis
+analysis
+streaming
+spatialization
+
+play multiple tracks together
+
+AudioContext: input source node - process effects (intermediate nodes) -> destination (default loud speaker)
+
+
+Types of Nodes
+-----------------------
+- oscillator
+- audio buffer
+- live audio input (streaming)
+- audio tag (html element)
+
+Modification Nodes (process effects)
+------------------------
+- filter node
+- gain node
+- convolver  node
+
+Analysis Nodes ( pass through data for analysis)
+--------------
+- analyzer node
+
+Destination Nodes
+-------------------
+- audio output
+- offline processing  buffer
+
+
+audiocontext: play sound
+--------------------------
+ - create audiocontext
+ - create oscillator
+ - connect osc to ctx
+ - connect ctx to ctx.destination
+
+- state
+- currentTime (in secs, of running ctx)
+
+
+sound - air vibration
+------------------
+- frequency: 400, 800 (hz, sound is higher), sound default frequency: 44'100 or 44.1hz
+- amplitude (loudness of sound)
+- speed of vibration (pitch)
+
+AudioParam
+-------------------------------
+- value
+- setValueAtTime()
+
+Oscillator
+---------------
+- const osc = new Oscillator({ type: "sine", frequency:410})
+
+                           freq, ctx.secs
+- frequency.setValueAtTime(800, ctx.currentTime + 2)
+
+create graph inside context with connect node -> connect node -> connect to destination
+-----------------------------------------------------------------------------------------
+const ctx = new AudioContext()
+const osc = ctx.createOscillator()
+osc.connect(ctx.destination)
+
+OscillatorNode (audacityteam.org, record sound)
+----------------
+- type: "sine", "triangle", "sawtooth", "square"
+- start
+- stop
+
+ 
+sound from microphone
+---------------------
+ctx.suspend() returns a promise , suspend time
+ctx.resume() returns a promise
+
+.addEventListener("click", async () => {
+   try {
+	const stream = await navigator.mediaDevices.getUserMedia({ audio:true, video:false})
+	const microStream = ctx.createMediaStreamSource(stream)
+	microStream.connect(ctx.destination)
+
+	await ctx.resume()
+       } catch(err) {
+         console.error(err)
+       }
+})
+
+sound from stored audio in AudioBuffer (file or stream)
+---------------------------------------
+
+audiobuffer (use many times) -> audiobuffersourcenode (use only one time) -> speaker
+
+audio channel
+--------------
+source -> speaker 1 and speaker 2 = single channel         // nmono
+source1,source2 -> souce1 to speaker1, source2 to channel2 // stereo
+
+dîgital audio, sampling sound
+------------------------------------
+how many values of a cycle store 
+
+nyquisst-shannon sampling rate
+----------------------------
+sampling rate at least equal 2 * analog frequency (22100 per second humain hearing -> sampling 44200  hz = 44.2khz)

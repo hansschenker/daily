@@ -1,0 +1,132 @@
+Using the Effect Hook (since 16.8)
+-----------------------
+
+Perform side effects
+----------------------
+The Effect Hook lets you perform side effects in function component
+
+side effects (any asychronous function)
+--------------
+- dom api (set document title)
+- rest api (data fetching
+- timeout
+- animation
+
+if you allocate a resource you must return a clean up function () => { cleanup resource here }
+ - samples: addEventListener, subscribe to RxJs Observable, setTimeout fn, ...
+
+side effect , doing something after component has rendered
+------------------------------------------------------------
+By using this Hook, you tell React that your component needs to do something after render. 
+React will remember the function you passed (we’ll refer to it as our “effect”), 
+and call it later after performing the DOM updates. 
+
+- effects:
+  - set the document title, 
+  - perform data fetching or 
+  - call some other imperative API
+
+Hooks rely on Javascript closures
+----------------------------------
+Hooks embrace JavaScript closures and avoid introducing React-specific APIs 
+where JavaScript already provides a solution.
+
+Effects run asynch after DOM Update
+-----------------------------
+effects happen “after render”. 
+React guarantees the DOM has been updated by the time it runs the effects
+effects scheduled with useEffect don’t block the browser from updating the screen
+The majority of effects don’t need to happen synchronously
+
+useLayoutEffect Hook runs synchronously:
+ In the uncommon cases where they do (such as measuring the layout), 
+there is a separate useLayoutEffect Hook with an API identical to useEffect.
+
+function FriendStatusWithCounter(props) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    document.title = `You clicked ${count} times`;
+  });
+
+  const [isOnline, setIsOnline] = useState(null);
+  useEffect(() => {
+    function handleStatusChange(status) {
+      setIsOnline(status.isOnline);
+    }
+
+    ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange);
+    return () => {
+      ChatAPI.unsubscribeFromFriendStatus(props.friend.id, handleStatusChange);
+    };
+  });
+  // ...
+}
+
+Hooks let us split the code based on what it is doing rather than a lifecycle method name. 
+React will apply every effect used by the component, in the order they were specified.
+
+Custom Hooks - Building reusable Logic
+-------------------------------------------------------------------------------------
+Building your own Hooks lets you extract component logic into reusable functions.
+
+When we want to share logic between two JavaScript functions, we extract it to a third function. 
+Both components and Hooks are functions, so this works for them too!
+
+Hooks do not share state (hooks are javascript closures)
+---------------------------------------------------------
+https://www.netlify.com/blog/2019/03/11/deep-dive-how-do-react-hooks-really-work/
+
+closure (closes over the values at creation time)
+----------------------------------------------------------------------------------
+in JavaScript, closures are created every time a function is created, at function creation time.
+closure behaves like a photo, once taken it can not change anymore:
+The thing about the picture is - it cannot change. Once we have taken it, its content is sealed (unless we use photoshop).
+
+How does a custom Hook get isolated state? Each call to a Hook gets isolated state. 
+Because we call useFriendStatus directly, from React’s point of view our component just calls useState and useEffect. 
+And as we learned earlier, we can call useState and useEffect many times in one component, and they will be completely independent
+
+function App() {
+  const [count, increment] = React.useReducer((prev) => prev + 1, 1)
+
+  const logCount = () => {
+    log(count)
+  }
+
+  return (
+    <div>
+      <div>count is {count}</div>
+      <button onClick={increment}>increment</button>
+      <button onClick={logCount}>log</button>
+    </div>
+  )
+}
+
+render(
+  <div style={{ color: 'black ' }}>
+    <App />
+    <div id="result">log:</div>
+  </div>
+)
+
+// just a way to make logging work in this interactive example
+function log(value) {
+  document.getElementById('result').innerHTML = 'log: ' + String(value)
+}
+
+Every time the function is created, we throw away the old picture and take a new one. 
+When React re-renders a component tree, it just re-runs everything top down. 
+Here, this works to our advantage: Our logCount function gets re-created 
+because the App component re-renders when the count state is updated.
+
+Because of that, we take a new picture (= re-create the logCount function), 
+that contains the "latest" count variable. So when we click our button, we know the correct count.
+
+
+
+
+No javascript this anymore with Hooks
+--------------------------------------
+with hooks js devs no longer need to worry about this to avoid shooting themselves in the foot
+
+

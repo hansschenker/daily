@@ -1,0 +1,86 @@
+Separate services/computation from state management
+Use immutable data for persistent and client state
+Optimistic updates require separate actions to deal with errors
+NgRx/Redux should be the means of achieving a goal, not the goal
+Always treat [the route] as the source of truth
+
+
+Distributed Systems
+-------------------------------------------------------------
+
+Pull vs Push
+-----------------------------------------------------------
+- Iterator is pull-based, 
+- Iterable, reactive streams are push-based.
+
+Publisher-Subscriber. 
+----------------------------------------------------------------
+But it is the Publisher that notifies the Subscriber of newly available values as they come, 
+and this push aspect is the key to being reactive. Also, operations applied to pushed values are 
+expressed declaratively rather than imperatively: The programmer expresses the logic of the computation 
+rather than describing its exact control flow.
+
+Synchronous vs Asynchronous Communication
+
+Unicast vs Multicast Communication
+
+Synchronous communiction: The time of publication and consumption is the same time, your are served the dinner and you consume it.
+
+Asynchronous communication: The producer publishes A menu online.
+                            The consumer reads the menu an orders one, when the menu is read it will be sent to the consumer
+
+Reactive Programming vs Pub-Sub Pattern
+----------------------------------------
+Pub/Sub is a pattern, where:
+- Publishers: publish messages on a specific topic
+- Subject/Topic (broker:an intermediary between an investor and a trader, publisher and subscriber)
+- Subscribers don't know about each other. 
+- They only know about a Subject(broker:an intermediary between an investor and a trader), 
+  where they publish/consume messages.
+
+- Pub/Sub is asychronous communication: 
+  As a result, the publication and consumption of messages is done asynchronously and is completely decoupled. 
+  This means that the publication/consumption side can be scaled independently and in case of failures of one part, 
+  the other part is able to keep working.
+
+Now, reactive programming is a pattern used to model changes and their propagation across multiple actors. 
+As such, it's not so much concerned with implementation details, but more focused on providing an abstract, 
+declarative interface, which makes it easier to work with streams of events and perform processing on top of them. 
+Straight from ReactiveX's documentation:
+
+ReactiveX is not biased toward some particular source of concurrency or asynchronicity. 
+Observables can be implemented using 
+- thread-pools, 
+- event loops, 
+- non-blocking I/O, 
+- actors (such as from Akka), 
+  or whatever implementation suits your needs, your style, or your expertise. 
+
+Client code treats all of its interactions with Observables as asynchronous, 
+whether your underlying implementation is blocking or non-blocking and however you choose to implement it.
+
+So, the decoupling/scalability will be mainly dependent on the implementation used underneath; 
+the main benefit of the framework is mainly the abstract, declarative interface provided.
+
+-----------------------------------------
+
+Data Binding
+---------------------------------------------
+data binding is a generic term and there are different ways of implementing it such 
+- as the Observer Pattern, Observable updates its Observers
+- the Pub/Sub pattern, publisher publishes and subscribers listen (subscribe) to a specific kind of messages
+
+With the Observer pattern, an Observable updates its Observers. With Pub/Sub, 0-many publishers can publish messages 
+of certain classes and 0-many subscribers can subscribe to messages of certain classes.
+
+
+
+reactive patterns in angular
+reactive thinking
+pillars of reactive programming
+data streams - spine of reactive programming (data over time - data is pushed:events, notifications, 
+chat messages,stock quotes time bound data, )
+
+sample ui event: 
+------------------
+event:		user clicks: click 1 at 00:01, click 1 at 00:05

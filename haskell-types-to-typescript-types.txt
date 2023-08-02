@@ -1,0 +1,150 @@
+haskell types to typescript types
+------------------------------------
+
+map
+--------------------------------------
+(a: A) => B) => Array<A> => Array<B>
+
+In this TypeScript type, A and B are placeholders for the types of the elements being mapped, 
+and the type of the result respectively. 
+The type represents a function that takes a function from A to B and a list of values of type A, 
+and returns a list of values of type B.
+
+filter
+---------------------------------------
+(a: A) => boolean) => Array<A> => Array<A>
+In this TypeScript type, A is a placeholder for the type of the elements being filtered, 
+and the type represents a function that takes a function from A to boolean and a list of values of type A, 
+and returns a filtered list of values of type A. The function passed to filter is used to test each element 
+of the input list, and elements for which the test returns true are included in the output list.
+
+scan
+----------------------------------------
+type Fold<A, B> = (acc: B, x: A) => B;
+
+(fold: Fold<A, B>) => Array<A> => Array<B>;
+In this TypeScript type, A and B are placeholders for the types of the elements being accumulated and the type 
+of the accumulated result respectively. The Fold type represents a binary function that takes an accumulator 
+of type B and a value of type A, and returns a new accumulator of type B. The scan type represents a function 
+that takes a Fold function and a list of values of type A, and returns a list of the intermediate accumulator 
+values produced while reducing the list to a single value using the Fold function.
+
+functional programming
+------------------------------------------
+Functional programming is a programming paradigm that emphasizes the use of pure functions and immutability, 
+and discourages the use of side effects and mutable state. In functional programming, functions are considered to 
+be first-class citizens, meaning that they can be passed as arguments to other functions, returned as values from functions, 
+and assigned to variables just like any other values.
+
+Functional programming languages, such as Haskell, Lisp, and ML, are based on mathematical functions and therefore treat 
+computation as the evaluation of mathematical functions. In functional programming, you write programs by defining and 
+composing functions, rather than specifying a sequence of steps for the computer to follow. This leads to code that is 
+more modular, composable, and easier to reason about and maintain.
+
+Functional programming has become increasingly popular in recent years, especially with the rise of big data and 
+concurrent systems, because it enables the creation of scalable and maintainable software that can handle complex, 
+concurrent, and distributed computations.
+
+functional programming with RxJs
+---------------------------------
+Yes, you can use functional programming techniques with RxJS, which is a library for reactive programming with JavaScript. 
+RxJS is based on the observer pattern, which provides a way to observe and respond to changes in data over time. In RxJS, 
+you can represent streams of events or data changes as Observables, and you can use a variety of operators to manipulate, 
+filter, and transform these streams in a functional and reactive way.
+
+For example, you can use the map operator to transform the values of an Observable stream in the same way as you would use 
+the map function in a functional programming language. You can also use the filter operator to filter the values of a stream, 
+the reduce operator to accumulate the values of a stream into a single value, and the combineLatest operator to combine 
+multiple streams into a single stream.
+
+By using functional programming techniques with RxJS, you can write reactive programs that are more readable, composable, 
+and maintainable. This can help you create scalable and responsive applications that can handle large amounts of data and 
+events in a clean and efficient way
+
+Is RxJs Observable a Monad
+-----------------------------
+An Observable in RxJS is not a Monad in the traditional sense, but it can be seen as a generalization of a Monad. 
+A Monad is a concept from functional programming that describes a structure for sequencing computations and propagating values 
+in a composable way. In a sense, an Observable can be seen as a Monad because it allows you to sequence and 
+transform computations over time in a composable way.
+
+However, an Observable in RxJS is not a Monad in the strict mathematical sense because it does not obey all the laws of Monads. 
+For example, the flatMap operator in RxJS, which is used to flatten a stream of streams, does not satisfy the associativity law 
+for Monads. This means that the order in which the operations are performed may affect the outcome of the computation.
+
+In general, the concept of a Monad can be useful for understanding the properties and behavior of Observables in RxJS, 
+but it is not a perfect fit. It's better to think of Observables in RxJS as a unique and distinct concept that provides 
+a way to represent and manipulate streams of values over time in a functional and reactive way.
+
+In functional programming what is a Functor?
+--------------------------------------------
+In functional programming, a functor is a mathematical structure that represents a mapping between categories. 
+A functor maps objects of one category to objects of another category, preserving the structure of the category in the process.
+
+In the context of functional programming, a functor is often used to describe a type that implements a map function 
+that takes a function from one type to another, and returns a new instance of the functor that has the function applied to its contents. 
+The map function should satisfy the following two laws:
+
+The functor's map function should preserve identity: map(id) is equivalent to id, where id is the identity function that returns its 
+argument unchanged.
+
+The functor's map function should preserve composition: map(f . g) is equivalent to map(f) . map(g), where f and g are any two functions.
+
+Functors are used in functional programming to provide a common interface for mapping over structures, such as lists, arrays, 
+trees, and so on. They provide a way to abstract over the specific implementation of a structure, and to write generic and 
+composable functions that work with any functor.
+
+For example, in Haskell, the Maybe type is often considered a functor, because it implements a map function that takes a 
+function from one type to another and returns a Maybe value of the mapped type. Similarly, the List type is also often 
+considered a functor, because it implements a map function that takes a function from one type to another and returns 
+a list of the mapped type.
+
+In functional programming what is a Monad?
+--------------------------------------------
+In functional programming, a Monad is a structure that represents computations as values, and provides a way to sequence 
+those computations in a composable way. Monads provide a way to abstract over the implementation details of a computation, 
+and to write generic and composable code that works with any Monad.
+
+A Monad is defined as a type that implements two functions: bind (also called flatMap or chain) and return (also called pure). 
+The bind function takes a computation, and returns a new computation that depends on the result of the first computation. 
+The return function takes a value and returns a computation that produces that value.
+
+The Monad laws specify the properties that a Monad must satisfy in order to be well-behaved. These laws ensure that Monads
+ behave in a predictable and consistent way, and that they can be composed and used in a composable way. The Monad laws are as follows:
+
+Left identity: return x >>= f is equivalent to f x
+
+Right identity: m >>= return is equivalent to m
+
+Associativity: (m >>= f) >>= g is equivalent to m >>= (\x -> f x >>= g)
+
+Monads are used in functional programming to represent computations that may contain effects, such as I/O, state, exceptions, 
+and so on. By using Monads, you can write code that handles these effects in a predictable and composable way, and that separates 
+the pure, side-effect-free logic from the impure, side-effect-full logic.
+
+For example, the Maybe Monad is used to represent computations that may fail, and the List Monad is used to represent computations 
+that may have multiple results. The IO Monad is used to represent computations that perform I/O, and the State Monad is used to 
+represent computations that have state.
+
+In functional programming what is a Applicative?
+--------------------------------------------
+In functional programming, an Applicative is a type class that extends the functor concept and provides a way to apply functions 
+to values in a context, and to compose those applications in a way that is independent of the context.
+
+An Applicative is defined as a type that implements a function ap (also called apply) and a function of (also called pure or return). 
+The ap function takes a value with a function inside a context, and applies the function to a value inside the same context, returning 
+the result inside the context. The of function takes a value and returns it inside the context.
+
+Applicatives are useful for working with values inside a context, such as values that have optional, error-prone, or asynchronous behavior. 
+By using Applicatives, you can write code that handles these values in a predictable and composable way, and that separates the pure, 
+side-effect-free logic from the context-dependent logic.
+
+The Applicative type class extends the Functor type class by adding the ap function, which allows you to apply a function inside a 
+context to a value inside the same context. This allows you to perform multiple independent computations in parallel, and to combine 
+the results in a way that is independent of the context.
+
+For example, the Maybe type is often considered an Applicative, because it implements ap and of functions that allow you to apply 
+functions to values inside a Maybe context, and to compose those applications in a way that is independent of the context. Similarly, 
+the Array type is also often considered an Applicative, because it implements ap and of functions that allow you to apply functions 
+to values inside an array context, and to compose those applications in a way that is independent of the context.
+

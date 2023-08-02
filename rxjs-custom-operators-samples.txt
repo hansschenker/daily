@@ -1,0 +1,70 @@
+.takeUntil(Rx.Observable.timer(60000 + 1000))
+
+const start$ = Rx.Observable.fromEvent(document.querySelector('#btn'), 'click');
+
+start$
+  .switchMap(()=> {
+    return Rx.Observable.timer(0, 1000)
+      .takeUntil(Rx.Observable.timer(3000 + 1000))
+      .map(value => 3000 - value * 1000)
+      .map(function (i) {
+        return 'Timer (second): ' + i/1000;
+      });
+  })
+  .subscribe(function (text) {
+    var container = document.querySelector('#app');
+    container.textContent = text;
+  });
+
+
+const toggle$ = new BehaviorSubject(true);
+const remainingSeconds$ = toggle$.pipe(
+    switchMap((running: boolean) => {
+        return running ? timer(0, INTERVAL) : NEVER;
+    }),
+    map(toRemainingSeconds),
+    takeWhile(t => t >= 0)
+);
+
+import {Observable} from 'rxjs';
+import {tap} from 'rxjs/operators';
+
+export enum RxJsLoggingLevel {
+    TRACE,
+    DEBUG,
+    INFO,
+    ERROR
+}
+
+let rxjsLoggingLevel = RxJsLoggingLevel.INFO;
+
+export function setRxJsLoggingLevel(level: RxJsLoggingLevel) {
+    rxjsLoggingLevel = level;
+}
+
+
+export const debug = (level: number, message:string) =>
+    (source: Observable<any>) => source
+        .pipe(
+            tap(val => {
+
+                if (level >= rxjsLoggingLevel) {
+                    console.log(message + ': ', val);
+                }
+            })
+        );
+
+
+import { interval, Observable } from "rxjs";
+import { take, tap } from "rxjs/operators";
+
+const source$ = interval(1000).pipe(take(3));
+
+function log<T>(source$: Observable<T>): Observable<T> {
+  return source$.pipe(tap(v => console.log(`log: ${v}`)));
+}
+
+const results$ = source$.pipe(log);
+
+results$.subscribe(console.log);
+  

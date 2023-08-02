@@ -1,0 +1,52 @@
+Introduction to the ConnectableObservable and using publish().refCount() in RxJS
+
+André Staltz - Egghead Lesson
+
+An RxJS cold Observable can be made hot by declaring it with .publish().refCount(). What does publish() do? What does refCount() do? 
+This lesson introduces the ConnectableObservable, and how to use it with publish and refCount.
+
+Transcript
+Comments
+[00:01] When we create hot observables from cold ones, we often do that with the idiom "Publish RefCount." Without this, 
+the clock observable would be cold, and when we add Publish RefCount, it becomes a hot observable.
+
+[00:17] What do these two methods mean, and why are there two of them? We're going to see how hot observables work under the hood.
+
+[00:25] If I call it just Publish and not RefCount, I get back a connectable observable. If we console.log when the subscriptions 
+happen and we run the code, we will see an interesting behavior.
+
+[00:46] When we run it, A subscribes, and after four-and-a-half seconds, B will subscribe, but none of them saw the events that 
+they were expecting to happen here.
+
+[00:58] What we need to do, as the name indicates -- this clock observable is a connectable observable -- we need to connect it. 
+After a while, we will call clock.connect, after, let's say, five seconds, which is after both B and A have subscribed. 
+We're also going to console.log that it was connected.
+
+[01:24] A subscribes, and B will subscribe, and at second five, it will get connected and both of them will see event zero and one, 
+and et cetera, and simultaneously because it's hot.
+
+[01:37] What if instead of connecting it after five seconds, we would connect it immediately when we create this observable? 
+Here, we would say clock.connect, and just to console.log out the moment when it's connected.
+
+[01:58] What happens now is, it will connect before A or B is subscribed, and that means that A did not see the event zero,
+ so A missed that event.
+
+[02:13] Now, this is nice because we actually have a race condition here where we want the event zero, but we missed it because we connected it before.
+
+[02:23] This is where RefCount comes in. If we called RefCount here and we run this again, we see that now A 
+gets the event zero, and one, and et cetera.
+
+[02:34] What does RefCount do? If you remember the live video analogy, a RefCount and a hot observable is analogous to a 
+ive video of a band playing at a concert, but the band doesn't start playing if there isn't anyone in the audience. 
+That would be a waste, right? So, why play if there is no one watching?
+
+[02:52] RefCount tells the band to play when there is at least one person in the audience, in other words, 
+when the number of observers goes from zero to one.
+
+[03:06] Another name for RefCount would have been, let's say, how to connect when observed. 
+That would be a perfectly valid name for RefCount, but it's called RefCount. It also works in the opposite direction, 
+that's why it's called reference counting. When the number of observers goes from one to zero, the band stops playing, so the connectable observable gets disconnected.
+
+[03:32] Often, you do not need to call connect. It is best just to use RefCount, because as a programmer, 
+you don't want to worry about when does the hot observable start and stop? This is why we use both Publish 
+to make it a connectable observable, in other words, hot, and RefCount to automatically connect the hot observable when it has observers

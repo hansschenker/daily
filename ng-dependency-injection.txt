@@ -1,0 +1,93 @@
+Dependency Injection
+----------------------------------------------------------------------------------------
+The idea behind dependency injection is very simple. 
+Hollywood Principle: Do not call us, we call you
+
+If you have a component that depends on a service, you do not create that service yourself. 
+
+Constructor Dependency Injection
+--------------------------------------------
+Instead, you request one in the constructor, 
+and the framework will provide you one. 
+
+By doing so you can depend on interfaces rather than concrete types. 
+This leads to more decoupled code, which enables testability, and other great things.
+
+Registering Providers
+---------------------------------------------
+To do that you need to register a provider, and there are two places where you can do it. 
+- One is in the component decorator.
+- And the other one is in the module decorator
+
+Generally, I recommend to register providers at the module level when they do not depend 
+on the DOM, components, or directives. And only UI-related providers that have to be scoped 
+to a particular component should be registered at the component level. 
+
+Since TalksAppBackend has nothing to do with the UI, register it at the module level.
+
+Injector Tree
+-------------------------------------------------------
+Now you know that the dependency injection configuration has two parts:
+
+- Registering providers: How and where an object should be created.
+- Injecting dependencies: What an object depends on.
+
+And everything an object depends on (services, directives, and elements) is injected into its constructor. 
+To make this work the framework builds a tree of injectors.
+
+Every DOM element with a component or a directive on it gets an injector. 
+------------------------------------------------------------------------------
+This injector contains the component instance, all the providers registered by the component, 
+and a few “local” objects (e.g., the element).
+
+When bootstrapping an NgModule, Angular creates an injector 
+-------------------------------------------------------------------------
+Second, when bootstrapping an NgModule, Angular creates an injector 
+using the module and the providers defined there.
+
+Dependency Resolution
+------------------------------------
+And this is how the dependency resolution algorithm works.
+
+// this is pseudocode.
+let inj = this;
+while (inj) {
+  if (inj.has(requestedDependency)) {
+    return inj.get(requestedDependency);
+  } else {
+    inj = inj.parent;
+  }
+}
+throw new NoProviderError(requestedDependency);
+
+When resolving the backend dependency of TalksCmp, 
+Angular will start with the injector of the talks component itself. 
+Then, if it is unsuccessful, it will climb up to the injector of the app component, and, finally, 
+will move up to the injector created from AppModule. 
+
+That is why, for TalksAppBackend to be resolved, you need to register it at TalkCmp, AppCmp, or AppModule.
+
+Lazy Loading
+-----------------------------------------------
+The setup gets more complex once you start using lazy-loading.
+
+Lazy-loading a module is akin to bootstrapping a module in that it creates a new injector out of the module 
+and plugs it into the injector tree. 
+
+Getting Injector
+-----------------------------------------------
+You can use ngProbe to poke at an injector associated with an element on the page. 
+You can also see an element’s injector when an exception is thrown.
+
+Let’s Recap
+----------------------------------------------------------------------
+Dependency injection is a key component of Angular.
+You can configure dependency injection at the component or module level.
+
+Dependency injection allows us to depend on interfaces rather than concrete types.
+--------------------------------------------------------------------------------
+This results in more decoupled code.
+This improves testability.
+
+
+

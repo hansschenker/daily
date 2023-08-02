@@ -1,0 +1,35 @@
+Modeling game state in XState
+December 22, 2019 at 11:15pm
+Are there any examples of folks handling game state in XState? I just wrote a simple snake game in vanilla js and attempted to move it over to XState but found myself overwhelmed with the possible approaches to the implementation.
+Struggling to decide between invoking callbacks or using null event / transient transitions for some aspects of the snake (i.e, eating apples and colliding with walls). I'd love to see an example of a game handled in XState as a reference, even a simple one.
+
+Like
+0
+
+David K. 🎹
+Hint: the game tick is an event. You can use that to implement a "game loop":
+function loop() {
+  requestAnimationFrame(() => {
+    service.send('TICK');
+    loop();
+  });
+}
+loop();
+Or you can have it be a service of the game itself, which makes it easier to test:
+invoke: {
+  src: () => (cb) => {
+    let frame;
+    function loop() {
+      frame = requestAnimationFrame(() => {
+        cb('TICK');
+        loop();
+      });
+    }
+    loop();
+    return () => { cancelAnimationFrame(frame) }
+  }
+}
+1
+
+5:16am
+Also, requestAnimationFrame passes in a high-res timestamp to the callback, which you can use in your 'TICK' event.

@@ -1,0 +1,405 @@
+
+
+type ObservableInput<T> = SubscribableOrPromise<T> | ArrayLike<T> | Iterable<T>;
+
+
+ the return type of the mapping function, provided to the higher-order operators, needs to be of ObservableInput type:
+
+-----------------------------------------------------------------
+group by log entries by day
+
+// DTO
+interface Log {
+  date: string;
+  message: string;
+  author: string;
+}
+
+// VM
+interface LogsDataByDay {
+  day: string;
+  logs: Log[];
+}
+
+// mock data
+const logs: Log[] = [
+  { date: '2022-03-21T12:00:00', message: '1st message', author: '1st author' },
+  { date: '2022-03-21T13:00:00', message: '2nd message', author: '2nd author' },
+  { date: '2022-03-25T12:00:00', message: '3rd message', author: '3rd author' },
+  { date: '2022-03-25T13:00:00', message: '4th message', author: '4th author' },
+  { date: '2022-03-25T14:00:00', message: '5th message', author: '5th author' },
+];
+
+
+const logsMapByDay: Map<string, Log[]> = logs.reduce(
+  (logsMapSoFar, nextLog) => {
+    const nextLogDay = nextLog.date.slice(0, 10);
+
+    if (!logsMapSoFar.has(nextLogDay)) {
+      logsMapSoFar.set(nextLogDay, []);
+    }
+
+    logsMapSoFar.get(nextLogDay).push(nextLog);
+
+    return logsMapSoFar;
+  },
+  new Map()
+);
+
+const logsByDay: LogsDataByDay[] = Array.from(
+  logsMapByDay.entries(),
+  ([day, logs]) => ({ day, logs })
+);
+
+---------------------------------------------------------------------------
+expand
+
+{ status: "pending" }
+{ status: "pending" }
+{ status: "completed" }
+
+
+
+enum AnalysisResultStatus {
+  Pending = 'pending',
+  Completed = 'completed',
+}
+
+interface AnalysisResult {
+  status: AnalysisResultStatus;
+  data?: unknown;
+}
+------------------------------------------------------------------------
+custom angular list trackBy
+
+
+<ul class="list-group">
+  <li
+    *ngFor="let car of cars; trackBy: ..."
+    class="list-group-item"
+    [hidden]="!car.isVisible"
+  >
+    <app-car [car]="car"></app-car>
+  </li>
+</ul>
+
+<button class="btn btn-danger" (click)="noop()">Trigger CD</button>
+<button class="btn btn-primary" (click)="fetchInitialCarsList()">
+  Fetch initial cars list
+</button>
+<button class="btn btn-primary" (click)="fetchModifiedCarsList()">
+  Fetch modified cars list
+</button>
+<button class="btn btn-warning" (click)="toggleMustang()">
+  Toggle Mustang
+</button>
+
+---
+Skip to content
+ 
+Search…
+All gists
+Back to GitHub
+Sign in
+Sign up
+Instantly share code, notes, and snippets.
+
+@wojtrawi
+wojtrawi/ng-custom-trackby-wt-2.ts
+Last active last year
+0
+0
+Code
+Revisions
+2
+<script src="https://gist.github.com/wojtrawi/ecc8f68fa4c99931f17219c61beaa7fb.js"></script>
+ng-custom-trackby-wt-2.ts
+@Component({
+  selector: 'my-app',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent {
+  public cars: CarVM[] = getInitialCarsList().map(mapToCarVM);
+
+  ...
+
+  private toggleableCars: string[] = ['Ford Mustang'];
+
+  public fetchInitialCarsList(): void {
+    this.cars = getInitialCarsList().map(mapToCarVM);
+  }
+
+  public fetchModifiedCarsList(): void {
+    this.cars = getModifiedCarsList().map(mapToCarVM);
+  }
+
+  public toggleMustang(): void {
+    this.cars = this.cars.map((car) => ({
+      ...car,
+      isVisible: this.toggleableCars.includes(car.name) ? !car.isVisible : true,
+    }));
+  }
+
+  public noop(): void {}
+}
+
+
+
+.....
+
+Skip to content
+ 
+Search…
+All gists
+Back to GitHub
+Sign in
+Sign up
+Instantly share code, notes, and snippets.
+
+@wojtrawi
+wojtrawi/ng-custom-trackby-wt-3.ts
+Created last year
+0
+0
+Code
+Revisions
+1
+<script src="https://gist.github.com/wojtrawi/6b8ae16dba18d755e5bb34188206a6aa.js"></script>
+ng-custom-trackby-wt-3.ts
+function getInitialCarsList(): Car[] {
+  return [
+    { id: 'abc123', brand: 'Porsche', model: '911' },
+    { id: 'abc456', brand: 'Ferrari', model: 'F40' },
+    { id: 'abc789', brand: 'Ford', model: 'Mustang' },
+  ];
+}
+
+function getModifiedCarsList(): Car[] {
+  return [
+    { id: 'abc123', brand: 'Porsche', model: '911' },
+    { id: 'abc789', brand: 'Ford', model: 'Mustang' },
+    { id: 'abc456', brand: 'Ferrari', model: 'F40' },
+  ];
+}
+
+function mapToCarVM({ id, brand, model }: Car): CarVM {
+  return {
+    id,
+    name: `${brand} ${model}`,
+    isVisible: true,
+  };
+}
+ to join this conversation on GitHub. Already have an account? Sign in to comment
+
+
+----------------
+@Component({
+  selector: 'app-car',
+  templateUrl: './car.component.html',
+  styleUrls: ['./car.component.css'],
+})
+export class CarComponent implements OnInit, OnChanges {
+  static INSTANCES_COUNT = 0;
+
+  @Input() car: CarVM;
+
+  private readonly id: number;
+
+  constructor() {
+    this.id = ++CarComponent.INSTANCES_COUNT;
+  }
+
+  public ngOnInit(): void {
+    console.log(`ngOnInit(${this.id}) for: ${this.car.name} (${this.car.id})`);
+  }
+
+  public ngOnChanges(): void {
+    console.log(
+      `ngOnChanges(${this.id}) for: ${this.car.name} (${this.car.id})`
+    );
+  }
+}
+
+------------
+rxjs combineLatest
+
+import { of, map, combineLatest } from 'rxjs';
+
+const name$ = of('Wojtek');
+const age$ = of(100);
+
+const data2$ = combineLatest({ name: name$, age: age$ }).pipe(
+  map(({ name, age }) => `${name} is ${age} years old!`)
+);
+
+------
+import { of, map, combineLatest } from 'rxjs';
+
+const name$ = of('Wojtek');
+const age$ = of(100);
+
+const data2$ = combineLatest({ name: name$, age: age$ }).pipe(
+  map(({ name, age }) => `${name} is ${age} years old!`)
+);
+
+-------
+rxjs custom operator for internet TTL
+
+import {
+  MonoTypeOperatorFunction,
+  pipe,
+  ReplaySubject,
+  share,
+  timer,
+} from 'rxjs';
+
+const REPLAY_COUNT = 1;
+const DEFAULT_CACHE_TTL = 30000;
+
+export function shareWithTTL<T>(
+  ttl: number = DEFAULT_CACHE_TTL
+): MonoTypeOperatorFunction<T> {
+  return pipe(
+    share({
+      connector: () => new ReplaySubject(REPLAY_COUNT),
+      resetOnComplete: () => timer(ttl),
+    })
+  );
+}
+
+......
+import { MonoTypeOperatorFunction, pipe, take } from 'rxjs';
+
+const SINGLE_VALUE = 1;
+
+export function snapshot<T>(): MonoTypeOperatorFunction<T> {
+  return pipe(take(SINGLE_VALUE));
+}
+
+---------
+import { MonoTypeOperatorFunction, pipe, take } from 'rxjs';
+
+const SINGLE_VALUE = 1;
+
+export function snapshot<T>(): MonoTypeOperatorFunction<T> {
+  return pipe(take(SINGLE_VALUE));
+}
+
+----------
+rxjs latest news
+
+import { Observable, of, Subject } from "rxjs";
+import { switchMap, withLatestFrom } from "rxjs/operators";
+
+function fetchNews(query: string): Observable<string> {
+  return of(`News for: ${query} query`);
+}
+
+function fetchPaginatedNews(query: string, page: number): Observable<string> {
+  return of(`News (page: ${page}) for: ${query} query`);
+}
+
+const fetchBtnClick$ = new Subject<void>();
+const query$ = of("sports");
+const page$ = of(2);
+
+const news$ = fetchBtnClick$.pipe(
+  withLatestFrom(query$),
+  switchMap(([click, query]) => fetchNews(query))
+);
+
+const paginatedNews$ = fetchBtnClick$.pipe(
+  withLatestFrom(query$, page$),
+  switchMap(([click, query, page]) => fetchPaginatedNews(query, page))
+);
+
+news$.subscribe(console.log);
+paginatedNews$.subscribe(console.log);
+
+fetchBtnClick$.next();
+
+// console output: News for: sports query
+// console output: News (page: 2) for: sports query
+
+--------
+import { Observable, OperatorFunction, pipe } from "rxjs";
+import { map, withLatestFrom } from "rxjs/operators";
+
+export function mapToLatest<T, D1>(d1: Observable<D1>): OperatorFunction<T, D1>;
+
+export function mapToLatest<T, D1, D2>(
+  d1: Observable<D1>,
+  d2: Observable<D2>
+): OperatorFunction<T, [D1, D2]>;
+
+export function mapToLatest<T, D1, D2, D3>(
+  d1: Observable<D1>,
+  d2: Observable<D2>,
+  d3: Observable<D3>
+): OperatorFunction<T, [D1, D2, D3]>;
+
+export function mapToLatest<T, D>(
+  ...latestData: Observable<any>[]
+): OperatorFunction<T, D> {
+  return pipe(
+    withLatestFrom(...latestData),
+    map(([_, ...data]) => data),
+    map(data => (data.length === 1 ? data[0] : data))
+  );
+}
+
+-----------
+import { Observable, of, Subject } from "rxjs";
+import { switchMap } from "rxjs/operators";
+
+import { mapToLatest } from "./map-to-latest";
+
+function fetchNews(query: string): Observable<string> {
+  return of(`News for: ${query} query`);
+}
+
+function fetchPaginatedNews(query: string, page: number): Observable<string> {
+  return of(`News (page: ${page}) for: ${query} query`);
+}
+
+const fetchBtnClick$ = new Subject<void>();
+const query$ = of("sports");
+const page$ = of(2);
+
+const news$ = fetchBtnClick$.pipe(
+  mapToLatest(query$),
+  switchMap(query => fetchNews(query))
+);
+
+const paginatedNews$ = fetchBtnClick$.pipe(
+  mapToLatest(query$, page$),
+  switchMap(([query, page]) => fetchPaginatedNews(query, page))
+);
+
+news$.subscribe(console.log);
+paginatedNews$.subscribe(console.log);
+
+fetchBtnClick$.next();
+
+// console output: News for: sports query
+// console output: News (page: 2) for: sports query
+
+------------
+generic search rxjs custom operator
+import { Observable } from 'rxjs';
+import { debounceTime, distinctUntilChanged, startWith, switchMap } from 'rxjs/operators';
+
+export function search<T, R>(
+  dataCb: (query: string) => Observable<R>,
+  delay = 250
+) {
+  return (source$: Observable<T>) => source$.pipe(
+    debounceTime(delay),
+    distinctUntilChanged(),
+    startWith(''),
+    switchMap(dataCb)
+  )
+}
+
+-------------------

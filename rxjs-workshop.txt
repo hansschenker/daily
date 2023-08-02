@@ -1,0 +1,388 @@
+Learning Rxjs
+
+https://github.com/Brooooooklyn/learning-rxjs
+
+
+Dieser Artikel ist der zweite in einer Reihe von Artikeln, die RxJS vorstellen.Diese Artikelserie 
+beginnt mit einem kleinen Beispiel und erklärt schrittweise die Anwendung von RxJS in verschiedenen Szenarien. 
+Entsprechend wird es auch Erläuterungen zu verschiedenen Operatoren von RxJS geben. Dieser Artikel wird dem
+ Beispiel im ersten Hello Rx folgen und mehr asynchrone Dienste (Http-Anfragen) in unsere Todo-App integrieren. 
+Im Beispiel werden weitere Operatoren (RxJS-Operator) zur Abwicklung unseres Geschäfts verwendet und die Funktionen 
+und Einsatzszenarien dieser Operatoren werden in nachfolgenden Artikeln ausführlich erläutert.
+Vorbereitung
+Erstellen Sie zunächst die für das Projekt erforderlichen Seeds auf GitHub – teambition/learning-rxjs: 
+Learning RxJS step by step clone, und checken Sie einen Branch Ihres Artikels2 basierend auf dem Article1-
+ Branch aus. Der gesamte Code, der RxJS in diesem Artikel beinhaltet, wird vollständig in TypeScript geschrieben.
+In diesem Artikel werden wir RxJS verwenden, um die folgenden Funktionen zu erreichen:
+
+Drücken Sie die Eingabetaste oder klicken Sie auf die Schaltfläche „Hinzufügen“, um eine Anfrage zu senden, 
+das Eingabefeld zu löschen, nachdem die Anfrage das Ergebnis zurückgegeben hat, und das zurückgegebene Ergebnis 
+in ein Aufgabenelement umzuwandeln. Wenn Sie die Eingabe- oder Hinzufügen-Taste erneut drücken, 
+bevor die Anfrage das Ergebnis zurückgibt, vergleichen Sie, ob der Wert des Eingabefelds zu diesem Zeitpunkt 
+derselbe ist wie der zuletzt gesendete Wert, wenn er derselbe ist, tun Sie nichts, wenn er anders ist , 
+brechen Sie die letzte Anfrage ab und senden Sie eine neue Anfrage.
+Senden Sie eine Anfrage, wenn auf ein Aufgabenelement geklickt wird, und es wird nur eine Anfrage für Klicks 
+innerhalb von 300 Millisekunden ausgegeben.
+Jedes Mal, wenn Sie ein Zeichen in das Eingabefeld eingeben, wird nach 200 Millisekunden eine Anfrage gesendet, 
+um nach einem vorhandenen Todo-Element zu suchen, und wenn es bereits vorhanden ist, wird das Todo-Element hervorgehoben.
+ Wenn ein neues Zeichen eingegeben wird, bevor das Ergebnis einer Suche zurückgegeben wird, wird die vorherige 
+Anfrage abgebrochen und eine Suchanfrage gesendet.
+Verwenden Sie switchMap, um Observables zu wechseln
+Um die Anforderungen zu erfüllen, müssen wir zunächst die Anforderungslogik zur ursprünglichen Logik hinzufügen. 
+Wir finden die mockHttpPost-Methode in lib.ts:
+
+
+
+export const mockHttpPost = (value: string): Observable<HttpResponse> => {
+  return Observable.create((observer: Observer<HttpResponse>) => {
+    let status = 'pending'
+    const timmer = setTimeout(() => {
+      const result = {
+        _id: ++dbIndex, value,
+        isDone: false
+      }
+      searchStorage.set(result._id, result)
+      status = 'done'
+      observer.next(result)
+      observer.complete()
+    }, random(10, 1000))
+    return () => {
+      clearTimeout(timmer)
+      if (status === 'pending') {
+        console.warn('post canceled')
+      }
+    }
+  })
+}
+Ich sende hier nicht wirklich eine HTTP-Anfrage.In einem echten Geschäftsszenario sollte der Prozess 
+zum Konvertieren der Anfrage in ein Observable wie folgt aussehen:
+
+
+
+Observable.create(observer => {
+  request(xxxx, response => {
+    // success callback
+    observer.next(parse(response))
+    observer.complete()
+  }, err => {
+    // error callback
+    observer.error(err)
+  })
+  // teardown logic
+  return () => request.abort()
+})
+Führen Sie mockHttpPost in app.ts ein :
+
+
+
+...
+import {
+  createTodoItem,
+  mockHttpPost
+} from './lib'
+
+...
+
+const item$ = input$
+  .map(() => $input.value)
+  .filter(r => r !== '')
+  .switchMap(mockHttpPost)
+  .map(data => createTodoItem(data.value))
+  .do((ele: HTMLLIElement) => {
+    $list.appendChild(ele)
+    $input.value = ''
+  })
+  .publishReplay(1)
+  .refCount()
+Ändern Sie das Hilfsprogramm „createTodoItem“, um eingehende HttpResponse-formatierte Daten zu unterstützen:
+
+
+
+// lib.ts
+export const createTodoItem = (data: HttpResponse) => {
+  const result = <HTMLLIElement>document.createElement('LI')
+  result.classList.add('list-group-item', `todo-item-${data._id}`)
+  result.setAttribute('data-id', `${data._id}`)
+  const innerHTML = `
+    ${data.value}
+    <button type="button" class="btn btn-default button-remove pull-right" aria-label="right Align">
+      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+    </button>
+  `
+  result.innerHTML = innerHTML
+  return result
+}
+Der Code im $item-Abschnitt kann also vereinfacht werden zu:
+
+
+
+const item$ = input$
+  .map(() => $input.value)
+  .filter(r => r !== '')
+  .switchMap(mockHttpPost)
+  .map(createTodoItem)
+  .do((ele: HTMLLIElement) => {
+    $list.appendChild(ele)
+    $input.value = ''
+  })
+  .publishReplay(1)
+  .refCount()
+Das Verhalten des Codes, der an dieser Stelle ausgeführt wird, ist wie folgt:
+
+Geben Sie den Wert direkt ein und drücken Sie die Eingabetaste, das Todo-Element wird wie zuvor erstellt
+Geben Sie den Wert ein und drücken Sie mehrmals die Eingabetaste, bevor das Todo-Element generiert wird. 
+Sie können sehen, dass die Anfrage mehrmals abgebrochen wurde:
+
+
+
+Die switchMap hier ist eigentlich map und switch , und das Verhalten des switch-Operators ist:
+
+Wenn die im Observable fließenden Daten auch Observable sind, abonniert Switch das neueste Observable 
+im Datenstrom und übergibt seinen Wert an den nächsten Operator und kündigt dann das vorherige Observable.
+Die switchMap hier ist also eigentlich:
+
+
+
+const item$ = input$
+  .map(() => $input.value)
+  .filter(r => r !== '')
+  .map(mockHttpPost)
+  .switch()
+  .map(createTodoItem)
+...
+
+Abkürzung von. Ebenso ist die zuvor verwendete mergeMap auch map und merge .
+Wenn Sie interessiert sind, können Sie den folgenden Code ausprobieren, um das Verhalten von switchMap zu beobachten:
+
+
+
+// 你可以在项目目录下执行: npm i -g ts-node && ts-node example/switchMap.ts 观察运行结果
+import { Observable, Observer } from 'rxjs'
+
+const stream = Observable.create((observer: Observer<number>) => {
+  let i = 0
+  const intervalId = setInterval(() => {
+    observer.next(++i)
+  }, 1000)
+  return () => clearInterval(intervalId)
+})
+
+function createIntervalObservable(base: number) {
+  let i = 0
+  return Observable.create((observer: Observer<string>) => {
+    const intervalId = setInterval(() => {
+      observer.next(`base: ${base}, value: ${++i}`)
+    }, 200)
+    return () => {
+      clearInterval(intervalId)
+      console.log(`unsubscribe base: ${base}`)
+    }
+  })
+}
+
+stream.switchMap(createIntervalObservable)
+  .subscribe(result => console.log(result))
+Filtern Sie Daten mit unterschiedlichen* Operatoren
+Aber die Logik fehlt hier noch ein wenig. Wir geben einen Wert ein und drücken mehrmals schnell die Eingabetaste. 
+Die ersten Anfragen werden abgebrochen, aber wenn sich der Eingabewert nicht ändert, müssen wir diese 
+Anfragen eigentlich nicht abbrechen, sondern einfach ignorieren die letzten Anfragen. Klicks. 
+Dies kann mit dem Distinct-Operator erreicht werden:
+
+
+
+const item$ = input$
+  .map(() => $input.value)
+  .filter(r => r !== '')
+  .distinct()
+  .switchMap(mockHttpPost)
+  .map(createTodoItem)
+  .do((ele: HTMLLIElement) => {
+    $list.appendChild(ele)
+    $input.value = ''
+  })
+  .publishReplay(1)
+  .refCount()
+Wenn Sie an dieser Stelle die Eingabetaste gedrückt halten, bevor die Anfrage zurückkehrt, 
+wird die vorherige Anfrage nur abgebrochen, wenn sich der Eingabewert ändert:
+
+
+
+
+
+
+
+
+Push-Daten mit Betreff
+An dieser Stelle gibt es noch ein kleines Problem: Geben Sie nach dem Generieren des 
+Todo-Items den gleichen Wert wie beim letzten Mal ein und drücken Sie die Eingabetaste. 
+Diesmal wird der Wert vom Distinct-Operator herausgefiltert. Um dieses Problem zu lösen, 
+können wir Flushes angeben, den zweiten Parameter des Distinct-Operators, um den Cache des Distinct-Operators zu löschen:
+
+
+
+import { Observable, Subject } from 'rxjs'
+...
+
+const clearInputSubject$ = new Subject<void>()
+
+const item$ = input$
+  .map(() => $input.value)
+  .filter(r => r !== '')
+  .distinct(null, clearInputSubject$)
+  .switchMap(mockHttpPost)
+  .map(createTodoItem)
+  .do((ele: HTMLLIElement) => {
+    $list.appendChild(ele)
+    $input.value = ''
+    clearInputSubject$.next()
+  })
+  .publishReplay(1)
+  .refCount()
+
+
+
+
+
+Das hier erscheinende Subjekt hat sowohl die Funktionalität des Beobachters als auch die Funktionalität 
+des Observable, aber es gibt einige Unterschiede. Wie im vorherigen Artikel erwähnt, ist Observable
+ Unioncast, was bedeutet, dass ein Wert in Observable nur an einen Abonnenten gesendet wird. 
+Der Publish/Share-Operator kann sie in Muticast umwandeln, aber es ist immer noch faul, das heißt, 
+es wird nur ausgeführt, wenn es Abonnenten gibt. Im Vergleich zu Observable ist Subject hier nicht 
+nur Muticast, sondern auch nicht faul, es kann jederzeit und überall Daten pushen, und diese Daten
+ können von beliebig vielen Abonnenten geteilt werden.
+Gemäß den Eigenschaften von Subject ist ersichtlich, dass das veröffentlichte Observable von item$ 
+
+in ein Subject umgeschrieben werden kann und interessierte Leser es selbst ausprobieren können
+ (Eingabe abonnieren und den nächsten Wert in Subscribe setzen).
+
+
+
+Verwenden Sie debounceTime, um doppelte Aktionen zu filtern
+Wir haben die erste Anforderung implementiert, und dann müssen wir die zweite erfüllen. 
+Senden Sie eine Anfrage, wenn auf ein Aufgabenelement geklickt wird. Klicks, bevor die 
+Anfrage das Ergebnis zurückgibt, werden ignoriert. Die Logik der Anfrage ist die gleiche wie die vorherige:
+
+
+
+...
+import {
+  createTodoItem,
+  mockToggle,
+  mockHttpPost
+} from './lib'
+...
+
+const toggle$ = item$.mergeMap($todoItem => {
+return Observable.fromEvent<MouseEvent>($todoItem, 'click')
+    .filter(e => e.target === $todoItem)
+    .mapTo({
+      data: {
+        _id: $todoItem.dataset['id'],
+        isDone: $todoItem.classList.contains('done')
+      }, $todoItem
+    })
+})
+  .switchMap(result => {
+    return mockToggle(result.data._id, result.data.isDone)
+      .mapTo(result.$todoItem)
+  })
+...
+Wiederholte Klicks in kurzer Zeit brechen die vorherige Klickanfrage ab, aber das entspricht 
+nicht unseren Anforderungen. Was wir brauchen, sind Klicks innerhalb von 300 Millisekunden, 
+und es wird nur eine Anfrage ausgegeben. Der debounceTime-Operator kann diese Arbeit erledigen:
+
+
+
+const toggle$ = item$.mergeMap($todoItem => {
+  return Observable.fromEvent<MouseEvent>($todoItem, 'click')
+    .debounceTime(300)
+    .filter(e => e.target === $todoItem)
+    .mapTo({
+      data: {
+        _id: $todoItem.dataset['id'],
+        isDone: $todoItem.classList.contains('done')
+      }, $todoItem
+    })
+})
+  .switchMap(result => {
+    return mockToggle(result.data._id, result.data.isDone)
+      .mapTo(result.$todoItem)
+  })
+
+
+
+
+
+debounce und switchMap, minimieren Sie die Nutzung Ihrer Ressourcen
+Die letzte Anforderung ist die gleichzeitige Verwendung von debounceTime und switchMap:
+
+
+
+...
+import {
+  createTodoItem,
+  mockToggle,
+  mockHttpPost,
+  search,
+  HttpResponse
+} from './lib'
+
+...
+// 后面的 search$ 与 enter 应该时从同一个 Observable 中转换出来，这里将 input 事件的 Observable publish 成 muticast
+const type$ = Observable.fromEvent<KeyboardEvent>($input, 'keydown')
+  .publish()
+  .refCount()
+
+const enter$ = type$
+  .filter(r => r.keyCode === 13)
+
+...
+const search$ = type$.debounceTime(200)
+  .filter(evt => evt.keyCode !== 13)
+  .map(result => (<HTMLInputElement>result.target).value)
+  .switchMap(search)
+  .do((result: HttpResponse | null) => {
+    const actived = document.querySelectorAll('.active')
+    Array.prototype.forEach.call(actived, (item: HTMLElement) => {
+      item.classList.remove('active')
+    })
+    if (result) {
+      const item = document.querySelector(`.todo-item-${result._id}`)
+      item.classList.add('active')
+    }
+  })
+
+const app$ = toggle$.merge(remove$, search$)
+  .do(r => {
+    console.log(r)
+  })
+
+Versuchen Sie, eine Reihe von Zeichenfolgen mit unterschiedlichen Geschwindigkeiten einzugeben, 
+und beobachten Sie, wie die Konsole reagiert. Eingaben innerhalb von 200 Millisekunden werden 
+ignoriert, und Eingaben vor der Rückgabe der Antwort brechen die vorherige Anforderung ab. 
+Wenn es mit demselben ToDo-Element übereinstimmt, wird es hervorgehoben.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Zusammenfassen
+Eine einfache Todo-App ist fertig (Löschen ist ähnlich wie Umschalten, Sie können es selbst
+ implementieren, wenn Sie interessiert sind), die einige Bereiche abdeckt, in denen RxJS gut ist:
+
+Abstrahieren Sie Sync/Async-Code in die gleiche Form und verwenden Sie Operatoren zum Kombinieren
+Kündigen Sie bei Bedarf, um Ressourceneinsparungen zu maximieren
+Aber es ist deutlich zu sehen, dass, nachdem das Geschäft komplexer geworden ist, die direkte Kombination 
+von Observable und Observable den Datenfluss schwer vorhersehbar gemacht hat ( schwer zu begründen ),
+ insbesondere in den komplexeren Szenarien, in denen sie voneinander abhängen und abgeleitet werden von einander.
+Wie wir alle wissen, ist Flux/Redux sehr gut im Umgang mit Szenarien dieser Art. Spätere Artikel werden auch d
+arüber sprechen, wie man Observable mit der Idee des unidirektionalen Datenflusses verwaltet und wie man Redux 
+Observable dazu verwendet Verwenden Sie RxJS als Epics of Redux.

@@ -1,0 +1,119 @@
+I need to write a simple snake game for my final school project but i got stuck on my last function. 
+I guess I don't really know how to use the datastructures perfectly. 
+The funcition doInstruction should give back True for this testcase doInstruction 
+(Turn East) (North, [(5, 7), (5, 6)], 2) == (East, [(5, 7), (5, 6)], 2) What am I doing wrong?
+
+My code:
+
+data Dir = West
+    | North
+    | East
+    | South deriving (Eq, Show)
+
+type Position = (Int, Int)
+type Snake = (Dir, [Position], Int)
+
+data Instruction = Move | Turn Dir deriving (Eq, Show)
+
+isOppositeDir :: Dir -> Dir -> Bool
+isOppositeDir West East = True
+isOppositeDir East West = True
+isOppositeDir North South = True
+isOppositeDir South North = True
+isOppositeDir _ _ = False
+
+oppositeDir :: Dir -> Dir
+oppositeDir West = East
+oppositeDir East = West
+oppositeDir North = South
+oppositeDir South = North
+
+nextPos :: Dir -> Position -> Position
+nextPos x (a,b)
+    | x == West = (a - 1 , b)
+    | x == East = (a + 1 , b)
+    | x == North = (a , b + 1)
+    | x == South = (a , b - 1)
+    | otherwise = (a , b)
+
+doInstruction :: Instruction -> Snake -> Snake
+doInstruction ins s 
+    | ins == Turn Dir = (oppositeDir Dir, [Position], length [Position])
+The errors I get:
+
+E:\\ELTE\2019_1_Funkcprog\hf13.hs:34:19: error:
+    Data constructor not in scope: Dir :: Dir
+   |
+34 |     | ins == Turn Dir = (oppositeDir Dir, [Position], length [Position])
+   |                   ^^^
+
+E:\\ELTE\2019_1_Funkcprog\hf13.hs:34:38: error:
+    Data constructor not in scope: Dir :: Dir
+   |
+34 |     | ins == Turn Dir = (oppositeDir Dir, [Position], length [Position])
+   |                                      ^^^
+
+E:\\ELTE\2019_1_Funkcprog\hf13.hs:34:44: error:
+    Data constructor not in scope: Position :: Position
+   |
+34 |     | ins == Turn Dir = (oppositeDir Dir, [Position], length [Position])
+   |                                            ^^^^^^^^
+
+E:\\ELTE\2019_1_Funkcprog\hf13.hs:34:63: error:
+    Data constructor not in scope: Position
+   |
+34 |     | ins == Turn Dir = (oppositeDir Dir, [Position], length [Position])
+   |                                                               ^^^^^^^^
+haskell
+Share
+Improve this question
+Follow
+asked Dec 20 '19 at 11:02
+
+vNSkyline
+9355 bronze badges
+3
+Dir, Position, etc. are not values (dat constructors), but types. Hence that does not make much sense. – 
+Willem Van Onsem
+ Dec 20 '19 at 11:03
+Casing of names is crucial in Haskell. In particular all variables, including functions, 
+must start with a lowercase letter - the only exception is constructor functions, which are defined 
+as part of data (and newtype) declarations. Had you use dir instead of Dir here you would have been fine. – 
+Robin Zigmond
+ Dec 20 '19 at 11:52 
+Add a comment
+1 Answer
+
+3
+
+You need to use pattern matching to "unpack" the data constructor. Variables in Haskell start with a lowercase. 
+We thus can unpack the Instruction object, and the 3-tuple that represents the snake:
+
+doInstruction :: Instruction -> Snake -> Snake
+doInstruction (Turn dir) (_, p, l) = (dir, p, l)
+Share
+Improve this answer
+Follow
+answered Dec 20 '19 at 11:05
+
+Willem Van Onsem
+360k2828 gold badges325325 silver badges440440 bronze badges
+Now it's working fine for the Turn instruction, but the Move not coming together. It looks like 
+this : doInstruction (Move) (d, p, l) = (d, nextPos d p, l) and i got typerrors for [Poistion] and Position – 
+vNSkyline
+ Dec 20 '19 at 12:29 
+@vNSkyline You have that p is a list-of-positions, but nextPos only expects one position. Also, 
+nextPos only returns a single position, while you need a list-of-positions in the tuple. I'd recommend 
+to write an auxiliary function nextPosList ::  Dir -> [Position] -> [Position] which can exploit your nextPos. 
+You probaly need to "move" the snake, removing the last element from the list, and adding the new one in the front 
+(or vice versa, depending on which side of the list is the "head" of the snake). – 
+chi
+ Dec 20 '19 at 13:00
+@chi That's sound good, but how can i iterate through the list of tuples and change their value, or remove them 
+and insert new ones applied with the nextPos function? – 
+vNSkyline
+ Dec 20 '19 at 13:30
+1
+@vNSkyline If I understood correctly, you don't need to change their values very much. You need to drop the 
+last (init does that), and prepend the new one (x:xs prepends x to xs). Don't think of the snake as an array 
+(where you would need to change each cell), but as a list (where you can append/prepend cells).

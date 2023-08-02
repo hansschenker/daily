@@ -1,0 +1,153 @@
+Typescript Workshop - Titian Cernicova-Dragomir
+
+
+What is a Type
+---------------------------------------------------
+- is a value space
+- is a set of possible inhabitants
+
+number - set of all floating point values - infinite inhabitants
+string - set of all text values - infinite inhabitants
+boolean - set with the values true and false - 2 inhabitants
+
+special types
+-----------------------------------------------------
+any     - anything including null and undefined
+unknown - the set of all possible values in Javascript
+never   - the empty set
+
+Types are sets
+------------------------------------------------------
+
+set operations are union and intersection
+
+Union - allow for modeling options: a Professional is either a Doctor or an Engineer, 
+a fruit is either an Oranger or a Banana
+--------------------------------------------------------
+Union gives you a list of Options: Doctor, Engineer, Lawer,...
+In Redux you can model Actions as Unions: type Action = Add or Update or Delete, case Action Add, case Action Update, ...
+In Javascript you can model Events: type Event = Click or Hide or Show or Toggle, ....
+
+Sum Types
+
+{foo: string} or {bar: number}
+the set of all objects that either 
+- have a foo property of type string 
+or
+- have bar property of type number
+
+string or number - the set of values that are either strings or numbers
+
+Intersection -  Product Types (the set which is common to all involved types (Collection of properties - Record, Tuple,...)
+-----------------------------------------------------------------------------
+
+
+
+Typescript Type Narrowing
+--------------------------
+Widening: treat an internal type as a normal one.
+--------------------------------------------------
+const one = 1; // 'one' has type: 1
+let num = 1;   // 'num' has type: number
+
+enum State {
+  Start,
+  Expression,
+  Term,
+  End
+}
+const start = State.Start;
+let state = start;
+let ch = '';
+while (ch = nextChar()) {
+  switch (state) {
+    // ... imagine your favourite tokeniser here
+  }
+}
+
+Literal widening: treat a literal type as a primitive one.
+--------------------------------------------------------
+
+Narrowing: remove constituents from a union type.
+--------------------------------------------------------
+
+Instanceof narrowing: treat a type as a subclass.
+--------------------------------------------------------
+
+Apparent type: treat a non-object type as an object type.
+--------------------------------------------------------
+
+narrowing a simple type (number , string, ...)
+-------------------------
+- use typeof: type name === "string"
+
+narrowing object type
+----------------------
+- use in operator: type Square = {size: number}, type Rectangle = {width: number}
+  if ("size" in shape)
+- use discriminated union
+  type Square = {type: "square" ,size: number}, type Rectangle = {type:"rectangle",width: number}
+
+narrowing a class
+---------------------
+- use instanceof 
+  if (dog is instanceof Animal)
+
+- type narrowing with a user defined guard
+  function isSquare(shape) : shape is Square {
+     return "size" in shape
+  }
+ 
+The narrowest type that Typescript can have is
+- never : never can hold no value it is the empty set
+
+- types can be narrowed with the help of never
+  in the case of a conditonal type
+
+typeof type guards
+
+Truthiness narrowing
+
+Equality narrowing
+
+The in operator narrowing
+
+instanceof narrowing
+
+Assignments
+
+Control flow analysis
+
+Using type predicates
+
+Discriminated unions
+------------------------
+Discriminated unions are useful for more than just talking about circles and squares. 
+They're good for representing any sort of messaging scheme in JavaScript, 
+- sending messages over the network (client/server communication), 
+- encoding mutations in a state management framework.
+
+
+The never type
+
+Exhaustiveness checking
+
+user defined guaard
+---------------
+Type predicates
+Type predicates follow the same rules as instanceof when narrowing, and are just as subject to misuse. 
+So this example is equivalent to the previous wonky one:
+
+function isE(e: any): e is E {
+  return e.e;
+}
+function f(x: C) {
+  if (isE(x)) {
+    // x is C & E here
+  }
+  else {
+    // nope, still just C
+  }
+}
+
+

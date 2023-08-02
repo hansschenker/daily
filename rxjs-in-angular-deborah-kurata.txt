@@ -1,0 +1,996 @@
+const input$ = fromEvent(textInput, 'keyup');
+
+map(event > £
+const term = event.target.value;
+Mane eat, ajax.getJSON(
+
+“https://api.github.com/users/${term} ~
+
+1
+
+3),
+debounceTime(1000),
+
+mergeAll()
+)-subscribe(obs => £
+obs. subscribe(console.1log);
+
+Mapping returned data
+Combining streams
+Reacting to actions
+Caching Observables
+Higher-order mapping operators
+Combining all the streams
+
+Start the stream
+- Emit items into the stream
+Items pass through a set of operations As
+an observer
+- Next item, process it
+- Error occurred, handle it
+- Complete, you're done
+Stop the stream
+
+Processing Observable Streams
+Apple Factory
+Start the stream -
+Emits items
+Items pass through a set of operations
+As an observer
+- Next item, process it
+- Error occurred, handle it
+- Complete, you're done
+Stop the stream
+RxJS
+Subscribe
+- Emits items
+Pipe through a set of operators
+Observer
+- next()
+- error()
+- complete()
+Unsubscribe
+
+As an observer
+Next item, process it
+Error occurred, handle it
+Complete, you're done
+Observer
+next()
+error()
+complete()
+Observes the stream and
+responds to its notifications
+
+"A JavaScript object that defines the handlers
+for the notifications you receive."
+In RxJS, an Observer is also defined
+as an interface with next, error, and
+complete methods.
+Observer
+next()
+error()
+complete()
+Observes the stream and
+responds to its notifications
+"Observer: is a collection of callbacks that
+knows how to listen to values delivered by the
+Observable."
+
+Subscriber
+Subscriber
+next()
+error()
+complete()
+Observer that can unsubscribe
+from an Observable
+Observer
+next()
+error()
+complete()
+Observes the stream and
+responds to its notifications
+
+Observer
+const observer = {
+next: apple => console.log(`Apple was emitted ${apple}`),
+error: err => console.log(`Error occurred: ${err}`),
+complete: () => console.log(`No more apples, go home`)
+};
+
+Observable Stream
+Stream of apples moving on a
+conveyor
+Any stream of data, optionally
+produced over time
+- Numbers
+- Strings
+- Events
+- Object literals
+- Response returned from an
+HTTP request
+- Other Observable streams
+
+Observable Stream
+Observables can be synchronous
+or asynchronous
+Observables can emit a fini
+---
+or infinite number of values
+1
+Any stream of data, optionally
+produced over time
+- Numbers
+- Strings
+- Events
+- Object literals
+- Response returned from an
+HTTP request
+- Other Observable streams
+Also called:
+- An Observable sequence
+- An Observable
+- A stream
+te
+Observable
+const observer = {
+next: apple => console.log(`Apple was emitted ${apple}`),
+error: err => console.log(`Error occurred: ${err}`),
+complete: () => console.log(`No more apples, go home`)
+};
+const appleStream = new Observable(appleObserver => {
+appleObserver.next('Apple 1');
+appleObserver.next('Apple 2');
+appleObserver.complete();
+});
+
+Subscription
+Start the stream
+Emits items
+Items pass through a set of
+operations
+As an observer
+Next item, process it
+Error occurred, handle it
+Complete, you're done
+Stop the stream
+
+Subscription
+const observer = {
+next: apple => console.log(`Apple was emitted ${apple}`),
+error: err => console.log(`Error occurred: ${err}`),
+complete: () => console.log(`No more apples, go home`)
+};
+const appleStream = new Observable(appleObserver => {
+appleObserver.next('Apple 1');
+appleObserver.next('Apple 2');
+appleObserver.complete();
+});
+
+Start the stream
+Emit items
+Items pass through a set of
+operations
+As an observer
+Next item, process it
+Error occurred, handle it
+Complete, you're done
+Stop the stream
+
+is a transformation operator
+Takes in an input stream, subscribes
+Creates an output stream
+When an item is emitted
+Item is transformed as specified by a
+provided function
+Item is emitted to the output stream
+map
+-
+-
+-
+-
+
+Async Pipe
+Subscribes to the Observable when
+component is initialized
+Returns each emitted value
+When a new item is emitted, component is
+marked to be checked for changes
+Unsubscribes when component is
+destroyed
+"products$ | async"
+
+<div *ngIf="products$ | async as products">
+<table>
+<tr *ngFor="let product of products">
+<td>{{ product.productName }}</td>
+<td>{{ product.productCode }}</td>
+</tr>
+</table>
+
+Catches any errors that occur an an
+Observable
+Used for catching errors and
+Rethrowing an error
+Or replacing the errored Observable to
+continue after an error occurs
+-
+-
+catchError(this.handleError)
+Catch and Replace
+Product Service
+return this.http.get<Product[]>(this.productsUrl)
+.pipe(
+catchError(err => {
+console.error(err);
+return of([{ id: 1, productName: 'cart'},
+{ id: 2, productName: 'hammer'}]);
+});
+
+return this.http.get<Product[]>(this.url)
+.pipe(
+catchError(err => {
+console.error(err);
+return of(
+[{ id: 1, productName: 'cart'},
+{ id: 2, productName: 'hammer'}
+]);
+})
+);
+
+is an error handling operator
+Takes in an input stream, subscribes
+Creates an output stream
+When a source item is emitted
+Item is emitted to the output stream
+If an error occurs
+Catches the error
+Unsubscribes from the input stream
+Returns a replacement Observable
+Optionally rethrows the error
+cat chEr r or
+
+Catch and Rethrow
+Product Service
+return this.http.get<Product[]>(this.productsUrl)
+.pipe(
+catchError(err => {
+console.error(err);
+return throwError(err);
+});
+
+Creates an Observable that emits no items
+And immediately emits an error notification
+Used for
+Propagating an error
+
+Common Pattern with Error Handling
+Product Service
+private productsUrl = 'api/products';
+getProducts(): Observable<Product[]> {
+return this.http.get<Product[]>(this.productsUrl)
+.pipe(
+catchError(this.handleError)
+);
+}
+private handleError(err) {
+// ...
+return throwError(errorMessage);
+}
+
+Error Handling
+Product List Component
+Product List Component
+this.products$ = this.productService.getProducts();
+this.productService.getProducts()
+.subscribe(
+products => this.products = products,
+err => this.errorMessage = err
+);
+this.products$ = this.productService.getProducts()
+.pipe(
+catchError(err => {
+this.errorMessage = err;
+return ???;
+})
+);
+
+Returns an Observable that emits no items
+And immediately emits a complete
+notification
+Used for
+Returning an empty Observable
+EMPTY
+-
+return EMPTY;
+
+Error Handling
+Product List Component
+this.products$ = this.productService.getProducts()
+.pipe(
+catchError(err => {
+this.errorMessage = err;
+return EMPTY;
+})
+);
+
+Declarative Pattern
+Product Service
+Product List Component
+private productsUrl = 'api/products';
+products$ = this.http.get<Product[]>(this.productsUrl);
+products$ = this.productService.products$;
+
+data retrieval pattern
+Build a service
+Set a property to the Observable
+returned from http.get
+Use the type argument to map the
+response to the desired shape
+When the response is received, it's
+emitted and the Observable completes
+Pipe through desired operators
+-
+-
+-
+-
+private productsUrl = 'api/products';
+products$ = this.http.get<Product[]>(this.productsUrl)
+.pipe(
+catchError(this.handleError)
+);
+
+Data Retrieval
+In the template, use an async pipe
+<div *ngIf="products$ | async as products">
+<table>
+<tr *ngFor="let product of products">
+<td>{{ product.productName }}</td>
+<td>{{ product.productCode }}</td>
+</tr>
+</table>
+
+Catch and replace
+An Observable that emits an alternate
+set of data
+An Observable that emits an empty set
+EMPTY
+Catch and rethrow
+-
+-
+-
+catchError(err => {
+console.error(err);
+return throwError(err);
+})
+catchError(err => {
+this.errorMessage = err;
+return EMPTY;
+})
+
+cat chError
+replace obs with new obs
+
+throwError
+create new obs emit error notiication
+
+products$ = this.http.get<Product[]>(this.productsUrl)
+.pipe(
+catchError(err => {
+console.error(err);
+return throwError(err);
+});
+                         
+mapping data
+------------
+Transform a value: 'Y' -> true; 'N' -> false
+Change a field name: p_nm -> productName
+Add a calculated field:
+pr of i t = pr i ce - cost
+
+Mapping an Emitted Array
+products$ = this.http.get<Product[]>(this.productsUrl)
+.pipe(
+map(products =>
+...
+),
+catchError(this.handleError)
+);
+
+Mapping Array Elements
+products$ = this.http.get<Product[]>(this.productsUrl)
+.pipe(
+map(products =>
+products.map(product => ...)
+),
+catchError(this.handleError)
+);
+
+products.map(product => ({
+id: product.id,
+productName: product.productName,
+productCode: product.productCode,
+description: product.description,
+price: product.price * 1.5,
+searchKey: [product.productName]
+}) as Product)
+products.map(product => ({
+...product,
+price: product.price * 1.5,
+searchKey: [product.productName]
+}) as Product)
+
+Define an object literal of the desired type
+Leverage the spread operator
+Replace or add fields as needed
+Use the as clause to type the result
+products.map(product => ({
+...product,
+price: product.price * 1.5,
+searchKey: [product.productName]
+}) as Product)
+
+combining streams
+-----------------
+combi neLat est
+f or kJoi n
+wi t hLat est Fr om
+
+Creates an Observable whose values are
+defined:
+Using the latest values from each input
+Observable
+Static creation function, not a pipeable
+operator
+combi neLat est
+-
+combineLatest([a$, b$, c$])
+
+is a combination function
+Takes in a set of streams, subscribes
+Creates an output stream
+When an item is emitted from any stream
+If all streams have emitted at least once
+Emits a value to the output stream
+Completes when all input streams
+complete
+Emitted value combines the latest emitted
+value from each input stream into an array
+combi neLat est
+
+Creates an Observable whose value is
+defined
+Using the last value from each input
+Observable
+Static creation function, not a pipeable
+operator
+f or kJoi n
+-
+forkJoin([a$, b$, c$])
+
+Creates an Observable whose value is
+defined
+Using the last value from each input
+Observable
+Static creation function, not a pipeable
+operator
+f or kJoi n
+-
+forkJoin([a$, b$, c$])
+
+is a combination function
+Takes in a set of streams, subscribes
+Creates an output stream
+When all input streams complete
+Emits a value to the output stream
+And completes
+Emitted value combines the last emitted
+value from each input stream into an array
+f or kJoi n
+To wait to process any results until all
+streams are complete
+Don't use when working with streams that
+don't complete
+f or kJoi n
+
+Creates an Observable whose values are
+defined
+
+Using the latest values from each input
+Observable
+But only when the source stream emits
+Pipeable operator
+withLatestFrom
+a$.pipe(withLatestFrom(b$, c$))
+
+withLatesrom
+--------------
+Takes in a set of streams, subscribes
+Creates an output stream
+
+
+When an item is emitted from source stream
+If all streams have emitted at least once
+Emits a value to the output stream
+Completes when the source stream
+completes
+Emitted value combines the latest emitted
+value from each input stream into an array
+
+Combine the streams
+Map the items
+productsWithCategory$ = combineLatest(
+this.products$,
+this.productCategories$
+)
+.pipe(
+map([products, categories] =>
+products.map(product => ({
+...product,
+category: categories.find(
+c => product.categoryId === c.id
+).name
+}) as Product))
+);
+
+Subject
+-----------------
+private categorySelectedSubject = new Subject<number>();
+categorySelectedAction$ = this.categorySelectedSubject.asObservable();
+onSelected(categoryId): void {
+this.categorySelectedSubject.next(+categoryId);
+}
+products$ = combineLatest([
+this.productService.products$,
+this.categorySelectedAction$
+])
+.pipe(
+map(([products, categoryId]) =>
+products.filter(product =>
+categoryId ? product.categoryId === categoryId : true)
+)
+);
+
+BehaviorSubject
+------------------
+private categorySelectedSubject = new BehaviorSubject<number>(0);
+categorySelectedAction$ = this.categorySelectedSubject.asObservable();
+onSelected(categoryId): void {
+this.categorySelectedSubject.next(+categoryId);
+}
+products$ = combineLatest([
+this.productService.products$,
+this.categorySelectedAction$
+])
+.pipe(
+map(([products, categoryId]) =>
+products.filter(product =>
+categoryId ? product.categoryId === categoryId : true)
+)
+);
+
+Reacting to Actions
+----------------------
+Create an action stream (Subject/BehaviorSubject)
+Combine the action stream and data stream
+Emit a value to the action stream when an action occurs
+
+startWith, endWith, concatMap, concat, concatAll
+
+---------------------
+is a concatenation operator
+
+Takes in an input stream, subscribes
+Creates an output stream
+When a source item is emitted
+If it's the first item, it emits the specified
+initial value(s), then ...
+lt emits the item to the output stream
+Initial value(s) must be the same type as
+the input Observable
+st ar t Wi t h
+
+
+Create an Action Stream
+----------------------------
+Create an action stream (Subject/BehaviorSubject)
+Combine the action and data streams
+Emit a value to the action stream when an action
+occurs
+.J.
+selSubject = new Subject<number>();
+selectedAction$ = this.selSubject.asObservable();
+products$ = combineLatest([
+this.productService.products$,
+this.selectedAction$
+]).pipe(...);
+onSelected(id): void {
+this.selSubject.next(+id);
+}
+
+: Only emits items that match
+criteria
+: Defines an initial value emitted
+before the input stream values
+
+f i l t er
+st ar t Wi t h
+filter(item => item === 'Apple')
+startWith('Orange')
+
+merge
+--------------------------
+Combines multiple streams by merging
+their emissions
+Static creation function, not a pipeable
+operator
+Used for
+Combining sequences of similar types to
+blend their emitted values
+-
+merge(a$, b$, c$)
+
+merge is a combination function
+Takes in a set of streams, subscribes
+Creates an output stream
+When an item is emitted from any stream
+Item is emitted to the output stream
+Completes when all input streams
+complete
+
+scan
+--------------
+Accumulates items in a stream
+Used for
+Totaling amounts
+Accumulating items into an array
+-
+-
+scan((acc, curr) => acc + curr)
+
+scan is a transformation operator
+
+Takes in an input stream, subscribes
+Creates an output stream
+When a item is emitted
+Item is accumulated as specified by a
+provided function
+Intermediate result is emitted to the
+output stream
+
+Add operation with scan
+---------------------------------
+Create an action stream (Subject/BehaviorSubject)
+Combine the action and data streams
+Emit a value to the action stream when an action
+occurs
+selSubject = new Subject<number>();
+selectedAction$ = this.selSubject.asObservable();
+products$ = combineLatest([
+this.productService.products$,
+this.selectedAction$
+]).pipe(...);
+onSelected(id): void {
+this.selSubject.next(+id);
+}
+
+React to a Selection Action
+--------------------------
+private pSelSubject = new BehaviorSubject<number>(0);
+pSelAction$ = this.pSelSubject.asObservable();
+selectedProduct$ = combineLatest([
+this.productsWithCategory$,
+this.pSelAction$
+])
+.pipe(
+map(([products, selectedProductId]) =>
+products.find(product => product.id ===
+selectedProductId)
+)
+);
+selProdChanged(selectedProductId){
+this.pSelSubject.next(selectedProductId);
+}
+
+Reacting to an Error
+------------------------------------------
+
+private errorSubject = new Subject<string>();
+error$ = this.errorSubject.asObservable();
+product$ = this.productService.selectedProduct$
+.pipe(
+catchError(err => {
+this.errorSubject.next(err);
+return EMPTY;
+})
+);
+<div
+*ngIf="error$ | async as errorMessage">
+{{errorMessage}}
+</div>
+
+
+Reacting to an Add Operation with
+----------------------------------
+
+merge(
+this.products$,
+this.insertAction$
+)
+.pipe(
+scan((acc: Product[],
+value: Product) =>
+[...acc, value])
+);
+
+Caching Observables
+-----------------------------------
+)3333333
+33
+2322 2
+0111,
+Retain retrieved data locally
+Reuse previously retrieved data
+Stored in memory or external
+
+cache with shareReplay()
+--------------------------
+Product Service
+private productsUrl = 'api/products';
+products$ = this.http.get<Product[]>(this.productsUrl)
+.pipe(
+shareReplay(1),
+catchError(this.handleError)
+);
+
+shareReplay
+----------------------------------
+Shares the stream with other subscribers
+Replays the defined number of emissions
+an subscription
+Used for
+Caching data in the application
+shar eRepl ay
+-
+shareReplay(1)
+
+is a multicast operator
+-----------------------------
+
+Returns a Subject that shares a single
+subscription to the underlying source
+Takes in an optional buffer size, which is
+the number of items cached and replayed
+On a subscribe, it replays a specified
+number of emissions
+The items stays cached forever, even after
+there are no more subscribers
+shar eRepl ay
+
+Caching Observables
+Use an any stream you wish
+to share and replay to all new subscribers
+shar eRepl ay
+productCategories$ = this.http.get<ProductCategory[]>(this.url)
+.pipe(
+tap(data => console.log('categories', data)),
+shareReplay(1),
+catchError(this.handleError)
+);
+
+Cache Invalidation
+-------------------------
+Evaluate:
+Fluidity of data
+Users' behavior
+Consider
+Invalidating the cache on a time interval
+Allowing the user to control when data
+is refreshed
+Always getting fresh data on update
+operations
+
+Higher Order Observables (map + concatAll = concatMap, map + mergeAll = mergeMap, map + switchAll = switchMap, map + concatAll = concatMap)
+-------------------------
+concatMap = map + concatAll
+mergeMap = map + mergeAll
+switchMap = map + switchAll
+concatMap = map + concatAll
+
+Higher-order RxJS Mapping Operators
+-------------------------------------
+
+Family of Operators: xxxMapo
+Map each value
+From a source (outer) Observable
+To a new (inner) Observable
+Automatically subscribe/unsubscribe from
+inner Observables
+Emit the resulting values to the output
+Observable
+
+concatMap = Higher-order mapping + concatenation
+---------------------------
+map
+--------
+Transforms each emitted item to a new
+(inner) Observable as defined by a map function
+concat
+---------
+lt waits for each inner Observable tocomplete before 
+processing the next one and concatenates their results in sequence
+
+
+mergeMap
+-----------
+
+Higher-order mapping + merging
+------------------------------------------------------------------------------------------------------------------------------------------------------
+input observable
+
+	in$ --------4---5------------------x
+
+inner observables
+
+	is4$ -a--b---c---X
+	   is5$ ---4---5---6--X
+
+output observable
+
+out$ --------a--b--4-c-5---6---------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Transforms each emitted item to a new
+(inner) Observable as defined by a function
+lt executes inner Observables in parallel
+And merges their results
+mer geMap
+mergeMap(i => of(i))
+
+mergeMap
+.......................
+is a transformation operator
+Takes in an input stream, subscribes
+Creates an output stream
+When each item is emitted
+Item is mapped to a inner Observable as
+specified by a provided function
+Subscribes to inner Observable
+Inner Observable emissions are merged
+to the output stream
+
+switchMap
+---------------
+Higher-order mapping + switching
+Transforms each emitted item to a new
+(inner) Observable as defined by a function
+Unsubscribes the Prior inner Observable
+and switches to the new inner Observable
+swi t chMap
+switchMap(i => of(i))
+
+
+is a transformation operator
+-----------------------------
+Takes in an input stream, subscribes
+Creates an output stream
+When each item is emitted
+Item is mapped to an inner Observable as
+specified by a provided function
+Unsubscribes from prior inner Observable
+Subscribes to new inner Observable
+Inner Observable emissions are merged
+to the output stream
+
+switchMap Use Case
+----------------------
+To stop any prior Observable before
+switching to the next one
+Examples:
+Type ahead or auto completion
+User selection from a list
+
+Higher-Order Mapping
+------------------------------
+Use higher-order mapping operators
+To map emitted items to a new Observable
+Automatically subscribe to and unsubscribe from
+that Observable
+And emit the results to the output stream
+Higher-order mapping operator functions
+Take in an item and return an Observable
+Use instead of nested subscribes
+
+Higher-Order Mapping Operators
+----------------------------------
+Waits for inner Observable to complete
+before processing the next one
+Processes inner Observables in parallel
+Unsubscribes from the Prior inner
+Observable and switches to the new one
+
+concatMap
+mergeMap
+switchMap
+
+Combining Streams
+----------------------------------------
+Handling related data
+Creating ancillary streams
+Combining all the streams
+
+Get it All or Get it just in Time (mergeMap)
+--------------------------------------------
+
+Related Data Stream
+Get lt All
+Declarative pattern
+Combine streams
+Displays instantly
+Gets all data
+Just in Time
+More complex code
+Higher-order mapping operators
+Display delay
+Only retrieves required data
+
+
+Multiple Async Pipes
+--------------------
+<div *ngIf="pageTitle$ | async as pageTitle">
+{{pageTitle}}
+</div>
+<table *ngIf="productSuppliers$ | async as productSuppliers">
+<div *ngIf="product$ | async as product">
+<div *ngIf="vm$ | async as vm ">
+
+
+Get it all (combineLatest)
+--------------
+Gets all data from the related dataset
+Filters that dataset to find the related data
+
+Related Data Streams: Get lt All
+----------------------------------
+
+selectedProductSuppliers$ = combineLatest(
+this.selectedProduct$,
+this.supplierService.suppliers$
+).pipe(
+map(([selectedProduct, suppliers]) =>
+suppliers.filter(supplier =>
+selectedProduct.supplierIds.includes(supplier.id)
+)));
+
+
+
+Just in time (mergeMap)
+-------------------
+Gets just the related data items as needed
+Related Data Streams: Just in Time
+
+selectedProductSuppliers$ = this.selectedProduct$
+.pipe(
+filter(product => Boolean(product)),
+switchMap(product =>
+from(product.supplierIds)
+.pipe(
+mergeMap(supplierId =>
+this.http.get<Supplier>(`${url}/${supplierId}`)),
+toArray()
+)));
+
+ViewModel: combine all the streams:
+--------------------------------------
+
+vm$ = combineLatest([
+this.product$,
+this.productSuppliers$,
+this.pageTitle$
+])
+.pipe(
+map(([product, productSuppliers, pageTitle]) =>
+({ product, productSuppliers, pageTitle }))
+);
+<div *ngIf="vm$ | async as vm">
+

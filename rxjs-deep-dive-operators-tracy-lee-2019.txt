@@ -1,0 +1,104 @@
+RxJs Operators (the most common and important ones)
+--------------------------------------------------------------------------------------------
+
+
+scan operator, 
+which applies a reducer function over the source observable and returns each intermediate result 
+with an optional seed value. 
+
+The primary use case for scan is managing state in a stream, 
+-it can be used to create a Redux pattern in RxJS. 
+to use scan to create 
+a state stream from a stream of actions using a reducer function.
+
+marble diagrams in RxJS, 
+sometimes finding them useful and sometimes not. They then provide an example of 
+how the scan operator works, starting with an 
+initial state of zero and accumulating values using a reducer function. 
+
+a common mistake when using scan 
+is emitting the same reference multiple times, which can cause problems, and advises 
+treating the accumulated value as immutable. 
+
+flattening operators, 
+such as switchMap, concatMap, and exhaustMap, 
+which can be confusing to people. They explain that switchMap maps a value to a new observable, 
+subscribes to that observable, and unsubscribes from any previous observable, and is commonly
+HTTP GET requests to get the latest data.
+
+switchMap operator in RxJS, 
+highlighting its usefulness for autocomplete, toggling between streams, and animation. 
+common mistakes when using switchMap, 
+such as when doing an HTTP POST or delete and caring about the response from both requests. 
+In this case, using 
+concatMap would be more appropriate, as it ensures that requests happen 
+in the order in which they arrive and only runs one at a time until it completes 
+before moving on to the next request. 
+
+using concatMap to get user names from a Github API and outputting them in order.
+
+cautions against using concatMap for toggling or endless streams, 
+as subsequent concatMap calls will build up the buffer and prevent the other observables from running.
+
+Instead using switchMap for data retrieval, as it will cancel any in-flight requests 
+when a new one is made. 
+
+If order doesn't matter, mergeMap can be used to send as many requests as possible and 
+get as many responses as fast as possible.
+
+mergeMap is useful for errors and friend requests as well, as it doesn't care about
+ the order of responses.
+
+against using mergeMap for mapping HTTP requests, 
+as it can result in out-of-order responses. 
+They explain that exhaustMap is the opposite of switchMap, mapping a value to an observable 
+only if it's not already subscribed to a previously mapped observable. 
+
+exhaustMap is useful for 
+preventing double submissions and touch drag features.
+ 
+error handling in RxJS, 
+noting that any error in the observable chain will prevent anything upstream from traveling down.
+
+three error handling operators in RxJS: 
+catchError, retry, and retryWhen. 
+catchError 
+catches errors on the observable and handles them by returning a new observable or 
+throwing an error. 
+
+retry resubscribes to the original source a specified number of times if 
+it errors, while 
+
+retryWhen allows for more fine-grained control over when to retry. 
+
+error handling in RxJS 
+three error handling operators:catch error, retry, and retry when. 
+
+Catch error catches errors on an observable and
+ handles them by returning a new observable or throwing an error. 
+
+Retry resubscribes 
+to an observable a specific number of times if it errors, and 
+
+retryWhen gives more 
+control over when and why to retry an observable. Common mistakes when using retry include 
+not specifying an argument and using it on hot observables. 
+
+completion operators in RxJS, which force an observable to complete after a certain condition is met. 
+
+They cover the operators 
+take, takeUntil, takeWhile, and first. 
+They explain how these operators can be used to extract specific values from an observable 
+and how they can be useful in scenarios like mouse movements or progress bars. 
+
+They also discuss common mistakes, such as not providing a default value for the first operator, 
+and not realizing that takeWhile must wait for a value to arrive before it completes.
+
+subjects in multi-casting
+that while subjects can be useful for multi-casting and extracting values from user events, 
+they do not provide the same memory management as observables. 
+
+behavior subjects, 
+
+which require an initial value and emit the current value whenever 
+

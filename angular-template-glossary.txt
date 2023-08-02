@@ -1,0 +1,229 @@
+Template Glossary
+------------------
+ng-template: - render the template: ngTemplateOutlet renders the Elements in the template, it points to the name of the template (Templ Ref Var)
+               template -> view-definition -> embeddedView in DOM after the comment create by ng-template
+	    -  pass data to the template via ngTemplateOutletContext defined by a Javascript Object (key-value pairs)
+               (like passing data from parent to child through property binding)
+
+<ng-template
+	[ngTemplateOutlet]="PersonTemplate"
+	[ngTemplateOutletContext]="{$implicit: 'Hello World', personName: 'Corbin'}"
+>
+</ng-template>
+
+
+ - let declarations create template variables in that template 
+   based on the values passed by the context like so:
+
+<ng-template #PersonTemplate let-message let-name="personName">
+	<p>{{message}} for {{name}}</p>
+</ng-template>
+
+<ng-container></ng-container> // liked <div> but does not create a dom element, just marks a location in the DOM
+
+TemplateOutlet - creates a view from a template
+------------------------------------------------------------
+ when we render a template using ngTemplateOutlet, we are creating a view from a template, 
+ then embedding the view in the view that you called the ngTemplateOutlet in.
+ - Inserts an embedded view from a prepared TemplateRef.
+
+TemplateOutletContext
+------------------------------------------------------------
+You can attach a context object to the EmbeddedViewRef by setting [ngTemplateOutletContext]. 
+[ngTemplateOutletContext] should be an object, 
+the object's keys will be available for binding by the local template let declarations.
+
+template: `
+    <ng-container *ngTemplateOutlet="greet"></ng-container>
+    <hr>
+    <ng-container *ngTemplateOutlet="eng; context: myContext"></ng-container>
+    <hr>
+    <ng-container *ngTemplateOutlet="svk; context: myContext"></ng-container>
+    <hr>
+
+    <ng-template #greet><span>Hello</span></ng-template>
+    <ng-template #eng let-name><span>Hello {{name}}!</span></ng-template>
+    <ng-template #svk let-person="localSk"><span>Ahoj {{person}}!</span></ng-template>
+
+
+
+<ng-container *ngTemplateOutlet="templateRefExp; context: contextExp"></ng-container>
+Using the key $implicit in the context object will set its value as default.
+TemplateRef 
+EmbeddedViewRef
+
+ViewContent/ViewChildren - access view
+ViewContainerRef - di
+createEmbeddedView from TemplateRef 
+
+View Hierarchy
+----------------------------------------------------------
+- DOM tree (often called the DOM), 
+
+- Angular View Tree.Angular has its own tree to keep track what's rendered on-screen.
+  due to the dynamic nature of Angular,Angular needs to have a tree to keep track of its state.
+  While Angular renders to the DOM in the end (just as vanilla HTML would), Angular has the original information 
+  that described how to render things onto screen. When Angular detects changes to this tree, 
+  it will then update the DOM with the changes that Angular has tracked.
+
+  Because this tree is used to update the DOM rather than being part of the DOM itself, 
+  the tree Angular uses to track its state is called the "view hierarchy tree". 
+  This tree is composed of various "views". A view is a grouping of elements and is the smallest 
+  grouping of elements that can be created or destroyed together. A view is defined by a template. 
+  This template on its own is not a view, but does define a view
+
+  View on the screen: embeddedView
+  ----------------------------------
+  However, when you create a view from a template, you're able to display them on-screen. 
+  When a view is displayed on-screen, they're then called an embedded view.
+
+
+#tpl TemplateReference Variable (like id of HTML Element)
+Template Directives - Structural Directives (such as *ngIf)
+
+:host selector - Think of each component creating their own wrapper div — 
+                 the :host selector applies styling to the component wrapper element itself.
+
+<cards-list> <!-- Cards list has default styling with grey background -->
+	<action-card></action-card> <!-- Action card has default styling with grey background -->
+	<action-card></action-card> <!-- It's also widely used across the app, so that can't change -->
+</cards-list>
+
+Component({
+	selector: 'action-card',
+	template: `<div></div>`,
+styles: [`
+		:host {
+			border: 1px solid black;
+			display: inline-block;
+			height: 300px;
+			width: 100px;
+			background: grey;
+			margin: 10px;
+		}
+	`]
+export class ActionCard {}
+@Component({
+	selector: 'cards-list',
+	template: `<div><ng-content></ng-content></div>`,
+	styles: [`:host {background: grey; display: block;}`
+})
+
+
+
+Host View
+-------------------------------------------------------------------------------------------
+- similarities between a 
+  - component template - @Input props for components, ng-template 
+  - ng-templates       - context
+
+- Both of them allow for values to be passed into them (@Input props for components, context for templates)
+
+- Both of them contain the same support for tags and template creation (using ng-template).
+- A component is actually just a directive with a special view — a "host view" (defined by the template or templateUrl field in the decorator) associated with it.
+- A component is technically a directive
+
+
+
+ng-content - Angular Element
+-----------
+The <ng-content> element specifies where to project content inside a component template.
+
+ContentChild even works when you're not using ng-content but still passing components and 
+elements as children to the component. So, for example, if you wanted to pass a template as 
+a child but wanted to render it in a very specific way, you could do so:
+
+<!-- root-template.component.html -->
+<render-template-with-name>
+	<ng-template let-userName>
+		<p>Hello there, {{userName}}</p>
+	</ng-template>
+</render-template-with-name>
+// render-template-with-name.component.ts
+@Component({
+	selector: 'render-template-with-name',
+	template: `
+	<ng-template
+		[ngTemplateOutlet]="contentChildTemplate"
+		[ngTemplateOutletContext]="{$implicit: 'Name here'}">
+	</ng-template>
+`
+})
+export class AppComponent {
+	@ContentChild(TemplateRef, {static: false}) contentChildTemplate;
+}
+This is a perfect example of where you might want @ContentChild — not only are you unable to 
+use ng-content to render this template without a template reference being passed to an outlet, 
+but you're able to create a context that can pass information to the template being passed as a child.
+
+
+ng-template - Angular Element gives you full control when content displayed - conditionally render content (*ngIf)
+-----------
+With <ng-template>, you can define template content that is only being rendered by Angular when you, 
+whether directly or indirectly, specifically instruct it to do so, allowing you to have 
+full control over how and when the content is displayed.
+
+Note that if you wrap content inside an <ng-template> without instructing Angular to render it, 
+such content will not appear on a page. For example, see the following HTML code, when handling it 
+Angular won't render the middle "Hip!" in the phrase "Hip! Hip! Hooray!" because of the surrounding <ng-template>.	
+
+ng-container - Angular Element
+-------------------------------
+
+The <ng-container> allows us to use structural directives without any extra element, 
+making sure that the only DOM changes being applied are those dictated by the directives themselves.
+
+This not only increases performance (even so slightly) since the browser ends up rendering 
+less elements but can also be a valuable asset in having cleaner DOMs and styles alike.
+
+It can for example enable us to use structural directives without breaking styling dependent 
+on a precise DOM structure (as for example the ones we get when using
+flex containers, margins, the child combinator selector, etc.).
+
+Reference Views in the View Hierarchy: Reference an item in the view from the Component Class
+---------------------------------------------------------------------------------------------
+
+ViewChild - return first found view
+------------------------------------------------------------------
+- keeping Logic In Your Controller using ViewChild
+- an alternative API to ngTemplateOutlet
+- ViewChild is a "property decorator" utility for Angular that searches the component tree to find what you pass it as a query.
+- ViewChild, it only returns the first result that Angular can find
+
+- ViewChild can get a reference to the element of the component itself by using the ElementRef.
+/* This would replace the previous @ViewChild */
+@ViewChild('myComponent', {read: ElementRef, static: false}) myComponent: ElementRef;
+console.log(myComponent.nativeElement.dataset.getAttribute('data-unrelatedAttr')); // This output `"Hi there!
+
+@Component({
+	selector: 'my-app',
+	template: `
+		<div>
+			<ng-template #MsgTpl>Hello</ng-template>
+		</div>
+		<ng-template [ngTemplateOutlet]="helloMessageTemplate"></ng-template>
+	`
+})
+export class AppComponent {
+	// Ignore the `static` prop for now, we'll cover that in just a bit
+	@ViewChild('MsgTpl', {static: false}) helloMessageTemplate: TemplateRef<any>;
+}
+
+
+ViewChildren: find a list of views return as a QueryList<ElementRef>  // list of DOM Elements
+                                               QueryList<ComponentType> // list of Component types
+----------------------------------------------------------------------
+
+QueryList - an array-like,  all the usual methods (reduce, map, etc.) and it extends an iterator interface 
+(so it works with *ngFor in Angular templates and for (let i of _)
+------------------------------------------------------------------
+The type of object that ViewChildren, ContentChildren, and QueryList provide.
+
+- Implements an iterable interface, therefore it can be used in both ES6 javascript for (var i of items) loops 
+  as well as in Angular templates with *ngFor="let i of myList".
+- Changes can be observed by subscribing to the changes Observable.
+
+
+ContentChildren
+--------------------------------------------------------------------------------------------------------------------
+

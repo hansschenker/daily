@@ -1,0 +1,410 @@
+import { from, merge } from 'rxjs';
+import { partition, map } from 'rxjs/operators';
+
+const source = from(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']);
+
+function split(source, n) {
+  const streams = [];
+  let toSplit = source;
+  for (let k = n; k > 0; --k) {
+    const [stream, rest] = toSplit.pipe(partition((_, i) => i % k === 0));
+    streams.push(stream);
+    toSplit = rest;
+  }
+  return streams;
+}
+
+const obs = split(source, 1);
+
+const subscribe = merge(
+  obs[0].pipe(map((val) => `1: ${val}`)),
+  obs[1].pipe(map((val) => `2: ${val}`)),
+  obs[2].pipe(map((val) => `3: ${val}`))
+).subscribe((val) => console.log(val));
+
+import { fromEvent, range, zip } from 'rxjs';
+import { map, bufferCount, startWith, scan } from 'rxjs/operators';
+
+const SLICE_SIZE = 5;
+
+const loadMore$ = fromEvent(
+  document.getElementsByTagName('button')[0],
+  'click'
+);
+const data$ = range(450);
+
+zip(data$.pipe(bufferCount(SLICE_SIZE)), loadMore$.pipe(startWith(0)))
+  .pipe(
+    map((results) => results[0]),
+    scan((acc, chunk) => [...acc, ...chunk], [])
+  )
+  .subscribe({
+    next: (v) => console.log(v),
+    complete: () => console.log('complete'),
+  });
+
+const { Observable, interval } = Rx;
+
+const sqrt = source$ => Observable.create(observer =>
+  source$.subscribe(
+    value => {
+      const result = Math.sqrt(value);
+
+      if (typeof value !== 'number' || isNaN(result)) {
+        observer.error(`Square root of ${value} doesn't exist`);
+      } else {
+        observer.next(result);
+      }
+    },
+    err => observer.error(err),
+    () => observer.complete()
+  )
+);
+
+interval(1000).pipe(sqrt)
+
+const str = 'a-a-a-a-a-b-b-b-b-c-c-c-c-d-d-d-e';
+const source = Observable.from(str.split('-'), Rx.Scheduler.async).share();
+
+source
+    .bufferCount(2, 1) // delay emission by one item
+    .map(arr => arr[0])
+    .window(source
+        .bufferCount(2, 1) // keep the previous and current item
+        .filter(([oldValue, newValue]) => oldValue !== newValue)
+    )
+    .concatMap(obs => obs.toArray())
+    .subscribe(console.log);
+
+
+this.activatedRoute.data
+  .pipe(
+    switchMap(data => {
+      return merge(
+		concat(this.activatedRoute.data, httpRequest1)
+		concat(this.activatedRoute.data, httpRequest2)
+      )
+    })
+  )
+
+ String[] inputs= {"a", "b", "c", "a", "b", "b", "b", "a"};
+
+    Action1<String> a = s -> System.out.print("-a-");
+
+    Action1<String> b = s -> System.out.print("-b-");
+
+    Action1<String> c = s -> System.out.print("-c-");
+
+    Observable
+            .from(inputs)
+            .groupBy(s -> s)
+            .subscribe((g) -> {
+                if ("a".equals(g.getKey())) {
+                    g.subscribe(a);
+                }
+
+                if ("b".equals(g.getKey())) {
+                    g.subscribe(b);
+                }
+
+                if ("c".equals(g.getKey())) {
+                    g.subscribe(c);
+                }
+            });
+
+alex rickabaugh
+
+
+// Loading indicator implementation.
+
+interface StreamEvent<T> {
+  type: 'start' | 'done';
+  response?: T;
+}
+
+// Our starting Observable that will emit with each new Id.
+declare let id$: Observable<Id>;
+
+const dataEvent$ = id$.pipe(
+  concatMap(id => concat(
+    // For each id, we want to send a new 'start' event immediately.
+    of({type: 'start'}),
+    // And follow with the processed stream for this id.
+    of(id).pipe(
+      // Make some dependent HTTP requests. 
+      concatMap(id => http.get(`/first/${id}`)),
+      concatMap(first => http.get(`/second/${first.url}`),
+      // Process the response a bit (assuming it's an array)
+      map(res => res.filter(...))
+      // Now, turn the response into a StreamEvent with type 'done'.
+      map(response => {type: 'done', response})
+    )
+  )
+);
+
+// In the consumer, we only want dataWithEvent$ to be subscribed to once.
+// But we want to have two independent streams, one for loading true/false,
+// the other with actual responses. So this function will split the Observable
+// with refCount() immediately before subscribing.
+
+function splitDataEvent$<T>(dataEvent$: Observable<StreamEvent<T>>): {data$: Observable<T>, loading$: Observable<boolean>} {
+  const refCounted$ = dataEvent$.pipe(refCount());
+  const data$ = refCounted$.pipe(
+    filter(event => event.type === 'done'),
+    map(event => event.response)
+  );
+  const loading$ = refCounted$.pipe(
+    map(event => event.type === 'start')
+  );
+  return {data$, loading$};
+}
+
+
+alex rickabaugh, rxjs types
+----------------------------
+// Setup: RxJS shaped types
+declare class Observable<T> { _t: T; }
+declare interface ObservedValueOf<T> { _t: T; _brand: 'ObservedValueOf'; }
+declare interface Scheduler { _brand: 'Scheduler'; }
+declare type ObservableInput<T> = Observable<T> | Promise<T> | T[];
+
+// A trick to force T to be inferred as a tuple type. TypeScript would prefer to infer
+// an array, but arrays don't match {0: any}.
+type Tuple<T> = (T & { 0: any }) | [];
+
+
+// Map ObservableInput<T> to T.
+declare type ObservableInputToObservedValueOf<T> = T extends ObservableInput<infer V> ? ObservedValueOf<V> : never;
+
+// Map a Tuple of ObservableInputs to a Tuple of ObservedValueOf of their respective types.
+// Ex: [Observable<string>, number[]] -> [ObservedValueOf<string>, ObservedValueOf<number>]
+declare type ObservableInputTupleToObservedValueOfTuple<T extends any[]> = {
+  [I in keyof T]: ObservableInputToObservedValueOf<T[I]>;
+};
+
+
+// A signature for combineLatest which accepts any number of elements in an array
+// as the first argument and returns a correctly typed result.
+declare function combineLatest<T extends ObservableInput<unknown>[]>(values: Tuple<T>, scheduler?: Scheduler): Observable<ObservableInputTupleToObservedValueOfTuple<T>>;
+
+declare const obsString: Observable<string>;
+declare const obsNumber: Observable<number>;
+declare const obsBool: Observable<boolean>;
+declare const scheduler: Scheduler;
+
+// Type should be Observable<[ObservedValueOf<string>, ObservedValueOf<number>, ObservedValueOf<boolean>]>
+const res = combineLatest([obsString, obsNumber, obsBool]);
+
+
+
+
+
+
+// Tuple operations borrowed from https://github.com/Microsoft/TypeScript/issues/25947.
+type Head<T> = T extends [infer U, ...unknown[]] ? U : never;
+type Tail<T> = T extends Array<any>
+    ? ((...args: T) => never) extends ((a: any, ...args: infer R) => never)
+    ? R
+    : never
+    : never;
+type Cons<T extends any[], H> = ((h: H, ...t: T) => any) extends ((...x: infer X) => any) ? X : never;
+interface Reduction<Base, In> {
+  0: Base
+  1: In
+}
+type Reduce<T extends Array<any>, R extends Reduction<any, any>> = R[[T] extends [[]] ? 0 : 1];
+interface ReverseRec<H extends Array<any>, T extends Array<any>>
+  extends Reduction<H, Reduce<Tail<T>, ReverseRec<Cons<H, Head<T>>, Tail<T>>>> {}
+type Reverse<T> = [T] extends [Array<any>] ? Reduce<T, ReverseRec<[], T>> : never;
+
+// The goal is to correctly type combineLatest(o1: ObservableInput<O1>, o2: ObservableInput<O2>, ..., scheduler?: Scheduler): ...
+// with any number of ObservableInput arguments, followed by the optional Scheduler.
+// The only way to do this is to accept the whole argument list as a Tuple and extract
+// parts of it as needed. The above Reverse operation is essential as the Scheduler
+// is optionally at the end.
+
+// One more utility type needed - ensure T is inferred as an array.
+type AsArray<T extends any> = T extends any[] ? T : never;
+
+// Get the last value of a tuple.
+type Last<T extends any[]> = Head<Reverse<T>>;
+
+// Get all but the last value of a tuple. AsArray is needed here because Reverse can return
+// some strange synthetic types which never actually happen.
+type AllButLast<T extends any[]> = AsArray<Reverse<Tail<Reverse<T>>>>;
+
+// Represents a variable number of arguments, the majority of which satisfy RepeatT 
+// and the last one is optionally OptionalEndT.
+type VarArgsWithOptionalEnd<RepeatT, OptionalEndT, ArrayT extends any[]> = Last<ArrayT> extends OptionalEndT
+  // The last argument is the optional one, so every other argument should be RepeatT.
+  ? (AllButLast<ArrayT> extends RepeatT[] ? ArrayT : never)
+  // The last argument isn't the optional one, so every argument should be RepeatT.
+  : (ArrayT extends RepeatT[] ? ArrayT : never);
+
+// Get ArrayT without the last argument of OptionalEndT if present.
+type SkipOptionalEnd<ArrayT extends any[], OptionalEndT> = Last<ArrayT> extends OptionalEndT ? AllButLast<ArrayT> : ArrayT;
+
+// Specifically typed arguments for combineLatest(). This needs to be separate because
+// ArrayT needs to be inferred, but it can't be if the other two are passed in directly.
+type CombineLatestVarArgs<ArrayT extends any[]> = ArrayT extends VarArgsWithOptionalEnd<ObservableInput<unknown>, Scheduler, ArrayT> ? ArrayT : never;
+
+// Finally, we can write combineLatest2().
+declare function combineLatest2<A extends any[]>(...args: CombineLatestVarArgs<A>): Observable<ObservableInputTupleToObservedValueOfTuple<SkipOptionalEnd<A, Scheduler>>>;
+
+// Type should be Observable<[ObservedValueOf<string>, ObservedValueOf<number>, ObservedValueOf<boolean>]>
+const res2 = combineLatest2(obsString, obsNumber, obsBool, scheduler);
+
+
+----------------
+declare class NgForOfContext<T> {
+  $implicit: T;
+  ngForOf: Array<T>;
+  index: number;
+  count: number;
+}
+
+declare class NgForOf<T> {
+  ngForOf: Array<T>;
+  ngForTrackBy: (item: T, index: number) => any;
+
+  static ngTemplateGuard<T>(dir: NgForOf<T>, ctx: any): ctx is NgForOfContext<T>;
+}
+
+declare function Check_NgForOf<T>(options: {
+  ngForOf?: Array<T>,
+  ngForTrackBy?: (item: T, index: number) => any,
+}): NgForOf<T>;
+
+// <div *ngFor="let item of array">{{item.name}}</div>
+declare class Cmp<T> {
+  array: T[];
+}
+
+declare function Check_Cmp<T>(options: {array?: T[]}): Cmp<T>;
+
+function DoCheck_Cmp<T>(root: Cmp<T>): void {
+  let _d0 = Check_NgForOf({ ngForOf: root.array });
+
+
+
+  function DoCheck_Cmp_1<I>(root: Cmp<T> & { item: I }): void {
+    
+  }
+  let _c0!: any;
+  if (NgForOf.ngTemplateGuard(_d0, _c0)) {
+    let _t0 = _c0.$implicit;
+    let _c1!: typeof root & { item: typeof _t0 };
+    DoCheck_Cmp_1(_c1);
+  }
+}
+
+
+-------------------
+alex rickabaugh onUnsubscribe rxjs operator
+
+function onUnsubscribe<T>(fn: () => void): (obs: Observable<T>) => Observable<T> {
+  return (obs: Observable<T>): Observable<T> => {
+    return new Observable<T>(subscriber => {
+      const sub = obs.subscribe(subscriber);
+      return () => {
+        sub.unsubscribe();
+        fn();
+      };
+    });
+  };
+}
+
+----------------------------------------------------------
+class MockBackendInterceptor implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    return new Observable(subscriber => {
+      // respond with something
+      subscriber.next(new HttpResponse<string>(...));
+      subscriber.complete();
+    });
+  }
+}
+
+
+-----------------
+abstract class AuthService {
+  // Subject tracks the current token, or is null if no token is currently
+  // available (e.g. refresh pending).
+  private subject = new BehaviorSubject<string|null>(null);
+
+  readonly refreshToken: Observable<any>;
+  readonly token: Observable<string>;
+
+  constructor() {
+    // refreshToken, when subscribed, gets the new token from the backend,
+    // and then completes without values.
+    this.refreshToken = Observable.defer(() => {
+      // Defer allows us to easily execute some action when the Observable
+      // is subscribed. Here, we set the current token to `null` until the
+      // refresh operation is complete. This ensures no requests will be
+      // sent with a known bad token.
+      this.subject.next(null);
+
+    return this
+      // Next, we refresh the token from the server.
+      .doRefreshToken()
+      // Set it as the active token.
+      .do(token => this.subject.next(token))
+      // Drop the value, ensuring this Observable only completes when
+      // done and doesn't emit.
+      .ignoreElements()
+      // Finally, share the Observable so we don't attempt multiple
+      // refreshes at once.
+      .shareReplay();
+    });
+
+    // token, when subscribed, returns the latest token.
+    this.token = this
+      // Read the subject (stream of tokens).
+      .subject
+      // Filter out the `null` ones. This part ensure we wait for the next
+      // good token.
+      .filter(token => token !== null)
+      // Take the next good token.
+      .take(1);
+
+    // There's no current token to start, so refresh to start with. Optionally,
+    // we could set token up to refresh on the first subscription.
+    this.refreshToken.subscribe();
+  }
+
+  // Actually refresh the token. Left up to the user.
+  abstract doRefreshToken(): Observable<string>;
+}
+
+
+class AuthInterceptor implements HttpInterceptor {
+
+  constructor(private auth: AuthService) { }
+
+  private addToken(req: HttpRequest<any>): HttpRequest<any> {
+    return req.clone({ headers: req.headers.set('Authorization', `Bearer ${this.auth.getToken()}`) });
+  }
+
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    return this
+      .auth
+      // Get the latest token from the auth service.
+      .token
+      // Map the token to a request with the right header set.
+      .map(token => req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) }))
+      // Execute the request on the server.
+      .concatMap(authReq => next.handle(authReq))
+      // Catch the 401 and handle it by refreshing the token and restarting the chain
+      // (where a new subscription to this.auth.token will get the latest token).
+      .catch((err, restart) => {
+        // If the request is unauthorized, try refreshing the token before restarting.
+        if (err instanceof HttpErrorResponse && err.status === 401) {
+          return Observable.concat(this.auth.refreshToken, restart);
+        }
+        throw err;
+      });
+  }
+}
+
+---------------

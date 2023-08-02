@@ -1,0 +1,35 @@
+var uniqueMorseRepresentations = function(words) {
+
+    // transform to morse code function
+    // iterate thru word array -. transform -> put {}
+        
+    function transform(string) {
+        const morse = [".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.","---",".--.","--.-",".-.","...","-","..-","...-",".--","-..-","-.--","--.."]
+        const output = []
+        const input = string.split('')
+        const value = {a:0, b:1, c:2, d:3, e:4, f:5, g:6, h:7, i:8, j:9, k:10, l:11,
+                       m:12, n:13, o:14, p:15, q:16, r:17, s:18, t:19, u:20, v:21, 
+                       w:22, x:23, y:24, z:25}
+        for (let letter of input) {
+            output.push(morse[value[letter]])
+        }
+        return output.join('')
+    }
+        
+    // transform(words[0])
+    const transformCollection = {}
+    for (let word of words) {
+        const morseCode = transform(word)
+        if (!transformCollection.hasOwnProperty(morseCode)) {
+            transformCollection[morseCode] = true
+        }
+    }
+    
+    return Object.values(transformCollection).length
+}
+
+// UNIT TEST
+const words = ["gin", "zen", "gig", "msg"]
+console.log(uniqueMorseRepresentations(words)) // => 2
+
+Files

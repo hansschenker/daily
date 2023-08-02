@@ -1,0 +1,505 @@
+angular-schematics; 		ng set defaults.schematics.collection @ionic-angular/schematics --global 
+
+				To reset the default collection;  ng set defaults.schematics.collection @schematics/angular --global  
+
+@angular/schematics;    	https://medium.com/@tomastrajan/total-guide-to-custom-angular-schematics-5c50cf90cdb4  
+angular-schematics;     	schematics.txt  
+schematics-workshop;    	tomas trajan; https://github.com/tomastrajan/workshop-angular-schematics.git  
+schematics-matt-raible; 	https://github.com/oktadeveloper/okta-angular-schematics-example  
+
+angular-schematics;      	natalia venditto; https://medium.com/angular-in-depth/effective-automated-scaffolding-with-angular-schematics-c61d6640b7d5  
+
+angular-schematics;          	overwrite; https://indepth.dev/overriding-angular-schematics/  
+angular-schematics;      	default settings in angular.json; https://indepth.dev/overriding-angular-schematics/ 
+angular-schematics;          	sample; https://github.com/gregor-doroschenko/ng-schematics-workshop 
+
+angular-schematics;       	expert; briebug; kevin schuchard; brian love; https://github.com/schuchard?tab=repositories  
+angular-schematics;       	expert; briebug; kevin schuchard;https://www.kevinschuchard.com/  
+angular-schematics;       	expert; briebug; kevin schuchard;https://www.youtube.com/watch?v=V5K8IOvw0Gk  
+angular-schematics;         	workshop; briebug; brian love; https://github.com/blove/schematics-workshop  
+angular-schematics;         	workshop; briebug; brian love; "https://www.youtube.com/watch?v=X06tuCohJPQ&feature=youtu.be"
+  
+angular-schematics;             https://github.com/sfabriece/ngvikings-2020.git  
+angular-schematics;         	https://github.com/santoshyadav198613/SchematicsDemo.git  
+angular-schematics,           	victor slavov, invragistics, https://github.com/ViktorSlavov/app-training-101.git
+angular-schematics,      	victor slavovo, "https://www.youtube.com/watch?v=S_XxDC4WdKI&t=12s"  
+angular-schematics;           	victor slavov; invragistics; https://github.com/ViktorSlavov/app-training-101.git
+angular-schematics;      	victor slavovo; "https://www.youtube.com/watch?v=S_XxDC4WdKI&t=12s"  
+angular-schematics;          	authoring schematics; https://angular.io/guide/schematics-authoring 
+angular-schematics,           	santosh yadav, how create a ng-add, "https://www.youtube.com/watch?v=1iEFddnUfXk&list=PLIcBJ5O4Mr10rK4Fv4uetG4mzn31Pw2oL&index=4&t=0s" 
+
+angular-schematics,            	natalia venditto, create an schematics, https://medium.com/angular-in-depth/effective-automated-scaffolding-with-angular-schematics-c61d6640b7d5 
+
+angular-schematics, erin zimmer           global install, npm i -g @angular-devkit/schematics-cli 
+angular-schematics,            create blank schematics project, $ schematics blank --name create-project 
+angular-schematics,            run newly created project, schematics .:ng-new (renamed create-project - in collection.json 
+angular-schematics,            setup a new project: run ng new to generate new project 
+angular-schematics,            setup a new project: add static config files 
+angular-schematics,            setup a new project: update package.json 
+angular-schematics,            setup a new project: remove default favicon (angular icon) 
+angular-schematics,            project requirements: must start with cust*, routing optional 
+angular-schematics,            project requirements: check schematics cli input options_: options passed to schematics functions 
+angular-schematics,            project requirements: typescript types in schema.json schematics cli input options: schema.json 
+angular-schematics,            project requirements: schema.json: properties: name:string, routing:boolean 
+angular-schematics,            project requirements: schema.json: properties: name:string, x-prompt:'name?', routing:boolean 
+angular-schematics,            project check input: const {name } = options, 
+angular-schematics,            project run ng new in function with externalSchematic: return externalSchematic)'@schematics/angular', 'ng-new') 
+angular-schematics,            project create new project with ng-new outside schematics project: schematics ./create-proejct:ng-new cust-payments --debug false
+angular-schematics,            publish newly create angular schematics project: npm publish, after publishing: npm install -g create-proejct 
+angular-schematics,            use installed npm project: ng new --collections=create-project cust-payments 
+angular-schematics,            add static config files: .prettierrc, .npmrc, tslint.jspn (jslint.json), karma.conf.js (jest) 
+angular-schematics,            add static config files: Tree (virtual filesystem), Rule is a function that takes a Tree and returns a Tree, 
+angular-schematics,            add static config files: create files directory with all static files in it 
+angular-schematics,            add static config files: create rules: read files from direactory and replace static names with actual names, used mergeWith(files, MergeStrategy.Overwrite) 
+angular-schematics,            add static config files: filenames: "__variableName__ , inside project code: <% variableName %>" 
+angular-schematics,            add static config files: apply template rule to varaibleName (projectName: name) 
+angular-schematics,            update package.json: prettier, husky, add githook, add ci script 
+angular-schematics,            update package.json: create updatePackageJson Rule 
+
+ngAir - Angular schematics mike brocchi, 
+nrwl nx , angular schematics for angular monorepo
+schematics, build optimizer, devkit, angular material cdk, data table, angular-cli, abc angular bazel closure compiler, javascript ast -> schematics
+ngHouston- NgRx - Mike Ryan and Robert Brandon, rx store, actions, reducers, effects, entities, schematics
+manfred styer, working on a schematics book, https://github.com/manfredsteyer/schematics-intro 
+nghouston, angular schematics, yt download, 2018 01 
+manfred steyer, routing, angular schematics
+ngrx schematics , roberts brandon on medium 
+manfred steyer, custom angular schematics 
+ngrx schematics sample, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\schematics\heros-app 
+manfred steyer , schematics articule 
+angular schematics expert, vitaly bobrov 
+angular schematics , vitaly bobov 
+angular mountain view meeting stephen fluin: angular-cli schematics: Hans Larson, Felipe Silva, Charles Lyding, Mike Brocchi
+oasis digital ngconf 2018 recap, v6 not released!, ngrx track!!!,ngrx-data, schematics, ngupdate, ng add, community
+learn: ngconf 2018 mike brochi: angular schematics: read file, write file, chain
+manfred steyer yt: performance, schematics
+learn: ngrx gerard sans - ngrx entity with schematics
+work: ngrx-todo-schematics sample
+work: build your ngrx example-app with the help of @ngrx/schematics
+learn: manfred steyer book on leanpub: ngrx schematics
+learn: manfred steyer blog: ngrx schematics blog article
+angular cli, workspace, ng add, ng update, schematics
+schematics is not only for angular, angular file creation, change..
+video, paolo galfione on nx, schematics, italian spoken
+nativescript plays well with nx and schematics
+schematicsdirectories
+schematicsinstall
+schematicsconfig
+vitaly bobrov, ngrx schematics,c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\vitaly-bobrov\ngrx-swkb
+ngrx schematics , test, 
+conemu ngrx schematics
+ngrx schematics entity: creates actions and reducer with entitystate
+ngrx schematics feature creates feature with standard actions and reducer with feature module in angular module
+create angular library with ngrx schematics: ng g library
+angular schematics, manfred steyer
+angular-crud, manfred steyer custom schematics
+angular meeting, schematics: felipe silva, charles lyding, mike brocchi, hans larson
+angular schematics, cli 6, angular.json
+ngrxi:		install ngrx and set schematics collection ton @ngrx/schematics
+ngrx links lab, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\hans\labs\ngrx-schematics
+work: c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\hans\labs\ngrx-schematics
+angular schematics (rangle.io, angular cli mountain meeting, manfred steyer, mike brocchi ngconf 2018, netanel basal reduxor ngrx-gen)
+work: ngrx labs: ngrx-crud-schematics
+angular schematics, "https://www.youtube.com/watch?v=1CuNnbyVlBQ&t=0s&list=PLw5h0DiJ-9PB8XH7k1bzD_UGPQ21mea0f&index=2" 
+ngair, jason jean, nrwl nx schematics explained 
+angular schematics, vitali bobrow, ngtalks 2018
+ngrx schematics, 
+angular schematics
+ngrx schematics
+schematics
+ionic todo with ionic schematics and ngrx schematics
+nir kaufmann, angularup 2018, ngrx schematics, thinking in redux
+
+angular schematics, briebug, https://www.youtube.com/watch?v=eSpSPCdMtwA 
+kevin schuchard, briebug, schematics expert, https://www.kevinschuchard.com/ 
+briebug, ng schematics with brian love, kevin schuchard
+ngHouston, ng schematics with brian love, kevin schuchard
+
+learn: angular 7 workshop with nrwl schematics and material, c:\Users\Folio\web\frontend\javascript\frameworks\angular\lukas-ruebbelke-frontendmasters\angular-core-workshop 
+expert: angular schematics, manfred steyer  
+alias ngrxi=npm install @ngrx/schematics --save-dev && ng config cli.defaultCollection @ngrx/schematics
+alias ngrxi= npm install -S @ngrx/core  @ngrx/store @ngrx/effects @ngrx/router-store @ngrx/entity @ngrx/store-devtools && npm i -D @ngrx/schematics && ng config cli.defaultCollection @ngrx/schematics && ng g --help
+ngrx schematics store and effects install in angular root app: 	ngrxsmi 
+*** schematics
+expert: angular schematics, kalyan chatterjee, blackbox, https://github.com/kalyan11021980  
+learn: angular schematics, https://github.com/kalyan11021980/schematics-nguniversal-logger.git  
+
+learn: schematics, Stanimira Vlaeva, https://github.com/sis0k0/schematics-samples.git
+learn: schematics Christoffer Noring
+
+tomas trajan, angular schematics expert, https://medium.com/@tomastrajan/%EF%B8%8F-how-to-create-your-first-custom-angular-schematics-with-ease-%EF%B8%8F-bca859f3055d 
+
+angular schematics,  manfred steyer
+
+angular: schematics Stanimira Vlaeva, github: https://github.com/sis0k0/schematics-samples 
+angular: schematics, stanmira vlaeva, code, c:\Users\Folio\web\frontend\javascript\frameworks\angular-schematics\stanmira-vlaeva\schematics-samples 
+angular: schematics, angularup , https://www.youtube.com/watch?v=5AqO2fABSaY 
+schematics: workshop, tomas trajan, https://github.com/tomastrajan/workshop-angular-schematics 
+
+ng:schematics, angela venditto, https://github.com/anfibiacreativa/frontendddevlove-angular-schematics.git 
+ng:schematics, manred steyer, npm angular-crud 
+schematics: schematics authoring, https://next.angular.io/guide/schematics-authoring
+
+schematics: search schematics, https://ngx.tools/#/search 
+schematics: json-server schematics, https://github.com/bniedermeyer/json-server-schematics, ng add json-server-schematics 
+
+learn schematics:kevin schuchard, briebug, https://www.kevinschuchard.com/, https://github.com/schuchard?tab=repositories
+code:schematics, prettier, kevin schuchard, https://github.com/schuchard/prettier-schematic, ng add @schuchard/prettier
+schematics:prettier,ng add @schuchard/prettier,  ng g @schuchard/prettier:add
+schematics:schematic-starter,kevin schuchard, https://www.kevinschuchard.com/blog/2018-11-20-schematic-sandbox/
+schematics:schematic-starter,https://github.com/schuchard/schematic-starter
+schematics:workshop, kevin schuchard, https://github.com/schuchard/ng-crash-course-201909
+schematics:jest, kevin schuchard, https://github.com/briebug/jest-schematic
+schematics:cypress, kevin schuchard, https://github.com/briebug/cypress-schematic
+schematics:resources, kevin schuchard, https://www.kevinschuchard.com/blog/2019-11-21-schematic-resources/
+schematics:interpolation, kevin schuchard, https://www.kevinschuchard.com/blog/2019-05-17-iterpolating-schematics/
+schematics:testing, kevin schuchard, https://www.kevinschuchard.com/blog/2018-11-20-schematic-sandbox/
+
+json-schematics;          json-schematics; ng add json-server-schematics  
+
+brendon-nidermeyer;          brendon-nidermeyer; json-schematics; creator; "https://www.youtube.com/watch?v=kTl291dDgqo&list=PLqn52Dxq8AiW5PU9PPWXPk-YJYS9vsrJ-&index=2&t=0s"  
+brendon-nidermeyer;          brendon-nidermeyer; json-schematics ;https://github.com/bniedermeyer/angular-seattle-library-demo  
+
+json-server; schematics
+angular-schematics; 	ng set defaults.schematics.collection @ionic-angular/schematics --global To reset the default collection;  ng set defaults.schematics.collection @schematics/angular --global  
+ionic-schematics;      	npm i -D @ionic/schematics-angular  
+schematics-talk;        chris noring; https://github.com/softchris/slides/blob/master/schematics.pdf  
+schematics-talk;        chris noring ;youtube.com/watch?v=_LPzY9GrNwY  
+schematics-expert;   	kevin schuchard; briebug; https://github.com/schuchard  
+schematics-starter;  	kevin suchard;  https://github.com/schuchard/schematic-starter  
+@angular/schematics;    https://angular.io/guide/schematics  
+@angular/schematics;    https://medium.com/@tomastrajan/total-guide-to-custom-angular-schematics-5c50cf90cdb4  
+@angular/schematics;    https://github.com/angular/schematics-angular-builds  
+angular-schematics;     schematics.txt  
+schematics-workshop;    tomas trajan; https://github.com/tomastrajan/workshop-angular-schematics.git  
+schematis-docs;      	E;\_downloads\_fe\_js\Angular\Angular-schematics-Chris-Noring  
+schematics-deep-dive;   tomas trajan; https://www.youtube.com/watch?v=bnhrLH3bOFo  
+schematics-matt-raible; https://github.com/oktadeveloper/okta-angular-schematics-example  
+json-server-schematics; ng add json-server-schematics  
+angular-schematics;      natalia venditto; https://medium.com/angular-in-depth/effective-automated-scaffolding-with-angular-schematics-c61d6640b7d5  
+angular-onpush;         	ng config schematics.@schematics/angular.component.changeDetection OnPush  
+angular-schematics;          	overwrite; https://indepth.dev/overriding-angular-schematics/  
+angular-schematics;      	default settings in angular.json; https://indepth.dev/overriding-angular-schematics/ 
+angular-schematics;          	sample; https://github.com/gregor-doroschenko/ng-schematics-workshop 
+angular-schematics;       	expert; briebug; kevin schuchard; brian love; https://github.com/schuchard?tab=repositories  
+angular-schematics;       	expert; briebug; kevin schuchard;https://www.kevinschuchard.com/  
+angular-schematics;       	expert; briebug; kevin schuchard;https://www.youtube.com/watch?v=V5K8IOvw0Gk  
+angular-schematics;         	workshop; briebug; brian love; https://github.com/blove/schematics-workshop  
+angular-schematics;         	workshop; briebug; brian love; "https://www.youtube.com/watch?v=X06tuCohJPQ&feature=youtu.be"  
+angular-schematics;             https://github.com/sfabriece/ngvikings-2020.git  
+angular-schematics;         	https://github.com/santoshyadav198613/SchematicsDemo.git  
+angular-schematics,           	victor slavov, invragistics, https://github.com/ViktorSlavov/app-training-101.git
+angular-schematics,      	victor slavovo, "https://www.youtube.com/watch?v=S_XxDC4WdKI&t=12s"  
+angular-schematics;           	victor slavov; invragistics; https://github.com/ViktorSlavov/app-training-101.git
+angular-schematics;      	victor slavovo; "https://www.youtube.com/watch?v=S_XxDC4WdKI&t=12s"  
+angular-schematics;          	authoring schematics; https://angular.io/guide/schematics-authoring 
+angular-cli;           		config onPush; ng config -g schematics.@schematics/angular;component.changeDetection OnPush
+angular-schematics,           	santosh yadav, how create a ng-add, "https://www.youtube.com/watch?v=1iEFddnUfXk&list=PLIcBJ5O4Mr10rK4Fv4uetG4mzn31Pw2oL&index=4&t=0s" 
+angular-schematics,            	natalia venditto, create an schematics, https://medium.com/angular-in-depth/effective-automated-scaffolding-with-angular-schematics-c61d6640b7d5 
+ng-config,         ng config schematics.@schematics/angular:component.changeDetection OnPush 
+hans-project,              ngrx workshop 2020 mike ryan, ng add json-server-schematics 
+angular-fire,         	    brian love library, angular fire schematics, ng add angular-fire-schematics 
+ngrx-install,      	ng add @ngrx/schematics , ng add @ngrx/store, ng add @ngrx/effects, ng add @ngrx/entity 
+angular-schematics,            global install, npm i -g @angular-devkit/schematics-cli 
+angular-schematics,            create blank schematics project, $ schematics blank --name create-project 
+angular-schematics,            run newly created project, schematics .:ng-new (renamed create-project - in collection.json 
+angular-schematics,            setup a new project: run ng new to generate new project 
+angular-schematics,            setup a new project: add static config files 
+angular-schematics,            setup a new project: update package.json 
+angular-schematics,            setup a new project: remove default favicon (angular icon) 
+angular-schematics,            project requirements: must start with cust*, routing optional 
+angular-schematics,            project requirements: check schematics cli input options_: options passed to schematics functions 
+angular-schematics,            project requirements: typescript types in schema.json schematics cli input options: schema.json 
+angular-schematics,            project requirements: schema.json: properties: name:string, routing:boolean 
+angular-schematics,            project requirements: schema.json: properties: name:string, x-prompt:'name?', routing:boolean 
+angular-schematics,            project check input: const {name } = options, 
+angular-schematics,            project run ng new in function with externalSchematic: return externalSchematic)'@schematics/angular', 'ng-new') 
+angular-schematics,            project create new project with ng-new outside schematics project: schematics ./create-proejct:ng-new cust-payments --debug false
+angular-schematics,            publish newly create angular schematics project: npm publish, after publishing: npm install -g create-proejct 
+angular-schematics,            use installed npm project: ng new --collections=create-project cust-payments 
+angular-schematics,            add static config files: .prettierrc, .npmrc, tslint.jspn (jslint.json), karma.conf.js (jest) 
+angular-schematics,            add static config files: Tree (virtual filesystem), Rule is a function that takes a Tree and returns a Tree, 
+angular-schematics,            add static config files: create files directory with all static files in it 
+angular-schematics,            add static config files: create rules: read files from direactory and replace static names with actual names, used mergeWith(files, MergeStrategy.Overwrite) 
+
+angular-schematics,            add static config files: filenames: "__variableName__ , inside project code: <% variableName %>" 
+angular-schematics,            add static config files: apply template rule to varaibleName (projectName: name) 
+angular-schematics,            update package.json: prettier, husky, add githook, add ci script 
+angular-schematics,            update package.json: create updatePackageJson Rule 
+angular-schematics-links.txt,  file 
+angular-schematics,            erin grimm, australia, https://github.com/ejzimmer/schematics-talk 
+angular-schematics,            erin grimm, australia, C:\Users\Hans\web\frontend\angular\schematics\erin-zimmer-schematics-talk\schematics-talk 
+angular-schematics,            erin grimm, australia,  
+angular-schematics,        	expert, natalia venditto
+angular-schematics,        	expert, manfred steyer
+angular-schematics,        	expert, tomas trajan
+angular-schematics,        	expert, erin grimm, australia
+angular-schematics,        	expert, santosh
+angular-schematics,             angular schematics ytl, collection of angular schematics presentations, https://www.youtube.com/playlist?list=PLw5h0DiJ-9PDXKpT__KrpuCAkKGouO9B7 
+angular-schematics,      	expert, maciej treder, https://github.com/maciejtreder 
+schematics-cookbook,     	https://github.com/zbennett10/schematics-cookbook/tree/master/manuscript 
+schematics-cookbook,     	https://github.com/zbennett10/schematics-cookbook-examples 
+schematics-demo,                https://github.com/Lambda-IT/customschematicsdemo 
+angular-schematics,     workshop, natalia venditto, 
+angular-schematics.txt, file
+
+angular-schematics,     expert, natalia venditto, https://www.youtube.com/playlist?list=PLwKKH5OdZwsDiZbegfDJzLXYN-FczJ1gk 
+
+angular-schematics,     scss files generating, natalia vendito, https://github.com/anfibiacreativa/frontendddevlove-angular-schematics 
+angular-schematics,     kevin schuchard, schematics starter, https://www.kevinschuchard.com/blog/2018-11-20-schematic-sandbox/ 
+angular-schematics,     kevin schuchard, schematics starter, https://github.com/schuchard/schematic-starter 
+angular-schematics,     cli g c, https://angular.io/cli/generate#component-command 
+angular-schematics,     authoring, https://angular.io/guide/schematics-authoring 
+angular-schematics,     hans, angular-todo-schematics, C:\Users\HS\Web\frontend\javascript\angular\monsterlessons-academy\monsterlessonsacademy
+schematics-cookbook.txt,file 
+angular-schematics,     run schematics from schematics, https://github.com/shhdharmen/run-schematics.git 
+angular-schematics,     run schematics from schematics, https://indepth.dev/posts/1453/different-ways-to-run-schematics-from-the-schematic 
+angular-schematics,     utilities, https://github.com/nitayneeman/schematics-utilities 
+angular-schematics,     utilities, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\schematics-utilities-library\schematics-utilities 
+angular-schematics,     angular schematics collections samples, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\angular-schematics-samples\angular-schematics 
+angular-schematics,     kevin schuchard, building angular schematics, https://www.kevinschuchard.com/blog/2018-11-20-schematic-sandbox/ 
+angular-schematics,     github repo, https://github.com/angular/angular-devkit-schematics-builds 
+angular-schematics,     utilities, https://nitayneeman.github.io/schematics-utilities/ 
+angular-schematics,     erin zimmer talk, yt, https://github.com/ejzimmer/schematics-talk.git 
+angular-schematics,     erin zimmer talk, yt, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\erin-zimmer-talk\schematics-talk 
+angular-schematics,     erin zimmer talk, yt, "https://www.youtube.com/watch?v=sF-DA7lTRtg&t=2s" 
+angular-schematics,     erin zimmer talk, yt, D:\_downloads\__idm 
+angular-schematics,       hans, ytl, https://www.youtube.com/playlist?list=PLw5h0DiJ-9PB8XH7k1bzD_UGPQ21mea0f 
+ngAir - Angular schematics mike brocchi, 
+nrwl nx , angular schematics for angular monorepo
+schematics, build optimizer, devkit, angular material cdk, data table, angular-cli, abc angular bazel closure compiler, javascript ast -> schematics
+ngHouston- NgRx - Mike Ryan and Robert Brandon, rx store, actions, reducers, effects, entities, schematics
+manfred styer, working on a schematics book, https://github.com/manfredsteyer/schematics-intro 
+nghouston, angular schematics, yt download, 2018 01 
+manfred steyer, routing, angular schematics
+ngrx schematics , roberts brandon on medium 
+manfred steyer, custom angular schematics 
+ngrx schematics sample, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\schematics\heros-app 
+manfred steyer , schematics articule 
+angular schematics expert, vitaly bobrov 
+angular schematics , vitaly bobov 
+angular mountain view meeting stephen fluin: angular-cli schematics: Hans Larson, Felipe Silva, Charles Lyding, Mike Brocchi
+oasis digital ngconf 2018 recap, v6 not released!, ngrx track!!!,ngrx-data, schematics, ngupdate, ng add, community
+learn: ngconf 2018 mike brochi: angular schematics: read file, write file, chain
+manfred steyer yt: performance, schematics
+learn: ngrx gerard sans - ngrx entity with schematics
+work: ngrx-todo-schematics sample
+work: build your ngrx example-app with the help of @ngrx/schematics
+learn: manfred steyer book on leanpub: ngrx schematics
+learn: manfred steyer blog: ngrx schematics blog article
+angular cli, workspace, ng add, ng update, schematics
+schematics is not only for angular, angular file creation, change..
+video, paolo galfione on nx, schematics, italian spoken
+nativescript plays well with nx and schematics
+schematicsdirectories
+schematicsinstall
+schematicsconfig
+vitaly bobrov, ngrx schematics,c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\vitaly-bobrov\ngrx-swkb
+ngrx schematics , test, 
+conemu ngrx schematics
+ngrx schematics entity: creates actions and reducer with entitystate
+ngrx schematics feature creates feature with standard actions and reducer with feature module in angular module
+create angular library with ngrx schematics: ng g library
+angular schematics, manfred steyer
+angular-crud, manfred steyer custom schematics
+angular meeting, schematics: felipe silva, charles lyding, mike brocchi, hans larson
+angular schematics, cli 6, angular.json
+ngrxi:		install ngrx and set schematics collection ton @ngrx/schematics
+ngrx links lab, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\hans\labs\ngrx-schematics
+work: c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\hans\labs\ngrx-schematics
+angular schematics (rangle.io, angular cli mountain meeting, manfred steyer, mike brocchi ngconf 2018, netanel basal reduxor ngrx-gen)
+work: ngrx labs: ngrx-crud-schematics
+angular schematics, "https://www.youtube.com/watch?v=1CuNnbyVlBQ&t=0s&list=PLw5h0DiJ-9PB8XH7k1bzD_UGPQ21mea0f&index=2" 
+ngair, jason jean, nrwl nx schematics explained 
+angular schematics, vitali bobrow, ngtalks 2018
+ngrx schematics, 
+angular schematics
+ngrx schematics
+schematics
+ionic todo with ionic schematics and ngrx schematics
+nir kaufmann, angularup 2018, ngrx schematics, thinking in redux
+angular schematics, briebug, https://www.youtube.com/watch?v=eSpSPCdMtwA 
+kevin schuchard, briebug, schematics expert, https://www.kevinschuchard.com/ 
+briebug, ng schematics with brian love, kevin schuchard
+ngHouston, ng schematics with brian love, kevin schuchard
+learn: angular 7 workshop with nrwl schematics and material, c:\Users\Folio\web\frontend\javascript\frameworks\angular\lukas-ruebbelke-frontendmasters\angular-core-workshop 
+expert: angular schematics, manfred steyer  
+alias ngrxi=npm install @ngrx/schematics --save-dev && ng config cli.defaultCollection @ngrx/schematics
+alias ngrxi= npm install -S @ngrx/core  @ngrx/store @ngrx/effects @ngrx/router-store @ngrx/entity @ngrx/store-devtools && npm i -D @ngrx/schematics && ng config cli.defaultCollection @ngrx/schematics && ng g --help
+ngrx schematics store and effects install in angular root app: 	ngrxsmi 
+*** schematics
+expert: angular schematics, kalyan chatterjee, blackbox, https://github.com/kalyan11021980  
+learn: angular schematics, https://github.com/kalyan11021980/schematics-nguniversal-logger.git  
+learn: schematics, Stanimira Vlaeva, https://github.com/sis0k0/schematics-samples.git
+learn: schematics Christoffer Noring
+tomas trajan, angular schematics expert, https://medium.com/@tomastrajan/%EF%B8%8F-how-to-create-your-first-custom-angular-schematics-with-ease-%EF%B8%8F-bca859f3055d 
+angular schematics,  manfred steyer
+angular: schematics Stanimira Vlaeva, github: https://github.com/sis0k0/schematics-samples 
+angular: schematics, stanmira vlaeva, code, c:\Users\Folio\web\frontend\javascript\frameworks\angular-schematics\stanmira-vlaeva\schematics-samples 
+angular: schematics, angularup , https://www.youtube.com/watch?v=5AqO2fABSaY 
+schematics: workshop, tomas trajan, https://github.com/tomastrajan/workshop-angular-schematics 
+ng:schematics, angela venditto, https://github.com/anfibiacreativa/frontendddevlove-angular-schematics.git 
+ng:schematics, manred steyer, npm angular-crud 
+schematics: schematics authoring, https://next.angular.io/guide/schematics-authoring
+schematics: search schematics, https://ngx.tools/#/search 
+schematics: json-server schematics, https://github.com/bniedermeyer/json-server-schematics, ng add json-server-schematics 
+learn schematics:kevin schuchard, briebug, https://www.kevinschuchard.com/, https://github.com/schuchard?tab=repositories
+code:schematics, prettier, kevin schuchard, https://github.com/schuchard/prettier-schematic, ng add @schuchard/prettier
+schematics:prettier,ng add @schuchard/prettier,  ng g @schuchard/prettier:add
+schematics:schematic-starter,kevin schuchard, https://www.kevinschuchard.com/blog/2018-11-20-schematic-sandbox/
+schematics:schematic-starter,https://github.com/schuchard/schematic-starter
+schematics:workshop, kevin schuchard, https://github.com/schuchard/ng-crash-course-201909
+schematics:jest, kevin schuchard, https://github.com/briebug/jest-schematic
+schematics:cypress, kevin schuchard, https://github.com/briebug/cypress-schematic
+schematics:resources, kevin schuchard, https://www.kevinschuchard.com/blog/2019-11-21-schematic-resources/
+schematics:interpolation, kevin schuchard, https://www.kevinschuchard.com/blog/2019-05-17-iterpolating-schematics/
+schematics:testing, kevin schuchard, https://www.kevinschuchard.com/blog/2018-11-20-schematic-sandbox/
+json-schematics;          json-schematics; ng add json-server-schematics  
+brendon-nidermeyer;          brendon-nidermeyer; json-schematics; creator; "https://www.youtube.com/watch?v=kTl291dDgqo&list=PLqn52Dxq8AiW5PU9PPWXPk-YJYS9vsrJ-&index=2&t=0s"  
+brendon-nidermeyer;          brendon-nidermeyer; json-schematics ;https://github.com/bniedermeyer/angular-seattle-library-demo  
+json-server; schematics
+angular-schematics; 	ng set defaults.schematics.collection @ionic-angular/schematics --global To reset the default collection;  ng set defaults.schematics.collection @schematics/angular --global  
+ionic-schematics;      	npm i -D @ionic/schematics-angular  
+schematics-talk;        chris noring; https://github.com/softchris/slides/blob/master/schematics.pdf  
+schematics-talk;        chris noring ;youtube.com/watch?v=_LPzY9GrNwY  
+schematics-expert;   	kevin schuchard; briebug; https://github.com/schuchard  
+schematics-starter;  	kevin suchard;  https://github.com/schuchard/schematic-starter  
+@angular/schematics;    https://angular.io/guide/schematics  
+@angular/schematics;    https://medium.com/@tomastrajan/total-guide-to-custom-angular-schematics-5c50cf90cdb4  
+@angular/schematics;    https://github.com/angular/schematics-angular-builds  
+angular-schematics;     schematics.txt  
+schematics-workshop;    tomas trajan; https://github.com/tomastrajan/workshop-angular-schematics.git  
+schematis-docs;      	E;\_downloads\_fe\_js\Angular\Angular-schematics-Chris-Noring  
+schematics-deep-dive;   tomas trajan; https://www.youtube.com/watch?v=bnhrLH3bOFo  
+schematics-matt-raible; https://github.com/oktadeveloper/okta-angular-schematics-example  
+json-server-schematics; ng add json-server-schematics  
+angular-schematics;      natalia venditto; https://medium.com/angular-in-depth/effective-automated-scaffolding-with-angular-schematics-c61d6640b7d5  
+angular-onpush;         	ng config schematics.@schematics/angular.component.changeDetection OnPush  
+angular-schematics;          	overwrite; https://indepth.dev/overriding-angular-schematics/  
+angular-schematics;      	default settings in angular.json; https://indepth.dev/overriding-angular-schematics/ 
+angular-schematics;          	sample; https://github.com/gregor-doroschenko/ng-schematics-workshop 
+angular-schematics;       	expert; briebug; kevin schuchard; brian love; https://github.com/schuchard?tab=repositories  
+angular-schematics;       	expert; briebug; kevin schuchard;https://www.kevinschuchard.com/  
+angular-schematics;       	expert; briebug; kevin schuchard;https://www.youtube.com/watch?v=V5K8IOvw0Gk  
+angular-schematics;         	workshop; briebug; brian love; https://github.com/blove/schematics-workshop  
+angular-schematics;         	workshop; briebug; brian love; "https://www.youtube.com/watch?v=X06tuCohJPQ&feature=youtu.be"  
+angular-schematics;             https://github.com/sfabriece/ngvikings-2020.git  
+angular-schematics;         	https://github.com/santoshyadav198613/SchematicsDemo.git  
+angular-schematics,           	victor slavov, invragistics, https://github.com/ViktorSlavov/app-training-101.git
+angular-schematics,      	victor slavovo, "https://www.youtube.com/watch?v=S_XxDC4WdKI&t=12s"  
+angular-schematics;           	victor slavov; invragistics; https://github.com/ViktorSlavov/app-training-101.git
+angular-schematics;      	victor slavovo; "https://www.youtube.com/watch?v=S_XxDC4WdKI&t=12s"  
+angular-schematics;          	authoring schematics; https://angular.io/guide/schematics-authoring 
+angular-cli;           		config onPush; ng config -g schematics.@schematics/angular;component.changeDetection OnPush
+angular-schematics,           	santosh yadav, how create a ng-add, "https://www.youtube.com/watch?v=1iEFddnUfXk&list=PLIcBJ5O4Mr10rK4Fv4uetG4mzn31Pw2oL&index=4&t=0s" 
+angular-schematics,            	natalia venditto, create an schematics, https://medium.com/angular-in-depth/effective-automated-scaffolding-with-angular-schematics-c61d6640b7d5 
+ng-config,         ng config schematics.@schematics/angular:component.changeDetection OnPush 
+hans-project,              ngrx workshop 2020 mike ryan, ng add json-server-schematics 
+angular-fire,         	    brian love library, angular fire schematics, ng add angular-fire-schematics 
+ngrx-install,      	ng add @ngrx/schematics , ng add @ngrx/store, ng add @ngrx/effects, ng add @ngrx/entity 
+angular-schematics,            global install, npm i -g @angular-devkit/schematics-cli 
+angular-schematics,            create blank schematics project, $ schematics blank --name create-project 
+angular-schematics,            run newly created project, schematics .:ng-new (renamed create-project - in collection.json 
+angular-schematics,            setup a new project: run ng new to generate new project 
+angular-schematics,            setup a new project: add static config files 
+angular-schematics,            setup a new project: update package.json 
+angular-schematics,            setup a new project: remove default favicon (angular icon) 
+angular-schematics,            project requirements: must start with cust*, routing optional 
+angular-schematics,            project requirements: check schematics cli input options_: options passed to schematics functions 
+angular-schematics,            project requirements: typescript types in schema.json schematics cli input options: schema.json 
+angular-schematics,            project requirements: schema.json: properties: name:string, routing:boolean 
+angular-schematics,            project requirements: schema.json: properties: name:string, x-prompt:'name?', routing:boolean 
+angular-schematics,            project check input: const {name } = options, 
+angular-schematics,            project run ng new in function with externalSchematic: return externalSchematic)'@schematics/angular', 'ng-new') 
+angular-schematics,            project create new project with ng-new outside schematics project: schematics ./create-proejct:ng-new cust-payments --debug false
+angular-schematics,            publish newly create angular schematics project: npm publish, after publishing: npm install -g create-proejct 
+angular-schematics,            use installed npm project: ng new --collections=create-project cust-payments 
+angular-schematics,            add static config files: .prettierrc, .npmrc, tslint.jspn (jslint.json), karma.conf.js (jest) 
+angular-schematics,            add static config files: Tree (virtual filesystem), Rule is a function that takes a Tree and returns a Tree, 
+angular-schematics,            add static config files: create files directory with all static files in it 
+angular-schematics,            add static config files: create rules: read files from direactory and replace static names with actual names, used mergeWith(files, MergeStrategy.Overwrite) 
+angular-schematics,            add static config files: filenames: "__variableName__ , inside project code: <% variableName %>" 
+angular-schematics,            add static config files: apply template rule to varaibleName (projectName: name) 
+angular-schematics,            update package.json: prettier, husky, add githook, add ci script 
+angular-schematics,            update package.json: create updatePackageJson Rule 
+angular-schematics-links.txt,  file 
+angular-schematics,            erin grimm, australia, https://github.com/ejzimmer/schematics-talk 
+angular-schematics,            erin grimm, australia, C:\Users\Hans\web\frontend\angular\schematics\erin-zimmer-schematics-talk\schematics-talk 
+angular-schematics,            erin grimm, australia,  
+angular-schematics,        	expert, natalia venditto
+angular-schematics,        	expert, manfred steyer
+angular-schematics,        	expert, tomas trajan
+angular-schematics,        	expert, erin grimm, australia
+angular-schematics,        	expert, santosh
+angular-schematics,             angular schematics ytl, collection of angular schematics presentations, https://www.youtube.com/playlist?list=PLw5h0DiJ-9PDXKpT__KrpuCAkKGouO9B7 
+angular-schematics,      	expert, maciej treder, https://github.com/maciejtreder 
+schematics-cookbook,     	https://github.com/zbennett10/schematics-cookbook/tree/master/manuscript 
+schematics-cookbook,     	https://github.com/zbennett10/schematics-cookbook-examples 
+schematics-demo,                https://github.com/Lambda-IT/customschematicsdemo 
+angular-schematics,     workshop, natalia venditto, 
+angular-schematics.txt, file
+angular-schematics,     expert, natalia venditto, https://www.youtube.com/playlist?list=PLwKKH5OdZwsDiZbegfDJzLXYN-FczJ1gk 
+angular-schematics,     scss files generating, natalia vendito, https://github.com/anfibiacreativa/frontendddevlove-angular-schematics 
+angular-schematics,     kevin schuchard, schematics starter, https://www.kevinschuchard.com/blog/2018-11-20-schematic-sandbox/ 
+angular-schematics,     kevin schuchard, schematics starter, https://github.com/schuchard/schematic-starter 
+angular-schematics,     cli g c, https://angular.io/cli/generate#component-command 
+angular-schematics,     authoring, https://angular.io/guide/schematics-authoring 
+angular-schematics,     hans, angular-todo-schematics, C:\Users\HS\Web\frontend\javascript\angular\monsterlessons-academy\monsterlessonsacademy
+schematics-cookbook.txt,file 
+angular-schematics,     run schematics from schematics, https://github.com/shhdharmen/run-schematics.git 
+angular-schematics,     run schematics from schematics, https://indepth.dev/posts/1453/different-ways-to-run-schematics-from-the-schematic 
+angular-schematics,     utilities, https://github.com/nitayneeman/schematics-utilities 
+angular-schematics,     utilities, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\schematics-utilities-library\schematics-utilities 
+angular-schematics,     angular schematics collections samples, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\angular-schematics-samples\angular-schematics 
+angular-schematics,     kevin schuchard, building angular schematics, https://www.kevinschuchard.com/blog/2018-11-20-schematic-sandbox/ 
+angular-schematics,     github repo, https://github.com/angular/angular-devkit-schematics-builds 
+angular-schematics,     utilities, https://nitayneeman.github.io/schematics-utilities/ 
+angular-schematics,     erin zimmer talk, yt, https://github.com/ejzimmer/schematics-talk.git 
+angular-schematics,     erin zimmer talk, yt, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\erin-zimmer-talk\schematics-talk 
+angular-schematics,     erin zimmer talk, yt, "https://www.youtube.com/watch?v=sF-DA7lTRtg&t=2s" 
+angular-schematics,     erin zimmer talk, yt, D:\_downloads\__idm 
+angular-schematics,     hans, ytl, https://www.youtube.com/playlist?list=PLw5h0DiJ-9PB8XH7k1bzD_UGPQ21mea0f 
+angular-schematics,     brian love, tutorial, https://brianflove.com/2018-12-11/angular-schematics-tutorial/ 
+angular-schematics,     tomas trajan, workshop, https://github.com/tomastrajan/workshop-angular-schematics.git 
+angular-schematics,     tomas trajan, workshop, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\tomas-trajan-workshop\workshop-angular-schematics 
+angular-schematics,  	manfred steyer, angular-crud, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\manfred-steyer\angular-crud 
+angular-schematics,   	workshop sample, https://github.com/tomastrajan/workshop-angular-schematics 
+angular-schematics,   	workshop sample, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\tomas-trajan-workshop\workshop-angular-schematics 
+angular-scss,         	ng add scss-scaffold, https://stefaniefluin.medium.com/quick-guide-to-angular-schematics-how-i-built-my-first-schematic-2c81a486dd3a 
+angular-schematics,   	hans, nxp-feature, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\nxp-feature 
+angular-schematics,   	erin zimmer, web site, https://ez.codes/ 
+angular-schematics,     goto angular material schematics 
+angular-schematics, 	natalia vendito, schematics expert, https://github.com/anfibiacreativa?tab=repositories
+angular-schematics, 	natalia vendito, https://twitter.com/AnfibiaCreativa
+angular-schematics,     natalia venditio, course on angularnation, https://www.angularnation.net/posts/6219118 
+angular-schematics,     natalia venditio, course on angularnation,https://github.com/anfibiacreativa/my-angular-nation-schematic.git 
+ngular-schematics,        natalia venditio, course on angularnation,c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\natalia-venditto\my-angular-nation-schematic 
+angular-schematics,     hans, nxp-feature:nxp-feature user 
+angular-schematics,     hans, schematics nxp-feature:nxp-feature --name user 
+angular-schematics,     hans, schematics nxp-feature:nxp-feature --name user 
+angular-ngrx,         	brandon roberts, nx ngrx schematics, https://brandonroberts.dev/blog/posts/2021-02-24-building-an-angular-application-from-scratch-with-nx-and-ngrx/ 
+angualar-schematics,    john baur oasis, run with schematics, https://github.com/johnrbaur/angular-schematics-demo.git
+angular-schematics,     natalia venditto, extend with sass, "https://www.youtube.com/watch?v=yvr9l-tRA0s&list=PLw5h0DiJ-9PCgoXb73O6aBe326bhUFYEV&index=1" 
+angular-schematics,     natalia venditto, extend with sass, https://github.com/anfibiacreativa/frontendddevlove-angular-schematics.git 
+angular-schematics,     natalia venditto, extend with sass, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\natalia-venditto\frontendddevlove-angular-schematics 
+angular-schematics,     natalia venditto, extend with sass, c:\Users\HS\Web\frontend\javascript\angular\angular-schematics\natalia-venditto\frontendddevlove-angular-schematics 
+angular-schematics,     tailwind schematics, blog article, https://dev.to/thisdotmedia/schematics-pt-3-add-tailwind-css-to-your-angular-project-40pp 
+angular-schematics,     tailwind schematics, gh repo, https://github.com/flakolefluk/tailwindcss-schematics 
+angular-schematics,     tailwind schematics, ng command, "ng add @flakolefluk/tailwind-schematics --project=<PROJECT_NAME>" 
+angular-schematics,    stanmira vlaeva, https://github.com/sis0k0/schematics-demos 
+hans-schematics,        schematics nxp-feature:nxp-feature --name vilans 
+json-server-schematics, ng add json-server-schematics 
+angular-schematics,     brian love, tutorial, https://brianflove.com/2018-12-11/angular-schematics-tutorial/ 
+angular-schematics,     best practices use sandbox, https://brenden.codes/angular-schematics-best-practices 
+angular-scam,           netanel basal, scam schematics, https://github.com/ngneat/scam 
+angular-schematics,     brian love, https://brianflove.com/2018-12-11/angular-schematics-tutorial/ 
+hans-schematics,  	angular feature module, c:\Users\HS\Web\frontend\javascript\angular\angular-router\hans\router-queryparams 
+angular-schematics,    	danny koppenhagen, https://k9n.dev/blog/2020-09-angular-schematics-common-helpers 
+angular-schematics,    	danny koppenhagen, https://github.com/d-koppenhagen 
+conemu-cmd,        alias dirtsch=dir $*  *schematics*.txt
+# hans schematics
+conemu-cmd,        alias ngf=schematics nxp-feature:nxp-feature --name $*
+conemu-cmd,        alias smnxp=schematics nxp-feature:nxp-feature --name $*
+conemu-cmd,        alias ngrxi=npm install @ngrx/schematics --save-dev && ng config cli.defaultCollection @ngrx/schematics
+conemu-cmd,        alias ngrxi= npm install -  @ngrx/store @ngrx/effects @ngrx/router-store @ngrx/entity @ngrx/store-devtools && npm i -D @ngrx/schematics && ng config cli.defaultCollection @ngrx/schematics && ng g --help
+angular-schematics,     felix lemke, https://github.com/interfacewerk/schematics-talk 

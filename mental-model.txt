@@ -1,0 +1,47 @@
+js, javascript is a dynamic, weakly-typed, prototype based language with first-class functions 
+ng2, Everything is a component 
+js , only functions can create scope 
+js, scope is the space where a variable can be seen and accessed 
+js, scope is the lifetime of a variable, if a variable goes out of scope, its value can not be accessed except for closures 
+js, there are only 2 scopes: the global scope and function scope 
+js, every variable declared outside a function is in global scope 
+js, every variable declared in a function is in local scope, available only inside that local scope 
+js, in function scope, variables in the parent scope of the functions are visible and can be accessed 
+js, a function created inside another function has accessed to the outer function scope and closes over these -
+js, closures are used to create local state 
+js, using "use strict" has the effect that if a variable is used before it was declared Js throws an error 
+js, variable hoisting is the result of the 2 passes a js compiler does: in pass 1 all variables are allocated in memory, in pass 2 the code is run 
+js, scope chain: scopes are nested inside scopes, every scope knows its parent scope 
+js, scope chain - a variable is first looked up in the local scope, if it can't find it , it walks up the scope chain to the parent scope for a lookup 
+js, function scope can be nested. A function created inside a function creates its own scope nested inside the outer function scope and has access to it 
+js, scope chain is defined lexically, which means in the order in which the code is written 
+js, 2 practices which use the fact the functions create scopes is 1 the practice of IIFE (Imediately Invoked Function Expression) and 2 creating Closures 
+js, functional programming in Javascript depends on the fact of beeing able to create closures 
+js, this is bound at call time 
+js, when function is called as a method (object.methode) then this points to the calling object, function called as function points to window 
+js, "use strict" will throw an error when accessing this points to window 
+js, "use strict" helps to avoid this pointing to the global object by throwing an error when accessing with pointing to window 
+js, fixing the problem with this, is to fix this within a function with a helper variable like self, self = this 
+js, "use strict" , the default value of this is undefined not the window object 
+js, call or apply , normally you would use call(fixed number of parameters) but when you have a variable number of arguments you use apply with the the array for any number of paramters 
+js , all functions have the arguemts array, not really an array , you can mike to an array with Array.slice function 
+js, bind fixes this at the time when we define a function, whereas .call and .apply bind this at call time 
+js, .bind can only be used on function expressions not on function statements 
+js, es6 arrow function is a function expression with .bind(this) called on, that fixes this to that expression 
+js, functions are objects which are derived from Object 
+ts, add --alwaysStrict compiler option to set on all files "use strict" 
+js, prototype chain, every function has a prototype property which points to an prototype object. This prototype object has a constructur pointing back to the n 
+js,pseudo-classical inheritance in 3 steps 
+js, step 1: .call base class with this and the necessary parameters .call(this,fname,lastname) 
+js, step 2: set the prototype of the base class to the inerited class: Employee.prototype = Object.create(Person.prototype) 
+js, step 3: set constructor of inherited class back to its own constructor: Employee.constructor = Employess 
+js,factory function is a fn which creates an object and returns it 
+js, 3 ways to create an object with with properties: 
+js, way 1: create an init fn on the object wich inits the properties: this.name = name (passed in from parameter) 
+js, way 2: with Object.ceate(Prototype, Propertyname {"name": {value: "Hans"}}) 
+js, way 3: with Factory Function: function PersonFactory(fn,ln) { var p = Object.create(Person); person.fn = passedParam; return p } 
+js, programming languages which, at runtime, execute many common programming behaviors that static programming languages perform during compilation. These behaviors js, could include extension of the program, by adding new code, by extending objects and definitions, or by modifying the type system. Although similar behaviours js, can be emulated in nearly any language, with varying degrees of difficulty, complexity and performance costs, dynamic languages provide direct tools to make use js, of them. Many of these features were first implemented as native features in the Lisp programming language
+Most dynamic languages are also dynamically typed, but not all are. Dynamic languages are frequently (but not always) referred to as "scripting languages", although the term "scripting language" in its narrowest sense refers to languages specific to a given run-time environment.
+---------------------
+JavaScript is designed on a simple object-based paradigm. An object is a collection of properties, and a property is an association between a name (or key) and a value. A property's value can be a function, in which case the property is known as a method. In addition to objects that are predefined in the browser, you can define your own objects. This chapter describes how to use objects, properties, functions, and methods, and how to create your own objects.
+-------------------------------------

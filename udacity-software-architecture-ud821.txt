@@ -1,0 +1,657 @@
+System (An application is a system)
+ - structure (static, not changing, classes, modules, files, directory)
+ - behavior (dynamic, changing over time, all possible states)
+
+Behavior Modeling
+---------------------------------------------------------------------------------------------------------
+- The structural models (static structure) 
+-------------------------------------------------------------------------------
+that we have been looking at so far express properties of
+0:05
+systems that are true at all times. Although, these models are general,
+0:10
+they fail to convey interesting behavioral aspects of the systems.
+0:15
+That is how the systems respond to external stimuli. UML provides a variety
+0:22
+of alternative diagrams that do support the 
+
+- behavioral modeling of systems (state change due to external stimuli (events)
+---------------------------------------------------------------------------------
+0:28
+We will look at these and later we will also go into detail on the state chart
+0:34
+diagramming technique. Which is the one which provides you the ability to.
+0:41
+Precisely describe the system properties.
+
+
+
+
+
+
+State
+---------------------------------------------------------------------------------------------------------
+First, let's start with two key concepts, states and events. Both of
+0:06
+these are abstract but nevertheless useful in describing system behavior.
+0:10
+A state is an abstract description of a set of
+0:15
+system values at a given point of time. For example, it's raining outside.
+0:23
+This is actually some estimation or abstraction over the amount of precipitation
+0:29
+in the air at a given point in time. Let's imagine a slightly more complex
+0:34
+situation in the imaginary town of Des Cartes Iowa, that has ten streets and
+0:39
+eight avenues laid out in an orthogonal grid. And let's say we
+0:42
+were trying to imagine the state of the town that had one car in it.
+0:48
+The position of that car in this imaginary scenario is at third street and
+0:52
+fifth avenue. The number of possible states it could be in is 80, ten streets,
+0:58
+eight avenues. For two cars though, the number of possible states,
+1:05
+goes up with a square. That is, 80 times 80 or 6400 possible states.
+1:09
+The State Space of a system, is a set of possible states,
+1:15
+and its size goes up, multiplicatively, with a number of different
+1:20
+attributes that we're trying to capture. And the number of possibilities,
+1:23
+that each attribute has. This is called the state explosion problem.
+
+
+Event
+--------------------------------------------------------------------------------------------------------------------------
+
+0:00
+The second key concept is the event. Once again it's an abstraction, and
+0:05
+we'll say it's a single, instantaneous, noticeable occurrence. And
+0:12
+also, and also, think of it as some kind of stimulus because the system is going
+0:16
+to respond to it. Events in these kinds of systems can either be asynchronous or
+0:23
+synchronous. Asynchronous events you can think of as kind of randomly occurring,
+0:29
+they can come in bursts, they can be spread out.
+0:32
+Synchronous events are more likely to come at periodic intervals,
+0:37
+often the system has some sort of clock or event loop that controls.
+0:42
+The current events when they can be dealt with in our
+0:50
+approach to modeling these systems the events can
+0:55
+serve as the reason or the stimulus for a change of state in the system.
+1:02
+That, that change of state is sometimes called a state transition. For example,
+1:08
+when you got your envelope through the mail that said you were admitted to
+1:12
+college, that's a significant state transition in your life. Events can
+1:17
+occur as the results of user actions like hitting a, hitting a button on the,
+1:23
+on the graphical user interface. They can occur because of changes in the data,
+1:30
+in the, in the state space the temperature getting above 90 degrees.
+1:35
+Or they can be queued by the passage of time.
+
+UML Taxonomy
+--------------------------------------------------------------------------------------------------
+
+UML supports, several different kinds of events which you can use
+0:05
+in your modelling. These include, 
+- signals, which are asynchronous notifications.
+0:12
+- Method calls are synchronous. 
+
+- State changes in the data.
+0:18
+- data conditions, and the 
+- passage of time.
+
+Reactive Systems
+----------------------------------------------------------------------------------------------------
+With these two concepts, states and events in mind,
+0:02
+let's think a little bit about modeling of behavior. Systems that
+0:07
+respond to events are called reactive systems. If you think about it for
+0:12
+a minute that's much different than this other kinds of systems that you would
+0:16
+normally build, in which it's the system in charge of controlling the order in
+0:20
+which things happen. Here is the external world which supplies the stimuli that
+0:25
+are causing things to happen in the system, the system has to react to them.
+0:30
+In general there are a variety of different approaches to modeling behavior.
+0:35
+We're going to go through from the simplest, which is combinatorial systems.
+0:41
+Through sequential systems, to the most complex and
+0:44
+concurrent systems. In combinatorial systems, we're just concerned with states
+0:49
+no events. Sequential systems have states, that is they have memory, but
+0:55
+they're linearly ordered one state after another. And then concurrent systems.
+1:01
+Particularly asynchronous concurrent systems have lots of states and
+1:05
+lots of events and the events are happening at unpredictable moments of time.
+
+Modeling Techniques
+-------------------------------------------------------------------------
+With these two concepts, states and events in mind,
+0:02
+let's think a little bit about modeling of behavior. Systems that
+0:07
+respond to events are called reactive systems. If you think about it for
+0:12
+a minute that's much different than this other kinds of systems that you would
+0:16
+normally build, in which it's the system in charge of controlling the order in
+0:20
+which things happen. Here is the external world which supplies the stimuli that
+0:25
+are causing things to happen in the 
+
+Combinatorial Modeling
+----------------------------------------------------------------------------
+Starting at the simplest combinatorial modeling, this is the simplest form of
+0:04
+behavioral modeling, and it merely expresses the logic of simple combinatorial
+0:10
+systems. In these systems, only the inputs and not the history of previous
+0:14
+states determines subsequent states. We'll look for a second at two equivalent
+0:20
+forms of combinatorial modeling. Called decision trees and decision tables.
+
+Combinatorial Modeling with Descision Tables
+-----------------------------------------------------------------------------
+
+Search in video
+0:00
+Start with decision tables. This is a common way for, getting a,
+0:08
+getting your head wrapped around a situation where there are various different,
+0:13
+states that can affect ultimate behavior of the system. If you,
+0:18
+if you think about decision tables in terms of input conditions and and, and,
+0:25
+and responses to those inputs. That is combinations of inputs yielding results.
+0:31
+That's where the term netwire comes from. The table will have columns.
+0:39
+Some of which correspond to the inputs and the remainder will correspond to
+0:44
+the outputs. And then each of the rows is going to correspond to a different
+0:48
+combination of input values. Let's imagine that we have a workshop and
+0:52
+there are three switches, okay. Each of the switches can have on and
+0:57
+off as possible values, okay? So we're going to have three columns and
+1:04
+eight rows. Where did the eight come from? Well, if we have three switches,
+1:10
+two possible values for each switch, that's two to the third or
+1:14
+eight. Let's assume that the three switches control two output devices.
+1:19
+Maybe an overhead light and maybe a, a power drill.
+1:24
+The third switch is a master switch which controls all the electricity in
+1:29
+the workshop. Well here's the, here's the decision table for this situation.
+1:34
+Partitioned the columns into three input columns for
+1:39
+the three different switches and two Output columns for
+1:46
+the lights and the motor on the power drill. Each of
+1:51
+the rows correspond to one of the possible combinations of the values for
+1:56
+the input switches. Due to the third,
+2:00
+eight different rows there. For each of the combinations of the inputs
+2:06
+there'll be a resulting situation as far as the outputs are concerned. So
+2:11
+for example, if the master control switch is off then it doesn't matter
+2:16
+the positions of the other switches, both the lights and the motor will be off.
+
+
+Decision Trees
+---------------------------------------------------------------------------------
+0
+A graphical version of the decision table is called a decision tree.
+0:05
+It's a form of a flow chart in which the decisions are taken sequentially and
+0:10
+the resulting output can be seen as a path through the tree.
+0:15
+It's exactly the same information as in the decision tree, but
+0:18
+you're seeing it in a different form.
+0:20
+In the decision tree we'll see in just a second, there are two kinds of nodes.
+0:24
+Diamonds denote decisions and rectangles denote the actions that are going to be
+0:29
+taken based upon the decisions that are made.
+0:32
+The arcs in the diagram indicate the implications when a decision is
+0:35
+answered in a particular way, either affirmatively or negatively.
+0:41
+Note that in the decision tree you're about to see,
+0:44
+some of the nodes have been duplicated.
+0:47
+This is a side effect of the redundancy which occurs in the table as well.
+0:57
+Here's the tree for the previous situation.
+0:59
+On the left is the decision about the master control and
+1:04
+the on, on the rightmost is the resultant
+1:10
+response from the system in terms of what lights are on and what lights are off.
+1:15
+Once again, same information is in the decision table.
+1:18
+Note that the two rightmost diamonds contain exactly the same question.
+1:25
+And that's it for combinatorial combinatorial logic.
+1:29
+As you can well imagine, as the number of possibilities for
+1:32
+the input goes up, these tables quickly become unmanage, unmanageable.
+
+Behavioral Modeling of Sequential Systems (systems with behavior history)
+------------------------------------------------------------------------------
+
+Search in video
+0:00
+So then let's move to the next most complex version
+0:06
+of behavioral modeling called sequential systems. In sequential systems and
+0:10
+concurrent systems that we'll get to, the main difference from common
+0:14
+[UNKNOWN] systems is that there's history or memory of what happened before.
+0:19
+You were in a previous state and based upon that state and whatever events occur
+0:25
+you move to a new state. Systems like this are sometimes called finite state
+
+State Transition Table
+---------------------------------------------------------------------------------------------------
+picture
+
+Garage Door Openener System
+------------------------------------
+
+Motor (on, off)
+Door (closed, open, between)
+Button ( on, off)
+
+
+
+
+Search in video
+0:00
+We can represent these finite state machines in a variety of ways.
+0:04
+Let's start with a tabular form called a state transition table.
+0:07
+Here the rows correspond to states and there are four columns. One column for
+0:12
+the name of the state. Another for the input event which is going to
+0:17
+cause a transition. The third for whatever output action is going to
+0:21
+be taken upon the transition, and the fourth for the next state. That is,
+0:26
+the state transition table is going to capture the idea that a system in
+0:31
+a given state, when given a certain stimulus, and when a stimulus occurs.
+0:36
+Is possibly going to produce some action or response, and
+0:41
+leave itself in a in a state, possibly the same or possibly a different state.
+0:47
+To see how this works, let's imagine a garage door opening system. In fact, a,
+0:52
+a simplified version of my garage door opening system. Okay. It's gotta motor
+0:58
+and that motor can be lifting the door up, it can be pushing the door down, or
+1:02
+it can be stopped. There's a button that can be pressed to turn the motor on and
+1:08
+off. The door itself can be all the way open, all the way closed,
+1:14
+or stopped at some intermediate intermediate state along the way.
+1:19
+Importantly, the, is what happens when you press the button, and
+1:24
+in this particular garage door situation, okay. What happens when you
+1:30
+press the button can be one of three things depending upon what state you're in.
+1:33
+If the motor is stopped and you press the button, it starts going but
+1:38
+in the opposite direction it was going before. If the motor is going upward and
+1:43
+you hit the button, it stops, leaving the door wherever it was at that time.
+1:49
+However, for security or safety reasons, if the motor's going downward and
+1:54
+you press the button, it not only stops but then it immediately turns on and
+1:57
+goes in the other direction. Presumably because something was detected that
+2:02
+might be damaged by the door going down on it. And implicit in this is
+2:06
+some sensors. One sensor determining whether the door is all the way up, and
+2:10
+another sensor saying whether the door is all the way down.
+
+State Transition Table for the Garage Door Opener System - GDOS
+-----------------------------------------------------------------------------
+picture
+
+State Transition Diagram
+-------------------------------------------------------------------------------
+
+
+
+Search in video
+0:00
+These views are called State Transition Diagrams, they're essentially represent,
+0:04
+graphical representations of a Finite State Machines.
+0:07
+In these diagrams we have an indication of a node, typically with an oval,
+0:12
+or some kind of rectangle. We have arcs, directed arcs connecting the nodes,
+0:17
+indicating that there's a state transition. The arcs can be labeled.
+0:23
+The arcs can be labeled with an action and a transition.
+0:28
+Typically the actions can be can be optional. Usually,
+0:34
+but not always, the transitions are, are not optional, okay? If you recall
+0:40
+your finite state machines from theory, there are these epsilon transitions.
+0:44
+We'll see in fact that the garage door opener has one of these, but they're,
+0:48
+they're not, they're not all that typical. Note that the layout of the nodes,
+0:53
+where we placed them in the diagram, doesn't have any semantic import. So
+0:57
+you are free to make the diagram lay it out in a way that conveys what you
+1:02
+consider to be the important behavioral aspects of the system. In terms of
+1:07
+how these diagrams work, you can think of yourself as, at any point in time,
+1:13
+being in a specific state. Okay, kind of waiting there until an event happens.
+1:18
+When the event happens, the outgoing arcs are examined to determine
+1:24
+whether any of them are labeled with the corresponding event.
+1:30
+And if so, a transition is made between the current state and
+1:34
+the state at the end of that transition. And in so
+1:38
+doing the action, if any, on that transition arc is, is executed.
+
+Example GDOS
+--------------------------------------------------------------------------
+picture
+Here is the graphical representation of the garage door opener.
+0:04
+I've used rectangles in this case, but there are six, six states indicating
+0:08
+the six states we, we listed before. The the arc,
+0:14
+the transition arcs have two two expressions on them.
+0:20
+The first one, the first is the event causing the transition,
+0:24
+if there's then a slash, the second one is the event to take,
+0:28
+that will happen upon that transition occurring. So imagine, for
+0:32
+example we're at the bottom, in the state labeled Door Open Motor Off.
+0:38
+And in this case, there's only one outgoing arc.
+0:42
+The user has pressed the button and, in this case, the motor starts and
+0:47
+it moves into the state where the motor is running downward. The door was open,
+0:53
+it was at the top. Hence, the only place that the door can go is downward.
+0:58
+Similarly, you can walk yourself through the diagram.
+1:02
+The interesting situation involving epsilon transition takes place
+1:08
+if you are in the bottommost state on the right,
+1:13
+labelled Motor Running Down. If, then, the button is pressed, okay,
+1:19
+recall that the first thing that happens is the motor is stopped and
+1:23
+we transition into the Door Partially Closed Motor Off state just above it.
+1:29
+But when we go on, okay, remember the, the safety concern. The door was going
+1:34
+down and we stopped, and we now want to take it up. So there's a transition to
+1:39
+the left in which there is no event causing the transition. Okay? So
+1:44
+immediate transition and what we want to do is start the motor going upward and
+1:48
+end up in the state at the extreme left labeled Motor Running Up
+
+Problems with State Transition Diagrams (State Explosion)
+---------------------------------------------------------------------------------
+:00
+So with these, state transition diagrams there are several problems that
+0:04
+we've noticed. There are too many arrows, there are too many states, and
+0:07
+there's no concept of nesting in them. As far as the arrows are concerned,
+0:10
+if you've got end states and you've got impossible events. You've got n times m,
+0:16
+a multiplicative number of possible arrows.
+0:19
+As far as states are concerned we've already indicated that the number of states
+0:23
+goes up with the power of the number of possible things that can be going on.
+0:28
+As far as nesting is concerned with the example of the dialing the telephone.
+0:32
+In, in essence we would like to have done the modeling by having the,
+0:38
+the entering of the particular digits somehow hidden within that dialing state.
+
+
+State Charts for dealing with Complexity (nesting states)
+------------------------------------------------------------------------------------
+
+Well, fortunately, there is,
+0:02
+at least a partial solution to the problem of dealing with complexity in these,
+0:07
+in these systems. I say partial because no matter how nature notation is,
+0:13
+you'll always going to be confronted with systems that are more complex than it
+0:17
+can deal with. However, state charts, as developed by David Harel. Okay.
+0:21
+Our way of coping with this in, in a fa, in a fashion that allows you to
+0:27
+do the modeling of the system in a way that help you get an understanding of it.
+0:31
+He calls these his improvements to state transition diagrams, state charts.
+0:38
+And they provide, several mechanisms for, dealing with the, with the complexity.
+0:45
+'Kay, and we'll be looking at those. State charts are a part of UML. Okay.
+0:51
+Tools support them, and, we will be, looking into them in a subsequent.
+0:58
+Lesson and giving you a chance to use them yourself.
+
+Start Chart Icons
+----------------------------------------------------------------------------------------
+picture
+
+As far as icon are concerned, state chart compromise between the rectangles that
+0:05
+we saw in the ovals to a thing called round-tangles, rounded cornered
+0:11
+rectangles. They can, they can have labels indicating state name.
+0:16
+They can have arcs connecting them which is a,
+0:19
+a directed arc that is there's going to be an arrowhead at one end.
+0:23
+And the arch's themselves can be labeled with the event causing the transition,
+0:28
+possibly with a slash and the action taken when the the event occurs.
+0:33
+Also, there's a way to indicate what the default or initial state is.
+0:38
+In the case of state charts this is having a small circle that's filled in.
+0:43
+You know blackened. And the final state in this case, the final state is one in
+0:48
+which there is a concentric outer ring around a filled in a filled in circle.
+
+
+
+State Charts reduce complexity with giving Depth (nesting) and dealing with Concurrency (separate State Machines)
+-----------------------------------------------------------------------------------------------------------------
+Statecharts add quite a few features. We're going to be looking at
+0:04
+the first two because they're the ones that give the greatest benefit. But
+0:08
+I'll mention also some of the others, okay?
+0:12
+In particular number one thing is statecharts offer nesting or depth, okay?
+0:18
+That is, a particular state in a statechart can be its own state machine.
+0:23
+And you can zoom in that way. Secondly, they offer concurrency. Imagine
+0:28
+that you have two things going on, each of which can have a number of states.
+0:34
+Recall from state transition diagrams that in order to model that we have to
+0:38
+multiply the number of states. Statecharts allow you to treat those separately,
+0:43
+okay? Therefore, only getting an additive number of states rather than
+0:47
+a multiplicative number of states. Of course once you've done that,
+0:51
+that is separated the concurrent machines into two parts, you still have to
+0:55
+synchronize them. That is, they still have to cooperate somehow, and
+0:59
+statecharts offers a way of doing that called broadcast events.
+1:03
+We'll look at that. And of course you could also use data conditions which
+1:08
+are globally available to both machines. We'll look at entry exit actions,
+1:14
+we'll look at event parameters, we'll look at history, and
+1:18
+of course the default states that we've already seen the icons for.
+
+
+State Chart Nesting 
+---------------------------------------------------------------------------------
+picture
+
+I have asked you to have a look at, at Harel's original paper. In there,
+0:04
+he has several abstract diagrams laying out the various features of the state
+0:10
+chart notation. On the left, there is a a state machine that has three states.
+0:16
+Notice the default state is the top one and,
+0:20
+with the line coming into it, and there are transitions among the states.
+0:26
+Totally, there are six transitions there.
+0:30
+The version on the right labeled b, okay, is a nested state transition diagram.
+0:37
+A new state called D in the roundtangle, surrounds states A and B.
+0:41
+A is still the default state for the the state machine as a whole.
+0:50
+But notice that some of the lines come out of D
+0:54
+rather than coming out of either A or C. Going back to the one on the left,
+0:59
+notice there are two transitions labeled f, one coming out from A and
+1:02
+going to B, one coming out of C and going to B. On the right,
+1:07
+they're coming out of D. That is, there's there's a an abstraction,
+1:12
+saying when you leave any state in D under transition f,
+1:18
+you go to B. So in that case, we reduce two transitions labeled f to one.
+1:23
+There's still the transition from A to C.
+1:26
+There's still the transition from B to A.
+1:32
+Notice also though that there's a transition from B to D labeled h.
+1:37
+In this case, where does it go? Well, notice that we've added a new
+1:43
+default state and its transition for C. That is,
+1:49
+if a transition comes into D, to the border of D,
+1:54
+where is it going to go? It's going to go to the default state, which is C.
+1:57
+Well, this is identical to what's happening on the left where there's
+2:00
+a direct line from B to C. In this case the line's a little shorter, saving just
+2:04
+a little bit of complexity. We could also have the nesting go further.
+2:09
+That is A or C or B could themselves have substate machines in them
+
+

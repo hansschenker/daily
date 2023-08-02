@@ -1,0 +1,50 @@
+css combinators
+----------------------------------------
+parent child relationship
+-------------------------
+parent child: p c
+direct child: p > c
+
+neighbour relation
+--------------------------
+adjascent: h4 + p
+siblings:  h4 ~ p
+
+formatting context
+---------------------------
+- flex formatting context
+- grid formatting context
+- block formatting context BFC 
+- inline formatting context
+- loat ormatting context
+
+A formatting context is the environment into which a set of related boxes are laid out. 
+Different formatting contexts lay out their boxes according to different rules. For example, 
+- flex formatting context lays out boxes according to the flex layout rules [CSS3-FLEXBOX], 
+- block formatting context lays out boxes according to the block-and-inline layout rules [CSS2]. 
+Additionally, some types of formatting contexts interleave and co-exist: for example, 
+- inline formatting context exists within and interacts with the block formatting context 
+of the element that establishes it, and a ruby container overlays a ruby formatting context 
+over the inline formatting context in which its ruby base container participates. 
+
+A new BFC is created any time an element
+is the root element;
+is floated;
+has position: absolute, or
+has display: inline-block.
+A new BFC is also created if the overflow 
+
+If I float the box, the container collapses (Fig 3.1).
+Fig 3.1: The outer container collapses because 
+nothing is holding it open—the float is out of flow.
+
+If I do something that causes the container to create a new BFC, however, 
+it will contain the floats. I can do that in one of two ways. 
+I can set overflow: hidden on the container:
+.container {
+  overflow: hidden;
+}
+Or, I can float the container (Fig 3.2):
+.container {
+  float: left;
+}

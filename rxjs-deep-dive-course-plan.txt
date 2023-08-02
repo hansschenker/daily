@@ -1,0 +1,688 @@
+RxJs Deep Dive
+---------------------------------------------------------------------------------------------------------------------------------------
+RxJS (Reactive Extensions for JavaScript) is a library for reactive programming 
+using Observables that makes it easier to compose asynchronous or event-based programs.
+
+It was first developed by Microsoft in 2012 as part of the Reactive Extensions project, 
+which aimed to provide a consistent API for working with streams of data 
+across multiple programming languages and platforms.
+
+The RxJS library is a standalone implementation of the Reactive Extensions pattern for JavaScript. 
+It provides a set of operators and functions for working with streams of data 
+in a declarative and composable way. 
+
+Observables in RxJS can be used to represent anything that can be considered a stream of data, 
+such as mouse clicks, HTTP requests, or even values from a database.
+
+Since its initial release, RxJS has become a popular tool for building reactive and event-driven applications in JavaScript, 
+and it has been adopted by many frameworks and libraries, including Angular, React, and Vue.js. It continues to evolve with 
+new features and updates, with the latest version being RxJS 7.
+
+RxJs is an intersection of the Iterator and Observer pattern
+--------------------------------------------------------------
+Yes, that's a good way to describe RxJS. RxJS is a library for reactive programming using Observables, which are streams of values 
+that can be observed by subscribers. The Observer pattern is a design pattern where an object, called the subject, maintains 
+a list of its dependents, called observers, and notifies them automatically of any state changes.
+
+On the other hand, the Iterator pattern provides a way to access the elements of a collection sequentially without exposing 
+its underlying representation. It allows you to traverse a container, such as an array or a linked list, without knowing how 
+the elements are stored or organized.
+
+In RxJS, an Observable is like an Iterator in that it allows you to traverse a stream of values sequentially without knowing 
+how those values are produced or processed. At the same time, an Observable is also like an Observer in that it can notify 
+its subscribers of any changes in the stream of values. So, you can think of 
+an Observable as a combination of an Iterator and an Observer.
+
+What are the main parts of the RxJs library
+-----------------------------------------------------------------
+RxJs is a library for reactive programming using the Observable pattern. It is based on the ReactiveX library and 
+implements the Reactive Extensions (Rx) API for JavaScript. The main parts of the RxJs library include:
+
+Observables: Observables are the core concept in RxJs. They are sequences of values that can be observed over time. 
+They represent a stream of data that can be subscribed to by observers.
+
+Operators: Operators are functions that transform, filter, or combine the values emitted by an Observable. 
+There are many built-in operators in RxJs, and you can also create your own custom operators.
+
+Subjects: Subjects are both an observer and an observable. They can be used to multicast values to multiple observers.
+
+Schedulers: Schedulers are used to control the execution of Observables. They provide a way to control the concurrency 
+and timing of events in a stream.
+
+Subscription: Subscriptions represent a connection between an Observable and an observer. They can be used to unsubscribe 
+from an Observable to stop receiving values.
+
+Error handling: RxJs provides several error handling mechanisms, including the catchError operator, which can be used 
+to catch and handle errors that occur in an Observable.
+
+Utility functions: RxJs includes several utility functions that can be used to transform data, manipulate Observables, 
+and handle errors.
+
+Overall, RxJs provides a powerful set of tools for reactive programming in JavaScript, allowing developers to easily 
+create complex, asynchronous applications that are easy to read and maintain
+
+An RxJs tutorial could be structured in the following way:
+-------------------------------------------------------------
+Introduction
+
+What is RxJs?
+-------------
+Why use RxJs?
+What are observables?
+Key concepts in RxJs
+Installation and Setup
+
+Installing RxJs
+------------------
+Setting up a project
+Importing RxJs
+Observables
+
+Creating observables
+---------------------
+Observable lifecycle
+Subscribing to observables
+Unsubscribing from observables
+Error handling
+Operators
+
+What are operators?
+-------------------
+Types of operators
+Transforming operators
+Filtering operators
+Combining operators
+Error handling operators
+Subjects
+
+What are subjects?
+------------------
+Types of subjects
+BehaviorSubject
+ReplaySubject
+AsyncSubject
+Real-world Examples
+
+Using RxJs with Angular
+Using RxJs with React
+Using RxJs with Node.js
+Using RxJs for data fetching
+Using RxJs for event handling
+Conclusion
+
+Recap of key concepts
+----------------------
+Further learning resources
+Best practices for using RxJs
+This is just a general outline, and the actual content of the tutorial would depend on the audience and 
+their level of familiarity with RxJs. Each section should include relevant examples and exercises for practice. 
+Additionally, it's important to emphasize that RxJs is a powerful and complex library, and learning it takes time and practice.
+
+
+
+
+create a RxJs Tutorial
+-----------------------
+Sure, here is a brief tutorial on JavaScript programming with Reactive Extensions (RxJs):
+
+Introduction to Reactive Extensions (Rx)
+------------------------------------------
+Reactive Extensions (Rx) is a library that allows you to write asynchronous and event-driven programs 
+using observable sequences. It provides a set of operators that allow you to easily transform, filter, 
+and combine these sequences, making it easier to work with complex data streams. Rx is available 
+in multiple programming languages including JavaScript, and the JavaScript version of Rx is called RxJs.
+
+Installing RxJs
+-------------------------------------------
+You can install RxJs using npm, the Node.js package manager. Simply run the following command in your terminal:
+npm install rxjs
+
+Creating Observables
+-------------------------------------------------
+An Observable is a stream of data that can be observed and subscribed to. In RxJs, you can create an 
+Observable using the Observable constructor, and then emit values using the next method. Here is an example:
+
+RxJs is a functional programming library
+--------------------------------------------------------
+RxJs (Reactive Extensions for JavaScript) is a library for composing asynchronous and event-based programs 
+using observable sequences. It is based on the concept of Reactive Programming, which is a programming paradigm 
+that deals with asynchronous data streams and propagation of change.
+
+RxJs provides a set of operators and functions that can be used to manipulate and transform observable streams of data. 
+These operators follow functional programming principles such as immutability, pure functions, and composability.
+
+So while RxJs is not strictly a functional programming library, it does incorporate many functional 
+programming concepts and principles. It is often used in combination with functional programming techniques to build complex, 
+reactive applications.
+
+What are the the characteristics of Reactive Programming
+-----------------------------------------------------------
+Reactive Programming is a programming paradigm that focuses on the 
+
+- propagation of data changes 
+- and events in a reactive manner. 
+
+Some of the key characteristics of Reactive Programming are:
+
+Asynchronous: 
+---------------------------------
+Reactive programming is designed to handle asynchronous events such as user input, network responses, and other 
+unpredictable events that can occur during runtime.
+
+Data streams: 
+-----------------------------------
+Reactive programming treats data as a stream of events. This means that data is not a fixed value but rather 
+a sequence of events that can change over time.
+
+Declarative: 
+------------------------------------
+Reactive programming uses a declarative programming style where the programmer specifies the desired outcome, 
+and the system takes care of the implementation details.
+
+Event-driven: Reactive programming is based on the concept of event-driven programming, where an event is a signal that 
+something has happened in the system.
+
+Composable: 
+---------------------------------------
+Reactive programming allows developers to compose complex systems from simple components. This means that 
+developers can create systems that are more flexible and easier to maintain.
+
+Reactive systems 
+-------------------------------------------
+are resilient and responsive: Reactive programming is designed to create systems that are 
+- resilient (deal with errors and latency)
+- and responsive to change. 
+Reactive systems can handle failures gracefully and are designed to scale as needed.
+
+Overall, Reactive Programming is an approach to building software that emphasizes the propagation of data changes and 
+events in a reactive and asynchronous manner, while also being declarative and composable.
+
+What are the characteristics of functional programming
+--------------------------------------------------------
+Functional programming is a programming paradigm that emphasizes the use of functions and avoids changing 
+state and mutable data. The following are some of the key 
+characteristics of functional programming:
+
+Immutable data: 
+---------------
+Functional programming favors immutable data structures, which cannot be modified after creation. 
+This helps to avoid unintended changes to data and makes it easier to reason about code.
+
+Pure functions: 
+--------------------
+Functions in functional programming should not have side effects and should always return the 
+same output given the same input. This means that pure functions can be more easily tested, reused, and composed.
+
+Higher-order functions: 
+------------------------
+Functional programming languages often have first-class functions, meaning functions can 
+be treated as values and passed around as arguments to other functions. This enables the creation of higher-order functions, 
+which can take other functions as arguments or return functions as results.
+
+Recursion: 
+-----------------------------
+Functional programming languages often rely heavily on recursion to perform tasks that would be done 
+using loops in imperative programming languages. This allows for more elegant and concise code.
+
+Declarative programming: 
+--------------------------------
+Functional programming is often described as declarative, rather than imperative. This 
+means that code describes what should be done, rather than how it should be done.
+
+Lazy evaluation: Some functional programming languages use lazy evaluation, which means that expressions are 
+only evaluated when needed. This can be more efficient and allows for the creation of infinite data structures.
+
+Overall, functional programming encourages the use of simpler and more composable code, with a focus on creating 
+functions that are reusable and easy to reason about.
+
+RxJs operators are combinators
+------------------------------------
+RxJS operators 
+----------------------
+can be thought of as combinators because they are 
+- functions that take one or more observable sequences as input and produce a new observable sequence as output.
+
+Combinators 
+----------------------
+are functional programming concepts that allow for the composition of functions to create new functions. 
+RxJS operators use this concept to combine observable sequences in different ways, such as 
+- filtering, 
+- mapping, and 
+- merging.
+
+map operator 
+----------------------------------
+- takes an observable sequence and applies a function to each value emitted by the sequence, 
+- producing a new observable sequence with the transformed values. 
+
+The filter operator
+--------------------------------- 
+takes an observable sequence and returns a new sequence that emits only the values that pass a certain test.
+
+operators can be combined
+--------------------------
+with each other to create more complex behavior, 
+- such as using map to transform the values of an observable sequence, 
+- and then using filter to only emit certain transformed values.
+
+In summary, RxJS operators can be seen as combinators because they allow for the 
+- composition of functions to create new functions 
+  that manipulate observable sequences in various ways.	
+
+
+
+RxJs Observable is a Monad
+---------------------------------------------------------
+RxJs Observable is often described as a monad, which is a concept from category theory in mathematics. 
+
+- A monad 
+-----------------------
+is a design pattern that provides a way to encapsulate a sequence of operations, 
+with the ability to chain these operations together and transform their results.
+
+In the context of RxJs, an Observable can be seen as a monad because it provides a way to 
+represent an asynchronous stream of data 
+-----------------------------------------
+and encapsulate a sequence of operations that can be performed on this data. 
+Observables have the ability to chain operators together, which allows you to perform 
+- transformations and 
+- manipulations on the data stream. 
+This is similar to the way that monads provide a way to chain operations together.
+
+However, it's worth noting that there are some differences between RxJs Observables 
+and traditional monads. For example, 
+- Observables are not strictly pure, as they can have side effects. 
+- Observables have some additional features that are not found in traditional monads, 
+  such as the ability to 
+  - handle errors and 
+  - manage subscriptions.
+
+Overall, while RxJs Observables are not a perfect match for the concept of monads, they share 
+some similarities and can be thought of as a monad in some contexts.
+
+
+List the main categories of RxJs operators
+---------------------------------------------------------------
+RxJS provides a large number of operators for working with reactive data streams. 
+The main categories of RxJS operators are:
+
+Creation operators: 
+-----------------------
+These operators are used to create observable streams from various data sources, 
+such as arrays, events, promises, timers, and so on. Examples include of, from, interval, timer, and fromEvent.
+
+Transformation operators: 
+------------------------
+These operators are used to transform the data emitted by an observable stream. 
+They can be used to map, filter, reduce, group, or sort the data. Examples include map, filter, reduce, groupBy, and scan.
+
+Combination operators: 
+-----------------------
+these operators are used to combine multiple observable streams into a single stream. 
+They can be used to merge, concatenate, zip, or switch between streams. Examples include merge, concat, zip, and switchMap.
+
+Filtering operators: 
+---------------------
+These operators are used to filter the data emitted by an observable stream based on certain conditions. 
+They can be used to take, skip, throttle, debounce, or sample the data. Examples include take, skip, throttleTime, debounceTime, and sampleTime.
+
+Utility operators: 
+------------------
+These operators are used to perform various utility functions, such as debugging, error handling, and timing. 
+Examples include tap, catchError, retry, and delay.
+
+Multicasting operators: 
+-----------------------
+These operators are used to share a single observable stream among multiple subscribers. 
+They can be used to multicast, publish, or share the data emitted by an observable stream. Examples include multicast, share, and publish.
+
+Error handling operators: 
+--------------------------
+These operators are used to handle errors that occur in an observable stream. 
+They can be used to catch, rethrow, or replace errors. Examples include catchError, throwError, and retry.
+
+These categories are not necessarily mutually exclusive, and many operators can belong to multiple categories 
+depending on their specific use cases.
+
+The typical RxJS programming workflow consists of the following steps: Input - Processing - Output
+-----------------------------------------------------------------------
+- Define the data source: Identify the data source, which can be a stream of events, user inputs, 
+  HTTP requests, or any other source of data.
+
+- Create an Observable: Use the RxJS library to create an Observable that represents the data source. 
+  An Observable is a representation of a stream of data that can be subscribed to by observers.
+
+Define operators: Define a series of operators that transform the data stream, such as filtering, mapping, or reducing the data.
+
+Subscribe to the Observable: Subscribe to the Observable to receive data from the data stream.
+
+Handle the data: Handle the data emitted by the Observable in the subscription callback function.
+
+Clean up resources: Unsubscribe from the Observable and clean up any resources that were created during the subscription.
+
+Here is an example of this workflow in action:
+
+typescript
+Copy code
+import { from } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+
+// Define the data source
+const data = [1, 2, 3, 4, 5];
+
+// Create an Observable
+const source$ = from(data);
+
+// Define operators
+const filter$ = source$.pipe(filter(x => x % 2 === 0));
+const map$ = filter$.pipe(map(x => x * 10));
+
+// Subscribe to the Observable and handle the data
+const subscription = map$.subscribe(
+  value => console.log(value),
+  error => console.error(error),
+  () => console.log('Complete')
+);
+
+// Clean up resources
+subscription.unsubscribe();
+In this example, we define an array of data, create an Observable using the from function, and define a series of operators to filter and map the data. We then subscribe to the resulting Observable and handle the emitted data in the subscription callback function. Finally, we unsubscribe from the Observable to clean up any resources created during the subscription.
+
+
+RxJs programming workflow has the same steps as creating a javascript function: 1. input 2. processing 3. output
+-------------------------------------------------------------------------------------------------------------------------
+While RxJs programming and creating a JavaScript function may share some similarities in terms of input, processing, and output, 
+there are some differences between the two.
+
+RxJs programming is a reactive programming paradigm that is focused on asynchronous data streams. It is often used for 
+building complex applications that involve handling and transforming streams of data over time. In RxJs, the input is 
+a stream of data, the processing involves applying a series of operators to manipulate the data, and the output 
+is also a stream of data.
+
+On the other hand, creating a JavaScript function typically involves defining a set of instructions that are executed 
+in a specific order. The input is provided as arguments to the function, the processing involves executing the 
+instructions in the function body, and the output is returned as the result of the function.
+
+While both RxJs programming and creating a JavaScript function may involve input, processing, and output, they 
+are different programming paradigms that serve different purposes.
+
+
+
+
+
+
+
+
+import { Observable } from 'rxjs';
+
+Creating an Observable
+-----------------------------------------------------------
+const observable = new Observable(subscriber => {
+  subscriber.next(1);
+  subscriber.next(2);
+  subscriber.next(3);
+  subscriber.complete();
+});
+
+In this example, we create an Observable that emits the values 1, 2, and 3 using the next method, and 
+then completes using the complete method.
+
+Subscribing to Observables
+-------------------------------------------------------
+To subscribe to an Observable, you can call the subscribe method on the Observable, and pass in an object 
+with functions to handle the emitted values and errors. Here is an example:
+
+observable.subscribe({
+  next: value => console.log(value),
+  error: error => console.error(error),
+  complete: () => console.log('Observable complete')
+});
+
+In this example, we subscribe to the Observable we created earlier, and pass in an object with three functions 
+to handle the emitted values, errors, and completion. The next function logs each emitted value to the console, 
+the error function logs any errors to the console, and the complete function logs a message to the 
+console when the Observable completes.
+
+RxJs Operators
+------------------------------------------------------------------
+RxJs provides a set of operators that allow you to transform, filter, and combine Observables. 
+Here are a few examples:
+
+import { from } from 'rxjs';
+import { map, filter, take } from 'rxjs/operators';
+
+const source = from([1, 2, 3, 4, 5]);
+
+// Map operator
+----------------------------------
+const mapped = source.pipe(
+  map(value => value * 2)
+);
+// Output: 2, 4, 6, 8, 10
+mapped.subscribe(console.log);
+
+// Filter operator
+-----------------------------------
+const filtered = source.pipe(
+  filter(value => value % 2 === 0)
+);
+// Output: 2, 4
+filtered.subscribe(console.log);
+
+// Take operator
+-----------------------------------
+const taken = source.pipe(
+  take(3)
+);
+// Output: 1, 2, 3
+taken.subscribe(console.log);
+
+In this example, we use the from operator to create an Observable from an array of numbers, 
+and then use the map, filter, and take operators to transform, filter, and take the first three values 
+from the Observable. We then subscribe to each of these Observables and log the emitted values to the console.
+
+Conclusion
+------------------------------------
+Reactive Extensions (Rx) and RxJs can be a powerful tool for writing asynchronous and event-driven programs 
+in JavaScript. By using Observables and the operators provided by RxJs, you can easily work with complex 
+data streams and handle errors and completion in a more efficient way.
+
+Javascript Reactive Extensions
+-----------------------------
+  rx inventor erik meijer
+
+  unite async ui programming with cloud based programming
+  bart de smet - unifying interface
+
+  https://github.com/Reactive-Extensions/RxJS
+  .............................................
+
+  The Reactive Extensions for JavaScript (RxJS) is a set of libraries for 
+  - composing asynchronous and 
+  - event-based programs using 
+  - observable sequences and fluent 
+  - query operators that many of you already know by Array#extras in JavaScript. (map, filter, reduce)
+
+  Using RxJS, developers 
+  - Observables: represent asynchronous data streams with Observables, 
+  - Operators: query asynchronous data streams using our many operators, 
+  - Schedulers and parameterize the concurrency in the asynchronous data streams using Schedulers. 
+
+  Simply put, RxJS = Observables + Operators + Schedulers.
+  ...............................................
+
+  unifying interface over collections
+  ------------------------------------
+  - events the same way you program
+  - as api request
+
+  originate around 2010  from microsoft rx.net
+  port to js around 2012
+
+  port to javascript: matthew podwysocki
+  ben lesh since rxjs v5 (v4 to v5 rewrite)
+  rxjs havily used in angular since v2
+
+  rxjs based on functional concepts (functor, applicative, monad)
+  collection based iterable interface and observable interface
+  observable is dual of interable (flip the arrows)
+  intersection of observer and iterator pattern
+
+  functional reactive programming
+  functional - from functional concepts
+
+
+ What means functional programming in Javascript (
+ -----------------------------------------------------------------
+
+    -- no loops, while, for
+    -- no statements
+    -- function works only on input parameters
+    -- every function has a return expression (no void procedures)
+    -- recursion replaces the loops
+    -- every function is in the form of a single parameter function
+    -- no arrays
+    -- use functional data structures like pairs and pairs of pairs (=list)
+    -- combine recursion with functional data structures
+    -- use higher order functions like map, filter and reduce to apply functions on lists
+
+  to be able to programm in a functional style in Js you must limit yourself with the following rules:
+  - no loops (while or for loops)
+  - no if (ternary expression is ok)
+  - the function has a single return in the form of an expression or value
+
+  functions are first class citizens in Js, a function can take a fn as an argument
+  and function can return a function
+  
+  the function returns a single expression and does not assign variables in fn body.
+  every expression evaluates to a value
+  functions are pure, they only depend on the input arguments and return a single expression
+
+What is an algebraic data type
+-------------------------------
+An algebraic data type is 
+- a structured type that’s formed by composing other types. 
+  it’s a type made of other types
+
+algebraic structures have their basis in mathematics
+They also have specific laws they must conform to
+Conform to a specific type signature (even though it’s JavaScript); and
+Obey some laws.
+
+the functor algebraic structure
+-------------------------------
+‘Functor’ is an algebraic structure—often the first one people learn. 
+The functor structure 
+- must have a .map() method with the following type signature
+
+Hakell
+--------
+map :: Functor f => f a ~> (a -> b) -> f b
+
+Typescript
+----------
+interface Functor<A> {
+    map<B>(f: (a: A) => B): Functor<B>;
+}
+
+instance Functor List where
+    map :: (a -> b) -> [a] -> [b]
+    map f xs = foldl (\x arr -> arr ++ [f x]) [] xs
+And we could declare Maybe a functor too:
+
+instance Functor Maybe where
+    map :: (a -> b) -> Maybe a -> Maybe b
+    map f (Just a) = Just f a
+    map _ Nothing  = Nothing
+
+- The .map() method takes a function as an argument.
+- That function must take something of type a and transforms it into something of type b. 
+- And when you call .map() on a functor of a, you’ll get back a functor of b.
+
+And it gives us a precise way to communicate with other programmers. 
+Clarity of thought and precise communication
+
+Algebraic Data Structure
+------------------------------------------------------------------------------------------------------------------------
+functor laws
+-----------------
+- If u is a functor, then calling u.map(x => x) must be equivalent to u. 		-	This is the ‘identity law.’
+- If u is a functor, and f and g are functions, 
+  then calling u.map(x => f(g(x))) is equivalent to calling u.map(g).map(f). 			This is the ‘composition law.’
+
+It would be no trouble to call .map() another name. 
+For example, we could rename .map() to .try() for Either and Maybe. 
+It might be easier to understand that way. 
+Or change Array’s .map() method to .select(). There’s nothing special about the names
+
+The specifications include laws—mathematical laws. We can take advantage of 
+those laws to make the computer derive code for us. 
+Compilers can use those laws to optimise our code
+
+// Here, ≣ is an operator I’ve made up to signify ‘is equivalent to’
+a.map(g).map(f) ≣ a.map(x => f(g(x)))
+
+function ap(m) {
+    return m.flatMap(f => this.map(f));
+}
+
+Type classes
+----------------------------------------------------------------------------------------------------
+Type classes are not the same thing as algebraic structures
+type classes are a way of doing polymorphism
+ And they happen to be most convenient for building algebraic structures
+
+Product types
+----------------
+ Arrays, Objects, Maps, WeakMaps, and Sets are all algebraic data types
+ They are container types, You can put values of many types ‘inside’ them
+ Those are all product types. 
+ Product types allow you to have more than one value in a single structure, at the same time.
+ Boolean: two possibilities
+ each boolean can have two values: true or false. So, we get 2 ⨉ 2 = 4 total values.
+
+Sum types
+-------------
+ In functional programming we use sum types to model the business domain. 
+ Sum types are types where your value must be one of a fixed set of options. 
+ You may have seen enum types in languages like C# or Java. Sum types are similar, 
+ but more flexible. And if you’ve been following along, 
+ we’ve already seen a classic sum type: Either.
+
+Observable is a Monad
+------------------------------------------------------------------
+A monad is a container type (algebraic data type) with a certain communication protocol:
+ - return, identy, of, unit
+ - map, fmap, flatMap
+ - bind, join (mother of all  monads)
+
+A monad is nothing more than 
+- an algebraic data type that follows a 
+- with a certain interface or protocol 
+
+unit, identity, return
+-----------------------
+A unit function used to place (lift) a value into the monad container. You could
+also find it as from() or return().
+
+map, fmap, flatMap
+--------------------
+- A mapping function that 
+- lifts regular functions that work over these values, 
+  returning back a new instance of (generally) the same type containing the newly 
+  computed value.
+
+bind, join flatMap
+----------------------------------------
+- A flatMap() also known as (bind()) that lifts a monad-returning function to work
+  over the value in the container and flatten its result into a single structure.
+
+A simple pseudo-interface can be written as follows (to keep it simple I’m omitting any static type information):
+
+interface Monad {
+ of(a): Monad<a>
+ map(a -> b): Monad<b>
+ flatMap(a -> M<b>): Monad<b>
+}
+
+

@@ -1,0 +1,34 @@
+declarative programming
+
+it’s a paradigm that expresses 
+- a set of operations (what: description of what I want )
+- without revealing the implementation (how: control flow how I will get the result)
+
+imperative how:
+..................................
+var array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+for(let i = 0; i < array.length; i++) {
+ array[i] = Math.pow(array[i], 2);
+}
+
+array; //-> [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+
+declarative what:
+...................................
+
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => Math.pow(num, 2));
+
+//-> [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+
+Compared with the previous example, you see that this code frees you from the respon￾sibility 
+of properly managing a loop counter and array index access; 
+
+
+
+Translating lambda notation to regular function notation
+...............................................................
+Lambda expressions provide an enormous syntactical advantage over regular func￾tion notations 
+because they reduce the structure of a function call down to the most
+important pieces. This ES6 lambda expression
+
+num => Math.pow(num, 2)

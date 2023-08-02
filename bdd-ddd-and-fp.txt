@@ -1,0 +1,110 @@
+BDD DDD and FP
+----------------------------------------------------------------------------------------------------
+
+Functional Programming (FP)
+---------------------------
+Functional programming is a paradigm in which the primary unit of program composition is the function; 
+contrast this with object oriented programming, a paradigm in which objects comprise the primary unit.
+
+Side Effects and Purity (or Referential Transparency)
+You mention idempotence and "reality", when I think you mean referential transparency and "purity". 
+Idempotence means that applying a function twice (or thrice, or...) is no different than applying it once.
+
+"Pure" functions are those without side effects, such as writing to disk or sending data over the wire. 
+It is not necessary for them to do only "one thing". You can replace a pure function call with its value 
+without changing the behaviour of the program at all:
+
+> // pure function
+undefined
+> const f = x => x*2;
+undefined
+> const a = f(2);
+undefined
+> a
+4
+> console.log(f(2));
+4
+undefined
+> console.log(a);
+4
+undefined
+> // impure function
+undefined
+> function g(x) {
+... console.log(x*2);
+... return x*2;
+... }
+undefined
+> const b = g(2);
+4
+undefined
+> b
+4
+> console.log(g(2));
+4
+4
+undefined
+> console.log(b);
+4
+undefined
+> 
+Notice how, after replacing g(2) with its value, 4, console.log(b) writes one less line. This makes it (under some definitions) 
+an "impure" function. This has nothing to do with doing "one thing only"; const g = () => { console.log("Hello world!"); } 
+only writes to console, and yet replacing g() with its value, undefined, would not produce the same program (there would be no console output).
+
+This property of being able to replace a function call with its value, without changing the behaviour of the program as a whole, 
+is called referential transparency. I use it as one definition of "purity". There are many others.
+
+Not all functional programming languages necessarily enforce purity; one could argue that JavaScript (and especially ES6) 
+is a functional language, and yet as we've seen it is possible to write impure functions very easily in the language.
+
+Languages like Haskell and Elm, however, make certain classes of side-effects very explicit via their type systems (e.g. 
+the IO monad in Haskell, and the Signal applicative in Elm). Executing code with side effects is only possible according 
+to certain constraints, enforced by the typechecker.
+
+Domain Driven Design (DDD)
+Domain Driven Design is a means of thinking about, discussing, designing, and actually implementing software with a cross-functional 
+team operating in a rich and complex problem domain (e.g. finance). It's comprised of modelling the problem conceptually 
+and linguistically according to a Ubiquitous Language, which pervades all aspects of the software - user-facing language in the UI, 
+conversations with designers, domain experts, class, file, and variable names in the code.
+
+This conceptual model and the Ubiquitous Language used to describe and talk about it only apply within a Bounded Context, 
+which you can think of as a namespace; a Ticket may refer to one thing in the context of Customer Support, and another 
+thing entirely in the context of Cinema.
+
+Separation of Concerns
+On the level of the actual software implementation, DDD encourages us to model the problem domain, its structures, relationships, 
+and constraints, as closely as possible within the code. This representation of the DDD conceptual model lives within the domain 
+layer of code, which is exercised from the outside (via a GUI, a CLI, a webpage, etc.) via the application layer, which "plugs in" 
+the domain into an environment where the operations of the domain are exposed. This layer encapsulates all technical details (broadly speaking) of the application; contrast this with the domain layer, which is exclusively concerned with the "business logic" of the problem domain. This is the separation of concerns you allude to, and while it is quite important, I would say that it is not the primary focus of DDD.
+
+Relationships Between the Three
+DDD and FP - Side Effects and Separation of Concerns
+Domain Driven Design, extending beyond the mere software solution and its implementation, and into the minds of all people involved 
+in the software's use - its end-users, maintainers, designers, and software developers - does not prescribe (to my knowledge) the use 
+of any particular programming paradigm.
+
+However, some functional programming languages are well suited for achieving the separation of concerns you describe; for instance, 
+"business logic", operating on data types representing the Entities and/or Value Objects within a given domain, 
+could be restricted to pure functions, or those without side effect. In order to actually execute this business logic, 
+it could be plugged into, say, the IO monad from Haskell, where it would then be able to communicate over the network, 
+or read and write files from disk. It would not be possible (in theory) to have technical concerns leak into the domain layer, 
+since all application-level detail must take place in IO. This is possible because languages such as Haskell 
+make side-effects explicit at the type level.
+
+FP and BDD - "Doing Only One Thing", and Referential Transparency
+If we proceed under the above definition, in which pure functions are those which can be replaced by their value without 
+changing the way the program runs (referential transparency), the principle of "doing only one thing" becomes irrelevant 
+to the question of whether or not FP is well-suited to BDD. I think the two topics are somewhat distant.
+
+DDD and BDD
+They're pretty related. Cucumber is great.
+
+Summary
+Functional Programming and Domain-Driven Design are in some sense orthogonal to one another; DDD makes no hard prescriptions 
+on what language or technology to use. However, the principle of separation of concerns, which DDD does employ in its separation 
+of domain and application layers, can be easily achieved in some functional programming languages with explicit side-effects. 
+Pure functions need not do only one thing; they only need by referentially transparent. FP's connection with BDD is tenuous; 
+BDD's connection with DDD is quite close.
+
+Hope that helped. Just sharing my own understanding, which of course is always in need of revision.

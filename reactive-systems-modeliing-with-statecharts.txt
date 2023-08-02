@@ -1,0 +1,57 @@
+Modeling Reactive Systems  
+--------------------------------------------------------------------------------------------------
+
+Statecharts language, 
+is especially effective for reactive systems [HP85, MP91]
+
+Most realtime systems, for example, are reactive in nature. 
+
+A typical reactive system exhibits the following distinctive 
+characteristics:
+
+• It continuously interacts with its environment, using 
+- inputs and outputs that are either continuous in 
+  time, or discrete. 
+  The inputs and outputs are often asynchronous, meaning that they may arrive or 
+  change values unpredictably at any point in time1.
+
+• It must be able to respond to interrupts, i.e., high- priority events, even when it is busy doing 
+  something else.
+
+• Its operation and reaction to inputs often reflects 
+  stringent time requirements.
+
+• It has many possible scenarios of operation, 
+  depending on the 
+  - current mode of operation and the 
+  - current values of its data, as well as its 
+  - past behavior. (state change)
+
+
+An Example: The Early Warning System
+---------------------------------------------------------------------
+Many of the characteristics mentioned above are present in the 
+simple early warning system (EWS) that we use as an example 
+throughout this book to illustrate the ideas and features of the 
+languages. 
+
+The EWS monitors 
+- input:   signal arriving from outside, 
+- process: checks whether its value is in some predefined range, and if not 
+- output:  notifies the operator by an alarm and appropriate messages. 
+
+Here is a brief informal description of the EWS (Early Warning System). 
+The EWS receives 
+- input: 	a signal from an external sensor. When the sensor is connected, the EWS 
+- process: 	processes the signal and checks if the resulting value is within a specified range. If 
+  		the value of the processed signal is out of range, 
+- output:	the system issues a warning message on the operator display and 
+  		posts an alarm. If the operator does not respond to this 
+ 	 	warning within a given time interval, the system prints a 
+  		fault message on a printing facility and stops monitoring 
+  		the signal. The range limits are set by the operator. The 
+  		system becomes ready to start monitoring the signal only 
+  		after the range limits are set. The limits can be re-defined 
+  		after an out-of-range situation has been detected, or after 
+  		the operator has deliberately stopped the monitoring. 
+

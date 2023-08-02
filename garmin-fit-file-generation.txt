@@ -1,0 +1,51 @@
+Garmin Fit File
+------------------------------------------------------------------------------------------
+
+Flexible and Interoperable Data Transfer (FIT) Protocol
+Introduction
+The Flexible and Interoperable Data Transfer (FIT) protocol is a format designed specifically 
+for the storing and sharing of data that originates from sport, fitness and health devices
+
+Create an output stream, which can be a file or memory stream. The stream must be created with 
+both read and write access so that the data size and CRC can be updated once all the messages 
+have been written to the file.
+Create an instance of an Encode object. The Encode class is responsible for writing the FIT header, 
+calculating the data size and CRC, managing the list of active message definitions, and writing messages to the file.
+Call Encode.Open() to write the FIT header to the output stream with an initial data size of zero.
+Write a File Id message to the output stream using Encode.Write(Mesg).
+Use Encode.Write(Mesg) to write messages specific to the file type to the output stream.
+Once all messages are written to the file, call Encode.Close() to finalize the file with 
+the actual data size and CRC.
+Close the output stream. When using a file stream, the file will be saved to disk. When using 
+a memory stream, the contents of the stream should be saved before releasing the stream.
+This recipe’s example project implements these steps as follows:
+------------------------------------------------------------------------------
+// 1. Create the output stream
+FileStream stream = new FileStream("/output/path/filename.fit", FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+
+// 2. Create an instance of an Encode object.
+Encode encoder = new Encode(ProtocolVersion.V20);
+
+// 3. Write the FIT header to the output stream.
+encoder.Open(stream);
+
+// 4. Write a File Id message to the output stream
+var fileIdMesg = new FileIdMesg();
+fileIdMesg.SetType(Dynastream.Fit.File.Activity);
+fileIdMesg.SetManufacturer(Manufacturer.Development);
+fileIdMesg.SetProduct(ProductId);
+fileIdMesg.SetSerialNumber(DeviceSerialNumber);
+fileIdMesg.SetTimeCreated(startTime);
+encoder.Write(fileIdMesg);
+
+// 5. Write messages specific to the file type to the output stream
+.
+.
+.
+
+// 6. Update the data size in the header and calculate the CRC
+encoder.Close();
+
+// 7. Close the output stream
+stream.Close();
+------------------------------------------------------------------------------------

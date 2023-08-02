@@ -1,0 +1,474 @@
+  
+Generic types: factories for types  
+
+Union types and intersection types  
+
+Union types (|)  
+
+Intersection types (&)  
+
+Control flow  
+
+Conditional types  
+
+Mapped types  
+
+Various other operators  
+
+The index type query operator keyof  
+
+The indexed access operator T[K]  
+
+The type query operator typeof  
+
+
+Program level: 
+At runtime, we can use values and functions.
+
+Type level: 
+At compile time, we can use specific types and generic types.
+The type level is a metalevel of the program level.
+
+
+
+type ObjectLiteralType = {
+  first: 1,
+  second: 2,
+};
+
+// %inferred-type: "first" | "second"
+type Result = keyof ObjectLiteralType; // (A)
+In line A, we are taking the following steps:
+
+The input of our computation is the type ObjectLiteralType, an object literal type.
+We apply the operation keyof to the input. It lists the property keys of an object type.
+We give the output of keyof the name Result.
+At the type level we can compute with the following “values”:
+
+type ObjectLiteralType = {
+  prop1: string,
+  prop2: number,
+};
+
+interface InterfaceType {
+  prop1: string;
+  prop2: number;
+}
+
+type TupleType = [boolean, bigint];
+
+//::::: Nullish types and literal types :::::
+// Same syntax as values, but they are all types!
+
+type UndefinedType = undefined;
+type NullType = null;
+
+type BooleanLiteralType = true;
+type NumberLiteralType = 12.34;
+type BigIntLiteralType = 1234n;
+type StringLiteralType = 'abc';
+Generic types: factories for types  
+Generic types are functions at the metalevel – for example:
+
+type Wrap<T> = [T];
+The generic type Wrap<> has the parameter T. Its result is T, wrapped in a tuple type. 
+This is how we use this metafunction:
+
+// %inferred-type: [string]
+type Wrapped = Wrap<string>;
+We pass the parameter string to Wrap<> and give the result the alias Wrapped. 
+The result is a tuple type with a single component – the type string.
+
+Union types and intersection types  
+---------------------------------------
+Union types (|)  
+The type operator | is used to create union types:
+
+type A = 'a' | 'b' | 'c';
+type B = 'b' | 'c' | 'd';
+
+// %inferred-type: "a" | "b" | "c" | "d"
+type Union = A | B;
+If we view type A and type B as sets, then A | B is the set-theoretic union of these sets. 
+Put differently: The members of the result are members of at least one of the operands.
+
+Syntactically, we can also put a | in front of the first component of a union type. 
+That is convenient when a type definition spans multiple lines:
+
+type A =
+  | 'a'
+  | 'b'
+  | 'c'
+;
+Unions as collections of metavalues  
+-----------------------------------
+TypeScript represents collections of metavalues as unions of literal types. We have already seen an example of that:
+
+type Obj = {
+  first: 1,
+  second: 2,
+};
+
+// %inferred-type: "first" | "second"
+type Result = keyof Obj;
+We’ll soon see type-level operations for looping over such collections.
+
+Unions of object types  
+-------------------------
+Due to each member of a union type being a member of at least one of the component types,
+ we can only safely access properties that are shared by all component types (line A). 
+To access any other property, we need a type guard (line B):
+
+type ObjectTypeA = {
+  propA: bigint,
+  sharedProp: string,
+}
+type ObjectTypeB = {
+  propB: boolean,
+  sharedProp: string,
+}
+
+type Union = ObjectTypeA | ObjectTypeB;
+
+function func(arg: Union) {
+  // string
+  arg.sharedProp; // (A) OK
+  // @ts-expect-error: Property 'propB' does not exist on type 'Union'.
+  arg.propB; // error
+
+  if ('propB' in arg) { // (B) type guard
+    // ObjectTypeB
+    arg;
+
+    // boolean
+    arg.propB;
+  }
+}
+Intersection types (&)  
+------------------------------------------------
+The type operator & is used to create intersection types:
+
+type A = 'a' | 'b' | 'c';
+type B = 'b' | 'c' | 'd';
+
+// %inferred-type: "b" | "c"
+type Intersection = A & B;
+If we view type A and type B as sets, then A & B is the set-theoretic intersection of these sets.
+ Put differently: The members of the result are members of both operands.
+
+Intersections of object types  
+The intersection of two object types has the properties of both types:
+
+type Obj1 = { prop1: boolean };
+type Obj2 = { prop2: number };
+type Both = {
+  prop1: boolean,
+  prop2: number,
+};
+
+// Type Obj1 & Obj2 is assignable to type Both
+// %inferred-type: true
+type IntersectionHasBothProperties = IsAssignableTo<Obj1 & Obj2, Both>;
+(The generic type IsAssignableTo<> is explained later.)
+
+Using intersection types for mixins  
+---------------------------------
+If we are mixin in an object type Named into another type Obj, then we need an intersection type (line A):
+
+interface Named {
+  name: string;
+}
+function addName<Obj extends object>(obj: Obj, name: string)
+  : Obj & Named // (A)
+{
+  const namedObj = obj as (Obj & Named);
+  namedObj.name = name;
+  return namedObj;
+}
+
+const obj = {
+  last: 'Doe',
+};
+
+// %inferred-type: { last: string; } & Named
+const namedObj = addName(obj, 'Jane');
+Control flow  
+Conditional types  
+A conditional type has the following syntax:
+
+«Type2» extends «Type1» ? «ThenType» : «ElseType»
+If Type2 is assignable to Type1, then the result of this type expression is ThenType. Otherwise, it is ElseType.
+
+Example: only wrapping types that have the property .length  
+In the following example, Wrap<> only wraps types in one-element tuples if they have the property .length whose values are numbers:
+
+type Wrap<T> = T extends { length: number } ? [T] : T;
+
+// %inferred-type: [string]
+type A = Wrap<string>;
+
+// %inferred-type: RegExp
+type B = Wrap<RegExp>;
+Example: checking assignability  
+We can use a conditional type to implement an assignability check:
+
+type IsAssignableTo<A, B> = A extends B ? true : false;
+
+// Type `123` is assignable to type `number`
+// %inferred-type: true
+type Result1 = IsAssignableTo<123, number>;
+
+// Type `number` is not assignable to type `123`
+// %inferred-type: false
+type Result2 = IsAssignableTo<number, 123>;
+For more information on the type relationship assignability, see the blog post “What is a type in TypeScript? Two perspectives”.
+
+Conditional types are distributive  
+----------------------------------
+Conditional types are distributive: Applying a conditional type C to a union type U is 
+the- same as the union of applying C to each component of U. This is an example:
+
+type Wrap<T> = T extends { length: number } ? [T] : T;
+
+// %inferred-type: boolean | [string] | [number[]]
+type C1 = Wrap<boolean | string | number[]>;
+
+// Equivalent:
+type C2 = Wrap<boolean> | Wrap<string> | Wrap<number[]>;
+In other words, distributivity enables us to “loop” over the components of a union type.
+
+This is another example of distributivity:
+
+type AlwaysWrap<T> = T extends any ? [T] : [T];
+
+// %inferred-type: ["a"] | ["d"] | [{ a: 1; } & { b: 2; }]
+type Result = AlwaysWrap<'a' | ({ a: 1 } & { b: 2 }) | 'd'>;
+With distributive conditional types, we use type never to ignore things  
+Interpreted as a set, type never is empty. Therefore, if it appears in a union type, it is ignored:
+
+// %inferred-type: "a" | "b"
+type Result = 'a' | 'b' | never;
+That means we can use never to ignore components of a union type:
+
+type DropNumbers<T> = T extends number ? never : T;
+
+// %inferred-type: "a" | "b"
+type Result1 = DropNumbers<1 | 'a' | 2 | 'b'>;
+This is what happens if we swap the type expressions of the then-branch and the else-branch:
+
+type KeepNumbers<T> = T extends number ? T : never;
+
+// %inferred-type: 1 | 2
+type Result2 = KeepNumbers<1 | 'a' | 2 | 'b'>;
+Built-in utility type: Exclude<T, U>  
+Excluding types from a union is such a common operation that TypeScript provides the built-in utility type Exclude<T, U>:
+
+/**
+ * Exclude from T those types that are assignable to U
+ */
+type Exclude<T, U> = T extends U ? never : T;
+
+// %inferred-type: "a" | "b"
+type Result1 = Exclude<1 | 'a' | 2 | 'b', number>;
+
+// %inferred-type: "a" | 2
+type Result2 = Exclude<1 | 'a' | 2 | 'b', 1 | 'b' | 'c'>;
+Built-in utility type: Extract<T, U>  
+The inverse of Exclude<T, U> is Extract<T, U>:
+
+/**
+ * Extract from T those types that are assignable to U
+ */
+type Extract<T, U> = T extends U ? T : never;
+
+// %inferred-type: 1 | 2
+type Result1 = Extract<1 | 'a' | 2 | 'b', number>;
+
+// %inferred-type: 1 | "b"
+type Result2 = Extract<1 | 'a' | 2 | 'b', 1 | 'b' | 'c'>;
+Chaining conditional types  
+Similarly to JavaScript’s ternary operator, we can also chain TypeScript’s conditional type operator:
+
+type LiteralTypeName<T> =
+  T extends undefined ? "undefined" :
+  T extends null ? "null" :
+  T extends boolean ? "boolean" :
+  T extends number ? "number" :
+  T extends bigint ? "bigint" :
+  T extends string ? "string" :
+  never;
+
+// %inferred-type: "bigint"
+type Result1 = LiteralTypeName<123n>;
+
+// %inferred-type: "string" | "number" | "boolean"
+type Result2 = LiteralTypeName<true | 1 | 'a'>;
+Mapped types  
+A mapped type produces an object by looping over a collection of keys – for example:
+
+// %inferred-type: { a: number; b: number; c: number; }
+type Result = {
+  [K in 'a' | 'b' | 'c']: number
+};
+The operator in is a crucial part of a mapped type: It specifies where the keys for the new object literal type come from.
+
+Built-in utility type: Pick<T, K>  
+The following built-in utility type lets us create a new object by specifying which 
+properties of an existing object type we want to keep:
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+type Pick<T, K extends keyof T> = {
+  [P in K]: T[P];
+};
+It is used as follows:
+
+type ObjectLiteralType = {
+  eeny: 1,
+  meeny: 2,
+  miny: 3,
+  moe: 4,
+};
+
+// %inferred-type: { eeny: 1; miny: 3; }
+type Result = Pick<ObjectLiteralType, 'eeny' | 'miny'>;
+Built-in utility type: Omit<T, K>  
+The following built-in utility type lets us create a new object type by specifying which
+ properties of an existing object type we want to omit:
+
+/**
+ * Construct a type with the properties of T except for those in type K.
+ */
+type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+Explanations:
+
+K extends keyof any means that K must be a subtype of the type of all property keys:
+
+// %inferred-type: string | number | symbol
+type Result = keyof any;
+Exclude<keyof T, K>> means: take the keys of T and remove all “values” mentioned in K.
+
+Omit<> is used as follows:
+
+type ObjectLiteralType = {
+  eeny: 1,
+  meeny: 2,
+  miny: 3,
+  moe: 4,
+};
+
+// %inferred-type: { meeny: 2; moe: 4; }
+type Result = Omit<ObjectLiteralType, 'eeny' | 'miny'>;
+Various other operators  
+The index type query operator keyof  
+We have already encountered the type operator keyof. It lists the property keys of an object type:
+
+type Obj = {
+  0: 'a',
+  1: 'b',
+  prop0: 'c',
+  prop1: 'd',
+};
+
+// %inferred-type: 0 | 1 | "prop0" | "prop1"
+type Result = keyof Obj;
+Applying keyof to a tuple type has a result that may be somewhat unexpected:
+
+// number | "0" | "1" | "2" | "length" | "pop" | "push" | ···
+type Result = keyof ['a', 'b', 'c'];
+The result includes:
+
+The indices of the tuple elements, as strings: "0" | "1" | "2"
+The type number of index property keys
+The name of the special instance property .length
+The names of all Array methods: "pop" | "push" | ···
+The property keys of an empty object literal type are the empty set never:
+
+// %inferred-type: never
+type Result = keyof {};
+This is how keyof handles intersection types and union types:
+
+type A = { a: number, shared: string };
+type B = { b: number, shared: string };
+
+// %inferred-type: "a" | "b" | "shared"
+type Result1 = keyof (A & B);
+
+// %inferred-type: "shared"
+type Result2 = keyof (A | B);
+This makes sense if we remember that A & B has the properties of both type A and type B.
+ A and B only have property .shared in common, which explains Result2.
+
+The indexed access operator T[K]  
+The indexed access operator T[K] returns the types of all properties of T whose keys are 
+assignable to type K. T[K] is also called a lookup type.
+
+These are examples of the operator being used:
+
+type Obj = {
+  0: 'a',
+  1: 'b',
+  prop0: 'c',
+  prop1: 'd',
+};
+
+// %inferred-type: "a" | "b"
+type Result1 = Obj[0 | 1];
+
+// %inferred-type: "c" | "d"
+type Result2 = Obj['prop0' | 'prop1'];
+
+// %inferred-type: "a" | "b" | "c" | "d"
+type Result3 = Obj[keyof Obj];
+The type in brackets must be assignable to the type of all property keys (as computed by keyof).
+That’s why Obj[number] and Obj[string] are not allowed. However, we can use number and string as 
+index types if the indexed type has an index signature (line A):
+
+type Obj = {
+  [key: string]: RegExp, // (A)
+};
+
+// %inferred-type: string | number
+type KeysOfObj = keyof Obj;
+
+// %inferred-type: RegExp
+type ValuesOfObj = Obj[string];
+KeysOfObj includes the type number because number keys are a subset of string keys in
+ JavaScript (and therefore in TypeScript).
+
+Tuple types also support indexed access:
+
+type Tuple = ['a', 'b', 'c', 'd'];
+
+// %inferred-type:  "a" | "b"
+type Elements = Tuple[0 | 1];
+The bracket operator is also distributive:
+
+type MyType = { prop: 1 } | { prop: 2 } | { prop: 3 };
+
+// %inferred-type: 1 | 2 | 3
+type Result1 = MyType['prop'];
+
+// Equivalent:
+type Result2 =
+  | { prop: 1 }['prop']
+  | { prop: 2 }['prop']
+  | { prop: 3 }['prop']
+;
+The type query operator typeof  
+The type operator typeof converts a (JavaScript) value to its (TypeScript) type. 
+Its operand must be an identifier or a sequence of dot-separated identifiers:
+
+const str = 'abc';
+
+// %inferred-type: "abc"
+type Result = typeof str;
+The first 'abc' is a value, while the second "abc" is its type, a string literal type.
+
+This is another example of using typeof:
+
+const func = (x: number) => x + x;
+// %inferred-type: (x: number) => number
+type Result = typeof func;
+Sect. “Adding a symbol to a type” in another blog post describes an interesting use case for typeof.

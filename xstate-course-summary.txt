@@ -1,0 +1,428 @@
+Xstate Glossary
+-------------------------------------------------------------------------------------------------------------
+
+Action - is a Side Effect - no return value
+-------------------------------------------------------
+An action is an effect that is executed as a reaction to a state transition. 
+- Actions are fire-and-forget; that is, 
+- they are executed without needing to wait for a response.
+
+#Actor
+-------------------------------------------------------
+An actor is an entity that 
+- can send messages to other actors, 
+- receive messages, 
+
+and designate its next behavior in response to a message, 
+which may include spawning other actors.
+
+#Atomic state has no child states
+-------------------------------------------------------
+An atomic state is a state node that has no child states.
+
+#Compound state - has child states
+-------------------------------------------------------
+A compound state has one or more child states. 
+- One of these child states must be the initial state, 
+  which is the default state node entered when the parent compound state is entered.
+
+#Condition - when condition is met transition to next state
+-------------------------------------------------------
+See guard.
+
+#Entry action
+-------------------------------------------------------
+An entry action is an action that is executed when its parent state is entered.
+
+#Event - state machine is sent an Event which causes a transition
+-------------------------------------------------------
+An event is an indication that something happened at a specific moment in time. 
+Events are what state machines receive, and are what cause transitions to potentially be taken.
+
+#Eventless transition
+-------------------------------------------------------
+An eventless transition is a transition that is automatically taken when its parent state is active.
+
+#Exit action
+An exit action is an action that is executed when its parent state is exited.
+
+#External transition
+-------------------------------------------------------
+In SCXML, an external transition is a transition that exits the source state when the target state is a 
+descendant of the source state. See selecting transitions (SCXML) (opens new window)for details.
+
+#Final state
+-------------------------------------------------------
+A final state is an indication that the state is "done", and no more events will be handled from it.
+
+#Guard
+-------------------------------------------------------
+A guard is a Boolean expression that determines whether a transition is enabled (if the condition evaluates to true) 
+or disabled (false). Also known as a condition.
+
+#History state
+-------------------------------------------------------
+A history state is a pseudo-state that will remember and transition to the most recently 
+active child states of its parent state, or a default target state.
+
+#Initial state
+-------------------------------------------------------
+The initial state of a compound state is the default child state that is entered when the compound state is entered.
+
+#Internal event - event raised by the state machine
+-------------------------------------------------------
+An internal event is an event that is raised by the state machine itself. 
+Internal events are processed immediately after the previous event.
+
+#Internal transition
+-------------------------------------------------------
+In SCXML, an internal transition is a transition that transitions to a descendant target state without exiting the source state. 
+This is the default transition behavior. See selecting transitions (SCXML) (opens new window)for details.
+
+#Orthogonal state
+-------------------------------------------------------
+See parallel state.
+
+#Parallel state
+-------------------------------------------------------
+A parallel state is a compound state where all of its child states (known as regions) are active simultaneously.
+
+#Pseudostate
+-------------------------------------------------------
+A transient state; e.g., an initial state or a history state.
+
+#Raised event
+-------------------------------------------------------
+See internal event.
+
+#Service
+-------------------------------------------------------
+A service is an interpreted machine; i.e., an actor that represents a machine.
+
+#State machine
+-------------------------------------------------------
+A state machine is a mathematical model of the behavior of a system. 
+It describes the behavior through states, events, and transitions.
+
+#State
+-------------------------------------------------------
+A state represents the overall behavior of a state machine. In statecharts, the state is the aggregate of all active states 
+(which can be atomic, compound, parallel, and/or final).
+
+#Transient state
+-------------------------------------------------------
+A transient state is a state that only has eventless transitions.
+
+#Transition
+-------------------------------------------------------
+A transition is a description of which target state(s) and actions a state machine will immediately be in 
+when a specific event is taken in the transition's source state.
+
+
+Xstate course on Frontendmasters David Khourshid
+---------------------------------------------------
+
+System
+--------------
+- A system is a combination of interacting elements 
+- that performs a function not possible with any of the individual elements. 
+
+Elements of a System (Use cases of a system)
+--------------------
+The elements can include hardware, software, bioware, facilities, policies and processes. 
+
+System inputs to outputs
+-----------------
+A system accepts inputs, over which it has no direct control, and transforms them into outputs. 
+
+System interface
+-------------------
+A system should have a well-defined boundary
+Fitting this single definition are many types of systems, some have states and some do not.
+
+Stateless System (outputs depend only on inputs -> no state)
+----------------------
+Systems can be categorized as stateless or stateful. In a stateless system, the outputs depend only on the present values of its inputs. 
+
+Stateful System
+----------------------------
+in a stateful system the outputs depend on the present and past values of its inputs. For stateful systems, we must define the concept of a state.
+
+State of a system
+--------------------
+The state of the system contains all of the information needed to calculate responses to present and future inputs 
+without reference to the past history of inputs and outputs. 
+
+The state of the system, the present inputs and the sequence of future inputs allow computation of all future states (and outputs). 
+
+For example, the present balance of your checking account can be the state of that system. This state could have gotten 
+to its present value in many ways, but when you write a check, that history is irrelevant. But of course, your model depends 
+on how you define your system. Credit agencies would want to know how many times you had a negative balance and the
+bank would want to know your daily balance in order to calculate your interest.
+
+State machine or State Equation
+-----------------------------------
+Some stateful systems are modeled best with state equations while others are modeled best with state machines. 
+
+State Equation Systems
+--------------------
+State-equation systems are modeled with equations. For example, a baseball s movement can be modeled with 
+state equation: for 
+- position, 
+- linear velocity and 
+- angular velocity all as 
+- functions of time. 
+
+State Machine Systems
+----------------------
+State-machine systems focus less on physical variables and more on logical attributes. 
+Therefore, these systems have memory and are modeled with finite state machines. 
+Most computer systems are modeled with finite state machines.
+
+State Machine - One state at a time
+---------------------
+At each instant of time, a stateful system is in a specific state.
+ 
+State-machine systems can be modeled with one or many concurrent state machines: at any time, 
+each of the concurrent state machines must be in one and only one state. 
+
+State machines can be organized in hierarchies made up of states, superstates, 
+substates, concurrent states, and history states.
+
+
+State-equation systems 
+------------------------
+can have one or many state variables at any time, the system s state is defined as the unique values for each of the state variables. 
+
+A state is a unique snapshot that 
+- (1) is specified by values for a set of variables, 
+- (2) characterizes the system for a period of time 
+- (3) is different from other states. 
+
+Each state is different from other states in either 
+- the inputs it responds to, 
+- the outputs it produces or 
+- the transitions it takes. 
+
+A transition is a response to an input that may cause a change of state.
+
+Use cases lead to System States
+--------------------------------
+A use case is an abstraction of a required function of a system. 
+A use case produces an observable result of value to the user. 
+
+Use case user with a particular goal
+------------------------------------------
+A typical system will have many use cases each of which satisfies a goal of a particular user. 
+
+System actors (User and System itself)
+----------------------------------------
+Each use case is described by a sequence of interactions between one or more actors and the system. 
+
+This sequence of interactions is described in a use case description and the relationships 
+between the system and its actors are portrayed in a use-case diagram.
+
+Use case description
+-----------------------
+A use case description is written in a natural language. It is written as a sequence of numbered steps with a main 
+success scenario and alternate flows. It contains the 
+
+- name of the use case, 
+- a brief description and 
+- the sequence of steps
+
+it may also contain its level, the scope, the primary and supporting actors, preconditions, postconditions, the trigger, the priority, 
+the frequency of use and the owner/author. The steps should be written in clear, concise, present tense, active voice.
+
+Actors - external to System (System interface with outside world)
+----------------------------
+Actors reflect roles of things outside the system that interact with the system. Primary actors initiate the functions 
+described by use cases. Supporting (or secondary) actors are used by the system. They are not a part of the system, 
+and thus cannot be designed or easily altered. They often represent external systems or commercial off the shelf (CotS) components.
+
+A state is a description of the status of a system that is waiting to execute a transition.
+
+A transition is a set of actions to be executed when a condition is fullfilled or whenn an event is received.
+
+Action, when the transition happens a set of actions (fire and forget actions, actions with no return value are considered side effects)
+Condition
+Event
+
+Sample Audio System, with which it is possible to hear radion or play a CD.
+Receiving a "next" message leads in the radio state to change to the next radio station, in the CD State next message makes the CD Player to jump to next track.
+
+State with
+  entry action and
+  exit action
+
+
+Machine
+---------------------------------------------------------------------------
+Properties
+ - id
+ - initial (state)
+ - states: object notation
+ - options: object notation
+
+
+const optionsMachine = createMachine({
+  id: 'options',
+  initial: 'first',
+  states: {
+    first: {},
+    second: {},
+    third: {}
+  },
+  on: {
+    SELECT_FIRST: { target: '.first' }, // resolves to 'options.first'
+    SELECT_SECOND: { target: '.second' }, // 'options.second'
+    SELECT_THIRD: { target: '.third' } // 'options.third'
+  }
+});
+
+on: {
+  SELECT_FIRST: {
+    target: { target: '.first' },
+    internal: false // external transition, will exit/reenter parent state node
+  }
+}
+
+const lightMachine = createMachine({
+  id: 'light',
+  initial: 'green',
+  states: {
+    green: {
+      // custom identifier
+      id: 'greenLight',
+      on: {
+        // target state node by its ID
+        TIMER: { target: '#yellowLight' }
+      }
+    },
+    yellow: {
+      id: 'yellowLight',
+      on: {
+        TIMER: { target: '#redLight' }
+      }
+    },
+    red: {
+      id: 'redLight',
+      on: {
+        // relative targets will still work
+        TIMER: { target: 'green' }
+      }
+    }
+  }
+});
+
+If you don't want to use strings for identifying states, object getters (opens new window)can be used to directly reference the target state:
+
+const lightMachine = createMachine({
+  id: 'light',
+  initial: 'green',
+  states: {
+    green: {
+      on: {
+        // Use a getter to directly reference the target state node:
+        get TIMER() {
+          return { target: lightMachine.states.yellow };
+        }
+      }
+    },
+    yellow: {
+      on: {
+        get TIMER() {
+          return { target: lightMachine.states.red };
+        }
+      }
+    },
+    red: {
+      on: {
+        TIMER: {
+          // Also works with target as a getter
+          get target() {
+            return { target: lightMachine.states.green };
+          }
+        }
+      }
+    }
+  }
+});
+
+
+
+States
+---------------------------------------------------------------------------
+
+
+
+
+State Nodes
+---------------------------------------------------------------------------
+
+
+
+
+Events
+---------------------------------------------------------------------------
+
+
+
+Transitons
+---------------------------------------------------------------------------
+
+Hierarchical State Nodes
+---------------------------------------------------------------------------
+
+
+Parallel State Nodes
+---------------------------------------------------------------------------
+
+
+Effects
+---------------------------------------------------------------------------
+
+
+Actions
+---------------------------------------------------------------------------
+
+
+Guarded Transitions
+---------------------------------------------------------------------------
+
+Context
+---------------------------------------------------------------------------
+
+
+Models
+---------------------------------------------------------------------------
+
+
+Activities
+---------------------------------------------------------------------------
+
+
+Invoke Object (invoking services)
+---------------------------------------------------------------------------
+
+
+
+Actors
+---------------------------------------------------------------------------
+
+
+
+Delayed Events and Transitons
+---------------------------------------------------------------------------
+
+
+Final States
+---------------------------------------------------------------------------
+
+History State (Pseudo State)
+---------------------------------------------------------------------------
+
+
+Identifying State Nodes
+---------------------------------------------------------------------------
+

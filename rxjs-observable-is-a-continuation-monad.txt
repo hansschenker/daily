@@ -1,0 +1,159 @@
+Can anyone explain relation between continuation monad and observable in RxJs?
+
+I'm trying to understand continuation monad, and most of the literatures refers keywords 
+such as 'asynchronous programming', 'callback', 'promise', 'obervable', and 'future'. 
+
+It seems that there are following benefits to us continuation monad:
+
+one can postpone to call a function
+
+It solves a callback hell - how?
+
+It can do asynchronous programming
+
+Definition of continuation monad is quite clear to me, but the definition only doesn't tells me a lot about it. 
+
+This link gives one possible explanation (which corresponds to 1 above), but all of the other literature try to
+explain with CPS, callback, and asynchronous programming, 
+
+
+Observable is not that complicated concept, and I also understand that one can view observable as a functor 
+
+
+
+Is there any concrete and precise relationship between the continuation monad and the observable 'monad'?
+
+Can anyone give a good example of continuation monad, written in Haskell?
+
+It seems like Observable 'monad' has a polymorphic map (Observable a) -> a for any type a, 
+
+which doesn't happen for arbitrary monads in general. 
+I know that Writer monad has a such map, and this composes a part of 
+Writer functor as a 'comonad'. Is Observable a comonad, too?
+
+
+The continuation monad looks like this Cont r a = Cont ((a -> r) -> r). We can take a look at a slightly simpler 
+version first, though: Single a = Single (forall r. (a -> r) -> r).
+
+The neat part about Single is that Single a is equivalent to a. 
+We can see this because the only way for the function inside of Single to work is 
+if it takes the (a -> r) parameter it receives and applies it to a value of a that it has stored secretly. 
+
+To make this concrete, here are injection and projection functions on Single
+
+inject :: a -> Single a
+inject a = Single (\cont -> cont a)
+
+project :: Single a -> a
+project (Single f) = f id
+
+This property of Single is enforced by the forall which makes certain that the function inside of Single knows nothing 
+about r and thus cannot cheat.
+
+Cont performs the same "inversion" trick as Single, but allows r to be known. This means that some values of Cont r a 
+may not actually have values of a at all, but instead just values of r
+
+constantCont :: r -> Cont r a
+constantCont r = Cont (const r)
+It also means that values of Cont might have many values of a
+
+listCont :: [a] -> Cont [a] a
+listCont values = Cont (\cont -> values >>= cont)
+
+The secret here is that the argument to the function inside of Cont is known as a "continuation": 
+it's "the rest of the computation". 
+
+We saw this directly with Single: we know that Single a contains a single value of a, but it won't give it to us directly. 
+Instead, we have to tell Single "what we want to do with the a" and it'll perform that operation for us. 
+
+Since Cont can know more about its eventual return type, it can take advantage of having access to "the rest of the computation" 
+to run it 0, 1, or many times. 
+It can even combine those outputs according to functions available on the r type, like I did with 
+the listCont example. Fundamentally, though, it's a bit too boring still.
+
+newtype ContIO r a = ContIO ((a -> IO r) -> IO r)
+By letting both the continuation and the final result live in a monad (like IO here), we unlock a lot of power. Now, values of 
+ContIO can re-use the continuation in many ways.
+
+doThreeTimes :: a -> ContIO () a
+----------------------------------------------------------------------------------
+doThreeTimes a = ContIO $ \cont -> do
+  cont a
+  cont a
+  cont a
+
+Hopefully this is starting to look a bit like an observable. 
+--------------------------------------------------------------------------------
+In a certain sense, ContIO () a is Observable a. Let's focus on that type
+--------------------------------------------------------------------------------
+
+newtype Observable a = Observable ((a -> IO ()) -> IO ())
+
+In other words, an 
+
+Observable a is a value which is awaiting instructions for "what to do" with 0, 1, or many values of type a. 
+It has full access to effects and can send those values wherever they need to go.
+
+Observable, ContT, Cont, and Single are all monadic. 
+I won't derive this stuff here, but we can intuit from Single that these 
+types can be thought a little bit like containers and containers are often Functors and sometimes even Monads. 
+
+The general trick 
+is that you can feed the "what to do" continuation through many of these weird containers so as to build a consistent "route" 
+for the values contained to flow out. Try implementing Monad for Cont.
+
+Finally, I don't believe these types are comonadic. We can easily see that Single is because Single is equivalent to Identity, 
+but 
+for something like Observable, there isn't a preferred function Observable a -> a. It's not even true that this function 
+is total: some Observables have zero values of a contained within. 
+
+Thus, a more genuine type to that function is Observable a -> IO (Maybe a) 
+where the IO also indicates that we need to use side-effects to even see that value, 
+should it come to exist.
+
+You can create a primitive reactthat invoke onEvent with dothis= continuation. So that you can program in this way:
+
+    event <- react onEvent SomeEvent
+    process event    -- this
+    moreprocess      -- becomes
+    etc              -- the callback handler
+
+So the program flow will not be broken and the continuation will be executed whenever a SomeEvent happens. 
+react automatically set the callback:
+
+
+
+One could argue that do notation is still callback hell with syntax sugar, though. 
+
+Otherwise the variable scoping 
+doesn't work out. In an imperative setting this is more obvious:
+
+get(myUrl, function(d) {
+    parseJson(d, function(j) {
+        loadFile(j.path, function (f) {
+            doStuff(d,j,f);
+})})});
+
+Solving callback hell with a monadic api then looks like this:
+
+get(myUrl)
+.andThen(parseJson)
+.andThen(j => loadFile(j.path))
+.andThen(f => ...)
+
+Which is much better but the variables aren't in scope at the end so you'd need
+
+get(myUrl).andThen(d => 
+    parseJson(d).andThen(j =>
+    loadFile(j.path).andThen(f =>
+    doStuff(d,j,f))));
+
+This is basically the difference between
+
+(a >>= b) >>= c
+
+and
+
+a >>= (b >>= c)
+
+do notation desugars to the latter which has the same nested continuations as the classic callback hell.

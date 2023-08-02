@@ -1,0 +1,72 @@
+var last;
+var output = $('#output');
+$('#txt').on('input', function() {
+    var n = new Date()
+    output.text((last - n) + ' ms');
+    last = n;
+});
+-------------------------
+
+What do you think of this? After distinctUntilChanged we pair the value with the previous one 
+using pairwise and then map them back into one with a new field, 
+the measured duration of time between the successive emits. 
+To get the very first value that does not have a predecessor, 
+we need to startWith a dummy value {timeStamp:undefined}.
+
+import { fromEvent, merge } from 'https://cdn.skypack.dev/rxjs@^6.6.7?min';
+import { 
+    groupBy, 
+    map, 
+    distinctUntilChanged, 
+    mergeAll,
+    pairwise,
+    startWith } from 'https://cdn.skypack.dev/rxjs@^6.6.7/operators?min';
+
+const keyPresses = merge(
+  fromEvent(window, 'keydown', {capture: true}),
+  fromEvent(window, 'keyup', {capture: true}),
+).pipe(
+  groupBy(e => e.code),
+  map(group => group.pipe(
+    startWith({timeStamp:undefined}),
+    distinctUntilChanged(null, e=>e.type), 
+    pairwise(),
+    map(([e0,e1])=>Object.assign(e1,{duration:e1.timeStamp-e0.timeStamp})))),
+  mergeAll(),
+);
+
+keyPresses.subscribe(e=> {
+  console.log(JSON.stringify({code:e.code, type:e.type, duration:e.duration}));
+});
+
+-------------------
+0
+
+
+I think withLatestFrom is the operator that will help you here. This will give you something very close to what you are looking for:
+
+const down = Rx.Observable.fromEvent(document, "keydown")
+    .distinctUntilKeyChanged("keyCode");
+
+const up = Rx.Observable.fromEvent(document, "keyup");
+
+up.withLatestFrom(down, (u, d) => ({
+    name: `${String.fromCharCode(d.keyCode)}-key`,
+    pressTime: u.timeStamp - d.timeStamp
+}))
+    .groupBy(x => x.name)
+    .mergeMap(group => group.scan((acc, x) => {
+        acc[group.key].push(x.pressTime);
+        return acc;
+    }, {[group.key]: []}))
+    .scan((acc, x) => Object.assign(acc, x))
+    .subscribe(console.log);
+---------------------------------------------------------------------------------
+
+The values of the textarea are being emitted through an RxJS Observable but I don't want to refresh the preview for every new value. Instead I'd like to refresh the preview only after the user has stopped typing for say 500ms.
+
+Here's a tentative diagram (first line is the raw values emitted by the textarea as the user types, second line is what I'd like to obtain; a value is emitted only once a specific delay WITH NO EMISSION has elapsed):
+
+t---t--ttt------tt-ttt------t---|
+----------------t-----------t---|
+

@@ -1,0 +1,225 @@
+Iterable - you can make any object iterable
+---------------------------------------------------------------------------------
+iterable objects you’re most familiar with are arrays and strings. 
+ES6 added Map and Set. With RxJS, we’ll treat streams as iterable data types as well.
+You can make any object iterable by manipulating its underlying iterator. 
+
+
+RxJS encourages data-driven programming.
+----------------------------------------------------------------------------------- 
+RxJS encourages a style of development known as data-driven programming. The data-driven approach is a way 
+of writing code such that you can separate the behavior of an application from the data that’s passing through it. 
+This is a core design decision of RxJS and the main reason why you can use the same paradigm 
+to process arrays, mouse clicks, or data from AJAX calls.
+
+Bringing data to the forefront and separating it from the behavior of the system is at the heart 
+of data-driven/data-centric design. Similarly, l
+oosely coupling functions from the objects that contain data is a design principle of FP and, by extension, RP.
+
+Lazy computation
+-------------------------------------------------------------------------------------------
+A stream represents a lazy computation (piece of logic, a pure function) and it must be called
+to run the computation
+
+- Compositional: Observables can be composed with higher-order combinators.
+- Lazy: Observables do not start emitting data until an observer has subscribed.
+
+Producer and Comsumer
+-------------------------------------------------------------------------------------------------
+The data-centric approach seeks to remedy this issue by separating the concerns of data and behavior, 
+through its producer/consumer mode
+Behavior could be loosely linked such that the data moved from one part of the application to another, 
+independent of the underlying implementation
+
+Event based  producers
+------------------------------------------------------------------------------------------------------------
+producers come in all shapes and sizes. 
+
+Event emitters are one of the most common ones; they’re used to respond to events like 
+- mouse clicks
+- web requests 
+- web sockets
+- promises
+
+Also, there are timer-based sources like 
+- setTimeout and 
+- setInterval that will execute a task at a specified point in the future. 
+- requestAnimationFrame of the browser
+
+Arrays and Strings
+---------------------------------------------------------------------------------------------------------------
+There are subtler ones such as arrays and strings, which you might recognize as collections of data but not necessarily producers of data.
+
+Iterable - A unified Interface
+-----------------------------------------------------------------------------------------------------------------------------------
+- event emitters require named event handlers, 
+- Promises require the continuation-passing “thenable” function, 
+- setTimeout needs a callback, 
+- arrays need a loop in order to iterate through them. 
+
+Lift data into the context of an observable object
+-------------------------------------------------------------------------------------------------------------------------------------------
+You can lift a heterogeneous set of inputs into the context of an observable object. 
+
+From static data structure to dynamic data source
+--------------------------------------------------------------------------------------------------------------------------
+Array , Map  or Set can be view as a static data structure or as a data store source where the data is generated via generator
+
+Observable is a functor
+------------------------------------------------------------------------------------------------------------------------------------
+To functional programming purists, it falls under a special category called a functor, an endofunctor to be exact
+
+To most others, it’s simply a data type that wraps a given data source, present in memory or eventually in the future, 
+and allows you to chain operations onto it by invoking observable instance methods sequentially.
+
+Rx.Observable.from(<data-source>)            1
+   .operator1(...)                           2
+   .operator2(...)
+   .operator3(...)
+   .subscribe(<process-output>);             3
+1 Wraps a data source with a stream
+2 Invokes a sequence of operations chained by the dot operator. In chapter 3, we’ll spend a lot more time with observable instance methods.
+3 Processes the results
+
+pure functions, which are nothing more than to-be-computed values,
+Because observables in RxJS are immutable data types
+
+
+Wrap Event Emitters in a Observable
+---------------------------------------------------------------------------------------------------------------------------------------
+You can also use Observables to wrap any custom event emitters. Going back to our calculator emitter in Node.js, 
+instead of listening for the add event,
+
+addEmitter.on('add', (a, b) => {
+  console.log(a + b); //-> Prints 5
+});
+
+you can subscribe to it:
+
+Rx.Observable.fromEvent(addEmitter, 'add', (a, b) => ({a: a, b: b}))
+   .map(input -> input.a + input.b)
+   .subscribe(console.log); //-> 5
+
+addEmitter.emit('add', 2, 3);
+
+Event emitters have been around as long as the JavaScript language. In that time, they haven’t had any significant improvements 
+to their interface in the latest releases of the language. This contrasts with Promises, iterators, and generators, which were part 
+of the JavaScript ES6 specification and are already supported in many browsers at the time of writing. This is one of the reasons 
+why RxJS is so important; it brings many improvements to JavaScript’s event system.
+
+Observable a unified interface
+--------------------------------------------------------------------------------------------------------------------------------------------
+- It enables you to hide differences of implementation behind a common interface, which lets you focus more on the business logic of your task. 
+  This has the benefit of not only optimizing development time but also reducing code complexity by removing extra noise from code.
+
+- The separation of production and consumption builds a clear separation of concerns and makes the direction of data flow clear.
+
+- It makes streams testable by allowing you to attach mock versions of the producer and wire the corresponding matching expectations in the observer.
+
+Observers the consumers
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+2.4.1. The Observer API
+An observer is registered with an observable in much the same way that you registered callbacks on an event emitter.
+ An observable becomes aware of an observer during the subscription process, which you’ve seen a lot of so far. 
+The subscription process is a way for you to pass an observer reference into an observable, creating a managed, one-way relationship.
+
+const observer = {
+    next: function () {
+        // process next value
+    },
+    error: function () {
+        // alert user
+    },
+    complete: function () {
+
+    }
+}
+
+Custom Observable
+------------------------------------------------------------------------------------------------------------------------------------------------------
+const observable = events => {
+  const INTERVAL = 1 * 1000;
+  let schedulerId;
+
+  return {
+     subscribe: observer => {
+       schedulerId = setInterval(() => {
+         if(events.length === 0) {
+            observer.complete();
+            clearInterval(schedulerId);
+            schedulerId = undefined;
+         }
+         else {
+            observer.next(events.shift());
+         }
+       }, INTERVAL);
+
+       return {
+          unsubscribe: () => {
+             if(schedulerId) {
+                 clearInterval(schedulerId);
+             }
+          }
+       };
+     }
+  }
+};
+
+You can call this function by passing the observer object:
+
+let sub = observable([1, 2, 3]).subscribe({
+  next: console.log,
+  complete: () => console.log('Done!')
+});
+//-> 1
+       (...1 second)
+     2
+       (...1 second)
+     3
+       (...1 second)
+     Done!
+
+
+isting 2.4. Custom progress indicator module using RxJS
+const progressBar$ = Rx.Observable.create(observer => {
+   const OFFSET = 3000;                                        1
+   const SPEED =  50;                                          2
+
+   let val = 0;
+   function progress() {
+     if(++val <= 100) {
+       observer.next(val);                                     2
+       setTimeout(progress, SPEED);                            3
+     }
+     else {
+       observer.complete();                                    4
+     }
+   };
+   setTimeout(progress, OFFSET);                               1
+});
+
+const label = document.querySelector('#progress-indicator');
+
+progressBar$
+  .subscribe(
+    val   => label.textContent = (Number.isInteger(val) ? val + "%" : val),
+    error => console.log(error.message),
+    ()    => label.textContent = 'Complete!'
+);
+
+2.5. SUMMARY
+RxJS and, more generally, the concept of thinking in streams derive many of their foundational principles from functional programming.
+The declarative style of RxJS allows you to translate almost exactly from your problem statement into working code.
+Data sources can often operate quite differently, even within the observable contract.
+Mouse clicks, HTTP requests, or simple arrays are all the same under the eyes of observables.
+Push-based and pull-based semantics are represented through observables and iterators, respectively. W
+rapping data sources is the first step in creating a pipeline/observable.
+Observables abstract the notion of production and consumption of events such that 
+
+you can separate 
+------------------------------
+- production, 
+- processing and
+- consumption into completely self-contained constructs.
+
+Observers expose an API with three methods: next(), complete(), and error().

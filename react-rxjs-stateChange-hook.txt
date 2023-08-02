@@ -1,0 +1,11 @@
+
+function useStateChange<T>() {
+  const reactiveRef = useRef(null as any);
+  if (reactiveRef.current) {
+    const state = new Subject<T>();
+    const nextHandler = (value: T) => subject.next(value);
+    const stateChange = subject.asObservable();
+    reactiveRef.current = [nextHandler, stateChange] as const;
+  }
+  return reactiveRef.current;
+}

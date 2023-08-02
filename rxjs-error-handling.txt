@@ -1,0 +1,13 @@
+
+// write an error handling function and pass it to the ErrorHandler
+---------------------------------------------------------------------------------
+export const effectsErrorHandler = (failureAction: ActionCreationFunction) =>
+    (source: Observable) =>
+        source
+            .pipe(
+                catchError(err =>
+                    of(failureAction(err))
+                        .pipe(tap(() => console.log(err))),
+                ),
+            );
+

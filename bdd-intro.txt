@@ -1,0 +1,486 @@
+bdd
+
+Given: the context - known state for input of user action (when)
+-------------------------------------------------------------------
+Precondition, use to describe the original context. Introduce into the system a state 
+to start interacting with the system. Given’s goal is to put the system into a known state before use 
+(or the external system) to start interacting with the system (in the When step).
+
+When: the user action - state change ( transition)
+---------------------------------------------------------------------
+describe the main action events the user performed. 
+
+The use of the keyword “then” is to see the result after the action in the when “step”. 
+However, you can only verify notable changes
+
+Then: outcome - the expected state after user action
+------------------------------------------------------------------------
+Expected output. “Then” was used to observe the result. 
+Observations must be related to business values / benefits in “Feature” description. 
+Observations must check the output of the system (a report, user interface, messages, etc.)
+
+test case statements are entirely focused on user actions
+------------------------------------------------------------------------
+
+
+Gherkin terms
+Feature
+Background
+Scenario
+Given
+When
+Then
+And
+But
+
+
+Feature: Title of the Scenario
+-----------------------------------------------------------------------------
+All conventional “* .feature” files include only one feature.
+
+The line begins with the keyword “Feature:”.
+A Feature usually consists of a list of Scenarios. Can write whatever you want until the beginning of the first Scenario 
+(when the new line begins with the word “Scenario:”)
+
+opencodez
+ 
+Java
+Web Development
+Salesforce
+Free WP Themes
+How To Guide
+Software Testing
+IT Lifestyle
+Write & Earn
+ Home / Software Testing / Complete Step by Step Guide of Gherkin for Beginners
+Complete Step by Step Guide of Gherkin for Beginners
+ Pritam  March 22, 2020  Software Testing  No Comments
+Gherkin is a plain English text language, used by BDD (Behavior Driven Development) 
+tool ‘Cucumber‘ to define and execute the test scripts.
+
+
+ 
+1. What is BDD?
+BDD (Behavior Driven Development) is a software development process based on an Agile method. 
+BDD is an extension of TDD (Test-Driven Development). Instead of focusing on software development 
+in the direction of testing, BDD focuses on software development in the direction of behavior.
+
+Based on the requirement, the test scenarios will be written first in the natural language and easy 
+to understand before implementing the source code to pass through all the stories. These test scripts 
+are written as feature files and require collaboration from all project members or stakeholders.
+
+2. Difference Between TDD and BDD?
+TDD
+ 
+
+(Test Driven Development)
+
+BDD
+ 
+
+(Behavior Driven Development)
+
+Give the developer an understanding of what the system should do	
+Focus on the behavior aspect than the implementation aspect of the system
+Mostly written by the developer	Written by stakeholders or non-technical person
+Written unit tests	Normally for acceptance testing
+Low-level scenario	High-level scenario
+Input: specification, Output: test	Input: specification, Output: implementation
+3. Why we have to use BDD
+Help identify the right customer requirements: documents are written in natural language, any object can understand. 
+By reading this document, customers can easily identify programmers who understand their requirements and responsibilities.
+It is a live document of the project: this document is always updated when there is any change so all members 
+will not miss information when developing the system.
+Improve the quality of software, create useful products: because of developing software in the direction of behavior, 
+it is possible to focus on creating products that meet the requirements of customers but still useful for users.
+4. Who will write BDD?
+As mentioned above, BDD will be written by project members and stakeholders. Therefore, all these people will 
+build a BDD file to give a most general, accurate view of the project requirements.
+
+5. How to write BDD?
+BDD is written in plain text language called Gherkin.
+
+(*) Rules for writing :
+File saved as an extension is .feature
+Each .feature file usually includes a unique function
+A function includes many different scenarios with a list of steps
+6. What is Gherkin Language?
+Gherkin is the format for cucumber specifications. This is a domain-specific language that helps you 
+describe business behavior without going into implementation details. This document acts as the documentation 
+and framework of your automated tests.
+
+7. Why Gherkin?
+Describe use cases for a software system in one way, easy to read and understand.
+Allows business analysts, managers, developers and other third-parties involved to understand the requirements 
+of the project and the life-cycle.
+Makes it easy to create simple documentation of the code that’s being written.
+Provides scripts for test automation.
+8. How to use it? Syntax? Terms?
+Like Python and YAML, Gherkin is a line-oriented language used to define structure logic. Like Ruby, the tab character 
+should be replaced with space characters, the comment line will have the # character at the beginning of the line.
+
+Start a file will be “Feature”, then “scenarios” and steps. When running the source file “feature” each step 
+will match with a predefined Ruby code block called “Step Definitions”. In this scenario, a comment can be added 
+anywhere you want, but it should begin with the # sign. It reads each line after removing Ghrekin’s keywords like given, when, then, etc.
+
+Gherkin syntax?
+Given, When, Then. Also, some more complex cases have And, But …
+
+
+
+Given: Preconditions, use to describe the original context. Introduce into the system a state to start 
+interacting with the system. Given’s goal is to put the system into a known state before use (or the external system) 
+to start interacting with the system (in the When step).
+
+
+If you have worked with a use case, Givens is a prerequisite.
+
+
+ 
+When: describe the main action events the user performed. The use of the keyword “then” is to see the result 
+after the action in the when “step”. However, you can only verify notable changes.
+
+Then: Expected output. “Then” was used to observe the result. Observations must be related to business values / 
+benefits in “Feature” description. Observations must check the output of the system (a report, user interface, messages, etc.)
+
+9. Gherkin terms
+Feature
+Background
+Scenario
+Given
+When
+Then
+And
+But
+
+Scenario:
+------------------------------------------------------------------------------------
+Each feature file may have multiple scenarios, and each scenario starts with a script.
+
+Background:
+----------------------------------------------------------------------------------------
+The “Background” keyword helps you add some context to the script. It may contain several script steps, 
+but the only difference is that it should be run before each script.
+
+Given:
+--------------------------------------------------------------------------------------------
+Use this keyword to bring the system to a familiar state before the user starts interacting with the system. 
+However, you can skip writing user interactions in the given steps if given in the “Precondition” step.
+
+When:
+
+The purpose of “When” is to describe events, the main action that a user uses.
+
+Then:
+
+The use of the keyword ‘then’ is to see the result after the action in the “When” step. However, you can only verify notable changes.
+
+And, But:
+
+Used when there are many “Given”, “When”, “Then”
+
+ 
+Java
+Web Development
+Salesforce
+Free WP Themes
+How To Guide
+Software Testing
+IT Lifestyle
+Write & Earn
+ Home / Software Testing / Complete Step by Step Guide of Gherkin for Beginners
+Complete Step by Step Guide of Gherkin for Beginners
+ Pritam  March 22, 2020  Software Testing  No Comments
+Gherkin is a plain English text language, used by BDD (Behavior Driven Development) tool ‘Cucumber‘
+to define and execute the test scripts.
+
+
+ 
+1. What is BDD?
+BDD (Behavior Driven Development) is a software development process based on an Agile method. BDD is an extension of TDD 
+(Test-Driven Development). Instead of focusing on software development in the direction of testing, 
+BDD focuses on software development in the direction of behavior.
+
+Based on the requirement, the test scenarios will be written first in the natural language and easy 
+to understand before implementing the source code to pass through all the stories. These test scripts 
+are written as feature files and require collaboration from all project members or stakeholders.
+
+2. Difference Between TDD and BDD?
+TDD
+ 
+
+(Test Driven Development)
+
+BDD
+ 
+
+(Behavior Driven Development)
+
+Give the developer an understanding of what the system should do	Focus on the behavior aspect than the implementation aspect of the system
+Mostly written by the developer	Written by stakeholders or non-technical person
+Written unit tests	Normally for acceptance testing
+Low-level scenario	High-level scenario
+Input: specification, Output: test	Input: specification, Output: implementation
+3. Why we have to use BDD
+Help identify the right customer requirements: documents are written in natural language, any object can understand. 
+By reading this document, customers can easily identify programmers who understand their requirements and responsibilities.
+It is a live document of the project: this document is always updated when there is any change so all members will 
+not miss information when developing the system.
+Improve the quality of software, create useful products: because of developing software in the direction of behavior, 
+it is possible to focus on creating products that meet the requirements of customers but still useful for users.
+4. Who will write BDD?
+As mentioned above, BDD will be written by project members and stakeholders. Therefore, all these people will build a
+ BDD file to give a most general, accurate view of the project requirements.
+
+5. How to write BDD?
+BDD is written in plain text language called Gherkin.
+
+(*) Rules for writing :
+File saved as an extension is .feature
+Each .feature file usually includes a unique function
+A function includes many different scenarios with a list of steps
+6. What is Gherkin Language?
+Gherkin is the format for cucumber specifications. This is a domain-specific language that helps you describe
+ business behavior without going into implementation details. This document acts as the documentation and framework of your automated tests.
+
+7. Why Gherkin?
+Describe use cases for a software system in one way, easy to read and understand.
+Allows business analysts, managers, developers and other third-parties involved to understand the requirements of the project and the life-cycle.
+Makes it easy to create simple documentation of the code that’s being written.
+Provides scripts for test automation.
+8. How to use it? Syntax? Terms?
+Like Python and YAML, Gherkin is a line-oriented language used to define structure logic. Like Ruby, the tab character 
+should be replaced with space characters, the comment line will have the # character at the beginning of the line.
+
+Start a file will be “Feature”, then “scenarios” and steps. When running the source file “feature” each step will match 
+with a predefined Ruby code block called “Step Definitions”. In this scenario, a comment can be added anywhere you want, 
+but it should begin with the # sign. It reads each line after removing Ghrekin’s keywords like given, when, then, etc.
+
+Gherkin syntax?
+Given, When, Then. Also, some more complex cases have And, But …
+
+
+
+Given: Preconditions, use to describe the original context. Introduce into the system a state to start interacting with the system. 
+Given’s goal is to put the system into a known state before use (or the external system) to start interacting with the system (in the When step).
+
+If you have worked with a use case, Givens is a prerequisite.
+
+
+ 
+When: describe the main action events the user performed. The use of the keyword “then” is to see the result after the action 
+in the when “step”. However, you can only verify notable changes.
+
+Then: Expected output. “Then” was used to observe the result. Observations must be related to business values / benefits 
+in “Feature” description. Observations must check the output of the system (a report, user interface, messages, etc.)
+
+Behavior description: Any single When-Then pair denotes an individual behavior. 
+
+
+9. Gherkin terms
+Feature
+Background
+Scenario
+Given
+When
+Then
+And
+But
+
+Feature: Title of the Scenario
+
+All conventional “* .feature” files include only one feature.
+
+The line begins with the keyword “Feature:”.
+
+A Feature usually consists of a list of Scenarios. Can write whatever you want until the beginning of the first Scenario 
+(when the new line begins with the word “Scenario:”)
+
+Tags can be used to group features and scenarios together, regardless of the file and directory structure. Each scenario 
+consists of a list of steps, steps starting with keywords such as (Given, When, Then, But or And). Additionally, 
+the feature may include a scenario outline and background
+
+Scenario: describes one behavior
+
+Each feature file may have multiple scenarios, and each scenario starts with a script.
+one scenario covers one behavior
+
+Background:
+
+The “Background” keyword helps you add some context to the script. It may contain several script steps, 
+but the only difference is that it should be run before each script.
+
+Given: sets up initial state, or input state for when user action
+
+Use this keyword to bring the system to a familiar state before the user starts interacting with the system. However, 
+you can skip writing user interactions in the given steps if given in the “Precondition” step.
+
+When:
+
+The purpose of “When” is to describe events, the main action that a user uses.
+
+Then:
+
+The use of the keyword ‘then’ is to see the result after the action in the “When” step. However, you can only verify notable changes.
+
+And, But:
+
+Used when there are many “Given”, “When”, “Then”
+
+In order to ensure the working of Login Functionality, 
+we are developing acceptance test cases on the basis of BDD
+
+Given	context
+
+when	user action
+
+then	expect effect
+
+Login Use Case
+----------------
+Feature: Login Function
+
+	To enter in the System  
+	User must be able to 
+	Access software when login is successful 
+
+Scenario: Successful Login
+---------------
+Given 	User has its Email  
+	And Password  
+
+When 	User enters the correct Email and Password  
+Then 	It should be logged in
+
+Scenario: Unsuccessful Login
+--------------------------
+When	User enters either wrong Email or Password  
+Then 	It should be reverse back on the login page with an error message
+
+follow these basic steps to begin using BDD and Gherkin syntax:
+
+Start with your user stories.
+-------------------------------
+As a team, go through your user stories and write BDD scenarios using the keywords GIVEN, WHEN, and THEN (AND, BUT can be used as well)
+
+GIVEN 	is your setup; for example, "GIVEN the credit card is valid"
+WHEN 	is your action; for example, "WHEN I request $50"
+THEN 	is your assertion; for example, "THEN the ATM should dispense $50"
+
+Capture the BDD scenarios in a location that is public for everyone to see. Hiptest is a good choice :)
+
+
+Feature: Account Holder withdraws cash
+
+  Scenario: Account has sufficient funds
+   Given the account balance is $100
+     And the card is valid
+     And the machine contains enough money  
+    When the Account Holder requests $20
+    Then the ATM should dispense $20
+     And the account balance should be $80
+     And the card should be returned
+
+Feature
+--------
+eature
+The purpose of the Feature keyword is to provide a high-level description of a software feature, and to group related scenarios.
+
+The first primary keyword in a Gherkin document must always be Feature, followed by a : and a short text that describes the feature.
+
+You can add free-form text underneath Feature to add more description.
+
+These description lines are ignored by Cucumber at runtime, but are available for reporting (they are included by 
+reporting tools like the official HTML formatter).
+
+Feature: Guess the word
+
+  The word guess game is a turn-based game for two players.
+  The Maker makes a word for the Breaker to guess. The game
+  is over when the Breaker guesses the Maker's word.
+
+  Example: Maker starts a game
+
+Gherkin
+---------
+Gherkin is a Business Readable, Domain Specific Language created especially for behavior descriptions. 
+It gives you the ability to remove logic details from behavior tests.
+
+Gherkin is a line-oriented language that uses indentation to define structure. 
+Line endings terminate statements (called steps) and either spaces or tabs may be used for indentation. 
+(We suggest you use spaces for portability.) Finally, most lines in Gherkin start with a special keyword:
+
+Feature: Some terse yet descriptive text of what is desired
+  In order to realize a named business value
+  As an explicit system actor
+  I want to gain some beneficial outcome which furthers the goal
+
+  Scenario: Some determinable business situation
+    Given some precondition
+      And some other precondition
+     When some action by the actor
+      And some other action
+      And yet another action
+     Then some testable outcome is achieved
+      And something else we can check happens too
+
+  Scenario: A different situation
+
+BDD
+------
+BDD is an approach that collaboratively specifies the system's desired behaviour. Each time a piece of behaviour is agreed, 
+we use that specification to "drive" the development of the code that will implement that behaviour.
+
+3 perspective in BDD
+-----------------------
+The essential three perspectives required are:
+
+customer / business perspective - usually provided by the Product Owner	- business rules
+development perspective - usually provided by a Developer		- implementation details
+test perspective - usually provided by a Tester				- assert business rules in implementation
+
+Gherkin is a simple syntax that allows teams to write business readable, executable specifications. 
+
+Some of the Gherkin keywords are Given, When, and Then, but not all text that uses these words is Gherkin.
+
+Gherkin is understood by a large number of tools, notably Cucumber and Specflow, that effectively turn the specification into automated tests.
+
+----------------------------------------------------------------------------------------------------
+
+
+Feature: Google Searching
+
+  Scenario: Search from the search bar
+    Given a web browser is at the Google home page
+    When the user enters "panda" into the search bar
+    Then links related to "panda" are shown on the results page
+
+  Scenario: Image search
+    Given Google search results for "panda" are shown
+    When the user clicks on the "Images" link at the top of the results page
+    Then images related to "panda" are shown on the results page
+
+---------------------------------------------------------------------
+
+Feature: Credit card payment
+
+ As a online shopper
+ I want to pay through my Credit card
+ So that I can buy stuff online instead of visiting the super market
+
+ Scenario: transaction completed successfully
+ Given ...
+ When ...
+ Then ...
+
+ Scenario: Credit card is invalid
+ Given ...
+ When ...
+ Then ...
+
+ Scenario: Third party payment system refused the transaction
+ Given ...
+ When ...
+ Then ...
+
+---------------------------------------------------------------------------------

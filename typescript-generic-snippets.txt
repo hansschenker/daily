@@ -1,0 +1,337 @@
+function find<T>(arr: T[], filter: (i: T) => boolean) {
+    return arr.filter(filter);
+}
+
+find(heroes, (h) => h.name === "Spiderman");
+
+function find<T>(filter: (i: T) => boolean) {
+    return (arr: T[]) => {
+        return arr.filter(filter);    
+}}  
+
+const findSpiderman = find((h: Hero) => h.name === "Spiderman");
+const spiderman = findSpiderman(heroes);
+
+ function sub(x: number, y: number) {
+2   return x - y;
+3 }
+4 
+5 const operation: (x: number, y: number) => number = sub;
+
+map function
+-----------
+function map(items, mappingFunction) {
+ 2   const results = [];
+ 3   for (let item of items) {
+ 4     results.push(mappingFunction(item));
+ 5   }
+ 6   return results;
+ 7 }
+ 8 
+ 9 const persons = [{ name: "John" }, { name: "Alice" }];
+10 console.log(map(persons, (person) => person.name));
+
+1 // Works with array of Persons
+2 const names = map(persons, (person) => person.name);
+3 // Works with array of names too
+4 const uppercaseNames = map(names, (name) => name.toUpperCase());
+5 // Works even with an array of numbers!
+6 const evenNumbers = map([1, 2, 3, 4, 5], (n) => n * 2);
+
+generic map
+-------------
+function map<T, R>(
+2   items: TElement[],
+3   mapFunc: (item: T) => R
+4 ): R[] {
+5   /* ... */
+6 }
+
+type reduce function
+---------------------
+ function reduce<T, R>(
+ 2   array: T[],
+ 3   reducer: (result: R, el: T) => R,
+ 4   initialResult: R
+ 5 ): R {
+ 6   let result = initialResult;
+ 7   for (const element of array) {
+ 8     result = reducer(result, element);
+ 9   }
+10   return result;
+11 }
+12 
+13 const total = reduce<number, number>([1, 2, 3, 4, 5], (sum, el) => sum + el, 0);
+14 
+15 const ageByName = reduce<Person, Record<string, number>>(
+16   persons,
+17   (result, person) => ({
+18     ...result,
+19     [person.name]: person.age,
+20   }),
+21   {}
+22 );
+
+Observable and Observer
+--------------------------
+
+Observer
+--------
+The Observer interface represents an entity that can observe a stream of values (Observable). 
+When the stream (Observable)
+- emits a value, the next method is called. 
+- an error, the error method is called. Finally, when the 
+- stream completes, the complete method is called.
+
+generic Form Field
+------------------
+interface FormField<T> {
+2   value?: T;
+3   defaultValue: T;
+4   isValid: boolean;
+5 }
+
+ // Generic. Can be called with any `FormField`.
+18 function getFieldValue<T>(field: FormField<T>): T {
+19   if (!field.isValid || field.value === undefined) {
+20     // On the other hand, we don't know anything about the type of `field.defaultVal\
+ ue`.
+22     return field.defaultValue;
+23   }
+24   return field.value;
+25 }
+
+ interface FormField<T extends string | number | boolean> {
+ 2   value?: T;
+ 3   defaultValue: T;
+ 4   isValid: boolean;
+ 5 }
+ 6 
+ 7 // Type 'T' does not satisfy the constraint 'string | number | boolean'
+ 8 function getFieldValue<T>(field: FormField<T>): T {
+ 9   /* ... */
+10 }
+
+generic get function
+-------------------
+1 interface Person {
+ 2   name: string;
+ 3   age: number;
+ 4 }
+ 5 
+ 6 type PersonKeys = keyof Person; // ‘name' | ‘age'
+ 7 
+ 8 function get<T, K extends keyof T>(object: T, key: K): T[K] {
+ 9   return object[key];
+10 }
+11 
+12 declare const person: Person;
+13 get(person, "name"); // No errors
+14 get(person, "foo"); // Error!
+
+type pick function
+-----------------
+function pick(array, key) {
+2   const results = [];
+3   for (let element of array) {
+4     results.push(element[key]);
+5   }
+6   return results;
+7 }
+
+Type Constructors
+-------------------
+Two worlds - types and values
+Try to think of the world of types as a universe that is parallel to the world of values
+
+Type constructor is a function (not a regular function, a mathematical function) that takes a type 
+and returns a new type (based on the original type).
+
+2 categories: 
+- the world of values (the set of possible natural numbers)
+- and the world of types (the set of boolean types: true and false)
+
+world of types
+----------------
+In the world of types, 
+- type constructors are functions that take some types and return other types.
+
+FormField type from the previous chapter is a function with one type argument, T. It takes a type (e.g. string) and r
+
+Typescript Constructor types
+-----------------------------
+
+NonNullable<T> 
+is a function that takes a type and returns the same type with null and undefined removed from the domain.
+
+Partial<T> 
+takes a type and returns a type with the same properties as the source, but each one optional.
+
+ReturnType<T>
+ takes a function type and returns the return type of that function
+
+ type X1 = NonNullable<string | undefined>; // X1 = string
+2 
+3 type X2 = Partial<{ name: string; age: number }>; // X2 = { name?: string; age?: num\
+4 ber;}
+5 
+6 function square(x: number): number {
+7   return x * x;
+8 }
+9 type X3 = ReturnType<typeof square>; // X3 = number
+
+Type Argument Propagation
+------------------------------------
+Overview
+Let’s have a look at the following example. Imagine that you’re fetching a collection of objects 
+from some backend service and you need to map this collection to an array of identifiers.
+
+interface Person {
+2   id: string;
+3   name: string;
+4   birthYear: number;
+5 }
+6 
+7 function getIds(persons: Person[]) {
+8   return persons.map((person) => person.id);
+9 }
+Next, you decide to generalize the getIds function so that it works on any collection of objects that have the id property.
+
+1 function getIds<T extends Record<"id", string>>(elements: T[]) {
+2   return elements.map((el) => el.id);
+3 }
+
+1 import * as R from "ramda";
+2 
+3 const getIds = R.map(R.prop("id"));
+
+<T>(list: readonly Record<"id", T>[]) => T[]
+
+Composing Types
+--------------------
+Introduction
+The primary way to compose types in TypeScript is via union and intersection type operations.
+
+Union and intersection of object types
+This intuition also works for complex types.
+
+ 1 interface Foo {
+ 2   foo: string;
+ 3   xyz: string;
+ 4 }
+ 5 
+ 6 interface Bar {
+ 7   bar: string;
+ 8   xyz: string;
+ 9 }
+10 
+11 const sayHello = (obj: Foo | Bar) => {
+12   /* ... */
+13 };
+14 
+15 sayHello({ foo: "foo", xyz: "xyz" });
+16 sayHello({ bar: "bar", xyz: "xyz" });
+
+Foo | Bar is a type that has either all required properties of Foo OR all required properties of Bar. 
+Inside the sayHello function, it’s only possible to access obj.xyz 
+because it’s the only property that is included in both types.
+
+ const sayHello = (obj: Foo & Bar) => {
+2   /* ... */
+3 };
+4 
+5 sayHello({ foo: "foo", bar: "bar", xyz: "xyz" });
+Now sayHello requires the argument to have both foo AND bar properties. 
+Inside sayHello it’s possible to access obj.foo, obj.bar, and obj.xyz.
+
+Union type (all elements of both sets)
+------------
+The union of two sets is a set that contains all elements from both sets. 
+
+Intersection type (only elements that are present in both sets)
+------------------
+The intersection of two sets is a set that only contains elements that are present in both sets.
+
+Discriminated Union Types
+---------------------------
+discriminated unions help encode business rules in the type system
+Creating discriminated unions is an extremely powerful way of composing types. 
+Thanks to this mechanism you can write code that is type-safe
+
+interface EmailContact {
+ 2   kind: "email";
+ 3   email: string;
+ 4 }
+ 5 
+ 6 interface PhoneContact {
+ 7   kind: "phone";
+ 8   phone: number;
+ 9 }
+10 
+11 type Contact = EmailContact | PhoneContact;
+12
+  type Contact =
+2   | { kind: "email"; email: string }
+3   | { kind: "phone"; phone: number };
+
+13 interface Customer {
+14   name: string;
+15   contact: Contact;
+16 }
+17 
+18 function printCustomerContact({ contact }: Customer) {
+19   if (contact.kind === "email") {
+20     // Type of `contact` is `EmailContact`!
+21     console.log(contact.email);
+22   } else {
+23     // Type of `contact` is `PhoneContact`!
+24     console.log(contact.phone);
+25   }
+26 }
+
+Multiple discriminating properties
+Interestingly, a discriminator does not have to be a single property. A group of literal properties can also act as a discriminator! In such a case, every combination of values marks a different member of the union type.
+
+ 1 type Foo =
+ 2   | { kind: "A"; type: "X"; abc: string }
+ 3   | { kind: "A"; type: "Y"; xyz: string }
+ 4   | { kind: "B"; type: "X"; rty: string };
+ 5 
+ 6 declare const foo: Foo;
+ 7 
+ 8 if (foo.kind === "A" && foo.type === "X") {
+ 9   console.log(foo.abc);
+
+Algebraic data types
+--------------------
+data Tree = Empty
+2             | Leaf Int
+3             | Node Tree Tree
+1 type Tree =
+2   | { type: "empty" }
+ | { type: "leaf"; value: number }
+4   | { type: "node"; left: Tree; right: Tree };
+
+Create types for the following domain:
+---------------------------------------
+Users 		place orders for products.
+Users 		have contact information, email or postal addresses, and at least one is required.
+Orders 		should include price, product name, quantity, payment date, paid amount, sending date, and delivery date.
+
+1 type Order = {
+2   productName: string;
+3   price: number;
+4   quantity: number;
+5 };
+
+const echo = <T>(value:T):T => {
+  console.log(value)
+  return value
+}
+
+echo<string>("helllo")
+
+const echoLength = <T extends {length:number}> (value:T) : T => {
+  console.log(value.length)
+  renturn value.length
+}

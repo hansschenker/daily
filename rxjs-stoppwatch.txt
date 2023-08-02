@@ -1,0 +1,797 @@
+// Imports
+import { interval, fromEvent } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
+
+// Elements
+let startButton = document.querySelector<HTMLButton>('#start-button');
+let stopButton = document.querySelector<HTMLButton>('#stop-button');
+let resumeButton = document.querySelector<HTMLButton>('#stop-button');
+let resultsArea = document.querySelector<HTMLElement>('.output');
+
+// Observables
+let ticking$ = interval(1000);
+
+let starting$ = fromEvent<HTMLButton>(startButton, 'click');
+let stopping$ = fromEvent<HTMLButton>(stopButton, 'click');
+let resuming$ = fromEvent<HTMLButton>(resumeButton, 'click');
+
+starting$.subscribe(() => {
+  ticking$
+    .pipe(
+      map(item => (item / 10)),
+      takeUntil(stopping$)
+    )
+    .subscribe(num => resultsArea.innerText = num + 's');
+});
+
+-------------
+drag and drop
+
+
+import { fromEvent } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
+
+let draggable = <HTMLElement>document.querySelector('#draggable');
+
+let mouseDown$ = fromEvent<MouseEvent>(draggable, 'mousedown');
+let mouseMove$ = fromEvent<MouseEvent>(document, 'mousemove');
+let mouseUp$ = fromEvent<MouseEvent>(document, 'mouseup');
+
+mouseDown$.subscribe(() => {
+  mouseMove$
+  .pipe(
+    map(event => {
+      event.preventDefault();
+      return {
+        x: event.clientX,
+        y: event.clientY
+      };
+    }),
+    takeUntil(mouseUp$)
+  )
+  .subscribe(pos => {
+    // Draggable is absolutely positioned
+    draggable.style.left = pos.x + 'px';
+    draggable.style.top = pos.y + 'px';
+  });
+});
+
+
+------------------
+
+tween animation, start point , end point, distance and time for travelling a to b
+
+import { interval } from 'rxjs';
+import { map, take } from 'rxjs/operators';
+
+let box = document.querySelector('#box');
+
+function simpleTween(element, endPoint, durationSec) {
+
+  // Convert duration to 60 frames per second
+  let durationInFrames = 60 * durationSec;
+  let distancePerStep = endPoint / durationInFrames;
+
+  // 60 frames per second
+  interval(1000 / 60)
+  .pipe(
+    map(n => n * distancePerStep),
+    take(durationInFrames)
+  )
+  .subscribe((location) => {
+    element.style.left = location + 'px';
+  });
+}
+
+// Move the box 1000 pixels over five seconds
+simpleTween(box, 500, 5);
+
+-------------------------------
+
+check browser for animation run
+
+const { interval} = require('rxjs');
+const {  take, map, pairwise } = require('rxjs/operators');
+const { performance } = require('perf_hooks');
+
+interval(1000 / 60)
+.pipe(
+  take(60),
+  map(() => performance.now()),
+  pairwise(),
+  map(lastTimestamps => lastTimestamps[1] - lastTimestamps[0]),
+  map(msPerFrame => msPerFrame.toLocaleString())
+)
+.subscribe(msPerFrame =>
+  console.log(`Last frame took ${msPerFrame}ms to run, ideally \n`)
+);
+
+---------------------------------------
+
+use requestAnimationFrame
+
+function updateCanvas() {
+  updateObjects();
+  renderObjects();
+  requestAnimationFrame(updateCanvas);
+}
+
+--------------------------
+import { animationFrame } from 'rxjs/internal/scheduler/animationFrame';
+
+function rafTween(element, endPoint, durationSec) {
+
+  // Convert duration to 60 frames per second
+  let durationInFrames = 60 * durationSec;
+  let distancePerStep = endPoint / durationInFrames;
+
+  // 60 frames per second
+  interval(1000 / 60, animationFrame)
+  .pipe(
+    map(n => n * distancePerStep),
+    take(durationInFrames)
+  )
+  .subscribe((location) => {
+    element.style.left = location + 'px';
+  });
+}
+
+--------------------------------
+import { interval } from 'rxjs';
+import { map, takeWhile } from 'rxjs/operators';
+import { animationFrame } from 'rxjs/internal/scheduler/animationFrame';
+
+let box = document.querySelector('#box');
+
+function rafTween(element, pixelsToMove, durationSec) {
+  let startTime = animationFrame.now();
+  let endTime = animationFrame.now() + (durationSec * 1000);
+  let durationMs = endTime - startTime;
+  let startPoint = element.style.left;
+
+  interval(1000 / 60, animationFrame)
+  .pipe(
+    map(() => (animationFrame.now() - startTime) / durationMs), // (1)
+    takeWhile(percentDone => percentDone <= 1) // (2)
+  )
+  .subscribe(percentDone => {
+    element.style.left = startPoint + (pixelsToMove * percentDone) + 'px';
+  });
+}
+
+// Move the box 500 pixels over five seconds
+rafTween(box, 500, 5);
+
+
+---------------------------------
+
+creating easing on animation
+
+function easingSquared(percentDone) {
+  return percentDone * percentDone;
+}
+
+console.log( easingSquared(.25) ); // 0.25^2 = 0.0625
+console.log( easingSquared(.50) ); // 0.50^2 = 0.25
+console.log( easingSquared(.75) ); // 0.75^2 = 0.5625
+console.log( easingSquared(.9) );  // 0.9^2  = 0.81
+console.log( easingSquared(1) );   // 1^2.   = 1
+
+-----------------------------
+percentDone operator
+
+function percentDone(durationSec) {
+  return function ($obs) {
+    let startTime = animationFrame.now();
+    // let endTime = animationFrame.now() + (durationSec * 1000);
+    // let durationMs = endTime - startTime;
+    return $obs.pipe(
+      map(() => (animationFrame.now() - startTime) / (durationSec * 1000))
+    );
+  };
+}
+
+
+-------------------------------------
+startTime variable#
+While this function creates a startTime variable, rest assured that the inner function won’t be called until 
+something subscribes to the observable. This is another advantage of lazy observables. 
+This means that startTime won’t be set until the animation begins.
+
+easingMap operator#
+The next operator uses a map that takes an easing function.
+ Right now, this is just a wrapper around the map operator.
+
+function easingMap(easingFn) {
+  return function ($obs) {
+    return $obs.pipe(map(easingFn));
+  };
+}
+
+final tween
+--------------------------------------------------------------------------------------------
+function finalTween(easingFn, element, endPoint, duration) {
+  let startPoint = element.style.left;
+  let pixelsToMove = endPoint - startPoint;
+
+  interval(1000 / 60, animationFrame)
+  .pipe(
+    percentDone(duration),
+    takeWhile(percentDone => percentDone <= 1),
+    easingMap(easingFn)
+  )
+  .subscribe((movePercent: number) => {
+    element.style.left = startPoint + (pixelsToMove * movePercent) + 'px';
+  });
+}
+
+--------------------------------------------------------------------------------------------------
+We can then compose these together to demonstrate what several different types of easing operators look like:
+
+let linear = p => p;
+let quadraticIn = p => p * p;
+let quadraticOut = p => p * (2 - p);
+
+finalTween(linear, redSquare, 500, 5);
+finalTween(quadraticIn, blueSquare, 500, 5);
+finalTween(quadraticOut, greenSquare, 500, 5);
+
+
+
+MultiTween
+----------------------------------------------------------------------------------------------------
+import { interval } from 'rxjs';
+import { animationFrame } from 'rxjs/internal/scheduler/animationFrame';
+import { map, takeWhile } from 'rxjs/operators';
+
+let redSquare = document.querySelector('.red.box');
+let blueSquare = document.querySelector('.blue.box');
+let greenSquare = document.querySelector('.green.box');
+
+function percentDone(durationSec) {
+  return function ($obs) {
+    let startTime = animationFrame.now();
+    // let endTime = animationFrame.now() + (durationSec * 1000);
+    // let durationMs = endTime - startTime;
+    return $obs.pipe(
+      map(() => (animationFrame.now() - startTime) / (durationSec * 1000))
+    );
+  };
+}
+
+function easingMap(easingFn) {
+  return function ($obs) {
+    return $obs.pipe(map(easingFn));
+  };
+}
+
+function finalTween(easingFn, element, endPoint, duration) {
+  let startPoint = element.style.left;
+  let pixelsToMove = endPoint - startPoint;
+
+  interval(1000 / 60, animationFrame)
+  .pipe(
+    percentDone(duration),
+    takeWhile(percentDone => percentDone <= 1),
+    easingMap(easingFn)
+  )
+  .subscribe((movePercent: number) => {
+    element.style.left = startPoint + (pixelsToMove * movePercent) + 'px';
+  });
+}
+
+// Easing Functions
+let linear = p => p;
+let quadraticIn = p => p * p;
+let quadraticOut = p => p * (2 - p);
+
+finalTween(linear, redSquare, 500, 5);
+finalTween(quadraticIn, blueSquare, 500, 5);
+finalTween(quadraticOut, greenSquare, 500, 5);
+
+---------------------------------------------------------------------------------
+
+Building a game (canvas)
+
+
+game state
+---------------
+import { fromEvent } from 'rxjs';
+import { config } from './config';
+import { randInt } from './util';
+
+// Keep track of the state of all movement keys
+let keyStatus = {};
+fromEvent(document, 'keydown')
+.subscribe((e: any) => {
+  keyStatus[e.keyCode] = true;
+});
+
+fromEvent(document, 'keyup')
+.subscribe((e: any) => {
+  keyStatus[e.keyCode] = false;
+});
+
+export class GameState {
+  stars: {
+    x: number;
+    y: number;
+    dy: number;
+    size: number;
+  }[] = [];
+  player = {
+    x: config.canvas.height - (config.ship.height * 2),
+    y: (config.canvas.width / 2) - (config.ship.width / 2),
+    alive: true,
+    lasers: [{
+      x: config.canvas.width / 2,
+      y: -1000
+    }, {
+      x: config.canvas.width / 2,
+      y: -1000
+    }, {
+      x: config.canvas.width / 2,
+      y: -1000
+    }]
+  };
+  keyStatus: { [status: number]: boolean };
+  enemy = {
+    x: -1000,
+    y: 0,
+    dx: 0,
+    dy: 0,
+    alive: true,
+    lasers: [{
+      x: config.canvas.width / 2,
+      y: 10000
+    }, {
+      x: config.canvas.width / 2,
+      y: 10000
+    }, {
+      x: config.canvas.width / 2,
+      y: 10000
+    }]
+  };
+  explosions: {
+    x: number;
+    y: number;
+    framesSince: number;
+    type: string;
+  }[] = [{
+    x: -1000,
+    y: -1000,
+    framesSince: 1000,
+    type: ''
+  }, {
+      x: -1000,
+      y: -1000,
+      framesSince: 1000,
+      type: ''
+    }, {
+      x: -1000,
+      y: -1000,
+      framesSince: 1000,
+      type: ''
+    }];
+
+  constructor() {
+    for (let i = 0; i < 100; i++) {
+      this.stars.push({
+        x: randInt(0, config.canvas.width),
+        y: randInt(0, config.canvas.height),
+        dy: Math.random() * 10,
+        size: randInt(-3, 1)
+      });
+    }
+
+    this.keyStatus = keyStatus;
+  }
+}
+
+export function updateStars(gameState$: Observable<GameState>) {
+  return gameState$
+  .pipe(
+    map(state => {
+      state.stars.forEach(star => {
+        star.y += star.dy;
+        if (star.y > config.canvas.height) {
+          star.x = randInt(0, config.canvas.width);
+          star.y = 0;
+        }
+      });
+      return state;
+    })
+  );
+}
+
+
+export function renderStars(state: GameState) {
+  ctx.fillStyle = '#fff';
+  state.stars.forEach(star => {
+    ctx.fillRect(star.x, star.y, star.size, star.size);
+  });
+}
+
+user input
+--------------
+// Keep track of the state of all movement keys
+let keyStatus = {};
+fromEvent(document, 'keydown')
+.subscribe((e: any) => {
+  keyStatus[e.keyCode] = true;
+});
+
+fromEvent(document, 'keyup')
+.subscribe((e: any) => {
+  keyStatus[e.keyCode] = false;
+});
+
+player state
+---------
+function updatePlayerState(gameState: GameState): GameState {
+  if (gameState.keyStatus[config.controls.left]) {
+    gameState.player.x -= config.ship.speed;
+  }
+  if (gameState.keyStatus[config.controls.right]) {
+    gameState.player.x += config.ship.speed;
+  }
+  if (gameState.player.x < 0) {
+    gameState.player.x = 0;
+  }
+  if (gameState.player.x > (config.canvas.width - config.ship.width)) {
+    gameState.player.x = (config.canvas.width - config.ship.width);
+  }
+  return gameState;
+}
+
+---------------
+render player
+
+export function renderPlayer(state: GameState) {
+  if (!state.player.alive) { return; }
+  ctx.drawImage(playerImg, state.player.x, state.player.y);
+}
+
+
+----------------------
+update player
+
+export const updatePlayer = (obs: Observable<GameState>) => {
+  return obs
+  .pipe(
+    map(updatePlayerState)
+  );
+};
+
+-------------------
+
+complex operator for the game in util.ts
+-------
+export function triggerEvery(
+  mapper,
+  timeInterval: () => number,
+  condition?: (gameState$: GameState) => boolean
+) {
+  let nextValidTrigger;
+  return function (obs$: Observable<GameState>) {
+    return obs$.pipe(map((gameState: GameState): GameState => {
+      if (condition && !condition(gameState)) {
+        return gameState;
+      }
+      if (nextValidTrigger > performance.now()) {
+        return gameState;
+      }
+      nextValidTrigger = performance.now() + timeInterval();
+      return mapper(gameState);
+    }));
+  };
+}
+
+------------
+
+player.ts
+let playerFire = (gameState: GameState) => {
+  let availableLaser = gameState.player.lasers.find(l => l.y
+                       - config.laser.height < 0);
+  if (!availableLaser) { return gameState; }
+  availableLaser.x = gameState.player.x + (config.ship.width / 2)
+                     - (config.laser.width / 2);
+  availableLaser.y = gameState.player.y;
+  return gameState;
+};
+let fiveHundredMs = () => 500;
+let isSpacebar = (gameState: GameState) =>
+                 gameState.keyStatus[config.controls.fireLaser];
+
+----------------------
+function updatePlayerLasers(gameState: GameState): GameState {
+  // Lasers actually move
+  gameState.player.lasers
+    .forEach(l => {
+      l.y -= config.laser.speed;
+    });
+  return gameState;
+}
+
+----------
+export const updatePlayer = (obs: Observable<GameState>) => {
+  return obs
+  .pipe(
+    map(updatePlayerState),
+    map(updatePlayerLasers),
+    triggerEvery(playerFire, fiveHundredMs, isSpacebar)
+  );
+};
+
+--------------
+export function renderLasers(state: GameState) {
+  state.player.lasers
+    .filter(l => l.y + config.laser.height > 0)
+    .forEach(laser => {
+      ctx.fillStyle = '#6f4';
+      ctx.fillRect(laser.x, laser.y, config.laser.width, config.laser.height);
+    });
+  state.enemy.lasers
+    .filter(l => l.y + config.laser.height > 0)
+    .forEach(laser => {
+      ctx.fillStyle = '#f64';
+      ctx.fillRect(laser.x, laser.y, config.laser.width, config.laser.height);
+    });
+}
+
+----------
+index.ts
+
+import { interval } from 'rxjs';
+import { tap, mapTo } from 'rxjs/operators';
+import { animationFrame } from 'rxjs/internal/scheduler/animationFrame';
+
+import { config } from './config';
+import { GameState } from './gameState';
+
+// Game loop stuff
+import { updateStars, renderStars } from './stars';
+import { updatePlayer, renderPlayer } from './player';
+//import { updateEnemies, renderEnemies } from './enemy';
+import { renderLasers } from './lasers';
+import { checkCollision } from './collisions';
+import { renderGameOver, resetGame } from './gameOver';
+
+/*
+ART:
+player spaceship: https://opengameart.org/content/24x24-48x48-spaceships
+aliens: https://opengameart.org/content/alien-spaceship-invasion
+explosion: https://opengameart.org/content/simple-explosion-bleeds-game-art
+*/
+
+let canvas = <HTMLCanvasElement>document.querySelector('canvas');
+export let ctx = canvas.getContext('2d'); // (1)
+canvas.width = config.canvas.width; // (2)
+canvas.height = conf
+
+
+--------------------------
+player.ts - enemies
+
+import { config } from './config';
+import { ctx } from './index';
+import { Observable } from 'rxjs';
+import { GameState } from './gameState';
+import { triggerEvery } from './util';
+import { map } from 'rxjs/operators';
+
+let playerAvatar = './img/ship.png';
+let playerImg = document.createElement('img');
+playerImg.src = playerAvatar;
+
+let playerFire = (gameState: GameState) => {
+  let availableLaser = gameState.player.lasers.find(l => l.y
+                       - config.laser.height < 0);
+  if (!availableLaser) { return gameState; }
+  availableLaser.x = gameState.player.x + (config.ship.width / 2)
+                     - (config.laser.width / 2);
+  availableLaser.y = gameState.player.y;
+  return gameState;
+};
+let fiveHundredMs = () => 500;
+let isSpacebar = (gameState: GameState) =>
+                 gameState.keyStatus[config.controls.fireLaser];
+
+function updatePlayerLasers(gameState: GameState): GameState {
+  // Lasers actually move
+  gameState.player.lasers
+    .forEach(l => {
+      l.y -= config.laser.speed;
+    });
+  return gameState;
+}
+
+function updatePlayerState(gameState: GameState): GameState {
+  if (gameState.keyStatus[config.controls.left]) {
+    gameState.player.x -= config.ship.speed;
+  }
+  if (gameState.keyStatus[config.controls.right]) {
+    gameState.player.x += config.ship.speed;
+  }
+  if (gameState.player.x < 0) {
+    gameState.player.x = 0;
+  }
+  if (gameState.player.x > (config.canvas.width - config.ship.width)) {
+    gameState.player.x = (config.canvas.width - config.ship.width);
+  }
+  return gameState;
+}
+
+export const updatePlayer = (obs: Observable<GameState>) => {
+  return obs
+  .pipe(
+    map(updatePlayerState),
+    map(updatePlayerLasers),
+    triggerEvery(playerFire, fiveHundredMs, isSpacebar)
+  );
+};
+
+export function renderPlayer(state: GameState) {
+  if (!state.player.alive) { return; }
+  ctx.drawImage(playerImg, state.player.x, state.player.y);
+}
+
+-----------------
+  // Enemy appears, moves down 1/3 of the map, then turns
+  // Spawn a new enemy ship if needed
+  if (gameState.enemy.x <= -config.enemy.width ||
+    gameState.enemy.x > config.canvas.width ||
+    !gameState.enemy.alive
+  ) {
+    let xStart = randInt(
+      config.enemy.width,
+      config.canvas.width - config.enemy.width
+    );
+    gameState.enemy.alive = true;
+    gameState.enemy.y = -config.enemy.height;
+    gameState.enemy.x = xStart;
+    gameState.enemy.dy = config.enemy.speed;
+    gameState.enemy.dx = 0;
+  }
+-----------------
+// Once 1/3 point is reached, turn to a side
+if (gameState.enemy.y >= config.canvas.height / 3 &&
+  gameState.enemy.dx === 0
+) {
+  let leftOrRight = Math.random() > 0.5;
+  gameState.enemy.dy = 0;
+  gameState.enemy.dx = config.enemy.speed * (leftOrRight ? 1 : -1);
+}
+---------------------
+import { interval } from 'rxjs';
+import { tap, mapTo } from 'rxjs/operators';
+import { animationFrame } from 'rxjs/internal/scheduler/animationFrame';
+
+import { config } from './config';
+import { GameState } from './gameState';
+
+// Game loop stuff
+import { updateStars, renderStars } from './stars';
+import { updatePlayer, renderPlayer } from './player';
+import { updateEnemies, renderEnemies } from './enemy';
+import { renderLasers } from './lasers';
+import { checkCollision } from './collisions';
+import { renderGameOver, resetGame } from './gameOver';
+
+/*
+ART:
+player spaceship: https://opengameart.org/content/24x24-48x48-spaceships
+aliens: https://opengameart.org/content/alien-spaceship-invasion
+explosion: https://opengameart.org/content/simple-explosion-bleeds-game-art
+*/
+
+let canvas = <HTMLCanvasElement>document.querySelector('canvas');
+export let ctx = canvas.getContext('2d'); // (1)
+canvas.width = config.canvas.width; // (2)
+canvas.height = config.canvas.height;
+
+function clearCanvas() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+/* todo:
+- different animation sequence for enemy
+*/
+
+let gameState = new GameState();
+
+interval(17, animationFrame)
+.pipe(
+  mapTo(gameState),
+  resetGame,
+  updateStars,
+  updatePlayer,
+  updateEnemies,
+  checkCollision,
+  // Use tap for side effects, ensure render does not mutate state
+  tap(clearCanvas),
+  tap(renderStars),
+  tap(renderPlayer),
+  tap(renderLasers),
+  tap(renderEnemies),
+  tap(renderGameOver)
+)
+.subscribe((newGameState: GameState) => {
+  Object.assign(gameState, newGameState);
+});
+
+------------------------
+
+check collisons
+
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { GameState } from './gameState';
+import { config } from './config';
+import { ctx } from './index';
+
+let explosion = './img/explosion.png';
+let explosionImg = document.createElement('img');
+explosionImg.src = explosion;
+
+function isColliding(laser, ship, shipType): boolean {
+  return laser.x > ship.x &&
+         laser.x < ship.x + config[shipType].width &&
+         laser.y > ship.y &&
+         laser.y < ship.y + config[shipType].height &&
+         ship.alive;
+}
+
+export function checkCollision(obs: Observable<GameState>) {
+  return obs
+  .pipe(
+    map(gameState => {
+      gameState.explosions.forEach(e => {
+        e.framesSince++;
+      });
+      gameState.player.lasers.forEach(l => {
+        if (isColliding(l, gameState.enemy, 'enemy')) {
+          let availableExplosion = gameState.explosions.find(e =>
+            e.framesSince > config.explosion.frames * config.explosion.gameFramesPer
+          );
+          // Fill in code here
+        }
+      });
+      gameState.enemy.lasers.forEach(l => {
+        if (isColliding(l, gameState.player, 'ship')) {
+          let availableExplosion = gameState.explosions.find(e =>
+            e.framesSince > config.explosion.frames * config.explosion.gameFramesPer
+          );
+          // Fill in code here
+        }
+      });
+      return gameState;
+    })
+  );
+}
+
+--------------
+
+game animations
+
+export function renderExplosions (gameState: GameState) {
+  gameState.explosions.forEach(e => {
+    if (e.framesSince > config.explosion.frames * 
+          config.explosion.gameFramesPer) { return; }
+    ctx.drawImage(
+      explosionImg,
+      Math.floor(e.framesSince / config.explosion.gameFramesPer) * 
+                 config.explosion.width,
+      0,
+      config.explosion.width,
+      config.explosion.height,
+      e.x,
+      e.y,
+      config[e.type].width,
+      config[e.type].height
+    );
+  });
+}
+
+----------

@@ -1,0 +1,121 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+// collections
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+get multiple documents
+----------------------
+db.collection("cities").where("capital", "==", true)
+    .get()
+    .then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+            // doc.data() is never undefined for query doc snapshots
+            console.log(doc.id, " => ", doc.data());
+        });
+    })
+    .catch(function(error) {
+        console.log("Error getting documents: ", error);
+    });
+
+
+get all documents
+-----------------------------
+db.collection("cities").get().then(function(querySnapshot) {
+    querySnapshot.forEach(function(doc) {
+        // doc.data() is never undefined for query doc snapshots
+        console.log(doc.id, " => ", doc.data());
+    });
+});
+
+
+query collection
+------------------------------
+citiesRef.where("state", "==", "CA")
+citiesRef.where("population", "<", 100000)
+citiesRef.where("name", ">=", "San Francisco")
+
+compound queries
+-----------------
+citiesRef.where("state", "==", "CO").where("name", "==", "Denver")
+citiesRef.where("state", "==", "CA").where("population", "<", 1000000)
+
+Cloud Firestore does not support the following types of queries:
+
+Queries with range filters on different fields, as described in the previous section.
+Single queries across multiple collections or subcollections. Each query runs against a single collection of documents. 
+For more information about how your data structure affects your queries, see Choose a Data Structure.
+Logical OR queries. In this case, you should create a separate query for each OR condition and merge the query results in your app.
+Queries with a != clause. In this case, you should split the query into a greater-than query and a less-than query. For example, 
+although the query clause where("age", "!=", "30") is not supported, you can get the same result set by combining two queries, 
+one with the clause where("age", "<", "30") and one with the clause where("age", ">", 30).
+
+
+
+
+
+observable changes:
+--------------------
+  private itemsCollection: AngularFirestoreCollection<Item>;
+  items: Observable<Item[]>;
+  constructor(private afs: AngularFirestore) {
+    this.itemsCollection = afs.collection<Item>('items');
+    this.items = this.itemsCollection.valueChanges();
+  }
+  addItem(item: Item) {
+    this.itemsCollection.add(item);
+  }
+
+// snapshot changes
+-------------------------------------------------------
+  private shirtCollection: AngularFirestoreCollection<Shirt>;
+  shirts: Observable<ShirtId[]>;
+  constructor(private readonly afs: AngularFirestore) {
+    this.shirtCollection = afs.collection<Shirt>('shirts');
+    // .snapshotChanges() returns a DocumentChangeAction[], which contains
+    // a lot of information about "what happened" with each change. If you want to
+    // get the data and the id use the map operator.
+    this.shirts = this.shirtCollection.snapshotChanges().pipe(
+      map(actions => actions.map(a => {
+        const data = a.payload.doc.data() as Shirt;
+        const id = a.payload.doc.id;
+        return { id, ...data };
+      }))
+    );
+  }
+
+// collection add
+------------------------------------------
+db.collection("users").add({
+    first: "Ada",
+    last: "Lovelace",
+    born: 1815
+})
+.then(function(docRef) {
+    console.log("Document written with ID: ", docRef.id);
+})
+.catch(function(error) {
+    console.error("Error adding document: ", error);
+});
+
+
+// colllection read
+------------------------------------------------
+db.collection("users").get().then((querySnapshot) => {
+    querySnapshot.forEach((doc) => {
+        console.log(`${doc.id} => ${doc.data()}`);
+    });
+});
+
+// secure collection
+-------------------------------------------------
+// Allow read/write access on all documents to any user signed in to the application
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth.uid != null;
+    }
+  }
+}
+
+// collection recursive deletes
+----------------------------------
+https://github.com/firebase/snippets-node/tree/master/firestore/solution-deletes
+

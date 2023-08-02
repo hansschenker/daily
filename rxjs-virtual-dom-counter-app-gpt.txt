@@ -1,0 +1,66 @@
+I want to write a javascript rxjs counter app in model update view architecture where 
+
+- the model is the state, 
+- update is handeled with rxjs behaviorsubject and 
+- the view is constructed with virtual-dom library. 
+
+- RxJS, 
+- virtual-dom, and a 
+- model-update-view architecture. Here's how you might structure it:
+
+
+
+npm install rxjs virtual-dom
+
+const { h, diff, patch, create: createElement } = require('virtual-dom');
+const { BehaviorSubject, interval } = require('rxjs');
+const { scan, startWith } = require('rxjs/operators');
+
+// Model - State
+----------------------------------------------------------------------------------------------------------
+const initialState = 0
+let state = new BehaviorSubject(initialState);
+
+// State Update function
+let updateState = new BehaviorSubject((state) => state);
+
+// Subscribe to the update function to trigger updates to the model
+updateState.pipe(
+    startWith(state.getValue()),  				// start with the current value of the model
+    scan((state, changeFn) => changeFn(count))  		// apply the update function to the current count
+).subscribe(state);
+
+// View function
+----------------------------------------------------------------------------------------------------------
+function view(count) {
+    return h('div', [
+        h('h1', `Count: ${count}`),
+        h('button', { onclick: () => updateState.next((count) => count + 1) }, 'Increment'),
+        h('button', { onclick: () => updateState.next((count) => count - 1) }, 'Decrement')
+    ]);
+}
+
+// initial render
+----------------------------------------------------------------------------------------------------------
+let currentView = view(state.getValue()); 				// We need an initial tree
+let rootNode = createElement(tree); 				// Create an initial root DOM node ...
+document.body.appendChild(rootNode); 				// ... and it should be in the document
+
+// subsequent render whenever the state updates -> update the view
+----------------------------------------------------------------------------------------------------------
+state.subscribe(state => {
+    let updatedView = view(state);
+    let patches = diff(currentView, updatedView);
+    rootNode = patch(rootNode, patches);
+    currentView = updatedView;
+});
+
+This simple application uses RxJS for state management (the counter model) and updates to that state. 
+The virtual-dom library is used for the view. 
+
+The view is a function that takes the current count and 
+returns a virtual-dom tree representing the current state of the application. 
+When the model changes, we create a new virtual-dom tree, diff it with the old tree, 
+and patch the real DOM to reflect the changes.
+
+This is a very basic example, but it should give you a good idea of how you can structure an application with RxJS and virtual-dom. The important concept is that you always have a single source of truth (the model), and the view is always a pure function of the model. Any updates to the model are made using pure functions (the update functions), and the view is updated reactively whenever the model changes.

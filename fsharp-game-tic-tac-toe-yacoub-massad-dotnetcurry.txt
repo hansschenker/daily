@@ -1,0 +1,613 @@
+Functional programming has been gaining popularity in the last few years.
+
+C#, which is the most used language when targeting .NET, has been getting many functional language features. 
+However, there is another language that targets .NET and is functional-first. This language is called F#.
+
+F# is a multi-paradigm programming language. This means that you can, for example, write programs 
+in an object-oriented style if you want. However, the focus in F# is on the functional style of programming.
+
+Editorial Note: To explore some functional features in C#, check this tutorial Functional Programming (F#) for C# Developers.
+
+In the Writing Pure Code in C# article, I used the Tic Tac Toe game as an example for writing pure code in C#. 
+I will use the same example in this tutorial. However, please remember that the focus of this article is F#, not pure code.
+
+If you are not familiar with the Tic-Tac-Toe game, please read about it here: https://en.wikipedia.org/wiki/Tic-tac-toe. 
+Or spend a few minutes playing it online. You can find many versions online. If you want, you can play it using the example game I put on Github.
+
+F# Example (Tic-Tac-Toe)
+You can find the source code here: https://github.com/ymassad/TicTacToeFSharp. This should also help if you want to try everything yourself.
+
+In this article series, although I will discuss the code in detail, the series is not structured as step-by-step tutorials. 
+Still, I think you can manage to create the game yourself from scratch if you want. To get started with that, you need 
+to create a new Console Application with the language set to F#.
+
+Note that you need to make sure that you got F# installed. If not, you can add it to your Visual Studio
+ installation using the Visual Studio Installer.
+
+Once you create the new project, the program.fs file gets added automatically by Visual Studio. To add a new file, 
+you can right click on the project -> Add -> New Item -> Source File.
+
+The Board module in F#
+In F#, it is idiomatic to separate data and behavior.
+
+Therefore, I will define types to model the Board and then define functions to act on the board. I will define these 
+types and functions in a new file called BoardModule.fs. If you create a new file with this name in the project, 
+the file will contain the following by default:
+
+module BoardModule
+This code declares a module called BoardModule. Any types and functions we define after the above line will belong 
+to the BoardModule module. Modules help us group related types and functions together.
+
+I start by defining the CellStatus type like this:
+
+type CellStatus = Empty | HasX | HasO
+This code declares what is called in F# as a discriminated union. This is somewhat like Enums in C#.
+
+However, F# discriminated unions are more advanced!!
+
+I will show you a more advanced usage in another part of the series. For now, what we can understand from the line of 
+code above is that we are declaring a CellStatus type to represent the status of a cell in the board. A cell can be empty, 
+contain an X, or contain an O. Unlike Enums in C# where any integer value can be used, only valid values can be used in F# discriminated unions.
+
+I define another discriminated union to model the index of a cell:
+
+type Index = One | Two | Three
+While we can use a normal integer to model the row or column index of a cell, using a discriminated union allows us 
+to make invalid states unrepresentable and therefore make the application more robust.
+
+I then define a record to model a single row in the board:
+
+type Row = {Cells: Map<Index, CellStatus>}
+The Row record has a single element labeled Cells. The type of this element is Map<Index, CellStatus>.
+
+A Map is an immutable dictionary. In this case, the dictionary can contain a CellStatus for each possible Index 
+(for each column index). Note that a Map does not necessarily have a value for each key. In the way I modeled the Row, 
+I assume that if there is no value for a specific Index, then the value is CellStatus.Empty. More on this later.
+
+Of course, you can create records with more than one element, I will show you an example in another part of this series.
+
+I am also using a record to model the Board like this:
+
+type Board = {Rows: Map<Index, Row>}
+The Board record has a single element labeled Rows. It has a type of Map<Index,Row>. So, for each possible row index, 
+we have a Row. Again, in the way I modeled this, when there is no value for a specific Index, I assume that we have an empty row. 
+Next, I define emptyRow:
+
+let emptyRow = {Cells = Map.empty}
+The let keyword binds the value {Cells = Map.empty} to the name emptyRow. You can think of emptyRow as a variable. However, 
+in F#, values are immutable by default. So, we cannot change the value bound to emptyRow after this line.
+
+{Cells = Map.empty} is called a record expression. It is an expression that creates a record value. In this case, we are 
+creating a Row record value. The compiler infers this because we are using the Cells label. We don’t have to specify that this is a Row record.
+
+I use Map.empty here to create an empty Map<Index, CellStatus>.
+
+Let us define the getRow function:
+
+let getRow index board =
+    let possibleRow = Map.tryFind index board.Rows
+    Option.defaultValue emptyRow possibleRow
+The getRow function takes two parameters: index and board (functions in F# actually take a single parameter. More on this later). 
+This function returns the row at the specified index.
+
+The index parameter is of type Index, and the board parameter is of type Board. I did not have to specify the types manually (although I can). 
+The compiler inferred the types automatically. It was able to do so not because of the names of the parameters, but because of 
+the usage of these parameters in the body.
+
+The first hint to the compiler is the board.Rows expression. From this, the compiler infers that the board parameter must be of
+type Board because the Board record has the label Rows. It will become clear how the compiler inferred the type of the index parameter in about a minute.
+
+Inside the getRow function, we define a value: possibleRow. You can think of this as a variable, but an immutable one.
+
+Please note the indentation! In F#, indentation is significant.
+
+The application might fail to compile if you use the wrong indentation. In the getRow function above, there are no curly 
+brackets (like in C#) to tell us where this function begins and where it ends. The indentation has this job! If you remove
+ the four spaces before “let possibleRow =..”, you will get a compilation error.
+
+The following is the value bound to the possibleRow identifier:
+
+Map.tryFind index board.Rows
+This is a function call. The function name is tryFind and it lives in the Map module. We pass two arguments to the function: 
+ndex and board.Rows. Note that unlike C#, we don’t need to use parentheses around the arguments.
+
+This function attempts to find a value for the given index in the given Map. It’s return type is Option<T> where T is 
+the type of the value. In this case, it is Option<Row>. In F#, this type is also expressed as “Row option”. This Option 
+type is sometimes called Maybe in other programming languages/libraries. It represents a value that may or may not exist. 
+You can read more about it here: https://www.dotnetcurry.com/patterns-practices/1510/maybe-monad-csharp
+
+In the next line, we have this (also with indentation):
+
+Option.defaultValue emptyRow possibleRow
+This is also a function call. The function name is defaultValue and it lives in the Option module. This function returns 
+the value inside possibleRow if there is a value inside it, or it returns emptyRow if there isn’t.
+
+Note that there is no return keyword used here. In F#, functions don’t need to use the return keyword. F# treats the last 
+expression in the function as the return value.
+
+ 
+
+So basically, the getRow function returns the row specified by the index from the Map stored inside board.Rows. If there 
+is no Row for the specified index, the getRow function returns an empty row.
+
+If you look at the source code in GitHub, this is not how I define the getRow function. Here is how it is defined there:
+
+let getRow index board =
+    board.Rows |> Map.tryFind index |> Option.defaultValue emptyRow
+The |> operator is called the forward pipe operator. It allows us to call the function on the right side of the operator 
+using the value at the left side of the operator as an argument. This means that the following:
+
+x |> f
+Is similar to:
+
+f x
+Q. Both pass x as an argument to the function f. So why the extra syntax?
+
+The pipe operator allows us to chain function calls as successive operations. This is what is happening in the body of the getRow function. 
+We are passing board.Rows as an argument to the Map.tryFind function (passing also index as the first argument). Then, 
+we are passing the return value of Map.tryFind as an argument to the Option.defaultValue function (passing also emptyRow as the first argument).
+
+Without the forward pipe operator, we could define getRow like we did before, or we could also define it like this:
+
+let getRow index board =
+     Option.defaultValue emptyRow (Map.tryFind index board.Rows)
+The parentheses used here are not the argument list parentheses that we are used to in C#. Here, the parentheses control the order of evaluation. 
+This means that the Map.tryFind function is called first (using index and board.Rows as arguments), and then the result of 
+that is passed as the second argument to the Option.defaultValue function.
+
+Again, why the forward pipe operator? In the version where the forward pipe operator is used, the order of evaluation 
+is from left to right, unlike the last version here where the evaluation is from right to left. Having function call 
+evaluation be from left to right is more intuitive because functions appear in the same order that they will be evaluated in.
+
+Let go back to the version that uses the forward pipe operator:
+
+let getRow index board =
+    board.Rows |> Map.tryFind index |> Option.defaultValue emptyRow
+Let’s talk in detail about the following expression:
+
+board.Rows |> Map.tryFind index
+You can think of this expression as passing board.Rows as the second argument for the Map.tryFind function 
+(and having index as the first argument). However, this is not exactly what is going on. Let’s dive deeper.
+
+In this article, I hinted at two things which are:
+
+Functions in F# take exactly one parameter.
+The expression on the right side of the forward pipe operator is function.
+Based on point #1, the Map.tryFind function should be taking a single parameter, not two. And that is really the case.
+
+Let us look at what IntelliSense tells us about this function (when used in the context of the getRow function):
+
+ 
+
+fsharp-function-intellisense
+
+We can think of this function as one that takes both a key and a table (the dictionary or Map) parameter, and returns a possible value. 
+This is one useful way to think about this function.
+
+The other way to think about it is that this function takes only the key parameter and returns another function. Let me write a succinct 
+version of the signature for tryFind here to explain:
+
+tryFind: key -> table -> ‘T option
+You can think of the -> symbol to mean returns.
+
+So, the tryFind function takes a key parameter and returns the following:
+
+table -> ‘T option
+..which is another function that takes table (a dictionary) and returns ‘T option.
+
+By the way, ‘ in F# is used to indicate that this is a generic type parameter. ‘T option means Option<’T>.
+
+We say that the tryFind function is a curried function (after the mathematician Haskell Curry). This means that it is structured 
+in a way that we call it one parameter at a time.
+
+In C#, a curried tryFind function can be written like this:
+
+public static class DictionaryFunctions<TKey, TValue>
+{
+    public static Func<TKey, Func<Dictionary<TKey, TValue>, Option<TValue>>> TryFind =
+        key =>
+        {
+            return dictionary =>
+            {
+                if (dictionary.TryGetValue(key, out var value))
+                {
+                    return Option<TValue>.Some(value);
+                }
+                else
+                {
+                    return Option<TValue>.None;
+                }
+            };
+        };
+}
+And can be called one parameter at a time like this:
+
+var dictionary = new Dictionary<int, string>();
+ 
+dictionary.Add(1, "asd");
+ 
+var result1 = DictionaryFunctions<int, string>.TryFind(1)(dictionary);
+ 
+var result2 = DictionaryFunctions<int, string>.TryFind(2)(dictionary);
+Please take a minute to digest this.
+
+Let us go back to the expression I want to discuss:
+
+board.Rows |> Map.tryFind index
+Earlier, I said that the expression on the right of the forward pipe operator should be a function. Now, it should
+ be clear that this is true for the expression above. Map.tryFind index is a function. It is a function of 
+type: (Map<Index, CellStatus>) -> CellStatus option. That is, it is a function that takes a Map (or dictionary) 
+and possibly returns a CellStatus.
+
+Calling a “multi-parameter” function with a single argument is called partial application. So, in the above expression 
+(Map.tryFind index), we partially apply Map.tryFind using the argument index.
+
+In general, when a function is designed in F#, the order of parameters is important. This is true because if you want 
+to use the forward pipe operator, only the “last” argument of the function can be passed using the operator. We must 
+partially apply the function by passing values for all but the last parameter. Only then we can use the forward pipe 
+operator to pass the value for the last parameter, from the expression on the left of the operator.
+
+This is a lot to digest, so I will stop here.
+
+In the next part of our F# series, I will build on what we have discussed so far. I suggest you open the source code 
+and try to play with the code to understand it.
+
+Use IntelliSense to help you understand the type of values. You can take an expression in the middle of some code and 
+bind it to a name by using the let operator and then use IntelliSense to understand the type of that expression. 
+For example, you can bind the Map.tryFind index expression to a name like this:
+
+let f1 = Map.tryFind index
+…and then examine the type of f1 using IntelliSense. Just be careful with the indentation!
+
+Conclusion:
+F# is a .NET based functional-first programming language.
+
+In this article series, I explored the F# language features by using the example of the Tic Tac Toe game.
+
+In this part, I demonstrated simple discriminated unions, simple records, functions, and the forward pipe operator. 
+I also talked about the concepts of currying and partial application.
+
+In Part 2 of this article series, I will explore:
+
+Sequence expressions
+Lambda expressions
+Higher-order functions
+Match expressions
+Functions defined inside functions
+F# lists and tuples,
+The map functions
+Type parameters and
+How the F# compiler tries hard to infer the types of parameters without us having to specify them.
+This article was technically reviewed by Dobromir Nikolov.
+
+-------------------------
+part 2
+-------------------------
+Tic Tac Toe in F# – Part 2
+ 
+
+In the Tic Tac Toe in F# – Part 1 (Part 1 of this tutorial series), I talked about F# and explored some of 
+its features using the Tic Tac Toe game as an example. In this part, I am going to continue exploring some other features. 
+Here is the link to the source code to help you follow along:
+
+https://github.com/ymassad/TicTacToeFSharp/blob/master/src/BoardModule.fs
+
+In the previous tutorial, I explained the following function:
+
+let getRow index board =
+    board.Rows |> Map.tryFind index |> Option.defaultValue emptyRow
+The following expression:
+
+board.Rows |> Map.tryFind index
+..gives us the row in the board at the specified index. The tryFind function in this case returns a value of type Row option. 
+It will either contain a Row value, or no value in case the map does not have a value at the specified index.
+
+The result is then passed (using the forward pipe operator “|”) as the “second” argument to the Option.defaultValue function.
+ This function is used to return an alternative value (emptyRow in this case) if no Row was found.
+
+Here is the definition of the next function, getCell:
+
+let getCell rowIndex columnIndex board = 
+    let row = getRow rowIndex board
+    getCellInRow columnIndex row
+It takes the location of a cell in the board as row and column indexes including the board itself, and returns the cell 
+value in the board. Based on the knowledge of F# you learned so far, you should be able to understand this function.
+
+Editorial Note: Reading the first part of this tutorial series is highly recommended to understand the rest of the tutorial 
+in this series. In case you haven’t already, read it here Tic Tac Toe in F# – Part 1.
+
+The next function is more interesting:
+
+let allCellsInRow row =
+    seq {
+        yield getCellInRow One row
+        yield getCellInRow Two row
+        yield getCellInRow Three row
+        }
+As you might have guessed, the job of the allCellsInRow function is to return all cells in a row! It takes a Row 
+and returns a sequence of CellStatus values.
+
+More specifically, the return type of this function is seq<CellStatus>. A sequence in F# is like IEnumerable in C#. Actually, 
+if you use an IL decompiler to view the allCellsInRow function, you will see that the return type of this 
+function is IEnumerable<CellStatus>.
+
+Items in an F# sequence is evaluated as the sequence is consumed. For example, if you use only a single element from 
+the sequence returned by getCellInRow, only a single invocation of getCellInRow will be made (instead of three).
+
+The body of this function is a sequence expression. A sequence expression is created using the seq { } syntax. If you 
+ever created an iterator method in C#, then you might have guessed what the F# yield keyword does in this function. 
+Here, yield describes the intention to return an item. However, only when an item is requested by the consumer, does 
+the expression that follows the yield keyword gets evaluated.
+
+It is worth noting here that the yield keyword in F# is not designed only for sequence expressions. A sequence expression
+is just one type of a computation expression. Computation expressions allow us to do very interesting things in F# but 
+they are out of scope of this introductory article series.
+
+An even more interesting function is the allCells function:
+
+let allCells board =
+    seq {
+        yield! getRow One board |> allCellsInRow
+        yield! getRow Two board |> allCellsInRow
+        yield! getRow Three board |> allCellsInRow
+        }
+This function returns all the cells in a board as a sequence. For each row index, it obtains the corresponding Row in the 
+board and then it calls allCellsInRow to obtain the cells in that row.
+
+All of this is done inside a sequence expression. And here, yield! is used instead of yield. If we used yield instead of 
+yield!, then the return type of allCells would be seq<seq<CellStatus>> (a sequence of sequences). This is because the 
+return type of allCellsInRow is seq<CellStatus>.
+
+yield! has the effect of flattening the yielded sequence into individual items. In C#, there is no corresponding feature.
+An AllCells function in C# would look like this:
+
+public static IEnumerable<CellStatus> AllCells(Board board)
+{
+    foreach (var item in AllCellsInRow(GetRow(Index.One, board)))
+        yield return item;
+ 
+    foreach (var item in AllCellsInRow(GetRow(Index.Two, board)))
+        yield return item;
+ 
+    foreach (var item in AllCellsInRow(GetRow(Index.Three, board)))
+        yield return item;
+}
+Here is the next function:
+
+let updateCellInRow row index newStatus =
+    {Cells = Map.add index newStatus row.Cells}
+The updateCellInRow function “updates” the status of a cell in a specific Row. Of course, when I say updates, 
+I mean return a new Row with the updated cell.
+
+As explained in part 1 of this tutorial series, the return value of this function is called a record expression. 
+In this case, we are creating a Row value. For Cells, we are “updating” the original row cells to modify the cell in the specified index. 
+The Map.add function will either add a new entry to the map or will “replace” the existing entry with a new value.
+
+The next function updateRowInBoard updates a row in a board. It is very similar to updateCellInRow.
+
+With the knowledge you have so far about F#, you should easily be able to understand the updateCell function (which updates a 
+specific cell in a board), and the emptyBoard value (which represents a brand-new board).
+
+Notice how updateCell uses updateCellInRow and updateRowInBoard to do its job.
+
+Next is the isFull function:
+
+let isFull board =
+    board |> allCells |> Seq.forall (fun c -> c = HasX || c = HasO)
+You give this function a board and it tells you whether the board is full, i.e., whether all cells have been used.
+
+Notice the forward pipe operator (|>) in this function. We start with the board and give it to the allCells function. 
+This will give a sequence of all cells in the board.
+
+Then I give this sequence to the Seq.forall function. Seq.forall will test each cell in the sequence to see if it matches 
+a certain condition. In this case, we use a lambda expression for such a test. The lambda returns true if the cell status is 
+HasX or HasO. The keyword fun is used to express a lambda expression.
+
+The Seq.forall function takes two parameters, a test function (or a predicate), and a sequence. In the isFull function, 
+we are passing the lambda as the first parameter of Seq.forall. For the second parameter, we are passing the return 
+value of allCells (using the forward pipe operator).
+
+It is worth noting that instead of a lambda, we can use a function value like this:
+
+let hasXOrO c = c = HasX || c = HasO
+ 
+let isFull board =
+    board |> allCells |> Seq.forall hasXOrO
+The first parameter of Seq.forall which is the predicate parameter is of type (‘T -> bool). The type of this parameter is a function. 
+So, when we call Seq.forall, we pass a function. The first time, we did so using a lambda expression, and the second time using a function value.
+
+It is worth noting that functions like Seq.forall are called higher-order functions. More specifically, higher-order functions are 
+functions that have parameters of type function, and/or that return a function.
+
+Let’s look at the formatCell function:
+
+let formatCell cell =
+    match cell with
+    | HasX -> "X"
+    | HasO -> "O"
+    | Empty -> "_"
+The body of this function is a match expression. A match expression is very similar to the switch expression introduced in C# 8. 
+It allows for branching based on comparing a value (cell in the formatCell function) with multiple patterns. In the case of 
+the formatCell function, the function evaluates to “X” when the cell value is HasX, “O” when it is HasO, and “_” when it is Empty. 
+here is much more to pattern matching in F# than this, but this is the extent I will talk about it in this article.
+
+Next is the writeBoard function:
+
+let writeBoard board write =
+    let writeRow rowIndex =
+        let row = getRow rowIndex board
+        getCellInRow One row |> formatCell |> write
+        write " "
+        getCellInRow Two row |> formatCell |> write
+        write " "
+        getCellInRow Three row |> formatCell |> write
+    writeRow One
+    write Environment.NewLine
+    writeRow Two
+    write Environment.NewLine
+    writeRow Three
+    write Environment.NewLine
+The writeBoard function takes a board and writes it. Instead of writing it directly to the console, the writeBoard function 
+takes another parameter called write that it will use when it wants to write a specific string. The caller of writeBoard 
+can pass an argument for write that writes to the console, or to any other destination.
+
+If you use IntelliSense to see the type of the write parameter, it looks like this:
+
+(string -> unit)
+This means that the write parameter is a function that takes a string and returns unit.
+
+Unit is basically like void in C#. However, unlike void, unit is a real type.
+
+Unit exists in many functional programming languages to make all functions return something – even if that something 
+is nothing (pun intended)!
+
+In C#, the type of the write parameter would be Action<string>. If C# had unit instead of void, then the type of this 
+parameter in C# would be Func<string,unit> which would remove the need to have any Action delegates (like Action<T>) 
+in the .NET frameworks.
+
+Because the writeBoard function takes a parameter of type function, it is another example of a higher-order function.
+
+Inside writeBoard, another function called writeRow is defined. This function takes a rowIndex, fetches the row from 
+the board, and then writes it.
+
+Functions defined inside functions have access to the parameters of the parent functions. They also have access to
+ values (functions or otherwise) defined before themselves. For example, the writeRow function has access to 
+(and uses) the board parameter of writeBoard.
+
+Since version 7.0, C# has a similar feature called local functions.
+
+After defining the writeRow function, the writeBoard function uses it to write the three rows of the board.
+
+Next, I am defining the allLinesIndexes value:
+
+let allLinesIndexes =
+    seq {
+            //Horizontal
+            yield [One, One; One, Two; One, Three ]
+            yield [Two, One; Two, Two; Two, Three ]
+            yield [Three, One; Three, Two; Three, Three ]
+ 
+            //Vertical
+            yield [One, One; Two, One; Three, One ]
+            yield [One, Two; Two, Two; Three, Two ]
+            yield [One, Three; Two, Three; Three, Three ]
+ 
+            //Diagonal
+            yield [One, One; Two, Two; Three, Three ]
+            yield [One, Three; Two, Two; Three, One ]
+        }
+This is a value, not a function. The value here is a sequence expression. Here is the type of this value:
+
+seq<(Index * Index) list>
+This is a sequence. Each element of the sequence has the following type:
+
+(Index * Index) list //this can also be written as list<(Index * Index)>
+..which is a list, with each element in the list having the following type:
+
+(Index * Index)
+..which is a tuple containing two elements, each of type Index.
+
+Here, I am trying to encode the 8 possible lines that a player can fill in the game in order to win. 
+There are three horizontal lines, three vertical lines, and two diagonal lines.
+
+I am encoding each line as a list of tuples (the list will contain three elements), each tuple contains 
+the row and column indexes of the cell. For example, the following code:
+
+yield [One, One; One, Two; One, Three ]
+..represents the following line in the board:
+
+tictactoe-fsharp-example-first-horizontal line
+
+The yielded expression is a list containing three elements:
+
+One, One
+One, Two
+One, Three
+A semicolon is used to separate elements of a list. Square brackets are used to denote the list.
+
+Each of the three elements in the list is a tuple. The comma is used to separate the two items in each tuple.
+
+Let’s now look at the allLineValues function:
+
+let allLineValues board =
+    let cell rowIndex columnIndex = getCell rowIndex columnIndex board
+    allLinesIndexes |> Seq.map (fun line -> line |> List.map (fun (r, c) -> cell r c))
+The allLineValues function takes a board and returns a seq<CellStatus list> representing the cell values 
+for each of the eight different lines in the board.
+
+Inside the body of the allLinesValues function, the cell function is defined. This function returns
+ the status of a cell given its row and column indexes.
+
+The allLineValues function returns the following expression:
+
+allLinesIndexes |> Seq.map (fun line -> line |> List.map (fun (r, c) -> cell r c))
+The allLinesIndexes sequence (the 8 lines indexes) is given as the second argument to the Seq.map function. 
+The Seq.map function is like the LINQ Select method in C#. The Seq.map function translates each line in allLinesIndexes 
+to a list of CellStatus representing the status of cells in that line.
+
+The first argument of Seq.map is a mapping function that will be used to transform each item in the source sequence. 
+he mapping function passed to Seq.map is this function:
+
+(fun line -> line |> List.map (fun (r, c) -> cell r c))
+This is a lambda expression.
+
+The lambda takes each line and then uses List.map to transform each cell in the line from a tuple of row and column
+ indexes (Index * Index) to CellStatus. List.map is like Seq.map but for lists, not sequences.
+
+In C#, we use the same Select method for all types of collections (e.g. List<T> or T[] or ImmutableArray<T>), 
+but the result of the Select method is always IEnumerable<T>. In F# we can use specialized map methods to return a
+ collection of the same input collection type. We can always use Seq.map for any kind of collection (like F# lists) 
+if we want, but this will cause the resulting collection to be of type sequence.
+
+The next function, lineIsFullOf, looks like this:
+
+let lineIsFullOf line status =
+    line |> List.forall (fun s -> s = status)
+This function takes some line as a list of CellStatus, and a specific status value, and then checks whether all cells
+ in the line contain that specific status. For example, we can use it to check if one of the diagonal lines is full of Os. 
+At least, that was my intention when I wrote this function.
+
+However, if we use IntelliSense to see the type of this function, it looks like this:
+
+lines-full-of-intellisense
+
+The type of the line parameter is ‘a list. And the type of the status parameter is ‘a.
+
+And to remind you, ‘a is a generic type parameter.
+
+There is also an interesting “(requires equality)” at the end.
+
+If you think about it, there is nothing in the body of the lineIsFullOf function to indicate to the compiler that the
+ line parameter is a list of CellStatus. There is only an indication (in the body) that line must be a list of something.
+ And for this “something”, there is an indication that it must support equality, for the following expression to make sense:
+
+(fun s -> s = status)
+That is, because in this lambda expression, we are checking equality between s and status, the type of s must support
+ equality checking. Also, because we are checking equality between s and status, then status must have the same type as s.
+
+
+If we are to manually write the types of the parameters and the equality constraint, the function would look like this:
+
+let lineIsFullOf<'a when 'a :equality> (line: 'a list) (status : 'a)  =
+    line |> List.forall (fun s -> s = status)
+Notice how we use angle brackets to specify type parameters along with any constraints (‘a :equality in this case).
+
+F# tries hard to infer the types of parameters without us having to specify them manually.
+
+Here is the last function in the BoardModule module:
+
+let anyLineIsFullOf board status =
+    board |> allLineValues |> Seq.exists (fun line -> lineIsFullOf line status)
+I leave this one for you to figure out.
+
+Can you guess what this function does? What Seq.exists does? Tweet your response at @yacoubmassad or leave a comment.
+
+This was the last function in BoardModule. In the next part of this tutorial series, I will talk about the GameModule.
+
+Conclusion:
+F# is a .NET based functional-first programming language. In this article series, I continued exploring the language 
+by using an example of the Tic Tac Toe game.
+
+In this part, I demonstrated sequence expressions, lambda expressions, higher-order functions, match expressions, functions 
+defined inside functions, F# lists and tuples, the map functions, type parameters and how the F# compiler tries hard to
+ infer the types of parameters without us having to specify them.

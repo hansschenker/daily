@@ -1,0 +1,1109 @@
+TypeScript is a modern and safer version of JavaScript that has taken the web development world by storm
+---------------------------------------------------------------------------------------------------------
+ 
+It is a superset of JavaScript that adds in some additional features, syntactic sugar and static type analysis 
+aimed at making you more productive and able to scale your JavaScript projects.
+
+TypeScript was first launched in 2012, and at the time it did bring a lot of new features to JavaScript. 
+Features that wouldn’t be available in JavaScript until much later with ES2015 and beyond. Today however, 
+the gap in features between TypeScript and JavaScript is closing, and what remains as TypeScript strongest value proposition 
+is its amazing type system and the dev tools around it. This type system is the one that delivers on the promise of TypeScript: 
+JavaScript that scales and what brings you a great develop experience with:
+
+- Instant feedback whenever you do something dumb
+- Powerful statement completion
+- Seamless semantic code navigation
+- Smart refactorings and automatic code fixes
+
+And more
+In this series of articles we’ll explore TypeScript’s comprehensive type system and learn how you can take advantage 
+of it to build very robust and maintainable web apps.
+
+Haven't read so much about TypeScript yet?
+This series of articles assumes that you have some knowledge of TypeScript. If you haven't dabbled so much into 
+the world of TypeScript just yet, I recommend you to take a look at this introductory article.
+
+Type Annotations
+Type annotations are the core of TypeScript’s type system. They are extra tidbits of information that you provide 
+when you write your code so that TypeScript can get a better understanding of it and provide you with a better developer experience.
+
+Let’s say you have a function to add two numbers:
+
+const add = (a, b) => a + b;
+Only TypeScript has no idea that neither a nor b are supposed to be numbers. So we can be slightly more expressive 
+and annotate these params with a type annotation:
+
+const add = (a: number, b: number) => a + b;
+Now TypeScript knows for a fact, that both a and b can only be numbers. So that if we, for some reason, 
+decide to write the following bit of code:
+
+add(1, 'banana');
+The TypeScript compiler, our faithful companion, will look at our code and go bananas (it expected numbers 
+and we gave it a fruit, how naughty).
+
+What’s the best part about that? The best part is that we get this error immediately. Not within hours, 
+or days or weeks when this code gets exercised in some production system by an unwary user. Nope! We’ll 
+get this error within milliseconds of having introduced it. Great stuff. Short feedback loops. 
+They make everything better. Like bacon, or… bacon.
+
+Basic Types
+Would you like to Experiment with TypeScript type system quickly?
+A great way to experiment with TypeScript and its type system without even having to install TypeScript is 
+to jump right into coding using the typescriptlang.org TypeScript playground. Jump in, type some code, 
+and hover over the variables, functions and classes to find their types.
+
+The basic types in TypeScript correspond to the primitive types of JavaScript:
+----------------------------
+number
+boolean
+string
+Date
+Array<T>
+Object
+
+So that, if you want to define a string in TypeScript you’d type the following:
+
+let myName: string = "Jaime";
+Because TypeScript’s goal is to make your life easy, in situations like this it’ll be smart enough to 
+infer the type of the myName variable so that you don’t need to explicitly annotate it. Which means that this is enough:
+
+let myName = "Jaime";    // Type string
+And so…
+
+let myName = "Jaime";    // Type string
+let myAge = 23;          // Yeah sure! Type number
+And:
+
+let myName = "Jaime";    // Type string
+let myAge = 23;          // Yeah sure! Type number
+let isHandsome = true;   // Type boolean
+let birth = new Date();  // Type Date
+TypeScript will always try to do its best to make sense of your code. The TypeScript compiler has 
+this mechanism called type inference by which it will try to interpret your code and find out the 
+types of things so that you yourself don't need to type everything by hand.
+
+Let vs Const
+So if:
+
+let myName = "Jaime";    // Type string
+What is the type of the myName variable below?
+
+const myName = "Jaime";    // Type ?
+is it string? Is it const string? STRING? Is it a something else?
+
+If you are like me, and you’ve never considered this conumdrum you may be as suprised (as I was) 
+to find out that the type is "Jaime" (waaaaat?!?):
+
+const myName = "Jaime";    // Type "Jaime"
+If we expand the example to other primitive types we’ll see that:
+
+const myName = "Jaime";    // Type "Jaime"
+const myAge = 23;          // Type 23
+const isHandsome = true;   // Type true
+const birth = new Date();  // Type Date
+What’s going on here? const in JavaScript and TypeScript means that these variables above can only 
+be bound once as they are declared. Therefore, TypeScript can make the assumption that these 
+variables will never change and constraint their types as much as it can. In the example above, 
+that means that the type of the constant myName will be the literal type "Jaime", the type of myAge will be 23 and so forth.
+
+And what about the Date? Why doesn’t const affect its type at all? The reason for that is that, 
+since Dates can be changed any time, TypeScript cannot constraint their type further. 
+That date may be now, right now, but someone could go and change it to yesterday any time tomorrow. Oh my.
+
+Let’s take a closer look at literal types, what they are and why they are useful.
+
+Literals Types
+So:
+
+const myName = "Jaime";    // Type "Jaime"
+The type of the string above is "Jaime" itself. What does that mean? It means that the only valid value 
+for the myName variable is the string "Jaime" and no other. These are what we call literal 
+types and you can use them as any other type annotations in TypeScript:
+
+const myName : "Jaime" = "Jaime";
+So that if I try to be super smart and write the following:
+
+const myName : "Jaime" = "John";
+TypeScript will righteously step in with a compiler error:
+
+const myName : "Jaime" = "John";
+// => 💥 Type '"John" is not assignable to type '"Jaime"'
+Awesome! So How is this useful? We’ll see in just a sec. But in order to give you a really nice 
+example I first need to teach you another cool feature in TypeScript’s type arsenal: unions.
+
+Unions
+---------------------------------
+Imagine we are building a library that lets you create beautiful visualizations using SVG. 
+In order to set the properties on an SVG element it’d be helpful to have a function that could look something like this:
+
+function attr(element, attribute, value) {}
+The type of each one of these attributes could be expressed as follows:
+
+function attr(element: SVGCircleElement, 
+              attribute: string, 
+              value: string) {}
+And you could use this function like so:
+
+attr(myCircle, "cx", 10);
+attr(myCircle, "cy", 10);
+attr(myCircle, "r", 5);
+This works but… What if you misspell an attribute?
+
+attr(myCircle, "cx", 10);
+attr(myCircle, "cy", 10);
+attr(myCircle, "radius", 5); 
+// => 💥 Doesn't work! There's no radius in SVGCircleElement
+It blows up sometime at runtime. And although it may not explode outright, it won’t work as you 
+expected it to. But isn’t this exactly what a type system and TypeScript should help you with? 
+Exactly! A better approach is to take advantage of TypeScript type system and use type literals
+to further constraint the number of possible attributes:
+
+function attr(element: SVGCircleElement,
+              attribute: "cx" | "cy" | "r",
+              value: string) {}
+
+The "cx" | "cy" | "r" is a **union type and represents a value that can either be of type
+ "cx", "cy" or "r"**. 
+- You build union types using the | union type operator.
+
+Excellent! So if we now make the same mistake than we just made a second ago, TypeScript 
+will come to the rescue and give us some feedback instantaneously:
+
+attr(myCircle, "cx", 10);
+attr(myCircle, "cy", 10);
+attr(myCircle, "radius", 5); 
+
+// => 💥 Type '"radius"' not assignable to type "cx" | "cy" | "r"
+// 🤔 Oh wait! So the radius attribute in a circle is actually called "r"!
+
+By taking advantage of type literals you can constraint the available types to only the ones 
+that make sense and create a more robust and maintainable application. As soon as we make a
+ mistake like the one above, TypeScript will tell us and we’ll be able to fix it right then 
+and there. Not only that, by making this rich type information available to TypeScript, the 
+TypeScript compiler will be able to offer us more advanced features like statement completion 
+and give us suggestions for suitable attributes as we type in our editor.
+
+If you’ve done SVG visualizations in the past, the function above may look familiar. That’s 
+because it is heavily inspired by d3.Selection.attr function:
+
+d3.select("svg")
+  .attr("width", 100)
+  .attr("height", 200)
+In a past project we run into several of these issues and we ended up creating boilerplate 
+around d3 to avoid misspellings. After migrating to TypeScript we never had the same issue. 
+We could rely on the expressiveness of type system to take care of that on its own.
+
+
+// A possible (naive) type definition for d3Selection
+interface d3Selection {
+  attr(attribute: 'width' | 'height' | etc..., value: number);
+}
+
+Really? Would I need to add all attribute names by hand?
+The example above was meant to help you understand the usefulness of literal types and how 
+to create type unions. However, it may have given you the false impression that you need 
+to type in all the properties for an SVGElement by hand. Although you can do that, 
+TypeScript has far more interesting features that can make working with types and extracting type 
+information from existing types really convenient. In later articles in this series you'll 
+learn about an alternative way to type the function about using generics and the keyof operator.
+
+Type Aliases
+An attribute type defined as we did earlier can be confusing and cumbersome to reuse:
+
+function attr(element: SVGCircleElement,
+              attribute: "cx" | "cy" | "r",
+              value: string) {}
+
+- Type aliases are a convenient shorthand to describe a type, something like a nickname that can 
+be used to provide a more descriptive name for a type and allow you to reuse it around your codebase.
+
+So if we wanted to create a type that could represent all the available attributes in an SVGElement 
+a way to go about that would be to create an alias like so:
+
+type Attribute = "cx" | "cy" | "r" // etc...
+------------------------------------------
+Once defined we can rewrite attr function signature:
+
+function attr(element: SVGCircleElement,
+              attribute: Attribute,
+              value: string) {}
+Arrays, Tuples and Objects
+You can type an array in TypeScript by using the following notation:
+
+let numbers: number[] = [1, 2, 3];
+Or alternatively:
+
+let numbers: Array<number> = [1, 2, 3];
+I like the former because it involves less typing. Since we’re just initializing a variable TypeScript
+ can infer the type, so in this case you can remove the type annotation:
+
+// TypeScript can infer that the type 
+// of numbers is number[]
+let numbers = [1, 2, 3];
+
+numbers.push('wat');
+// 💥 Argument of type '"wat"' is not assignable to parameter of type 'number'.
+numbers.push(4);
+// ✅ Yes!
+numbers.psuh(5);
+// 💥 Property 'psuh' does not exist on type 'number[]'.(2339)
+TypeScript also has great support for tuples which can be seen as finite arrays of two, 
+three (triplet), four (quadruplet), or more elements. They come in handy when you need 
+to model a number of finite items that have some relationship between them.
+
+We can define a tuple of two elements like this:
+
+let position: [number, number] = [0, 0];
+If we now try to access an element outside of the boundaries of the tuplet TypeScript will come and save us:
+
+let something = position[2];
+// 💥 Tuple type '[number, number]' of length '2' has no element at index '2'.
+We can follow a similar approach to define tuples with more elements:
+
+let triplet: [number, number, number];
+let quadruplet: [number, number, number, number];
+let quintuplet: [number, number, number, number, number];
+// etc...
+On occasion you’ll find yourself using objects in TypeScript. This is how you type an object literal:
+
+const position: {x:number, y:number} = {x: 0, y: 0};
+Again, under these circumstances TypeScript can infer the type of the object literal so the type annotation can be omitted:
+
+const position = {x: 0, y: 0};
+If you are daring enough to try an access a property that isn’t defined in the object’s type, TypeScript will get angry at you:
+
+const position = {x: 0, y: 0};
+
+console.log(position.cucumber);
+// 💥 Property cucumber doesn't exist in type {x:number, y:number}
+Which is to say that TypeScript gives you MAXIMUM MISPELLING1 PROTECTION.
+
+And just like we used type aliases earlier to have a more descriptive and less wordy way to refer 
+to an HTML attribute, we can follow the same approach for object types:
+
+type Position2D = {x: number, y: number};
+const position: Position2D = {x: 0, y: 0};
+Which also results in a somewhat more specific error message:
+
+console.log(position.cucumber);
+// 💥 Property cucumber doesn't exist in type Position2D
+Intersections
+Where the | union operator behaves like an OR for types, the & intersection operator behaves like an AND.
+
+Say you have a type that defines a dog, which is something that has the ability to bark:
+
+type Dog = {bark():void};
+And another type that describes something which can be drawn:
+
+type CanBeDrawn = {brush:Brush, paint():void}; 
+We can merge both concepts into a new type that describes a dog which can be drawn using the & operator:
+
+type DrawableDog = Dog & CanBeDrawn;
+How are intersection types useful? They allow us to model mixins and traits with types in TypeScript, 
+both patterns that are common in JavaScript applications. A mixin is a reusable bit of behavior that 
+can be applied ad hoc to existing objects and classes, and extends them with new functionality. The & 
+operator lets you create new types that are the result of combining two or more other types, just like 
+mixins in JavaScript. If you aren’t super familiar with mixins I wrote a bunch about their strengths and weaknesses:
+
+Object composition with mixins
+Safer JavaScript object composition with traits
+Ultra flexible JavaScript OOP with stamps
+The union | and intersection & operators are what we call type operators in TypeScript. Just like operators 
+such as + or - allow you to perform operations on values, the type operators perform operations within the mystical universe of types.
+
+Wrapping Up
+TypeScript’s expressive type system is, without the shadow of a doubt, the most interesting feature in 
+the language and what makes it deliver on its promise of writing JavaScript that scales.
+
+Using type annotations, you can provide additional type information to the TypeScript compiler so that 
+in turn it can make your life as a developer easier, helping you build more robust and maintainable 
+applications. Following that same philosophy, the TypeScript compiler will do its best to infer the types 
+from your code without you having to explicitly annotate every single part of it.
+
+The type annotations at your disposal are many and varied, from primitive types like number, string, 
+to arrays, arbitrary objects, tuples, interfaces, classes, literal types and more. You can even define 
+type aliases to provide descriptive names that make types easier to understand and reuse.
+
+A particularly interesting set of types are type literals. Type literals represent a single value as a type. 
+They are very useful because they allow you to constraint very finely the type of a variable or API. 
+We saw an example of how you can take advantage of literal types to provide a safer API for the d3 visualization library.
+
+Using type operators like union | or intersection & you can transform types into other types. 
+This expressiveness and malleability of the type system allows you to model highly 
+dynamic object oriented design patterns like mixins.
+
+And that was all for today! Hope you have enjoyed this article which will be soon be followed 
+by more TypeScript type goodness. Have a wonderful day!
+
+------------
+$
+ypeScript is a modern and safer version of JavaScript that has taken the web development world by storm. 
+It is a superset of JavaScript that adds in some additional features, syntactic sugar and static
+ type analysis aimed at making you more productive and able to scale your JavaScript projects. 
+This is the second part of a series of articles where we explore TypeScript’s comprehensive 
+type system and learn how you can take advantage of it to build very robust and maintainable web apps.
+
+Haven't read the first part of this series? If you haven't you may want to take a look. 
+There's lots of interesting and useful stuff in there.
+
+JavaScript and the absence of value
+null is often referred to as The Billion Dollar Mistake. In the words of Tony Hoare who f
+irst introduced it in ALGOL in 1965:
+
+I call it my billion-dollar mistake. It was the invention of the null reference in 1965. 
+At that time, I was designing the first comprehensive type system for references in an 
+object oriented language (ALGOL W). My goal was to ensure that all use of references should be absolutely safe, 
+with checking performed automatically by the compiler. But I couldn’t resist the temptation to put in a null reference, 
+simply because it was so easy to implement. This has led to innumerable errors, vulnerabilities, and system crashes, 
+which have probably caused a billion dollars of pain and damage in the last forty years.
+
+Tony Hoare and The Billion Dollar Mistake
+
+Let’s illustrate this pain with a simple example (although I’m pretty sure that you’re likely 
+familiar with it and have experienced it many times).
+
+Imagine we have such a function that allows us to destroy our evil enemies:
+
+// Destroy Thy Enemies!!
+function attack(target) {
+  target.hp -= 10;
+}
+Hmm… It’s Christmas. The time of joy, happiness and love. So let’s switch the example for something more suitable:
+
+// Love!!!!!
+function hug(target) {
+  target.happiness += 1000;
+}
+Now THAT is much better! So imagine that we want to take advantage of the hug function to spread some love around the world:
+
+// Love!!!!!
+function hug(target) {
+  target.happiness += 1000;
+}
+
+const sadJaime = {name: 'jaime', happiness: 0};
+hug(sadJaime); // => Wihooo! ❤️
+Great. Everything is going according to plan. We’ve made one person happier. Yippi! But what 
+if we make our sample a little more convoluted?
+
+Let’s say that we want to go ahead and hug everyone. Like EVERYONE in the world. We have this magic 
+Map that has been pre-populated (probably by Santa) with every single human being alive on the planet
+ right now. So we verify that it does indeed work as marketed:
+
+// Love!!!!!
+function hug(target) {
+  target.happiness += 1000;
+}
+
+const sadJaime = magicMap.get("Jaime"); // that's me of course
+hug(sadJaime); // => Wihooo! ❤️
+Excellent! But what if the person we’re trying to find doesn’t exist or isn’t alive on the planet right now?
+
+// Love!!!!!
+function hug(target) {
+  target.happiness += 1000;
+}
+
+// returns undefined because Eleanor is in The Good Place
+const eleanor = magicMap.get("Eleanor Shellstrop"); 
+
+// brace yourself
+hug(eleanor); // => 💥💥💥 Much explosion. 
+// Cannot read property happiness of undefined
+Yep. That’s the problem right there. JavaScript just like Java, Ada and ALGOL suffers from the same ailment 
+caused by the presence of null. Although in the case of JavaScript, it may be worse because we have not 
+one but two ways to represent the absence of value: null and undefined.
+
+Brendan Eich feeling awesome with sun glasses as he puts both null and undefined into JavaScript
+Both of these keywords represent the absence of value in JavaScript. Both will result in a null reference 
+exception1 like the one described in the example above. So What is the difference between them?
+
+There are several:
+
+As far as I know there’s no native browser API that ever returns null. For the web platform, the absence 
+of value is always undefined.
+By convention, the community usually refers to null as the absence of value, whereas undefined represents 
+something that hasn’t yet been defined. A developer could use null to denote a deliberate absence of value, 
+whereas undefined would be the web platform telling you that something hasn’t been defined yet. null may be
+ also produced by APIs when interoperating between clients and servers (e.g. Java sending JSON to a 
+avaScript front-end). In fact, the JSON spec only supports null and not undefined.
+Default arguments behave differently when given undefined or null. Pass an undefined as an argument to 
+your function and your function will use the default value that you provide. Pass a null instead and 
+you function will use it happily instead of your default value. (Which is mighty dangerous)
+For all of the above, I try to steer away from null as much as I can, and handle undefined when it’s 
+produced by the platform. But even so, there will be times when you’ll have no other choice that to 
+work around null and undefined. And they will inevitably lead you to null reference exceptions 
+and the very classic undefined is not a function…
+
+So, How can TypeScript help us with this mess?
+
+TypeScript and the absence of value
+So TypeScript doesn’t have two ways to represent the absence of value. It has four.
+
+Anders Hejlsberg feeling awesome with sun glasses as he puts both null, undefined, void and never into TypeScript
+These four ways to represent the absence of value are:
+
+undefined and null just like in JavaScript since, after all, TypeScript is a superset of JavaScript
+void which represent the return type of a function that doesn’t return anything
+never which represents the return type of a function that never returns (e.g. it throws an exception instead)
+Wow! Four instead of Two?? Is this something good? And the answer is YES. Not because of the numerous ways 
+to represent the absence of value but because in TypeScript null and undefined are also types.
+
+So What?
+
+Let’s take a look at the previous example. We define the Target interface to represent anything that has a
+ happiness property (which is all a human, pet or monster needs to be huggable):
+
+interface Target {
+  happiness: number;
+}
+And now we can use it in our hug function:
+
+// Love!!!!!
+function hug(target: Target) {
+  target.happiness += 1000;
+}
+If we try to hug sad Jaime as we did earlier everything shall be fine:
+
+// Love!!!!!
+function hug(target: Target) {
+  target.happiness += 1000;
+}
+
+const sadJaime = magicMap.get("Jaime"); // that's me of course
+hug(sadJaime); // => Wihooo! ❤️
+But what if we make the attempt to hug Eleanor?
+
+// Love!!!!!
+function hug(target: Target) {
+  target.happiness += 1000;
+}
+
+// returns undefined because Eleanor is in The Good Place
+const eleanor = magicMap.get("Eleanor Shellstrop"); 
+
+hug(eleanor); // => 💥 Argument of type 'undefined' is not assignable to parameter of type 'Target'.
+We get an error!! We get a compile-time error. That is, as soon as we type the code above the TypeScript 
+compiler will tell us that we’re doing something wrong. Because the function hug expects a Target and we’re 
+giving it undefined which is a completely different type that doesn’t have any of the characteristics of Target, 
+the TypeScript compiler jumps in to help.
+
+And so this is how TypeScript takes advantage of the null and undefined types to prevent you from running 
+into null reference exceptions and the dreaded million dollar mistake. Awesome, right?
+
+Strict Null Checking
+The behavior we've just seen, where TypeScript will prevent you from shooting yourself in the foot with null 
+or undefined is called strict null checking. It is a feature of the TypeScript compiler which was added in 
+TypeScript 2.0 an which needs to be enabled in your tsconfig file via the stricNullChecks setting. In general, 
+it is strongly advised to aspire to having your TypeScript configuration be as strict as possible. That way 
+you'll take the most advantage of TypeScript's type system and you'll be able to write safer and more maintainable applications.
+
+Just for kicks. How could we rewrite the function above to allow for null or undefined and be equivalent 
+to the JavaScript version? One way to do it would be the following:
+
+// Love!!!!!
+function hug(target: Target | undefined | null) {
+  target.happiness += 1000;
+}
+So we’re explicitly telling TypeScript that the argument of that function can be either Target, undefined 
+or null by using a type union. Or alternatively:
+
+// Love!!!!!
+function hug(target?: Target | null) {
+  target.happiness += 1000;
+}
+Where we use an optional argument using the target? notation which is a shorthand for Target | undefined.
+
+Working with Null or Undefined
+There’ll be some situations in which you’ll still need to work with null or undefined. Let’s say that 
+you’re working with a third party library that is implemented in JavaScript and doesn’t care much about 
+returning null or undefined. You potentially have a mighty warrior that is about to use its sword to slash 
+some potatos for the Christmas dinner, so you write this:
+
+const warrior = tavern.hireWarrior({goldCoins: 2});
+
+if (warrior !== null 
+    && warrior !== undefined
+    && warrior.sword !== null 
+    && warrior.sword !== undefined){
+  warrior.sword.slash();
+}
+The warrior hiring API you were using was written in JavaScript and you can’t be sure if it even returns 
+a warrior, or if the warrior has a sword so to be on the safe side you are forced to write a bunch of null/undefined checks.
+
+TypeScript (>=3.7) has an alternative and less wordy version to the pattern above. The optional chaining pattern ? 
+which lets us rewrite the above example:
+
+warrior?.sword?.slash();
+// The ? is often called the Elvis operator
+// because this ?:-p
+That is, we shall call the slash method only when the warrior and her sword are not undefined nor null. 
+That’s a much nicer alternative if you ask me.
+
+Yet another alternative to solving the issue with the hiring a warrior at a disreputable tavern is to have
+ a default value at hand that we can use when things go awry. So in order to make sure that the slashing 
+above takes place we could’ve followed the approach of always making sure that the mighty warrior does exist:
+
+let warrior = tavern.hireWarrior({goldCoins: 2});
+if (!warrior) {
+  warrior = new Warrior('Backup Plan Joe');
+}
+if (!warrior.sword) warrior.equip(new RustySword());
+
+warrior.sword.slash();
+TypeScript also has an alternative to the check-if-this-is-null-and-if-it-is-assign-this-other-value 
+attern: the nullish coallescing operator ??.
+
+Using ?? we can simplify the example above:
+
+let warrior = tavern.hireWarrior({goldCoins: 2}) 
+              ?? new Warrior('Backup plan Joe');
+
+if (!warrior.sword) warrior.equip(new RustySword());
+
+warrior.sword.slash();
+Nice right? Both ? and ?? operators make it that much easier to work around the absence of value in TypeScript.
+
+Optional chaining and the nullish coalescing operator were approved as part of ES2020 and are now official 
+features of the JavaScript language. Yey!
+
+Are There Better Ways to Model the Absence of Value?
+A really cool way to model the absence of value comes from functional programming in the form of the Maybe monad. 
+In later articles of the series when we’ve dabbled in the mysteries of generic types we’ll revisit this topic and 
+learn about how TypeScript can support these functional programming patterns.
+
+In Summary
+null and undefined can cause havoc in your JavaScript programs. They can break things willy nilly at runtime, or 
+they can force you into writing a lot of guard causes and defensive code that can be very verbose and obscure your core business logic.
+
+In TypeScript null and undefined are also types. This in combination with strict null checks allows you to protect your
+ programs from null reference exceptions at compile time. So that, as soon as you make a mistake that could have 
+resulted in a bug sometime along the line at runtime, you get immediate feedback and can fix it right away.
+
+When confronted with the need to work with null or undefined TypeScript 3.7 and ES2020 have two features that can 
+lessen your woes. Optional chaining and the nullish coallescing operator will save you a lot of typing when dealing
+ with null and undefined.
+
+And that’s all for today. Hope you’ve enjoyed the article and learned something new. Until next time, take care and have a wonderful day.
+
+In JavaScript null reference exceptions are treated as the more general TypeError. There isn’t a specific error that 
+only applies to null reference exceptions like in other languages such as C# or Java (NullReferenceException).
+
+↩
+Spread The Word. Share this article!
+Jaime González García
+Written by Jaime González García , Dad, Husband, Front-end software engineer, UX designer, amateur pixel artist, 
+tinkerer and master of the arcane arts. You should follow him on Twitter where he shares useful stuff! (and is funny too).
+
+
+Wop! Want to Reach Out?
+If you have any question or comments about the article just reach out on the twitterverse! My DMs are open and 
+I'm always happy to help out and answer questions.
+
+--------------
+
+TypeScript is a modern and safer version of JavaScript that has taken the web development world by storm. 
+It is a superset of JavaScript that adds in some additional features, syntactic sugar and static type analysis 
+aimed at making you more productive and able to scale your JavaScript projects.
+
+This is the third part of a series of articles where we explore TypeScript’s comprehensive type system and learn 
+how you can take advantage of it to build very robust and maintainable web apps. Today, we shall look at functions!
+
+Haven't read the first and second parts of this series? If you haven't you may want to take a look. There's lots of 
+interesting and useful stuff in there.
+
+Functions are one of the most fundamental composing elements of a JavaScript program, and that doesn’t change at all
+ in TypeScript. The most common way in which you’ll use types in functions within TypeScript is inline, intermingled with the function itself.
+
+Imagine a simple JavaScript function to add a couple of numbers:
+
+function add(a, b){
+  return a + b;
+}
+Although, since there’s no static typing in JavaScript, there’s nothing saying you will only add numbers with this 
+function, you could add anything (which isn’t necessarily a bug, it could be a feature).
+
+add(1, 2)            // => 3
+add(1, " banana")    // => "1 banana"
+add(22, {"banana"})  // => "1[object Object]"
+add([], 1)           // => "1"
+In our specific context though, where we’re trying to build a magic calculator to help us count the amount of dough
+ we need to bake 1 trillion gingerbread cookies (cause we love Christmas, and baking, and we’re going to get that 
+Guinness world record once and for all).
+
+So we need a and b to be numbers. We can take advantage of TypeScript to make sure that the parameters and return types match our expectations:
+
+// Most often you'll type functions inline
+function add(a: number, b: number): number{
+  return a + b;
+}
+So when we exercise this function it works only with numbers:
+
+add(1, 2)            // => 3
+add(1, " banana")    // => 💥
+add(22, {"banana"})  // => 💥
+add([], 1)           // => 💥
+Since the TypeScript compiler is quite smart, it can infer that the type of the resulting operation of adding 
+two numbers will be another number. That means that we can omit the type of the returned value:
+
+function add(a: number, b: number) {
+  return a + b;
+}
+And if you prefer the arrow function notation you can write it like this:
+
+const add = (a: number, b: number) => a + b;
+TypeScript implements control flow-based type analysis which is a complicated way of saying that it runs through 
+your code and can compute and understand the types of the different variables and the resulting values of the 
+operations performed. Using this information it can infer types and save you lots of work (like above), or even 
+refine the types within the body of a function to offer better error messages, more type safety and improved 
+statement completion (we shall see more of that in future articles).
+
+Typing functions inline will be by far the most common way in which you’ll use types with functions in TypeScript. 
+Now let’s dive further into the different things you can do with parameters and typing functions as values.
+
+Optional Parameters
+JavaScript functions can be extremely flexible. For instance, you can define a function with a set of parameters 
+but you don’t necessarily need to call the function with that same amount of parameters.
+
+Let’s go back to the add function:
+
+function add(a, b) {
+  return a + b;
+}
+In JavaScript, there’s no one stopping you from calling this function like so:
+
+add(1, 2, 3); // => 3
+add(1, 2);    // => 3
+add(1);       // => NaN
+add();        // => NaN
+TypeScript is more strict. It requires you to write more intentional APIs so that it can, in turn, help you adhere
+ to those APIs. So TypeScript assumes that if you define a function with two params, well, you are going to want 
+to call that function using those two params. Which is great because if we define and add function like this:
+
+function add(a: number, b: number) {
+  return a + b;
+}
+TypeScript will make sure that we call that function as the code author designed it, and thus avoid those awful
+ corner cases that resulted in NaN previously:
+
+add(1, 2, 3); // => 💥 Expected 2 arguments, but got 3
+add(1, 2);    // => 3
+add(1);       // => 💥 Expected 2 arguments, but got 1
+add();        // => 💥 Expected 2 arguments, but got 0
+It is important to keep the flexibility of JavaScript, because there will be legitimate cases where parameters
+ should be optional. TypeScript lets you be as flexible as you are accustomed to in JavaScript, but you need 
+to be intentional by explicitly defining whether a parameter is optional or not.
+
+Imagine we’re adding some logging to our application to have a better understanding of how our users interact
+ with it. It is important to learn how our users use our applications so that we can make informed decisions 
+as to which features are more or less important, more or less useful, how we can make important features more
+easily discoverable, etc… So we define this logging function:
+
+function log(msg: string, userId) {
+  console.log(new Date(), msg, userId);
+}
+Which we can use like this:
+
+log("Purchased book #1232432498", "123fab");
+However, in our system, a user is not required to log in. Which means that the userId may or may not be available. 
+That is, the userId parameter is optional. We can model that in TypeScript using optional parameters like so:
+
+// Optional params
+function log(msg: string, userId?: string){
+  console.log(new Date(), msg, userId ?? 'anonymous user');
+}
+So that now the function can be called omitting the second parameter:
+
+log("Navigated to about page");
+or with an undefined as second parameter:
+
+// get userId from user management system
+// because the user isn't logged in the system
+// returns undefined
+const userId = undefined;
+log("Navigated to home page", userId);
+This gives you a hint that the optional param is a shorthand for this:
+
+function log(msg: string, userId: string | undefined){
+  console.log(new Date(), msg, userId ?? 'anonymous user');
+}
+Optional parameters always have to be declared at the end of a function parameter list. This makes sense because
+ in the absence of an argument it would be impossible for the TypeScript compiler to know which param one is 
+trying to refer to when calling a function. If you happen to make this mistake when writing a function the 
+TypeScript compiler will immediately come to your aid with the following message: 💥 A required parameter 
+cannot follow an optional parameter.
+
+Default Parameters
+I don’t quite enjoy having undefined values rampant in my functions (for the many reasons we discussed earlier), 
+so when possible I favor default parameters over optional parameters.
+
+Using default parameters we could rewrite the function above as:
+
+// Default params
+function log(msg: string, userId = 'anonymous user'){
+  console.log(new Date(), msg, userId);
+}
+This function behaves just like our previous function:
+
+log("Navigated to about page");
+log("Sorted inventory table", undefined);
+log("Purchased book #1232432498", "123fab");
+But there’s no null reference exception waiting to happen.
+
+Rest Parameters
+JavaScript has this nifty feature called rest parameters that lets you define variadic functions. A variadic 
+function is the fancy name of a function that has indefinity arity which is yet another fancy way to say that 
+a function can take any number of arguments.
+
+Imagine we’d like to create a logger that lets us log any arbitrary number of things attached to a timestamp
+ that describes when those things happened. In JavaScript we would write the following function:
+
+function log(...msgs){
+  console.log(new Date(), ...msgs);
+}
+And in TypeScript, since msgs is essentially an array of arguments we’ll annotate it like so:
+
+// Typed as an array
+function log(...msgs: string[]){
+  console.log(new Date(), ...msgs);
+}
+And now we can use it to pass in as many arguments as we like:
+
+log('ate banana', 'ate candy', 'ate doritos');
+// Thu Dec 26 2019 11:10:16 GMT+0100 
+// ate banana
+// ate candy
+// ate doritos
+Since it is a fancy variadic function it will just gobble all those params. Also, Thursday December 
+26th was a cheat day in this household.
+
+Typing Functions as Values
+Ok. So far we’ve seen how you type a function inline using a function declaration for the most part. 
+But JavaScript is very, very fond of functions, and of using functions as values to pass them around
+ and return them from other functions.
+
+This is a function as a value (which we store inside a variable add):
+
+const add = (a: number, b: number) => a + b;
+What is the type of the variable add? What is the type of this function?
+
+The type of this function is:
+
+(a: number, b: number) => number;
+Which means that instead of using inline types we could rewrite the add function like so:
+
+const add : (a: number, b: number) => number = (a, b) => a + b;
+or using an alias:
+
+type Add = (a: number, b: number) => number
+const add : Add = (a, b) => a + b;
+This example above is quite intesting because the type information is flowing in the opposite way to 
+what we're used to. So far we've been defining types on the expression to the right which flow to the 
+variable that is being assigned (on the left). In this case however, we're defining the type of the 
+variable on the left, and the types flow to the expression on the right. Interesting, isn't it?
+
+This feature of been able to grab types from the context is known as contextual typing and it is a great 
+feature to have because it improves TypeScript type inference capabilities and saves you from typing more 
+annotations than the minimum required.
+
+If this sounds interesting, you may want to take a look at the documentation on TypeScript type inference.
+
+After rewriting the function to use the new full-blown type definition, TypeScript would nod at us knowingly, 
+because it can roll with either inline types or these other separate type definitions. If you take a look at 
+both ways of typing this function side by side:
+
+// # 1. Inline
+const add = (a: number, b: number) => a + b;
+
+// # 2. With full type definition
+const add : (a: number, b: number) => number = (a, b) => a + b;
+You are likely to prefer option 1 since it’s more pleasant, easier to read and the types are very near to the 
+params they apply to which eases understanding. So when is option 2 useful?
+
+Option 2 or full type definitions is useful whenever you need to store a function, and when working with 
+higher-order functions.
+
+A higher-order function is a function that either takes another function as a paremeter or returns a function.
+ You can learn more about higher-order functions and other functional programming concepts in this excellent article on the topic.
+
+Let’s illustrate the usefulness of typing functions as values with an example. Imagine we want to design a 
+logger that only logs information under some circumstances. This logger could be modelled as a higher-order function like this one:
+
+// Takes a function as a argument
+function logMaybe(
+  shouldLog: () => bool,
+  msg: string){
+    if (shouldLog()) console.log(msg);
+}
+The logMaybe function is a higher-order function because it takes another function shoudLog as a parameter. 
+The shouldLog function is a predicate that returns whether or not something should be logged.
+
+We could use this function to log whether some monster dies a horrible death like so:
+
+function attack(target: Target) {
+  target.hp -= 10;
+  logMaybe(
+     () => target.isDead, 
+     `${target} died horribly`
+  );
+}
+Another useful use case would be to create a factory of loggers:
+
+type Logger = (msg: string) => void
+// Returns a function
+function createLogger(header: string): Logger {
+    return function log(msg: string) {
+       console.log(`${header} ${msg}`);
+    }
+}
+createLogger is a higher-order function because it returns another function of type Logger that lets you log strings.
+ We can use createLogger to create loggers to our heart’s content:
+
+const jaimeLog = createLogger('Jaime says:')
+
+jaimeSays('banana');
+// Jaime says: banana
+TypeScript is great at inferring return types so we don’t really need to explicitly type the returning function. 
+This would work as well:
+
+function createLogger(header: string) {
+    return function log(msg: string) {
+       console.log(`${header} ${msg}`);
+    }
+}
+Function Overloading
+One of the features I kind of miss from strongly typed languages like C# is function overloading. The idea that 
+you can define multiple signatures for the same function taking a diverse number of parameters of different types, 
+and upon calling that function the compiler will be able to discriminate between functions and select the 
+correct implementation. This is a very nice way to provide slightly different APIs to solve the same problem. 
+Like, the problem of raising an army of the undead:
+
+raiseSkeleton()
+// don't provide any arguments and you raise an skeleton
+// => raise a skeleton
+raiseSkeleton(4)
+// provide a number and you raise a bunch of skeletons
+// => raise 4 skeletons
+raiseSkeleton('king')
+// provide a string and you raise a special type of skeleton
+// => raise skeleton king
+JavaScript however doesn’t have a great support for function overloading. You can mimick function overloading in 
+JavaScript but it does require a bunch of boilerplate code to manually discriminate between function signatures. 
+For instance, a possible implementation for the raiseSkeleton function above could be this:
+
+function raiseSkeleton(options) {
+  if (typeof options === 'number') {
+    raiseSkeletonsInNumber(options)
+  } else if (typeof options === 'string') {
+    raiseSkeletonCreature(options)
+  } else {
+    console.log('raise a skeleton')
+  }
+
+  function raiseSkeletonsInNumber(n) {
+    console.log('raise ' + n + ' skeletons')
+  }
+  function raiseSkeletonCreature(creature) {
+    console.log('raise a skeleton ' + creature)
+  }
+}
+You can read more about the perils of function overloading in JavaScript in this other article.
+
+TypeScript tries to lessen the burden of writing function overloading somewhat but it doesn’t get all the way 
+there since it is still a superset of JavaScript. The part of function overloading in TypeScript that is really 
+pleasant is the one concerning the world of types.
+
+Let’s go back to the log function we used in earlier examples:
+
+function log(msg: string, userId: string){
+  console.log(new Date(), msg, userId);
+}
+The type of that function could be defined by this alias:
+
+type Log = (msg: string, userId: string) => void
+And this type definition is equivalent to this other one:
+
+type Log = {
+  (msg: string, id: string): void
+}
+If we wanted to make the log function provide multiple APIs adapted to different use cases we could expand the 
+type definition to include multiple function signatures like this:
+
+type Log = {
+  (msg: string, id: string): void
+  (msg: number, id: string): void
+}
+Which now would allow us to record both string messages as before, but also message codes that are messages 
+obfuscated as numbers which we can match to specific events in our backend.
+
+Following this same approach, a type definition for our raiseSkeleton function would look like this:
+
+type raiseSkeleton = {
+  (): void
+  (count: number): void
+  (typeOfSkeleton: string): void
+}
+Which we can attach to the real implementation in this manner:
+
+const raiseSkeleton : raiseSkeleton = (options?: number | string) => {
+  if (typeof options === 'number') {
+    raiseSkeletonsInNumber(options)
+  } else if (typeof options === 'string') {
+    raiseSkeletonCreature(options)
+  } else {
+    console.log('raise a skeleton')
+  }
+
+  function raiseSkeletonsInNumber(n: number) {
+    console.log('raise ' + n + ' skeletons')
+  }
+  function raiseSkeletonCreature(creature: string) {
+    console.log('raise a skeleton ' + creature)
+  }
+}
+And alternative type definition which doesn’t require the creation of an alias (but which 
+I find quite more verbose) is the following:
+
+// Alternative syntax
+function raiseSkeleton(): void;
+function raiseSkeleton(count: number): void;
+function raiseSkeleton(skeletonType: string): void;
+function raiseSkeleton(options?: number | string): void {
+  // implementation
+}
+If we take a minute to reflect about function overloading in TypeScript we can come to some conclusions:
+
+TypeScript function overloading mostly affects the world of types
+Looking at a type definition it is super clear to see the different APIs an overloaded function supports, which is really nice
+You still need to provide an implementation underneath that can handle all possible cases
+In summary, function overloading in TypeScript provides a very nice developer experience for the user
+ of an overloaded function, but not so nice a experience for the one implementing that function. So the 
+code author pays the price to provide a nicer DX to the user of that function.
+
+Yet another example is the document.createElement method that we often use when creating DOM elements in
+ the web (although we don’t do it as much in these days of frameworks and high-level abstractions). 
+The document.createElement method is an overloaded function that given a tag creates different types of elements:
+
+type CreateElement = {
+  (tag: 'a'): HTMLAnchorElement
+  (tag: 'canvas'): HTMLCanvasElement
+  (tag: 'svg'): SVGSVGElement
+  // etc...
+}
+Providing an API like this in TypeScript is really useful because the TypeScript compiler can help you with 
+statement completion (also known in some circles as IntelliSense). That is, as you create an element using 
+the a tag, the TypeScript compiler knows that it will return an HTMLAnchorElement and can give you compiler 
+support to use only the properties that are available in that element and no other. Isn’t that nice?
+
+Argument Destructuring
+A very popular pattern for implementing functions these days in JavaScript is argument destructuring. Imagine
+ we have an ice cone spell that we use from time to time to annoy our neighbors. It looks like this:
+
+function castIceCone(caster, options) {
+  caster.mana -= options.mana;
+  console.log(`${caster} spends ${options.mana} mana 
+and casts a terrible ice cone ${options.direction}`);
+}
+I often use it with the noisy neighbor upstairs when he’s having parties and not letting my son fall asleep.
+ I’ll go BOOOOM!! Ice cone mathafackaaaa!
+
+castIceCone('Jaime', {mana: 10, direction: "towards the upstairs' neighbors balcony for greater justice"});
+// => Jaime spends 10 mana and casts a terrible ice cone
+// towars the upstairs' neighbors balcony for greater justice
+But it feels like a waste to have an options parameter that doesn’t add any value at all to this function 
+signature. A more descriptive and lean alternative to this function takes advantage of argument destructuring 
+to extract the properties we need, so we can use them directly:
+
+function castIceCone(caster, {mana, direction}) {
+  caster.mana -= mana;
+  console.log(`${caster} spends ${mana} mana 
+and casts a terrible ice cone ${direction}`);
+}
+This removes a lot of noise and it also allows us to set sensible defaults inline which makes sense because
+ the second paremeter should be optional:
+
+function castIceCone(
+  caster, 
+  {mana=1, direction="forward"}={}) {
+  caster.mana -= mana;
+  console.log(`${caster} spends ${mana} mana 
+and casts a terrible ice cone ${direction}`);
+}
+So how do we type this param in TypeScript? You may be tempted to write something like this:
+
+function castIceCone(
+  caster: SpellCaster, 
+  {mana: number, direction:string}): void {
+  caster.mana -= mana;
+  console.log(`${caster} spends ${mana} mana 
+and casts a terrible ice cone ${direction}`);
+}
+But it wouldn’t work. Because that’s legit ES2015 destructuring syntax. It’s the pattern you use when 
+you want to project a property of an object into a variable with a different name. In the example above 
+we’re projecting options.mana into a variable named number, and options.direction into another variable string. Ooops.
+
+The most common way to type the function above is to provide a type for the whole parameter (just like 
+we normally do with any other params):
+
+function castIceCone(
+  caster: SpellCaster, 
+  {mana=1, direction="forward"}={} : {mana?: number, direction?:string} 
+  ): void {
+  caster.mana -= mana;
+  console.log(`${caster} spends ${mana} mana 
+and casts a terrible ice cone ${direction}`);
+}
+Both parameters are optional because they have defaults so the user of this function doesn’t have to 
+provide these as arguments if they don’t want. There’s something particularly interesting about this 
+example that you may not have noticed: the types of the parameters as defined in the function declaration 
+are not the types of the parameters inside the function. What? The caller of this function and the body of
+ this function see different types. What??
+
+A caller of castIceCone sees mana as required to be of type number or undefined. But since mana has a default 
+value, within the body of the function it will always be of type number.
+Likewise, the caller of the function will see direction as been string or undefined whilst the body of the
+ function knows it’ll always be of type string.
+TypeScript argument destructuring can get quite verbose very fast so you may want to consider declaring an alias:
+
+type IceConeOptions = {mana?: number, direction?: string}
+function castIceCone(
+  caster: SpellCaster, 
+  {mana=1, direction="forward"}={} : IceConeOptions): void {
+  caster.mana -= mana;
+  console.log(`${caster} spends ${mana} mana 
+and casts a terrible ice cone ${direction}`);
+}
+or opting out of inline types entirely:
+
+type castIceCone = (caster: SpellCaster, options: IceConeOptions) => void;
+
+const castIceCone : castIceCone = (
+  caster, 
+  { mana = 1, direction = "forward" } = {}
+  ) => {
+  caster.mana -= mana;
+  console.log(`${caster} spends ${mana} mana 
+and casts a terrible ice cone ${direction}`);
+}
+In Summary
+JavaScript functions are extremely flexible. TypeScript functions are just as flexible and will support the
+ most common patterns used with functions in JavaScript but they expect you to be more intentional and explicit 
+with the APIs that you design. This isn’t a bad thing, it means that your APIs are constrained to only the use cases
+ that you as an author define. This additional constraint will help prevent your APIs from being used in mischiveous 
+or unexpected ways (like calling a function with no arguments when it expects two argumenst).
+
+The most common way to type your functions is using types inline, having the types sitting just beside the stuff they 
+affect: your arguments and return types. TypeScript is pretty good at inferring return types by taking a look at what
+ happens inside your function, so in lots of cases you’ll ber OK omitting your return values.
+
+The function patterns that you’re accustomed to in JavaScript are supported in TypeScript. You can use optional
+ parameters to define functions that may or may not receive some arguments. You can write type safe functions 
+with default params, rest params and argument destructuring. You even have a much better support for writing 
+function overloads than you do in JavaScript. And you have the possibility of expressing the types of functions
+ as a value, which you’ll often use when writing higher-order functions.
+
+In summary, TypeScript has amazing features to help you writing more robust and maintainable functions. Wihoo!
+
+Hope you enjoyed this article! Take care and be kind to the people around you!
+
+----------------

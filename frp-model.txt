@@ -1,0 +1,75 @@
+        model
+     i         	u
+     n		p
+     p		d
+     u		a
+     t		t
+		e
+     ^
+     |          |
+		v
+        view
+
+input -> model -> view - > input
+----------------------------------
+that model is a function of input 
+view is a function of model and 
+input is a function of view
+
+
+Here are the two functions you need to implement, described with TypeScript-like types
+
+unit,
+ which wraps a normal value in your monad. For Observable, 
+ the type would be unit<A>(value A) Observable<A>. 
+ We take a value of any type and get
+ a corresponding Observable—presumably one that contains a constant value.
+
+bind, 
+which lets us sequence operations on observables. 
+We take an Observable of some sort and apply a function to it which returns another Observable, 
+plumbing them together to get a composite Observable out. 
+Here’s the type bind<A>(input Observable<A>, f (x A) Observable<B>) Observable<B>).
+
+It’s a bit of a mouthful, to be sure. You can think of it like then 
+in JavaScript promises—it plays the same role, but the semantics differ slightly¹.
+To be a valid monad, a type has to implement these functions with a couple of invariants. 
+I won’t go into the exact laws², but they come down to two high-level properties 
+- unit can’t do anything except wrap a value, 
+- and bind has to be associative (that is, if you have a few binds in a row, 
+it shouldn’t matter which ones are performed first).
+
+Looking through the Observable API (which has surprisingly dense API documentation), 
+I see both functions I mentioned but with different names
+
+unit is implemented as the static method Observable.of, when given a single argument. 
+It takes a value and returns an Observable that emits that value and terminates.
+
+bind is implemented as concatMap. 
+This is a method on an Observable object that takes a function, 
+applies it to every value in the Observable 
+(giving you an Observable with Observable values in it) 
+and then merges all of them into a single Observable.
+
+The function’s documentation does a good job of describing this operation concatMap 
+“maps each value to an Observable, then flattens all of these inner Observables using concatAll.”
+They have a diagram too, which might help. (Or just make things more confusing.)
+
+
+As an aside, people often decry monads and functional programming as being difficult and complex. 
+Then they turn around and claim that things like this are simple and easy to learn
+
+
+(A screenshot of the documentation for the defer method, with the following text 
+“Creates an Observable that, on subscribe, calls an Observable factory to make an Observable for each new Observer.”)
+
+Really?
+
+footnotes
+¹ In particular, then in JavaScript promises has two behaviors if the value returned is a promise, 
+it behaves just like bind, but if it’s any other type, it wraps it in a promise first. In practice,
+ this means that you can’t use that API to get nested promises which is a real limitation.
+
+² If you don’t mind Haskell notation, there’s a great explanation on Stack Overflow. 
+The difference is that unit is called return and bind is written 
+as an infix operator >>=. (So bind(x, f) in my notation would read as x >>= f in Haskell.)

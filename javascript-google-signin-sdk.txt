@@ -1,0 +1,101 @@
+
+<!doctype html>
+<html lang="en">
+ 
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Google login Js SDK</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    
+  </head>
+
+  <body>
+    <div class="container">
+        <div class="row">
+            <h1 class="text-center">Google JS Sdk Login</h1><hr>
+            <div class="col-md-6 col-md-offset-3">
+                <div class="form-group">
+                    <button id="login" class="btn btn-primary btn-block">Login with Google</button>
+                </div>
+                <div class="form-group">
+                    <p>Name: <span id="name"></span></p>
+                    <p>Email: <span id="email"></span></p>
+                    <p>Image: <span id="image"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};HandleGoogleApiLibrary()" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
+    <script>
+    // Called when Google Javascript API Javascript is loaded
+    // Call login API on a click event
+        function HandleGoogleApiLibrary() {
+        // Load "client" & "auth2" libraries
+            gapi.load('client:auth2', {
+                callback: function() {
+                    // Initialize client library
+                    // clientId & scope is provided => automatically initializes auth2 library
+                    gapi.client.init({
+                        apiKey: 'YOUR_API_KEY',
+                        clientId: 'YOUR_CLIENT_ID',
+                        scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/plus.me'
+                    }).then(
+                        // On success
+                        function(success) {
+                            // After library is successfully loaded then enable the login button
+                            
+                        }, 
+                        // On error
+                        function(error) {
+                            console.log(error);
+                        }
+                    );
+                },
+                onerror: function() {
+                    // Failed to load libraries
+                }
+            });
+        }
+    $("#login").on('click', function() {
+        gapi.auth2.getAuthInstance().signIn().then(
+		// On success
+		function(success) {
+			// API call to get user information
+			gapi.client.request({ path: 'https://www.googleapis.com/plus/v1/people/me' }).then(
+				// On success
+				function(success) {
+					console.log(success);
+					var user_info = JSON.parse(success.body);
+					console.log(user_info);
+                    $("#name").html(user_info.displayName);
+                    $("#email").html(user_info.emails[0].value);
+                    $("#image").html("<img width='100' src='"+user_info.image.url+"'>");
+                },
+				// On error
+				function(error) {
+					$("#login-button").removeAttr('disabled');
+					alert('Error : Failed to get user user information');
+				}
+			);
+		},
+		// On error
+		function(error) {
+			$("#login-button").removeAttr('disabled');
+			alert('Error : Login Failed');
+		}
+	);
+    });    
+    
+    </script>
+  </body>
+
+</html>
+index.php
+Displaying index.php.

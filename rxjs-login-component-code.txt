@@ -1,0 +1,529 @@
+
+Intro to RxJS in Angular: Observables, Subjects, and BehaviorSubjects
+Skyler De Francesca
+Full Stack Developer
+
+July 5, 2022
+
+
+The foundation of Angular is built upon the RxJS library. You may not need extensive knowledge of this library 
+to write an Angular App, but understanding some key features will make your life a lot easier. The three items 
+which you will come across in your Angular application are Subjects, BehaviorSubjects, and Observables. It is 
+imperative to understand their uses as you begin to learn Angular.   
+
+Observables
+----------------------------------------------------
+The Observable is the core type of the RxJS library. Its primary use is 
+- to be “listened” to or “observed” for future events. 
+
+- Listening to these events is done via calling the subscribe() function of the observable where 
+you can access the value that is being emitted. There is no way to invoke the event or value change using an 
+observable alone, so you can kind of think of it as 
+- a “read-only” type. Due to this, it is usually best practice to expose Observables 
+  in cases where you do not want other parts of the application to invoke events, i.e., you
+ just want them to listen for changes.   
+
+
+
+e.g., the HTTP client uses an Observable as the way to expose the event of an HTTP request.  
+
+/**  
+
+ * get function returns an Observable that will emit an event  
+
+ * when the response is received  
+
+ */  
+
+this.httpClient.get<Inventory[]>('https://sample-api/items').subscribe(items => {  
+
+  // Do something with response  
+
+});  
+
+Subjects
+------------------------------------------------------------
+Subjects are a type of Observable. However, unlike an Observable, 
+- Subjects can emit events/values to itssubscribers using the next() function. 
+  Therefore, you can publish changes (using next()) to a Subject 
+
+- and listen for changes (using subscribe()). You can also cast Subjects to an Observable for instances 
+  where you want to conceal the Subject-like behavior and only expose the ability to subscribe to changes.  
+
+The way to differentiate a Subject from a BehaviorSubject is:  
+
+a) Subjects have no initial value 
+
+b) Subscribers will only be notified and receive events/values after the subscription is made – i.e.,
+ Subscribers will not receive the last emitted value upon subscription.  
+
+e.g., say we want to use Subjects to notify subscribers when an event has occurred: 
+
+const subject = new Subject();  
+
+   
+
+subject.next('event 0');  
+
+   
+
+subject.subscribe(event => console.log(event));  
+
+   
+
+subject.next('event 1');  
+
+subject.next('event 2');  
+
+subject.next('event 3');  
+
+   
+
+/**  
+
+ * Expected output:  
+
+ * event 1  
+
+ * event 2  
+
+ * event 3  
+
+ */  
+Since event 0 was emitted before the subscription was made, the subscriber will not receive that value. 
+If the use case for a subject requires the Subject to emit that initial value, a BehaviorSubject would 
+be a better choice.  
+
+BehaviorSubjects 
+------------------------------------------------------------------
+BehaviorSubjects are a type of Subject that:  
+
+a) Has an initial value 
+
+b) Subscribers will receive the last emitted value upon subscription.  
+
+Using the same code as we used for the Subject, but using a BehaviorSubject instead, we will see now that 
+the ‘event 0’ will be emitted. Also, notice how we must add an initial value (‘event -1’) 
+upon creation of the BehaviorSubject. 
+
+const behaviorSubject = new BehaviorSubject('event -1');  
+
+   
+
+behaviorSubject.next('event 0');  
+
+   
+
+behaviorSubject.subscribe(event => console.log(event));  
+
+   
+
+behaviorSubject.next('event 1');  
+
+behaviorSubject.next('event 2');  
+
+behaviorSubject.next('event 3');  
+
+   
+
+/**  
+
+ * Expected output:  
+
+ * event 0  
+
+ * event 1  
+
+ * event 2  
+
+ * event 3  
+
+ */  
+When to Use Observables vs Subjects vs BehaviorSubjects 
+Subject Use cases
+-----------------------------
+Subjects are great for when you want to emit an event where the state of the event is not 
+important, i.e. it is not important for the subscribers of the event to know about previous values emitted.  
+
+BehaviorSubject Use cases
+-----------------------------
+BehaviorSubjects are the opposite, they are useful if there is a current “state” of the event 
+that you want all subscribers to be able to access.  
+
+Observable Use cases
+------------------------------
+Observables are useful for exposing Subjects/BehaviorSubjects to other parts of the application 
+while also concealing the ability to emit values/changes.  
+
+Example Login
+----------------------------------
+Say that we have 
+- a login service that is used for authenticating a user and storing their profile data. 
+  Below is a simple implementation of this login service that leverages Observables, Subjects, 
+  and BehaviorSubjects in a somewhat realistic way. 
+
+interface UserProfile {  
+
+  username: string;  
+
+  email: string;  
+
+}  
+
+   
+
+@Injectable({  
+
+  providedIn: 'root'  
+
+})  
+
+export class LoginService {  
+
+   
+
+  constructor(private httpClient: HttpClient) { }  
+
+   
+
+  /**  
+
+   * This subject is used to emit the event of a  
+
+   * successful (true) or unsuccessful (false)  
+
+   * login attempt.  
+
+   */  
+
+  private _loginSuccess$ = new Subject<boolean>();  
+
+   
+
+  /**  
+
+   * This BehaviourSubject is used to hold and emit the data of the  
+
+   * logged in user, or undefined if the user is not logged in  
+
+   *   
+
+   */  
+
+  private _userProfile$ = new BehaviorSubject<UserProfile | undefined>(undefined);  
+
+   
+
+  /**  
+
+   * Expose _loginSuccess$ as observable to conceal   
+
+   * subject like behaviour.  
+
+   */  
+
+  public get loginSuccess(): Observable<boolean> {  
+
+    return this._loginSuccess$;  
+
+  }  
+
+   
+
+  /**  
+
+   * Expose _userProfile$ as Observable to conceal  
+
+   * subject like behavior.  
+
+   */  
+
+  public get userProfile(): Observable<UserProfile | undefined> {  
+
+    return this._userProfile$;  
+
+  }  
+
+   
+
+  public login(username: string) {  
+
+    // Call fake login api and get response  
+
+    this.httpClient.post<UserProfile>('https://fake-api/login', { username }).subscribe({     
+
+      // next will be triggered if http request is successful     
+
+      next: (userData) => {  
+
+        // invoke _loginSuccess$ subject to emit true  
+
+        this._loginSuccess$.next(true);  
+
+        // invoke _userProfile$ behaviourSubject to emit and store response data  
+
+        this._userProfile$.next(userData)  
+
+      },  
+
+      // if login is unsuccessful, invoke _loginSuccess$ subject to emit false  
+
+      error: () => this._loginSuccess$.next(false)  
+
+    });  
+
+  }  
+
+}  
+
+Subject as a notification (sending an event)
+--------------------------------------------
+Firstly, we are using a Subject to emit the event of a successful or unsuccessful login attempt.
+ Here we do not care for the value to be stateful which is why using a Subject makes the most sense.   
+
+notify login success
+-------------------------------------------------
+private _loginSuccess$ = new Subject<boolean>();  
+
+In the login function, we are calling the next() function of this Subject when we get a response 
+(true) or error (false) from the login API. This will notify subscribers when there is a successful or unsuccessful login attempt.  
+
+...subscribe({   
+
+      next: (userData) => {  
+
+        this._loginSuccess$.next(true);  
+
+      },   
+
+      error: () => this._loginSuccess$.next(false)  
+
+    });  
+
+BehaviorSubjet hold the Authentication status
+---------------------------------------------------
+Next, we have a BehaviorSubject that holds the value of the logged-in user’s profile. Since we want 
+future subscribers to have access to the latest value, using a BehaviorSubject makes sense.  
+
+  private _userProfile$ = new BehaviorSubject<UserProfile | undefined>(undefined);  
+We are calling the next() function to set the value of this BehaviorSubject when the HTTP request
+ to login is successful.   
+
+...subscribe({     
+
+      next: (userData) => {  
+
+        this._userProfile$.next(userData)  
+
+      }  
+
+    });  
+
+Get state changes via observable from subjects
+----------------------------------------------------
+Lastly, we are exposing both the _loginSuccess$ Subject and the _userProfile$ BehaviorSubject via
+ getter functions that are of type Observable. This allows us to only expose the
+ subscribe/unsubscribe capabilities of the Subjects.  
+
+public get loginSuccess(): Observable<boolean> {  
+
+  return this._loginSuccess$;  
+
+}  
+
+   
+
+public get userProfile(): Observable<UserProfile | undefined> {  
+
+  return this._userProfile$;  
+
+}  
+
+Login service sample
+-----------------------------------------------------------
+This login service example should give you a pretty good idea of the use cases for using Observables,
+ Subjects, and BehaviorSubjects. It might also help to see how a client would interact with this 
+service to better understand the use cases. Below is an example of a component using this service: 
+
+@Component({ 
+
+  selector: 'app-login', 
+
+  templateUrl: './login.component.html', 
+
+  styleUrls: ['./login.component.css'] 
+
+}) 
+
+export class LoginComponent implements OnInit, OnDestroy { 
+
+  
+
+  constructor(private loginService: LoginService) { } 
+
+  
+
+  // Store profile observable which we can display after login 
+
+  profile = this.loginService.userProfile; 
+
+  
+
+  // Can be used to display loading animation 
+
+  loading = false; 
+
+  
+
+  // Displays success/error message for login 
+
+  loginMessage = ''; 
+
+  
+
+  // Holds array of subscriptions made during component lifetime. 
+
+  subscriptions: Subscription[] = [] 
+
+  
+
+  ngOnInit() { 
+
+    // Add subscription to subscriptions array 
+
+    this.subscriptions.push( 
+
+      // listen for login success/error 
+
+      this.loginService.loginSuccess.subscribe(success => { 
+
+        this.loading = false; 
+
+        this.loginMessage = success ? 'Login was successful' : 'Error logging in'; 
+
+      }) 
+
+    ); 
+
+  } 
+
+  
+
+  login(username: string) { 
+
+    this.loading = true; 
+
+    // Calls login function in service to trigger login 
+
+    this.loginService.login(username) 
+
+  } 
+
+  
+
+  ngOnDestroy(): void { 
+
+    // When component is destroyed, it is important to clean up subscriptions 
+
+    this.subscriptions.forEach(sub => sub.unsubscribe()) 
+
+  } 
+
+} 
+
+
+Firstly, we hold a reference to the user profile Observable that our service exposes. 
+
+
+Login component with service
+-------------------------------------------------------
+// Store profile observable which we can display after login 
+
+  profile = this.loginService.userProfile; 
+Note that we are not using this profile variable anywhere else in the code above. Say we want to
+ display the profile in the HTML of the component, we can do that by using the async pipe. 
+The async pipe will subscribe to the observable behind the scenes, eliminating the need
+ to subscribe manually in the component.  
+
+<div class="profile"> 
+
+  <div> 
+
+    {{(profile | async)?.email}} 
+
+  </div> 
+
+  <div> 
+
+    {{(profile | async)?.username}} 
+
+  </div> 
+
+</div> 
+
+Next, we have a subscription array that is used to hold subscriptions made to Observables 
+that persist longer than the lifetime of the component. This will allow us to unsubscribe 
+from these Observables when the component is destroyed (in the ngOnDestroy()).
+ It is important to unsubscribe from these subscriptions to avoid a memory leak. 
+Note that the async pipe will automatically unsubscribe when the component is destroyed, so 
+no need to handle the cleanup of the profile. 
+
+  // Holds array of subscriptions made during component lifetime. 
+
+  subscriptions: Subscription[] = [] 
+
+ 
+
+  ngOnDestroy(): void { 
+
+    // When component is destroyed, it is important to clean up subscriptions 
+
+    this.subscriptions.forEach(sub => sub.unsubscribe()) 
+
+  } 
+
+In the ngOnInit, we subscribe to the login success Observable (that really is a 
+Subject behind the scenes) and react to any events it emits. Here we can handle a boolean 
+used for a loading animation and/or display success/error messages if the login succeeded/failed. 
+We are adding the subscription to the subscriptions array so that it can be unsubscribed from when the component is destroyed. 
+
+  ngOnInit() { 
+
+    // Add subscription to subscriptions array 
+
+    this.subscriptions.push( 
+
+      // listen for login success/error 
+
+      this.loginService.loginSuccess.subscribe(success => { 
+
+        this.loading = false; 
+
+        this.loginMessage = success ? 'Login was successful' : 'Error logging in'; 
+
+      }) 
+
+    ); 
+
+  } 
+Lastly, we have a login function that triggers the login HTTP request in the service. 
+This function can be triggered by a user action, such as clicking a “submit” button in the component’s login form.  
+
+  login(username: string) { 
+
+    this.loading = true; 
+
+    // Calls login function in service to trigger login 
+
+    this.loginService.login(username) 
+
+  } 
+
+Together, the LoginService and LoginComponent show a practical, end-to-end use of these 
+powerful RxJS types within your application.  
+
+Conclusion
+RxJS is a very powerful and extensive library that you will use a lot when building Angular applications. 
+The high-level explanations and examples in this blog only scratch the surface of what this library has to offer. 
+Understanding what Observables, Subjects, and BehaviorSubjects are, and how they can be used 
+in an Angular application, is a good first step in becoming proficient in RxJS and Angular

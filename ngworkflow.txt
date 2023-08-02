@@ -1,0 +1,25 @@
+
+ng new users --minimal --routing --style scss --prefix hs
+
+// install ngrx all libraries
+ngrxi
+
+// install root store and effects
+ng g store Store --state-path store --root --state-interface AppState -m app && ng g effect App --root --m app
+
+// generate angular module
+ngm user
+
+// generate users ngrx container
+ng generate container users -f --state store/index.ts --stateInterface State
+
+// generate user state with ngrx entity in users directory
+ng g entity state/user -m ../users -r ../../store/index.ts
+
+// generate user state with ngrx effects
+ng g effect --feature users/state user -m users
+
+// generate user selector file in users directory
+echo "import { createFeatureSelector, createSelector } from "@ngrx/store"; import * as fromUser from "./User.reducer"; export const selectUserState = createFeatureSelector<fromUser.State>("user"); export const getSelectedUserId = (state: fromUser.State) => state.selectedId; export const selectUserIds = createSelector(selectUserState,fromUser.selectIds); export const selectUserEntities = createSelector(selectUserState,fromUser.selectEntities);export const selectAllUsers = createSelector(selectUserState,fromUser.selectAllUsers); export const selectUserTotal = createSelector(selectUserState,fromUser.selectTotal); export const selectCurrentUserId = createSelector(selectUserState,fromUser.getSelectedUserId);export const selectCurrentUser = createSelector(selectUserEntities,selectCurrentUserId,(entities, id) => entities[id]);" >> user.selectors.ts
+
+// correct selector file

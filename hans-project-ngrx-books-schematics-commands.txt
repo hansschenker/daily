@@ -1,0 +1,55 @@
+angular 14.1.2 ngrx 14
+Version 14 has the minimum version requirements:
+
+Angular version 14.x
+Angular CLI version 14.x
+TypeScript version 4.6.x
+RxJS version ^6.5.3 || ^7.5.0
+
+// install ngrx/schematics
+npm install @ngrx/schematics --save-dev
+
+// set ngrx schematics as default
+ng config cli.defaultCollection @ngrx/schematics
+
+// install ngrx store
+npm install @ngrx/store@14
+// ,effects,entity,store-devtools} --save
+
+// install global effects
+ng generate @ngrx/schematics:effect App --root --module app.module.ts
+
+// install global store
+ng generate store GlobalState --root --state-path state --module app.module.ts
+
+ 
+// books module
+ng generate module Books --flat false --routing -m app --route books
+
+// books feature
+ng generate feature -a books/Book -m books/books.module.ts --group
+
+
+// install json-server
+npm install Json-server
+ 
+// run json server in watch mode
+son-server –watch db.json
+
+// config json-server for angular
+"server": "json-server --watch src/app/api/db.json --no-cors=true"
+Replace http://localhost:3000/api/books with /api/books inside the component:
+create file proxy.conf.json
+{
+  "/api": {
+    "target": "http://localhost:3000"
+  }
+}
+
+angular.json update
+--------------
+serve:
+"options": {
+      
+      "proxyConfig": "proxy.conf.json"
+    },

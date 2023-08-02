@@ -1,0 +1,34 @@
+Typescript Types explained from Anders Hejlsberg - creator of Typescrip
+https://www.youtube.com/watch?v=AvV3GIDeLfo
+
+Type system
+---------------------
+- Gradual, 			(set compiler flags to constrain type checking)
+- Structural, 			(in contrast to  nominal type system)
+- Generic			(polymorphic type constructors)
+- Extensive type inference	(compiler)
+- Control flow based type analysis (compiler)
+
+ Typescript Type System starts with 
+----------------------------------
+ - unit types:  "yes" 1 boolean, every js value can be represented as a type		single value types: type Yes = "yes", type One = 1
+ - sets of values: string is the set of all text values        				string                         
+                   number is the set of all integer numbers				number
+ - set operations: union and 								T | P
+                   intersection								T & P
+ - index type query operator: keyof T, queries all property names of a type		keyof T
+ - index access operator: access of indexed property of a type: 			T[P]
+ - mapped types:									{ [P in K] : X}
+ - conditional types:									T extends U ? X : Y
+
+- Novel type constructors
+  -----------------------------------------------------------------------------
+  type Person = {name: string, age: number}				- object type
+  type Doctor = {name: string, speciality:string} (more properities more 
+                                                              restriction)
+  {} : has no restrictions
+
+  type Expert = Person | Doctor	 (allows for options)			- union type
+
+  type Businessman = Person & Doctor (restriction to Person and)	- intersection type
+                                                     Doctor

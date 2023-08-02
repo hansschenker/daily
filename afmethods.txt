@@ -1,0 +1,25 @@
+
+valuechanges - Observable of data as a synchronized array of JSON objects.
+-------------------------------------------------------------------------
+Snapshot metadata is stripped and just the method provides only the data.
+observable live connection to the collection
+
+
+
+snapshotChanges - Observable of data as a synchronized array of DocumentChangeAction[].
+--------------------------------------------------------------------------
+observable snapshot, with payload, payload.doc.id, 
+Metadata provides you the underyling DocumentReference, document id, and array index of the single document
+
+this.shirts = this.shirtCollection.snapshotChanges().pipe(
+      map(actions => actions.map(a => {
+        const data = a.payload.doc.data() as Shirt;
+        const id = a.payload.doc.id;
+        return { id, ...data };
+      }))
+
+
+stateChanges() - Observable of the most recent changes as a DocumentChangeAction[]
+------------------------------------------------------------------------------------------
+eturn a synchronized array sorted in query order. stateChanges() emits changes as they occur rather than syncing the query order. 
+This works well for ngrx integrations as you can build your own data structure in your reducer methods.

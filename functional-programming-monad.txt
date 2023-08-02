@@ -1,0 +1,95 @@
+The monad data type
+--------------------------
+A monad is nothing more than an 
+- algebraic data type that follows a certain interface or protocol
+
+protocol:
+------------
+- A unit function used to place (lift) a value into the monad container. 
+  You could also find it as from() or return().
+
+- A mapping function that lifts regular functions that work over these values, 
+  returning back a new instance of (generally) the same type containing the newly computed value.
+
+- A flatMap() also known as (bind()) that lifts a monad-returning function to work over the value 
+  in the container and flatten its result into a single structure.
+
+what is an algebraic data type
+--------------------------------
+an algebraic data type is a kind of composite type, i.e., a type formed by combining other types.
+
+what is a combinator
+--------------------
+A combinator is a higher-order function that uses only function application and 
+earlier defined combinators to define a result from its arguments.
+
+what is function application
+----------------------------
+function application is the act of applying a function to an argument 
+from its domain so as to obtain the corresponding value from its range
+
+
+
+algebraic data types (monads, and the likes).
+
+
+| Interface name              | 'Kitchen' example                                                                                                                                                                     | Formal Kitchen syntax                                                          | Fully formal syntax      |
+|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|--------------------------|
+| Normal Function Application | Given `an apple`, and something to do with that apple such as `cut`, return the result of that: `cut(apple)`                                                                          | Apple -> (Apple -> CutApple ) CutApple                                         | a -> (a -> b) -> b       |
+| `map`                       | Given `a box of apples`, and something to do with each apple, such as `cut`, return `a box of cut(apple)s`                                                                            | Box Apple -> (Apple -> CutApple) -> Box CutApple                               | f a -> ( a -> b) -> f b  |
+| `apply`                     | Given `a box of cupcakes to decorate` and `a box of decorations`, return `a box of decorated cupcakes`                                                                                | Box (Decoration -> DecoratedCupcake) -> Box Decoration -> Box DecoratedCupcake | f (a -> b) -> f a -> f b |
+| `wrap/pure`                 | Given `an apple`, return `a box filled with one apple`.                                                                                                                               | Apple -> Box Apple                                                             | a -> f a                 |
+| `chain`                     | Given `a taco filled with salad` and `a function that takes 'something', puts some sauce on top and then wraps in a tortillia returning a taco`, return `a taco with salad and sauce` | Taco Salad -> (Salad -> Taco SaladWithCheese) -> Taco SaladWithCheese          | f a -> (a -> f b) -> f b |
+
+ADT Names
+-----------------------------------
+(Function application can be used on everything without needing extra syntax.)
+
+Functor
+----------------------
+A Functor is a container for which you can define map.
+
+Applicative Functor
+----------------------
+An Applicative Functor is a container for which you can define map, apply and wrap for.
+
+Monad
+----------------------
+A Monad is a container for which you can define map, apply, wrap and chain for.
+A Monad abstracts over an effect, is a design pattern for how to handle a specific effect (error, null, input outut)
+A Monad is a design pattern to control state and data flow, the bottom line is that pure functional programmers 
+use monads to express things we can’t express with pure functions
+
+IO Monad
+---------
+The IO monad, allows you to thread together a sequence of side effects, 
+so that they can be run in a sequential, predictable, manner.
+
+The Observable Monad
+--------------------
+The Observable monad, has built-in logic that allows you to thread together 
+a sequence of asynchronous computations as if you we’re mapping regular synchronous functions
+
+This monad not only allows you to perform regular IO as I did previously, but also asynchronous IO, 
+as it makes the notion of time a first-class citizen — this is that “extra behavior” I referred to earlier
+
+sample
+---------------------------
+Rx.Observable.interval(100)
+ .map(val => val * 30 + 30)
+ .take(12)
+ .subscribe(rotateDom('#name2'));
+
+- the unit function (also called static factory operator) is interval(), which lifts a sequence of integers separated by 100 milliseconds. 
+- I’m also using a simple map() with a pure function, 
+- and then take(), which you can think as a filter() underneath. RxJS also has a flatMap() operation (called mergeMap() in RxJS 5).
+
+
+
+A simple pseudo-interface can be written as follows (to keep it simple I’m omitting any static type information):
+interface Monad {
+    of(a): Monad<a>
+    map(a -> b): Monad<b>
+    flatMap(a -> M<b>): Monad<b>
+}
+

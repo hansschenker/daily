@@ -1,0 +1,26 @@
+install ngrx schematics
+------------------
+ng add @ngrx/schematics@latest --defaultCollection
+
+install ngrx store
+-----------------
+npm install @ngrx/store @ngrx/effects @ngrx/entity @ngrx/store-devtools
+
+add ngrx store state
+---------------------
+ng g st State --state-path store --root  --state-interface AppState -m app
+
+add ngrx store effects
+--------------------
+ng generate @ngrx/schematics:effect App --root --module app.module.ts
+ng g effect store/Store --root -m app
+
+add a lazyloaded feature module: Auth
+----------------------------
+ng g m auth --routing auth --route auth -m app
+
+generate feature store
+-----------------------
+ng generate store auth/Auth -m auth.module.ts
+generate feature 
+ng generate feature auth/Auth -m auth/auth.module.ts --group

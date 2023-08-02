@@ -1,0 +1,183 @@
+What is a monad?
+-----------------
+(monad in pictures:https://adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html)
+
+A monad is nothing more than an algebraic data type that follows a certain interface or protocol 
+A monad is a functor and an applicable
+Monad as a design pattern to control state and data flow,
+
+Functional programmers use monads to express things we can’t express with pure functions such as: 
+- state mutations, 
+- I/O, 
+- error handling, 
+- reading input from the user,
+
+functor:   - value with a context (value in a box)
+           - has a map function
+
+applicative - With an applicative, our values are wrapped in a context, just like Functors:
+            - But our functions are wrapped in a context too!
+            - knows how to apply a function wrapped in a context to a value wrapped in a context
+
+monad:     - is a functor 
+           - ia an applicative
+           - has a bind function (flatmap, chain)
+
+interface Monad {
+    of(a): Monad<a>
+    map(a -> b): Monad<b>
+    flatMap(a -> M<b>): Monad<b>
+}
+
+
+map   ::  (i ->   o ) -> e(i) -> e(o) -- Functor
+apply :: e(i ->   o ) -> e(i) -> e(o) -- Applicative
+bind  ::  (i -> e(o)) -> e(i) -> e(o) -- Monad
+         ^      ^
+
+
+  lift
+  ----
+- A unit function used to place (lift) a value into the monad container. 
+  You could also find it as from() or return() or of() or interval().
+
+  map
+  ----
+- A mapping function that lifts regular functions that work over these values, returning 
+  back a new instance of (generally) the same type containing the newly computed value.
+
+  bind
+  ----
+- A flatMap() also known as (bind()) that lifts a monad-returning function to work 
+  over the value in the container and flatten its result into a single structure.
+
+Monads must abide by certain mathematical laws derived from these operations. 
+This is why you can easily switch between different types of monads 
+and all should pretty much have the same expected behavior.
+
+Many types of Monads
+---------------------
+a lot of what you do with them in practice comes from the additional logic (the extended “behavior”) 
+that characterizes each monad uniquely
+
+Option, Maybe, Either, Observable....
+
+Observable Monad
+------------------
+ The Observable monad, has built-in logic that allows you to thread together 
+- a sequence of asynchronous computations as if you we’re mapping regular synchronous functions
+
+IO Monad
+---------
+
+IO can be used to create a referentially transparent-ish (if that’s even a term) program specification 
+made up of functions that may produce side effects like reading or writing to a DOM element. 
+
+Here’s an example of a program that rotates a DIV on an HTML page. 
+The rotate() function I’ll use takes 3 arguments, the browser Document object, 
+the selector string, and the number of degrees to rotate:
+
+const rotate = function(document, id) {
+   return function(deg) { 
+      let elem = document.querySelector(`${id}`);
+      elem.style[‘transform’] = `rotate(${deg}deg)`;
+   };
+};
+
+s you can see, I’m using a deferred (lazy) function so that I can partially evaluate the initial conditions 
+using Lodash.js and allow it easily compose:
+
+const rotateDom = _.partial(rotate, document);
+
+This is common when working with IO functionally — remember you don’t want the functions to run eagerly, 
+you want IO to execute these effects for you. IO is a very simple monad that implements 
+a slightly modified version of our abstract interface with the difference that instead of wrapping a value a, 
+it wraps a side effect function () -> a. I’ll show the pertinent pieces related to this post 
+(adapted and updated up from the monet.js project):
+
+class IO {
+   constructor(effect) {
+      if (!_.isFunction(effect)) {
+         throw ‘IO Usage: function required’;
+      } 
+      this.effect = effect;
+   }
+   // unit function
+   static of(a) { 
+       return new IO( () => a );
+   }
+   // map function
+   map(fn) { 
+      let self = this;
+      return new IO(() => fn(self.effect()));
+   }
+   // monadic bind
+   flatmap(fn) {
+      let self = this
+      return new IO(() => fn(self.effect()).run());
+   }
+ 
+   run() { 
+     return this.effect();
+   }
+}
+
+With IO I can map operations over effects and flatMap() to bring in other IO sequences of operations. 
+There’s really no other behavior aside from the standard interface (except for run(), 
+which I’ll discuss in a bit). Here’s how I can thread together a sequence of operations 
+both pure and impure and cause the DIV to rotate:
+
+IO.of(rotateDom('#name')).map(doNIntervals(12, 100)).run();
+
+So, with IO I get a lazy program description of a side effect with the promise of executing immediately 
+or in the future. In order to appreciate the animation effect, I need to use a series of functions 
+that execute asynchronous to the runtime of the code. Behind the scenes, this is what doNIntervals() does.
+
+function doNIntervals(n, interval) { 
+   return function times(fn) {
+      setTimeout(() => {
+         fn(n * -30);
+         if( — n >= 0) {
+            times(fn); 
+         }
+      }, interval); 
+   };
+}
+
+The Observable can do this better:
+----------------------------------
+ RxJS. This monad not only allows you to perform regular IO as I did previously, 
+but also asynchronous IO, as it makes the notion of time a first-class citizen
+ — this is that “extra behavior”
+
+It’s a much more powerful and feature-rich monad than IO that implements the basic abstract interface 
+as well as a ton of additional functionality for manipulating sequences of events over time
+
+Porting the same code above to rotate another panel with Observable is effortless:
+
+Rx.Observable.interval(100)
+ .map(val => val * 30 + 30)
+ .take(12)
+ .subscribe(rotateDom('#name2'));
+
+As you can see, my little convoluted recursive function boiled down to a sequence of simple operators 
+that bend time as I wish. In this case, the unit function (also called static factory operator) is interval(), 
+which lifts a sequence of integers separated by 100 milliseconds. I’m also using a simple map() 
+with a pure function, and then take(), which you can think as a filter() underneath. 
+RxJS also has a flatMap() operation (called mergeMap() in RxJS 5).
+
+IO and Observable monad:
+--------------------------
+Both monads are lazy in that the Observable won’t begin executing until subscribe() is called, 
+and similarly IO won’t start until run() is called.
+
+IO’s run() is what causes the chain of side effects to propagate and flush out any pending IO operations. 
+Likewise, subscribe() receives any events propagated from the streams that it’s made up of and performs 
+any necessary IO operations, rotating the DIV in this case. In a pure FRP observable chain, 
+all of the side effects should be propagated downstream to the subscribers.
+
+Observable is a hiding IO monad
+--------------------------------
+In conclusion: The Observable is really an IO monad in disguise!
+
+

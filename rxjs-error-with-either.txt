@@ -1,0 +1,31 @@
+https://dev.to/anthonyjoeseph/
+https://gist.githubusercontent.com/anthonyjoeseph/0cdb5ef29c8622648cd022d761b88e2c/raw/612742f7baf09fb7b3b460310e3985d1f96cf43e/catchErrorExperiment.ts
+
+import { flow, pipe } from 'fp-ts/function';
+import * as E from 'fp-ts/Either'
+import * as r from 'rxjs'
+import * as ro from 'rxjs/operators'
+import * as OB from 'fp-ts-rxjs/lib/Observable'
+
+export const tryCatch = <E, A>(
+  onErr: (e: unknown) => E
+): r.OperatorFunction<A, E.Either<E, A>> => flow(
+  OB.map(E.right),
+  ro.catchError(flow(onErr, E.left, OB.of))
+);
+
+const exceptionOnError = (a: unknown) => {
+  throw new Error('new error')
+}
+
+const a = pipe(
+  r.throwError(new Error('original error')),
+  tryCatch(exceptionOnError),
+)
+a.subscribe((e) => {
+  console.log(JSON.stringify(e))
+}, (error) => {
+  console.log(`caught by observable: ${(error as Error).message}`)
+})
+// output:
+// caught by observable: new error

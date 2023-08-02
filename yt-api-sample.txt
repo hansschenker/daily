@@ -1,0 +1,1515 @@
+OAuth Worksheet for Google
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Documentation:
+
+https://developers.google.com/accounts/docs/OAuth2
+
+https://developers.google.com/oauthplayground/
+
+
+
+Prerequisites:
+
+Google Account
+curl
+
+
+
+---------------------------------------------------------------
+Registration:
+--------------------------------------------------------------------
+https://console.developers.google.com
+
+What you need from registration:
+
+redirectURI =
+URLENCODE(redirectURI) =
+clientId =
+clientSecret =
+
+
+
+
+Authorization Endpoint (Browser):
+-----------------------------------------
+https://accounts.google.com/o/oauth2/
+
+auth?redirect...URLENCODE(redirectURI)
+&response_type=code&client_id=clientId
+&scope=https%3A%2F%2Fmail.google.com%2F
+&approval_prompt=force
+
+What you need:
+
+code =
+
+
+
+
+Token Endpoint:
+-------------------
+curl -X POST -H "content-type: application/x-www-form-urlencoded" -d 
+"grant_type=authorization_code
+&code=code
+&redirect_uri=URLENCODE(redirectURI)
+&client_id=clientId
+&client_secret=clientSecret" "https://accounts.google.com/o/oauth2/token"
+
+What you need:
+
+access_token =
+
+
+
+
+Resource Access:
+
+curl -H "Authorization: Bearer access_token" "https://www.googleapis.com/gmail/v1/users/eMailAddress/messages"
+--------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+google oauth playground youtube playlist
+--------------------------------------
+https://developers.google.com/oauthplayground/#step3&apisSelect=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube&scopes=list&url=https%3A%2F%2Fwww.googleapis.com%2Fyoutube%2Fv3%2Fplaylists%3Fpart%3Dsnippet%252CcontentDetails%26mine%3Dtrue&content_type=application%2Fjson&http_method=GET&useDefaultOauthCred=unchecked&oauthEndpointSelect=Google&oauthAuthEndpointValue=https%3A%2F%2Faccounts.google.com%2Fo%2Foauth2%2Fv2%2Fauth&oauthTokenEndpointValue=https%3A%2F%2Fwww.googleapis.com%2Foauth2%2Fv4%2Ftoken&includeCredentials=unchecked&accessTokenType=bearer&autoRefreshToken=unchecked&accessType=offline&prompt=consent&response_type=code&wrapLines=on
+
+oauth settings:
+----------------
+auth endpoint        https://accounts.google.com/o/oauth2/v2/auth
+token endpoint:      https://www.googleapis.com/oauth2/v4/token
+
+
+
+
+
+GET https://www.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetails&mine=true&key=AIzaSyC53OmgjbbJsljtZ03HO6cSBi5EvlJTdrI HTTP/1.1
+--------------------------------------------------
+
+GET /youtube/v3/playlists?part=snippet%2CcontentDetails&mine=true HTTP/1.1
+Host: www.googleapis.com
+Content-length: 0
+Authorization: Bearer ya29.Il-yB4MBOSj7J1ZF38ezK4JgF33wMpF9GE6oD7n9Y8gJAUoeqSH6bQqSv858pGY3TtxZ3C8ZAE27IAnxfqXtgcdLI3kJy6hmkG8KRkrIbf_duPm5Uksgh_xNf9zqLDc7-g
+---------------------------------------------------------
+
+Authorization: Bearer [YOUR_ACCESS_TOKEN]
+Accept: application/json
+
+
+1 2 3 # @  * + 	 ""Ff
+114465590
+23.04.1957
+2019-2020,
+http://localhost:8081/
+google project 
+yt-videos-202009
+--------------------------------------------------------------
+yt-videos-api-key, AIzaSyC53OmgjbbJsljtZ03HO6cSBi5EvlJTdrI
+                   
+
+yt channel id, UCYlW9EuQnlNRtEYqVtpfbDw
+
+// YOU WILL NEED TO ADD YOUR OWN API KEY IN QUOTES ON LINE 5, EVEN FOR THE PREVIEW TO WORK.
+// 
+// GET YOUR API HERE https://console.developers.google.com/apis/api
+
+
+// https://developers.google.com/youtube/v3/docs/playlistItems/list
+
+// https://console.developers.google.com/apis/api/youtube.googleapis.com/overview?project=webtut-195115&duration=PT1H
+
+// <iframe width="560" height="315" src="https://www.youtube.com/embed/qxWrnhZEuRU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+// https://i.ytimg.com/vi/qxWrnhZEuRU/mqdefault.jpg
+
+
+$(document).ready(function () {
+
+    var key = [YOUR API KEY HERE];
+    var playlistId = 'PL2fnLUTsNyq7A335zB_RpOzu7hEUcSJbB';
+    var URL = 'https://www.googleapis.com/youtube/v3/playlistItems';
+
+
+    var options = {
+        part: 'snippet',
+        key: key,
+        maxResults: 20,
+        playlistId: playlistId
+    }
+
+    loadVids();
+
+    function loadVids() {
+        $.getJSON(URL, options, function (data) {
+            var id = data.items[0].snippet.resourceId.videoId;
+            mainVid(id);
+            resultsLoop(data);
+        });
+    }
+
+    function mainVid(id) {
+        $('#video').html(`
+					<iframe width="560" height="315" src="https://www.youtube.com/embed/${id}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+				`);
+    }
+
+		
+    function resultsLoop(data) {
+
+        $.each(data.items, function (i, item) {
+
+            var thumb = item.snippet.thumbnails.medium.url;
+            var title = item.snippet.title;
+            var desc = item.snippet.description.substring(0, 100);
+            var vid = item.snippet.resourceId.videoId;
+
+
+            $('main').append(`
+							<article class="item" data-key="${vid}">
+
+								<img src="${thumb}" alt="" class="thumb">
+								<div class="details">
+									<h4>${title}</h4>
+									<p>${desc}</p>
+								</div>
+
+							</article>
+						`);
+        });
+    }
+
+		// CLICK EVENT
+    $('main').on('click', 'article', function () {
+        var id = $(this).attr('data-key');
+        mainVid(id);
+    });
+
+
+});
+
+
+interface RootObject {
+  kind: string;
+  etag: string;
+  nextPageToken: string;
+  pageInfo: PageInfo;
+  items: Item[];
+}
+
+interface Item {
+  kind: string;
+  etag: string;
+  id: string;
+  snippet: Snippet;
+  contentDetails: ContentDetails;
+}
+
+interface ContentDetails {
+  itemCount: number;
+}
+
+interface Snippet {
+  publishedAt: string;
+  channelId: string;
+  title: string;
+  description: string;
+  thumbnails: Thumbnails;
+  channelTitle: string;
+  localized: Localized;
+}
+
+interface Localized {
+  title: string;
+  description: string;
+}
+
+interface Thumbnails {
+  default: Default;
+  medium: Default;
+  high: Default;
+  standard?: Default;
+  maxres?: Default;
+}
+
+interface Default {
+  url: string;
+  width: number;
+  height: number;
+}
+
+interface PageInfo {
+  totalResults: number;
+  resultsPerPage: number;
+}
+
+// query result channel playlists (2500!!) 50 per page = 50 pages
+
+{
+ "kind": "youtube#playlistListResponse",
+ "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/8fNYmZ6QnRikmveaxTMcCqfDTkM\"",
+ "nextPageToken": "CBkQAA",
+ "pageInfo": {
+  "totalResults": 2497,
+  "resultsPerPage": 25
+ },
+ "items": [
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/IidKM0l3yzDKe3V6m-y45uv08FA\"",
+   "id": "PLw5h0DiJ-9PA3UvLepR5MAB2-Kzzkd-oX",
+   "snippet": {
+    "publishedAt": "2019-11-26T14:35:31.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Youtube - API",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/Z2ol5_qmvsg/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/Z2ol5_qmvsg/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/Z2ol5_qmvsg/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/Z2ol5_qmvsg/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/Z2ol5_qmvsg/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Youtube - API",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 5
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/uwlWpJFziRDrVFZDqvAQ40fERso\"",
+   "id": "PLw5h0DiJ-9PCdFLnIWYItoGLH7xp2CicF",
+   "snippet": {
+    "publishedAt": "2019-11-26T12:18:31.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Component Design Kit CDK",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/SWb1AgU828w/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/SWb1AgU828w/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/SWb1AgU828w/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/SWb1AgU828w/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/SWb1AgU828w/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Component Design Kit CDK",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 8
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/hKWbLs5vPkxitF7vJiVK27t5Obs\"",
+   "id": "PLw5h0DiJ-9PBLU72-a28zxDe3yFAluxYi",
+   "snippet": {
+    "publishedAt": "2019-11-25T07:45:04.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Haskell - Programming",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/p-NBJm0kIYU/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/p-NBJm0kIYU/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/p-NBJm0kIYU/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/p-NBJm0kIYU/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/p-NBJm0kIYU/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Haskell - Programming",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 4
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/6kQFZz0-O_QbSqB4yxtLjxbRFkw\"",
+   "id": "PLw5h0DiJ-9PCYJCYS4JREYMzOJoELY4SY",
+   "snippet": {
+    "publishedAt": "2019-11-22T12:05:39.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Github - Hub",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/EwvdNslS2mA/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/EwvdNslS2mA/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/EwvdNslS2mA/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/EwvdNslS2mA/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/EwvdNslS2mA/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Github - Hub",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 4
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/ZcOyyZApPXk2QBVlhKxgt-QoXFI\"",
+   "id": "PLw5h0DiJ-9PDUv9aT_sEQfSZFD-asb0Rg",
+   "snippet": {
+    "publishedAt": "2019-11-21T08:20:06.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "React - React Hooks",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/V-QO-KO90iQ/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/V-QO-KO90iQ/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/V-QO-KO90iQ/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/V-QO-KO90iQ/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/V-QO-KO90iQ/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "React - React Hooks",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 5
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/pO243bVwW9aXiq69MVhO8rTe6B0\"",
+   "id": "PLw5h0DiJ-9PD0qoOuxpfWvzCZ9TfYnVX2",
+   "snippet": {
+    "publishedAt": "2019-11-20T17:00:14.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Compound Components",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/5rPZiBQjyE4/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/5rPZiBQjyE4/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/5rPZiBQjyE4/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/5rPZiBQjyE4/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/5rPZiBQjyE4/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Compound Components",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 6
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/34fyYdLHBeSLg9XUklGBYlZCvgY\"",
+   "id": "PLw5h0DiJ-9PDjhDqFuB2lMIHjkICHV3lC",
+   "snippet": {
+    "publishedAt": "2019-11-20T13:59:22.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Javascript - Functional Programming",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/RfwjaVEPeHk/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/RfwjaVEPeHk/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/RfwjaVEPeHk/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/RfwjaVEPeHk/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/RfwjaVEPeHk/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Javascript - Functional Programming",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 13
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/e3TeFjP610puOF-seayb9wCNKPM\"",
+   "id": "PLw5h0DiJ-9PAienj1uP9Pp5lCmTB5wnYM",
+   "snippet": {
+    "publishedAt": "2019-11-20T13:27:24.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Templating",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/k4_jW9bArZs/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/k4_jW9bArZs/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/k4_jW9bArZs/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Templating",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 1
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/z2xSDqneOOQs79FCFSJ3XsuMXgg\"",
+   "id": "PLw5h0DiJ-9PB_MXI1gdoANHhFUN6xl_fJ",
+   "snippet": {
+    "publishedAt": "2019-11-16T09:04:09.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Functional Programming",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/daFLRG_OjEA/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/daFLRG_OjEA/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/daFLRG_OjEA/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/daFLRG_OjEA/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/daFLRG_OjEA/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Functional Programming",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 7
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/PKOkJGY_FOW4tgUbwHuuPJxvsyw\"",
+   "id": "PLw5h0DiJ-9PAQf3cUqX09fsm8CvPN1k6T",
+   "snippet": {
+    "publishedAt": "2019-11-16T07:44:15.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Javascript - Abstract Data Types ADT",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/B0VoyujJWIE/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/B0VoyujJWIE/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/B0VoyujJWIE/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/B0VoyujJWIE/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/B0VoyujJWIE/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Javascript - Abstract Data Types ADT",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 6
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/ldQ-xtXT1Wfzn9XQrX1t_tHA_a8\"",
+   "id": "PLw5h0DiJ-9PDr9aeRPoJN_XWsXHZoNYKc",
+   "snippet": {
+    "publishedAt": "2019-11-15T17:55:26.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - The Roots of Angular in Google and Microsoft",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/0iQCLlu1dko/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/0iQCLlu1dko/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/0iQCLlu1dko/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/0iQCLlu1dko/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/0iQCLlu1dko/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - The Roots of Angular in Google and Microsoft",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 5
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/2otY0_JlAhMyvp67nhxUCIcbvgE\"",
+   "id": "PLw5h0DiJ-9PD9sbPNnHHhGVBVej5u6LK7",
+   "snippet": {
+    "publishedAt": "2019-11-15T10:01:28.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Typescripd - Advanced Types or Algebraic Data Types",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/8fWK2iYgsz8/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/8fWK2iYgsz8/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/8fWK2iYgsz8/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/8fWK2iYgsz8/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/8fWK2iYgsz8/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Typescripd - Advanced Types or Algebraic Data Types",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 8
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/PHBTzVyS7ne6tQRM4PFiIY3FALQ\"",
+   "id": "PLw5h0DiJ-9PDLbgaQyWwnypvUJ8wdVK0-",
+   "snippet": {
+    "publishedAt": "2019-11-12T08:41:05.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Angular Console Nrwl Opensource",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/k8rPyex44LY/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/k8rPyex44LY/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/k8rPyex44LY/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/k8rPyex44LY/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/k8rPyex44LY/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Angular Console Nrwl Opensource",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 1
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/a3xO721LF7mXFMjjqbWcEldwJvI\"",
+   "id": "PLw5h0DiJ-9PCkTVaQqnFakJ4XmSPA3o-R",
+   "snippet": {
+    "publishedAt": "2019-11-11T12:53:47.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Advanced Concepts",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/rKbY1t39dHU/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/rKbY1t39dHU/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/rKbY1t39dHU/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/rKbY1t39dHU/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/rKbY1t39dHU/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Advanced Concepts",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 11
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/Rzh2yafOui4AP6i2Jjq73Jc0xLQ\"",
+   "id": "PLw5h0DiJ-9PD7msGVhV_Cx8ZjVash6PBB",
+   "snippet": {
+    "publishedAt": "2019-11-08T09:49:46.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Microsyntax",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/W3cQLj0lwKw/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/W3cQLj0lwKw/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/W3cQLj0lwKw/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/W3cQLj0lwKw/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/W3cQLj0lwKw/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Microsyntax",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 10
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/BX5imAhsmDGyH07MEJgZnMpQd7I\"",
+   "id": "PLw5h0DiJ-9PCcXRLOeX9JnFg8ihayLoHA",
+   "snippet": {
+    "publishedAt": "2019-11-08T08:43:08.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular Material - CDK Expert Jeremy Elbourn",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/v__RuD9RX3I/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/v__RuD9RX3I/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/v__RuD9RX3I/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/v__RuD9RX3I/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/v__RuD9RX3I/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular Material - CDK Expert Jeremy Elbourn",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 5
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/P63TZysbidvYbqkvW2iAFM8d1Kk\"",
+   "id": "PLw5h0DiJ-9PDniP22se_OXU_QD9c54wcH",
+   "snippet": {
+    "publishedAt": "2019-11-04T14:56:13.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Npm - private Registry with Verdaccio",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/hDIFKzmoCaA/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/hDIFKzmoCaA/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/hDIFKzmoCaA/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/hDIFKzmoCaA/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/hDIFKzmoCaA/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Npm - private Registry with Verdaccio",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 4
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/gaCTFhjxmeSSrbQJ5LrlhJbxenw\"",
+   "id": "PLw5h0DiJ-9PDWg5CIzO9Si__1uVMLH24A",
+   "snippet": {
+    "publishedAt": "2019-10-29T08:29:35.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Typescript - with Anders Hejlsbert",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/kDqFKUN1AK4/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/kDqFKUN1AK4/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/kDqFKUN1AK4/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/kDqFKUN1AK4/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/kDqFKUN1AK4/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Typescript - with Anders Hejlsbert",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 5
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/KTwiXoVDkWcecOO42PBEFAohICY\"",
+   "id": "PLw5h0DiJ-9PAcHsBbHtRCh-psRpweE5fk",
+   "snippet": {
+    "publishedAt": "2019-10-24T08:24:16.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Workspace",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/bnhrLH3bOFo/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/bnhrLH3bOFo/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/bnhrLH3bOFo/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/bnhrLH3bOFo/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/bnhrLH3bOFo/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Workspace",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 4
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/RJeUjxyYCOWblgcbRmu-BwZTC6c\"",
+   "id": "PLw5h0DiJ-9PCGsup_rgX0XbuClcJf05L9",
+   "snippet": {
+    "publishedAt": "2019-10-21T08:12:27.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Jamstack",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/COAVmST41Q0/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/COAVmST41Q0/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/COAVmST41Q0/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/COAVmST41Q0/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/COAVmST41Q0/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Jamstack",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 3
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/l6qt5tQ8NxWjKBW-uk3YsGth1O0\"",
+   "id": "PLw5h0DiJ-9PBAGqGAeYO_gRJ31227knRC",
+   "snippet": {
+    "publishedAt": "2019-10-21T07:48:07.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Netlify",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/TVhApNKX0jA/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/TVhApNKX0jA/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/TVhApNKX0jA/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/TVhApNKX0jA/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/TVhApNKX0jA/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Netlify",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 8
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/OypF_IvWdrBT8bnxr1xyApQXrDw\"",
+   "id": "PLw5h0DiJ-9PAso_4uTuHMOLu03Lxd-zsi",
+   "snippet": {
+    "publishedAt": "2019-10-19T10:37:06.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Ionic - Appflow",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/HmcV4ouxLLA/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/HmcV4ouxLLA/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/HmcV4ouxLLA/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/HmcV4ouxLLA/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/HmcV4ouxLLA/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Ionic - Appflow",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 3
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/fpodrfQBu0MkpTaw4YGVusWW0J0\"",
+   "id": "PLw5h0DiJ-9PBPwn5jDud7BJ8Z-w23foC_",
+   "snippet": {
+    "publishedAt": "2019-10-10T08:25:29.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Where the Idea of Dependency Injection comes from",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/RlfLCWKxHJ0/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/RlfLCWKxHJ0/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/RlfLCWKxHJ0/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Where the Idea of Dependency Injection comes from",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 1
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/OG6xeixt88VoVmhPTr0Y9Hemxgc\"",
+   "id": "PLw5h0DiJ-9PAyEnXrrbbISxfOWMZXQM_-",
+   "snippet": {
+    "publishedAt": "2019-10-10T08:22:39.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Angular - Origins with Misko Hevery",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/SzRqd4YeLlM/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/SzRqd4YeLlM/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/SzRqd4YeLlM/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/SzRqd4YeLlM/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/SzRqd4YeLlM/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Angular - Origins with Misko Hevery",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 5
+   }
+  },
+  {
+   "kind": "youtube#playlist",
+   "etag": "\"j6xRRd8dTPVVptg711_CSPADRfg/y7mUl8eOfumnhYK2hdCzDJiOJkw\"",
+   "id": "PLw5h0DiJ-9PDHGLwXxQ4DYfvurREaPh7k",
+   "snippet": {
+    "publishedAt": "2019-10-07T14:11:10.000Z",
+    "channelId": "UCYlW9EuQnlNRtEYqVtpfbDw",
+    "title": "Firebase - Geofire",
+    "description": "",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/gYNwaKRWkVc/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/gYNwaKRWkVc/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/gYNwaKRWkVc/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/gYNwaKRWkVc/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/gYNwaKRWkVc/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Hans Schenker bei Google",
+    "localized": {
+     "title": "Firebase - Geofire",
+     "description": ""
+    }
+   },
+   "contentDetails": {
+    "itemCount": 4
+   }
+  }
+ ]
+}
+
+///////////////// query
+curl \
+  'https://www.googleapis.com/youtube/v3/playlists?part=snippet%2CcontentDetails&maxResults=25&mine=true&key=AIzaSyCZqzcrO9scFbjGuOzf8msJLs4ENTYOJ2M' \
+  --header 'Authorization: Bearer ya29.Il-yB1cKZvLyx-Fc6ypFm9FYF-jENw_VAxtfwFBujysipehGwawFzF3XSTQvaQl7Gyzlu04WUTRKfWhdae08WsJxlxgRem-PSmSpwfVxOhAdzTQCa0oEO-t3CrDJ6_lfRA' \
+  --header 'Accept: application/json' \
+  --compressed
+
+// yt-videos-202009 oauth clientid download json 
+{ 
+   "web":{ 
+      "client_id":"551424257058-jujv34b65gj6bimb8r6p44f9k5mtmhum.apps.googleusercontent.com",
+      "project_id":"yt-videos-202009",
+      "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+      "token_uri":"https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+      "client_secret":"ffFi3z9qTiMzt9bkOhcJZFGu",
+      "redirect_uris":[ 
+         "https://localhost:4200/auth"
+      ],
+      "javascript_origins":[ 
+         "https://localhost:4200"
+      ]
+   }
+}
+
+// oauth access-token: google oauth playground
+.............................................................
+POST /oauth2/v4/token HTTP/1.1
+Host: www.googleapis.com
+Content-length: 277
+content-type: application/x-www-form-urlencoded
+user-agent: google-oauth-playground
+code=4%2FtgFmsxQfmRlPi-zm5C-tR03ODXr1SBzmNB7cTKRrPj96lY1f2S1mKXfjhjk7Un9nakoo7ZsxY6qFHSSHNoc4i-g&redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&client_id=407408718192.apps.googleusercontent.com&client_secret=************&scope=&grant_type=authorization_code
+HTTP/1.1 200 OK
+Content-length: 387
+X-xss-protection: 0
+X-content-type-options: nosniff
+Transfer-encoding: chunked
+Vary: Origin, X-Origin, Referer
+Server: scaffolding on HTTPServer2
+-content-encoding: gzip
+Cache-control: private
+Date: Tue, 26 Nov 2019 17:23:25 GMT
+X-frame-options: SAMEORIGIN
+Alt-svc: quic=":443"; ma=2592000; v="46,43",h3-Q050=":443"; ma=2592000,h3-Q049=":443"; ma=2592000,h3-Q048=":443"; ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443"; ma=2592000
+Content-type: application/json; charset=utf-8
+{
+  "access_token": "ya29.Il-yB1cKZvLyx-Fc6ypFm9FYF-jENw_VAxtfwFBujysipehGwawFzF3XSTQvaQl7Gyzlu04WUTRKfWhdae08WsJxlxgRem-PSmSpwfVxOhAdzTQCa0oEO-t3CrDJ6_lfRA", 
+  "scope": "https://www.googleapis.com/auth/youtube", 
+  "token_type": "Bearer", 
+  "expires_in": 3600, 
+  "refresh_token": "1//04yR6czdtEmq5CgYIARAAGAQSNwF-L9IrVb901_W6O-zh-ZusaMbXPYyZas2g6oJwYZp8B5iFnTxjO-wRqb0ueOqi-HhTbBCRoT8"
+}
+
+/////////// javascript youtube api access
+<script src="https://apis.google.com/js/api.js"></script>
+<script>
+  /**
+   * Sample JavaScript code for youtube.playlists.list
+   * See instructions for running APIs Explorer code samples locally:
+   * https://developers.google.com/explorer-help/guides/code_samples#javascript
+   */
+
+  function authenticate() {
+    return gapi.auth2.getAuthInstance()
+        .signIn({scope: "https://www.googleapis.com/auth/youtube.readonly"})
+        .then(function() { console.log("Sign-in successful"); },
+              function(err) { console.error("Error signing in", err); });
+  }
+  function loadClient() {
+    gapi.client.setApiKey("YOUR_API_KEY");
+    return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
+        .then(function() { console.log("GAPI client loaded for API"); },
+              function(err) { console.error("Error loading GAPI client for API", err); });
+  }
+  // Make sure the client is loaded and sign-in is complete before calling this method.
+  function execute() {
+    return gapi.client.youtube.playlists.list({
+      "part": "snippet,contentDetails",
+      "mine": true
+    })
+        .then(function(response) {
+                // Handle the results here (response.result has the parsed body).
+                console.log("Response", response);
+              },
+              function(err) { console.error("Execute error", err); });
+  }
+  gapi.load("client:auth2", function() {
+    gapi.auth2.init({client_id: "YOUR_CLIENT_ID"});
+  });
+</script>
+<button onclick="authenticate().then(loadClient)">authorize and load</button>
+<button onclick="execute()">execute</button>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-analytics.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+
+  var firebaseConfig = {
+    apiKey: "AIzaSyBxD4OJd34mJYNSagOI9df--cd2DUPsgUk",
+    authDomain: "netxpert-cb9e4.firebaseapp.com",
+    databaseURL: "https://netxpert-cb9e4.firebaseio.com",
+    projectId: "netxpert-cb9e4",
+    storageBucket: "netxpert-cb9e4.appspot.com",
+    messagingSenderId: "995782541848",
+    appId: "1:995782541848:web:2cab9b89e99b213e06796d",
+    measurementId: "G-C0YP8WYHZH"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+</script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBxD4OJd34mJYNSagOI9df--cd2DUPsgUk",
+  authDomain: "netxpert-cb9e4.firebaseapp.com",
+  databaseURL: "https://netxpert-cb9e4.firebaseio.com",
+  projectId: "netxpert-cb9e4",
+  storageBucket: "netxpert-cb9e4.appspot.com",
+  messagingSenderId: "995782541848",
+  appId: "1:995782541848:web:2cab9b89e99b213e06796d",
+  measurementId: "G-C0YP8WYHZH"
+};

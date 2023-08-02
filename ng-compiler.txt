@@ -1,0 +1,31 @@
+An Angular Module is a unit of compilation
+-------------------------------------------------------
+template + components, directives and pipes in c
+are used to create a Modulefactory.
+
+At the core of Angular is a sophisticated compiler, 
+which takes an NgModule type and produces an NgModuleFactory.
+
+The component factory is a JavaScript class the framework 
+can use to stamp out components.
+
+JIT (runtime) and AOT (buildtime)
+-----------------------------------------------------------
+JIT
+-------------------------
+Angular 1 is a sophisticated HTML compiler that generates code at runtime. 
+New versions of Angular have this option too: they can generate the code at runtime, 
+or just in time (JIT). In this case the compilation happens while the application is being bootstrapped.
+AOT
+----------------------- 
+But they also has another option: they can run the compiler as part of application’s build, or ahead of time (AOT).
+
+Recap
+--------------------------------------------------------------------------------------------------------
+The central part of Angular is its compiler.
+The compilation can be done just in time (at runtime) and ahead of time (as a build step).
+The AOT compilation creates smaller bundles, tree shakes dead code, makes your templates type-safe, 
+and improves the bootstrap time of your application.
+The AOT compilation requires certain metadata to be known statically, 
+so the compilation can happen without actually executing the code.
+

@@ -1,0 +1,217 @@
+algebraic data type (ADT) is a kind of composite type
+--------------------------------------------------------------------------------------------------
+In computer programming, especially functional programming and type theory, 
+an algebraic data type (ADT) is a kind of composite type, i.e., a type formed by combining other types.
+
+Product Types and Sum Types
+--------------------------------------------------------------------------------------------------
+Two common classes of algebraic types are 
+- product types (i.e., tuples and records) and 
+- sum types (i.e., tagged or disjoint unions, coproduct types or variant types).[1]
+
+Product Types - the Cartesian Product (the set of all common fields)
+--------------------------------------------------------------------------------------------------
+The values of a product type typically contain several values, called fields. 
+All values of that type have the same combination of field types. 
+The set of all possible values of a product type is the set-theoretic product, i.e., the Cartesian product, 
+of the sets of all possible values of its field types.
+
+Sum Types - the sum of the number of fields (the set of all possible values)
+--------------------------------------------------------------------------------------------------
+The values of a sum type are typically grouped into several classes, called variants. A value of a variant type 
+is usually created with a quasi-functional entity called a constructor. 
+Each variant has its own constructor, which takes a specified number of arguments with specified types. 
+The set of all possible values of a sum type is the set-theoretic sum, i.e., 
+the disjoint union, of the sets of all possible values of its variants. 
+Enumerated types are a special case of sum types in which the constructors take no arguments, 
+as exactly one value is defined for each constructor.
+
+Pattern Matching
+--------------------------------------------------------------------------------------------------
+Values of algebraic types are analyzed with pattern matching, which identifies a value by its constructor 
+or field names and extracts the data it contains.
+
+
+According to the docs, the programmer needs three things in order to create an algebraic data type in TypeScript:
+
+ - Types that have a common, singleton type property — the _discriminant_.
+ - A type alias that takes the union of those types — the _union_.
+ - Type guards on the common property.
+
+What is an ADT?
+In computer programming, especially functional programming and type theory, 
+an algebraic data type is a kind of composite type, i.e., a type formed by combining other types.
+
+Two common classes of algebraic types are:
+
+product types
+sum types
+
+Product types
+---------------------------------------------------------------------------------------------
+A product type is a collection of types Ti indexed by a set I.
+
+Two common members of this family are n-tuples, where I is a non empty interval of natural numbers...
+type Tuple1 = [string] // I = [0]
+type Tuple2 = [string, number] // I = [0, 1]
+type Tuple3 = [string, number, boolean] // I = [0, 1, 2]
+
+// Accessing by index
+type Fst = Tuple2[0] // string
+type Snd = Tuple2[1] // number
+
+
+xample
+type Hour = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+type Period = 'AM' | 'PM'
+type Clock = [Hour, Period]
+The Clock type has 12 * 2 = 24 inhabitants.
+
+When should I use a product type?
+Whenever its components are independent.
+type Clock = [Hour, Period]
+
+
+
+Sum types
+-----------------------------------------------------------------------------------------------------------
+A sum type is a data structure used to hold a value that could take on several different, 
+but fixed, types. Only one of the types can be in use at any one time, and a tag field explicitly indicates which one is in use.
+
+In the TypeScript documentation they are named tagged union types.
+
+Example (redux actions)
+type Action =
+  | {
+      type: 'ADD_TODO'
+      text: string
+    }
+  | {
+      type: 'UPDATE_TODO'
+      id: number
+      text: string
+      completed: boolean
+    }
+  | {
+      type: 'DELETE_TODO'
+      id: number
+    }
+
+
+The type field is the tag and ensures that its members are disjoint.
+
+Constructors
+A sum type with n members requires n constructors, one for each member
+const add = (text: string): Action => ({
+  type: 'ADD_TODO',
+  text
+})
+
+const update = (id: number, text: string, completed: boolean): Action => ({
+  type: 'UPDATE_TODO',
+  id,
+  text,
+  completed
+})
+
+const del = (id: number): Action => ({
+  type: 'DELETE_TODO',
+  id
+})
+Sum types can be polymorphic and/or recursive.
+
+Example (linked lists)
+//        ↓ type parameter
+type List<A> = { type: 'Nil' } | { type: 'Cons'; head: A; tail: List<A> }
+//                                                              ↑ recursion
+
+
+Sum types for Domain Modeling
+---------------------------------------------------------------------------------------------------
+Sum types are an incredibly useful and fundamental language feature, 
+they are the key to design excellent domain models by allowing to make illegal states irrepresentable.
+
+
+algebraic data types
+--------------------------------------------------------------------------------
+
+The algebraic data types can be created using so-called discriminated union types
+
+
+type Tree<T> = Empty | Node<T>;
+
+class Node<T> {
+    constructor(
+        public value: T,
+        public left: Tree<T>,
+        public right: Tree<T>
+    ) {}
+
+    public toString() {
+        return `Node(${this.value}, ${this.left.toString()}, ${this.right.toString()})`;
+    }
+}
+
+class Empty {
+    public toString() {
+        return 'Empty';
+    }
+}
+
+const tree = new Node(
+    42,
+    new Node(
+        0,
+        new Empty(),
+        new Empty()
+    ),
+    new Empty()
+)
+
+console.log(tree.toString()); // prints Node(42, Node(0, Empty, Empty), Empty)
+
+
+Discriminated Unions
+---------------------------------------------------------------------------------------------------------------------------------
+
+The closest equivalent to data is a union of types with discriminant properties, normally called discriminated unions in TypeScript:
+
+type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "square"; x: number }
+  | { kind: "triangle"; x: number; y: number };
+Unlike Haskell, the tag, or discriminant, is just a property in each object type. Each variant has an 
+identical property with a different unit type. This is still a normal union type; the leading | is an optional part 
+
+of the union type syntax. You can discriminate the members of the union using normal JavaScript code:
+
+type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "square"; x: number }
+  | { kind: "triangle"; x: number; y: number };
+
+function area(s: Shape) {
+  if (s.kind === "circle") {
+    return Math.PI * s.radius * s.radius;
+  } else if (s.kind === "square") {
+    return s.x * s.x;
+  } else {
+    return (s.x * s.y) / 2;
+  }
+}
+
+Note that the return type of area is inferred to be number because TypeScript knows the function is total. 
+If some variant is not covered, the return type of area will be number | undefined instead.
+
+Also, unlike Haskell, common properties show up in any union, so you can usefully discriminate multiple members of the union:
+
+function height(s: Shape) {
+  if (s.kind === "circle") {
+    return 2 * s.radius;
+  } else {
+    // s.kind: "square" | "triangle"
+    return s.x;
+  }
+}
+
+s

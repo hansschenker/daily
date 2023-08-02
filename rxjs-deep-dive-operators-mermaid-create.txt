@@ -1,0 +1,51 @@
+Creation Operators
+-------------------------------------------------------------------------------------------------------------
+
+flowchart LR
+A100[creation] --> A101[fetch response returned from API]
+                   A101 --> A102[use ajax url]
+
+A100 -->A200[callback API to a function that returns an Obs
+ 	A200 --> A201[use CallbackFunc]
+
+A100 -->A300[Node API to a function that returns an Obs 	
+	A300 --> A301[bindNodeCallback fs.readFile]
+
+A100 -->A400[Creates an Obs that, on subscribe, calls an Obs factory to make an Ob sfor each new Obs] 		
+	A400 --> A401[ticks = defer _ =>  interval _1000_]
+
+A100 -->A500[A Obs that emits no items to the Obv and immediately emits a complete notification] 
+	A500 --> A501[EMPTY]
+
+A100 -->A600[Creates an Obs from an Array, an array-like, a Promise, an iterable, or an Obs-like]	
+	A600 --> A601[from array]
+
+A100 -->A700[Creates an Obs that emits events of a specific type coming from the given event target] 	
+	A700 --> A701[fromEvent document, 'click']
+
+A100 -->A800[Creates an Obs from an arbitrary API for registering event handlers]				
+	A800 --> A801[fromEventPattern]
+									          
+A100 -->A900[generate sequence of numbers]				
+	A900 --> A901[ generate 0, x => x < 3, x => x + 1, x => x]
+
+A100 -->B100[interval waits for the passed 1000 before starting]
+	B100 --> B101[interval _1000_]
+
+A100 -->B200[Converts the arguments to an obs sequence]	
+	B200 --> B201[of_'Hello'_]
+
+A100 -->B300[Creates an Obsthat emits a sequence of numbers within a specified range]			
+	B300 --> B301[range _1, 3_]
+
+A100 -->B400[Create obs will create a new er with a message]		
+	B400 --> B401[throwError _ => const er = new Error `nbr $ ++nbr ` return error]
+									    
+
+A100 -->B500[timer starts interval immediately] 		
+	B500 --> B501[timer_0, 1000_]
+	
+
+A100 -->B600[Checks a boolean and chooses between one of two obs sources] 			
+	B600 --> B601[iif_ _ => isTrue, of_'t'_, of_'f'_ ]
+	

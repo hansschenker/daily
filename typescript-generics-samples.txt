@@ -1,0 +1,175 @@
+
+function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+    return obj[key];
+}
+
+c
+
+
+
+// generic set
+const set<T> = <T>(input: T): T => { console.log(input); return input;
+
+}
+// generic get
+const get<T> = (input:T) => void
+
+
+
+
+
+For example, you could write
+
+export interface MayHaveId {
+  id?: number; // you can use any type, number is just an example
+}
+
+export abstract class BaseService<T extends MayHaveId> {
+  saveItem(item: T) {
+    if (item.id !== undefined) {
+      console.log(item.id);
+    }
+  }
+} 
+
+We can define a type with a dynamic property by using a parametric generic type
+
+type WithProperty<K extends string, V = {}> = {
+  [P in K]: V
+}
+We can consume this type
+
+function withProperty<T, K extends string, V> (x: T, properties: WithProperty<K, V>) {
+  return Object.assign(x, properties);
+}
+
+
+type BoxFunc<T> = typeof makeBox<T>;  // (value: T) => { value: T }
+type Box<T> = ReturnType<typeof makeBox<T>>;  // { value: T }
+type StringBox = Box<string>;  // { value: string 
+
+
+function getList<T>(): {
+  list: T[],
+  add: (v: T) => void,
+  remove: (v: T) => void,
+  // ...blahblah
+}
+const wrapperGetList = () => getList<number>()
+type List = ReturnType<typeof wrapperGetList>
+// List = {list: number[], add: (v: number) => void, remove: (v: number) => void, ...blahblah}
+
+
+function foo<T>(e: T): T {
+   return e;
+}
+
+type fooReturn = ReturnType<typeof foo<number>>; // Damn! it throws error
+
+// BUT if you try defining your function as an interface like this:
+
+interface foo<T>{
+   (e: T): T
+}
+
+type fooReturn = ReturnType<foo<number>> //it's number, It works!!!
+type fooParams = Parameters<foo<string>> //it also works!! it is [string]
+
+//and you can use the interface in this way
+const myfoo: foo<number> = (asd: number) => {
+    return asd;
+};
+
+myfoo(7);
+
+function foo<T>(x: T): T {
+  return x;
+}
+
+
+interface Callable<R> {
+  (...args: any[]): R;
+}
+
+type GenericReturnType<R, X> = X extends Callable<R> ? R : never;
+
+type N = GenericReturnType<number, typeof foo>; // number
+
+function pickObjectKeys(obj, keys) {
+  let result = {}
+  for (const key of keys) {
+    if (key in obj) {
+      result[key] = obj[key]
+    }
+  }
+  return result
+}
+This snippet shows the pickObjectKeys() function, which iterates over the keys array and creates a new object with the keys specified in the array.
+
+Here is an example showing how to use the function:
+
+const language = {
+  name: "TypeScript",
+  age: 8,
+  extensions: ['ts', 'tsx']
+}
+
+const ageAndExtensions = pickObjectKeys(language, ['age', 'extensions'])
+This declares an object language, then isolates the age and extensions property with the pickObjectKeys() function. The value of ageAndExtensions would be as follows:
+
+{
+  age: 8,
+  extensions: ['ts', 'tsx']
+}
+If you were to migrate this code to TypeScript to make it type-safe, you would have to use generics. You could refactor the code by adding the following highlighted lines:
+
+function pickObjectKeys<T, K extends keyof T>(obj: T, keys: K[]) {
+  let result = {} as Pick<T, K>
+  for (const key of keys) {
+    if (key in obj) {
+      result[key] = obj[key]
+    }
+  }
+  return result
+}
+
+const language = {
+  name: "TypeScript",
+  age: 8,
+  extensions: ['ts', 'tsx']
+}
+
+const ageAndExtensions = pickObjectKeys(language, ['age', 'extensions'])
+
+function stringifyObjectKeyValues<T extends Record<string, any>>(obj: T) {
+  return Object.keys(obj).reduce((acc, key) =>  ({
+    ...acc,
+    [key]: JSON.stringify(obj[key])
+  }), {} as { [K in keyof T]: string })
+}
+
+function stringifyObjectKeyValues<T extends Record<string, any>>(obj: T) {
+  // ...
+}
+function stringifyObjectKeyValues<T extends Record<string, any>>(obj: T) {
+  return Object.keys(obj).reduce((acc, key) =>  ({
+    ...acc,
+    [key]: JSON.stringify(obj[key])
+  }), {} as { [K in keyof T]: string })
+}
+
+const stringifiedValues = stringifyObjectKeyValues({ a: "1", b: 2, c: true, d: [1, 2, 3]})
+
+type BooleanFields<T> = {
+  [K in keyof T]: boolean;
+}type BooleanFields<T> = {
+  [K in keyof T]: boolean;
+}
+
+
+
+function tap<T>(arg: T, fn: (arg: T) => void): T {
+  fn(arg);
+  return arg;
+}
+

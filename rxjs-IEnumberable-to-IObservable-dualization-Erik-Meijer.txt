@@ -1,0 +1,102 @@
+IEnumerable vs IEnumerator interface
+
+
+- IEnumerable<T> has just one method called GetEnumerator<T>()  
+  This method returns another type which is an interface that interface is IEnumerator<T>.
+
+- IEnumerator<T> has two methods 
+  - bool or T MoveNext
+  - Current T
+---------------------------------------------------------------
+  interface IEnumberable<T> {
+    IEnumerator<T> GetEnumerator()
+  }
+
+  interface IEnumerator<T> : IDisosable {
+    bool or error MoveNext()
+    T Current { get }
+  }
+
+
+  interface IObservable<T> {
+    IDisposable Subscribe(IObserver<T> o)
+  }
+
+  interface IObserver<T> {
+    void onNext(T)
+    void onError(Ex)
+    void onDone()
+  }
+
+ 
+
+
+ 
+
+
+
+
+ 
+
+
+ 
+
+
+
+ 
+
+ 
+
+
+ 
+
+
+
+ 
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+ 
+ 
+
+
+ 
+
+ 
+
+ 
+ 
+
+ 
+
+
+
+ 
+
+ 
+
+ 
+
+

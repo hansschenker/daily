@@ -1,0 +1,183 @@
+create snake game with the help of chatgpt
+-----------------------------------------------------------------------------------------------
+
+Given 	I have setup board of 30 by 30 cells 
+      	and placed an initial snake with 3 cells in width in the middle of the board 
+      	and also place a food with 1 cell width on a random cell on the board, 
+
+When    the game starts, that is when the timer starts the snake moves in the initial Direction
+        with an initial speed in milliseconds
+When 	the user presses a key arrow 
+        then the snake moves in the direction of the last arrow key
+        the snake can not move in the opposite direction of the last pressed arrow key 
+
+Then	I can move the snake in the direction of the last keypress 
+        and check wheter the snake collides with the food, the board border or itself. 
+        and when there is a collison with the food, 
+          a new  food gets randomly placed 
+          and the snake grows 1 cell longer,
+          and the game score goes 1 point up 
+        and when there is a collisona with itself 
+          the player looses the game
+          and the game is over
+
+To create a snake game in Javascript using Rxjs, you will need to follow these steps:
+
+Set up the game board: Create a 30 by 30 grid of cells using HTML and CSS.
+
+Place the initial snake: Create a snake object with a width of 3 cells, and place it in the middle 
+of the game board.
+
+Place a food: Create a food object with a width of 1 cell, and place it on a random cell 
+on the game board.
+
+Start the game: When the timer starts, the snake should move in the initial direction with a 
+given speed in milliseconds.
+
+Handle arrow key presses: When the user presses an arrow key, update the direction of the snake 
+accordingly. The snake should not be allowed to move in the opposite direction of the last 
+arrow key pressed.
+
+Move the snake: On each timer tick, move the snake in the current direction. Check whether 
+the snake collides with the food, the board border, or itself.
+
+Handle collisions: If the snake collides with the food, create a new food object at a random location, 
+increase the length of the snake by one cell, and increase the game score by one. If the 
+snake collides with itself or the board border, the player loses the game and the game is over.
+
+To implement this game using Rxjs, you can create observables for each aspect of the game 
+(such as arrow key presses, timer ticks, and collisions), and use operators to combine and 
+transform these observables as needed. For example, you can use the fromEvent operator to 
+create an observable for arrow key presses, and the interval operator to create an observable 
+for timer ticks. You can then use combineLatest or other operators to combine these observables 
+and update the game state accordingly.
+
+const boardWidth = 30;
+const boardHeight = 30;
+
+const initialSnakeWidth = 3 // cells;
+const initialSpeed = 500; // milliseconds
+let direction = 'right'; // initial direction
+
+// create a subject to emit arrow key presses
+const arrowKeys$ = new BehaviorSubject<string>(direction);
+
+// create an observable for timer ticks
+const timer$ = interval(initialSpeed);
+
+// create an observable for snake movements based on the current direction
+const snake$ = timer(0, initialSpeed)
+  .pipe(
+    map(() => {
+      const head = snake[snake.length - 1];
+      let newHead;
+      switch (direction) {
+        case 'up':
+          newHead = [head[0] - 1, head[1]];
+          break;
+        case 'down':
+          newHead = [head[0] + 1, head[1]];
+          break;
+        case 'left':
+          newHead = [head[0], head[1] - 1];
+          break;
+        case 'right':
+          newHead = [head[0], head[1] + 1];
+          break;
+      }
+      snake.push(newHead);
+      if (snake.length > length) {
+        snake.shift();
+      }
+      return snake;
+    })
+  );
+
+// create an observable for food placement
+const food$ = of(getRandomFood());
+
+// create an observable for collisions
+const collision$ = combineLatest(snake$, food$)
+  .pipe(
+    map(([snake, food]) => {
+      const head = snake[snake.length - 1];
+      // border collison
+      if (head[0] < 0 || head[0] >= boardHeight || head[1] < 0 || head[1] >= boardWidth) {
+        return 'border';
+      }
+      // self collison
+      for (let i = 0; i < snake.length - 1; i++) {
+        if (snake[i][0] === head[0] && snake[i][1] === head[1]) {
+          return 'self';
+        }
+      }
+      // food collision
+      if (head[0] === food[0] && head[1] === food[1]) {
+        return 'food';
+      }
+      return 'none';
+    })
+  );
+
+// subscribe to arrow key presses and update the direction accordingly
+document.addEventListener('keydown', (event) => {
+  if (event.code === 'ArrowUp' && direction !== 'down') {
+    //direction = 'up';
+    arrowKeys$.next('up');
+  }
+  if (event.code === 'ArrowDown' && direction !== 'up') {
+    //direction = 'down';
+    arrowKeys$.next('down');
+  }
+  if (event.code === 'ArrowLeft' && direction !== 'right') {
+    //direction = 'left';
+    arrowKeys$.next('left');
+  }
+  if (event.code === 'ArrowRight' && direction !== 'left') {
+    //direction = 'right';
+    arrowKeys$.next('right');
+  }
+});
+
+// combine the observables and subscribe to update the game state
+combineLatest(timer$, arrowKeys$, snake$, food$, collision$)
+  .pipe(
+    takeWhile(([timer, arrow, snake, food, collision]) => collision !== 'self' && collision !== 'border')
+  )
+  .subscribe(([timer, arrow, snake, food, collision]) => {
+    if (collision === 'food') {
+      length++;
+      score++;
+      food$ = of(getRandomFood());
+    }
+
+
+export interface Point2D {
+  x: number;
+  y: number;
+}
+
+export interface Directions {
+  [key: number]: Point2D;
+}
+
+export const DIRECTIONS: Directions = {
+  37: { x: -1, y: 0 }, // Left Arrow
+  39: { x: 1, y: 0 },  // Right Arrow
+  38: { x: 0, y: -1 }, // Up Arrow
+  40: { x: 0, y: 1 }   // Down Arrow
+};
+
+                 
+type Direction = [number, number]
+const x = Direction[0]
+const y = Direction[1]
+type Axis = "x" or "y"
+
+{["ArrowRight"]:Direction }
+
+x directions: ArrowRight: 	x: 1,  	y:0  -> [1,0] not [-1,0] // * -1
+              ArrowLeft:  	x:-1,  	y:0  -> [-1,0] not [1,0] // * -1
+
+y directions: ArrowUp: 		y: -1,  x:0 -> [0,-1] not [0,1] // * -1
+              ArrowDown:  	y:  1,  x:0 -> [0,1] not [0,-1] // * -1

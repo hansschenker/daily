@@ -1,0 +1,174 @@
+nicholoas jamieson:
+----------------------------------------------------------------------------------------------
+
+core concepts 
+---------------------------------------------------------------------------------------------
+are really observables observers and operators observables are
+
+sources of notifications observers subscribe to those observables to receive the notifications and operators
+
+are functions that take them observable and return a different observable so they're able to change the notifications
+
+that come from a source and floated the sync the easiest way to sort of explain
+
+those those those components is to sort of use an analogy so an observable is
+
+kind of like an event emitter but an event emitter just events emits one type
+
+of event whereas an observable has three types of notifications it can give you a value notification to give you a value
+
+it can give you an error notification to tell you than errors occurred and it can give you a complete notification to tell you that they're only gonna be no
+
+further notifications from that observable so it's kind of like an event
+
+emitter but it does a lot more and observers kind of like the listener for
+
+your event emitter but instead of just receiving one type of event you receive
+
+the notifications from the observables operators the analogy for an operator would be something like the the methods
+
+that are on an array in JavaScript you've got methods like map and filter that allow you to manipulate the
+
+elements of an array operators are kind of similar they lay to manipulate the
+
+notifications that are coming from a source and being receive I think so they
+
+still do the operators of used in location fax some people sort of refer to our experiences the lodash for events
+
+now you can sort of fit those analogies together to you know explain that sort
+
+of terminology but there is a there's another sort of cool concept it's largely intangible and that's the
+
+guarantees um our X gives you a bunch of guarantees behavioral guarantees for
+
+example if receive an observer received an error notification from an observable it's
+
+guaranteed that it will receive no further notifications from them serve all similarly if it receives a complete it's guaranteed not to receive any
+
+further notifications from the source and combined with those guarantees those
+
+core components observables observers and operators allow you to declaratively
+
+compose fairly complicated floats that you wouldn't be able to do if you didn't
+
+have those guarantees if you didn't have the guarantees you've been doing the sorts of things you might have to do with an event emitter where you'd have all sorts of you know if statements and
+
+things like if this has happened and this has happened then do this but the fact that it gives you those three sort of core components and the guarantees
+
+means you can build all sorts of interesting things it's actively I think
+
+I first got in contact with reactive extensions for Java a couple of years
+
+ago so there is our X Java our X dot net dot nets for example can be used with
+
+JavaScript would it be better to use rxjs instead of our X dot net so I mean
+
+if you're if you're targeting JavaScript or typescript you're probably better off using rxjs
+
+our X dot net as far as like I'm not
+
+even sure what you would do to use or accepting it to target JavaScript I'm assuming there's some sort of compilation step where it compiles the
+
+the c-sharp into javascript or something like that but um that's weirdly that's
+
+actually where arcs Jess was born like originally there was this project a long time ago called Microsoft project Volta
+
+which actually used the reactive X logo as its logo at Microsoft and it was the
+
+goal of it was to compile C sharp to C sharp to JavaScript and ultimately I
+
+rxjs operator usage library
+------------------------------
+eah that Lashley came from a discussion that we had in the core team meetings
+15:26
+where we talked about just how how are people using the API so I wrote that on
+15:34
+the weekend because it was related to some other code I'd been working on I haven't had a look at the actual
+15:39
+reported stats this morning I did have a look yesterday after I woke up and
+15:45
+disappointingly it they were - two people had reported their usage stats
+15:50
+but I'll have a look and see see what's there later today
+15:55
+one person did report a bug which was cool he reported a bug he actually fixed the bug and then he reported his stats
+16:02
+so that is awesome but um yeah it's the point of the the
+16:08
+main thing I wanted to do is just give people a way of doing it where it's completely anonymous and not automated I
+
+
+moshe kolodny -change
+-------------------------
+
+change over time and that that that are going and passing by over time if you try to do that manually and I remember
+34:27
+like the early days of jQuery having event emitters and trying to wire things together it becomes a mess an absolute
+34:33
+nightmare to be able to manage all the different things happening keeping track of state is is a monster you know you
+34:39
+you pretty much have to write a state machine with all these different permutations of every variable that could happen are actually us because of
+34:46
+the big guarantees that Nicholas was mentioning before provides some sanity around a lot of the structure on that so
+34:52
+you know that as these events happen I have an operator that tell that will stop you know this stream of events if
+34:59
+something else happens and I could repeat it on a different stream and I could you know have a you know a an
+35:05
+interval on doing it a certain amount of times or certain in certain combinations
+35:10
+of permutations of events that happen and pretty much the sky's the limit so being if trying to do that by hand is
+35:18
+for all things of purpose impossible unless you are
+35:23
+superhuman so having a well tested well-documented understood library doing
+35:30
+all that nitty-gritty plumbing for you just makes everything so much easier
+35:36
+alright so you just mentioned state management as well as this brings me to Redux Redux react rxjs like all of them
+
+
+rxjs state
+------------------------------------
+they be used together do they make each other revenant like what is your experience on that and your
+36:01
+recommendation yeah you can you can definitely use redux and rxjs there they
+36:09
+solve different problems you can you can use react Redux and rxjs all together at
+36:15
+the same time there's a you can Redux observable who's a package that does just that whether or not you should
+36:22
+really depends upon how familiar you are with each of the individual pieces of you're familiar with reacts and you're
+36:29
+familiar with Redux and you're familiar with rxjs you might want to use something like Redux observable to solve the problem
+36:35
+basically those those things do different things you know rxjs
+36:40
+in that sense is managing asynchronous effects that are actually happening inside of yeah redux whereas redux is
+36:47
+providing you know significant it's giving you a global store with action based changes so they certainly don't
+36:55
+make each other redundant you can definitely use both it just really depends upon what you're trying to do
+37:03
+and the problem that you're trying to solve and if it fits with the problem that you're going to try to solve then definitely use all three an example of a
+37:12
+situation where it might make sense to use those as if you're easy if you have a large application and you have not all
+37:19
+backends ideal from a front-end sort of perspective so you often have to deal with backends that are fragmented and
+37:26
+when something happens on the front-end you might have multiple requests going off to the backend anytime you need to coordinate those sorts of things
+37:32
+Eric stress is a good candidate so if you did have a large Redux application and you had a frame metod back-end and you wanted to
+37:37
+organize a bunch of back-end requests when actions are occurring it would make sense to use you know rxjs and redux to
+37:45
+to solve that problem but I'd breach it in that that way I'd look at the problems you'd need to solve look at the
+37:51
+tools that you have look at how they solve problems and figure out whether or not they're appropriate for you know for your
+37:58
+application but you can they're definitely different it neither makes the other redundant and you can
+38:03
+definitely combine the two or the three
+38:10
+let's go to the next section which is about the insights I'm curious like I
+-------------------------------------

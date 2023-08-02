@@ -1,0 +1,51 @@
+DOP,			data oriented programming, separate data from code, can be applied in OOP and FP, pass data to function,
+
+haskell,		haskell for beginners,ytl, dmitrii kovanikov
+
+functional typescript,	enrico polanski, functional typescript with fp-ts library, https://github.com/enricopolanski/functional-programming.git
+
+functional typescript,	enrico polanski,		
+
+JSX ,			is a DSL to represent XML like views, with runtime interpolations, directly through JS, or any other environment
+
+Template literals, 	are literals delimited with backtick (`) characters, allowing for multi-line strings, 
+			string interpolation with embedded expressions, and special constructs called tagged templates
+			This is simply a syntax that makes string interpolation possible in JavaScript
+
+Tagged templates,       Tags allow you to parse template literals with a function. The first argument of a tag function 
+			contains an array of string values. The remaining arguments are related to the expressions.
+			The tag function can then perform whatever operations on these arguments you wish, 
+			
+			and return the manipulated string. (Alternatively, it can return something completely different, 
+			as described in one of the following examples.)
+			offers you the opportunity to parse template literals in whatever way you want. 
+			
+			There are two parts of a tagged template literal, 
+			- the first one being the tag function and 
+			  the first parameter in the tag function is a variable containing an array of strings in the template literal
+
+			- the second, the template literal.
+			  And all other subsequent parameters will contain the values passed to the template literal
+
+			let greetings = "Hi";
+			let name = "Techsith";
+			let age = 35;
+
+			function transform(static, ...tags) {
+  			  let index = tags.findIndex((el) => el === "Techsith");
+  			  tags[index] = "Hemil";
+
+  			  let str = static[0];
+  			  for (i = 0; i < tags.length; i++) {
+    			    str += tags[i] + static[i + 1];
+  			  }
+  			  return str;
+			}
+
+			let newString = transform`${greetings} my name is ${name} and I am ${age}`;
+
+			console.log(newString); //"Hi my name is Hemil and I am 35"
+
+ signal 		is a value wrapped into some reactive primitive that is able to subscribe updates to any callback reaching it out
+			While signals are awesome at storing, and representing, any value, 
+			these are not great at computing such values

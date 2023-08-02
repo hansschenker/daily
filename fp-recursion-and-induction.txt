@@ -1,0 +1,78 @@
+Difference Between Recursion and Induction
+Last Updated : 27 Dec, 2021
+
+Recursion and induction belong to the branch of Mathematics, these terms are used interchangeably. 
+But there are some differences between these terms. 
+
+Recursion is a process in which a function gets repeated again and again until some base function is satisfied. 
+It repeats and uses its previous values to form a sequence. The procedure applies a certain relation 
+to the given function again and again until some base condition is met. It consists of two components: 
+
+1) Base condition: In order to stop a recursive function, a condition is needed. This is known as a base condition. Base condition is very important. If the base condition is missing from the code then the function can enter into an infinite loop. 
+
+2) Recursive step: It divides a big problem into small instances that are solved by the recursive function and later on recombined in the results.
+
+Let a1, a2…… an, be a sequence. The recursive formula is given by:
+
+an = an-1 + a1
+Example: The definition of the Fibonacci series is a recursive one. It is often given by the relation:
+
+F N = FN-1 + FN-2   
+where F0 = 0
+How to perform Recursion? 
+Suppose the function given is
+
+Tn = Tn-1  + C
+We first use the given base condition. Let us denote base condition by T0, n= 2. we will find T1. C is the constant. 
+
+Tn = Tn-1  + C //n=2
+T2  = T2-1 + C
+T1 = T1-1 + C
+    = T0 + C + C // Base condition achieved, recursion terminates.
+Induction
+Induction is the branch of mathematics that is used to prove 
+- a result, or 
+- a formula, or 
+- a statement, or a theorem. It is used to establish the validity of a theorem or result. It has two working rules:
+
+1) Base Step: It helps us to prove that the given statement is true for some initial value. 
+
+2) Inductive Step: It states that if the theorem is true for the nth term, then the statement is true for (n+1)th term. 
+
+Example: The assertion is that the nth Fibonacci number is at most 2n. 
+
+
+How to Prove a statement using induction? 
+Step 1: Prove or verify that the statement is true for n=1
+
+Step 2: Assume that the statement is true for n=k
+
+Step 3: Verify that the statement is true for n=k+1, then it can be concluded that the statement is true for n. 
+
+Difference between Recursion and Induction:
+
+S.No.	Recursion	 Induction
+1.	Recursion is the process in which a function is called again and again until some base condition is met. 	
+
+Induction is the way of proving a mathematical statement. 
+
+2.	It is the way of defining in a repetitive manner.	It is the way of proving.
+3.	It starts from nth term till the base case. 	It starts from the initial till (n+1)th term. 
+4.	
+It has two components:
+
+Base condition
+Recursive step.
+It has two steps:
+
+Base step
+Inductive step
+5.	We backtrack at each step to replace the previous values with the answers using the function. 	
+	We just prove that the statement is true for n=1. Then we assume that n = k is true. Then we prove for n=k+1.
+
+6.	No assumptions are made. 	The assumption is made for n= k
+
+7.	Recursive function is always called to find successive terms. 	Here statements or theorems 
+	are proved and no terms are found. 
+
+8.	It can lead to infinity if no base condition is given

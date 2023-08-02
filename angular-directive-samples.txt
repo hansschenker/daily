@@ -1,0 +1,162 @@
+-----------------------------  LoadingStaus                ----------------------------------------
+import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+
+import { Loaded, LoadingState } from './loading-state';
+
+@Directive({ selector: '[appIfLoaded]' })
+export class IfLoadedDirective<T> {
+  private isViewCreated = false;
+
+  @Input('appIfLoaded') set state(state: LoadingState<T>) {
+    if (!this.isViewCreated && state.type === 'loaded') {
+      this.viewContainerRef.createEmbeddedView(this.templateRef);
+      this.isViewCreated = true;
+    } else if (this.isViewCreated && state.type !== 'loaded') {
+      this.viewContainerRef.clear();
+      this.isViewCreated = false;
+    }
+  }
+
+  constructor(
+    private readonly viewContainerRef: ViewContainerRef,
+    private readonly templateRef: TemplateRef<unknown>
+  ) {}
+
+  static ngTemplateGuard_appIfLoaded<T>(
+    dir: IfLoadedDirective<T>,
+    state: LoadingState<T>
+  ): state is Loaded<T> {
+    return true;
+  }
+}
+----------------------------------------------
+tooltip netanel basal
+@Directive({
+ selector: '[tooltip]'
+})
+class TooltipDirective {
+  @Input() tooltip;
+  private _tooltipEle;
+ 
+  constructor(private el: ElementRef) {}
+  
+  ngAfterContentInit() {
+    this._tooltipEle = $(`<div class="tooltip">${this.tooltip}<div class="tooltip-arrow"></div></div>`).appendTo( "body" );
+    this._createTooltip();
+  }
+
+  @HostListener("mouseover")
+  showTooltip() {
+   this.toggleTooltip();
+  }
+  
+  @HostListener("mouseout")
+  removeTooltip() {
+    this.toggleTooltip();
+  }
+  
+  private _createTooltip() {
+    // create tooltip...
+  }
+  
+  toggleTooltip() {
+    this._tooltipEle.toggleClass("tooltip-show")
+  }
+}
+
+------------------------------------- image fallback directive   -------------------------------------------
+import { Directive, Input, ElementRef, HostListener } from '@angular/core';
+
+@Directive({
+  selector: 'img[appImgFallback]'
+})
+export class ImgFallbackDirective {
+
+  @Input() appImgFallback: string;
+
+  constructor(private eRef: ElementRef) { }
+
+  @HostListener('error')
+  loadFallbackOnError() {
+    const element: HTMLImageElement = <HTMLImageElement>this.eRef.nativeElement;
+    element.src = this.appImgFallback || 'https://via.placeholder.com/200';
+  }
+
+}
+
+--------------------------------------------------ng observe nils mehlhorn ----------------------------------------------------------------
+https://nils-mehlhorn.de/posts/angular-observable-directive
+
+----------------------------------------------------- limit text innput -------------------------------------------------------------
+import { Directive, ElementRef, Input, HostListener } from '@angular/core';
+
+@Directive({
+  selector: '[inputrestriction]'
+})
+export class InputRestrictionDirective {
+  @Input('inputrestriction') InputRestriction : string;
+
+  private element : ElementRef;
+
+  constructor(element : ElementRef) {
+    this.element = element;
+  }
+
+  @HostListener('keypress', ['$event'])
+  handleKeyPress(event : KeyboardEvent)
+  {
+    var regex = new RegExp(this.InputRestriction);
+    var str = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+    if (regex.test(str)) {
+        return true;
+    }
+
+    event.preventDefault();
+    return false;
+  }
+
+}
+
+------------------------------------------------------------ confirm directive ------------------------------------------------------------------------------
+@Directive({ 
+  selector: '[confirm]' 
+})
+export class ConfirmDirective {
+
+  @Output('confirm-click') click: any = new EventEmitter();
+
+  @HostListener('click', ['$event']) clicked(e) {
+    $.confirm({
+      buttons: {
+        confirm: () => this.click.emit(),
+        cancel: () => {}
+      }
+    });
+  }
+
+}
+--------------------------------------------------------------------- material confirmation dialog ------------------------------------
+import { Component, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+ 
+@Component({templateUrl: 'confirmation-dialog.component.html'})
+export class ConfirmationDialog {
+    message: string = "Are you sure want to delete?"
+    confirmButtonText = "Yes"
+    cancelButtonText = "Cancel"
+    constructor(@Inject(MAT_DIALOG_DATA) private data: any, private dialogRef: MatDialogRef<ConfirmationDialog>) {
+        if(data){
+            this.message = data.message || this.message;
+            if (data.buttonText) {
+                this.confirmButtonText = data.buttonText.ok || this.confirmButtonText;
+                this.cancelButtonText = data.buttonText.cancel || this.cancelButtonText;
+            }
+        }
+    }
+ 
+    onConfirmClick(): void {
+        this.dialogRef.close(true);
+    }
+}
+
+--------------------------------------------------------------------------------------------------------------------------------------------

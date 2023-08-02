@@ -1,0 +1,258 @@
+script
+
+
+Search in video
+0:00
+and the latest
+0:01
+addition to the family here is
+0:03
+conditional types
+0:06
+which allows us to express non-uniform
+0:09
+type mappings and I'll give you some
+0:11
+examples here let's say I have
+0:15
+um
+0:15
+uh three types Name ID and check and
+0:18
+let's say that they represent labels
+0:20
+that I want to put in my UI I have a
+0:24
+certain kind of UI element that's called
+0:25
+name that I use for Strings and IDs I
+0:28
+use for numbers and checks I use for for
+0:30
+Boolean values right now let's say I
+0:34
+want to write a function that takes some
+0:36
+value and creates the label that
+0:38
+corresponds to that value
+0:40
+well now I would have to write a whole
+0:42
+bunch of overloads I'm sure some of you
+0:45
+have written overloads like this where
+0:46
+hey if you give me a string then you get
+0:48
+back a name and if you give me a number
+0:49
+you get back an ID and if you give me a
+0:51
+Boolean you get a check
+0:52
+but then of course you might give me
+0:54
+something that is string or number of
+0:55
+Boolean in which case you get one of the
+0:57
+others in fact it's not even complete
+0:59
+here because you might give me just
+1:00
+string or number in which case you
+1:01
+should only get name or ID back and not
+1:03
+check because it couldn't be that right
+1:04
+and so you see how
+1:07
+this can very quickly get unwieldy to
+1:09
+try to write a whole bunch of overloads
+1:11
+and really what you want is sort of the
+1:14
+ability uh instead to express it in the
+1:18
+type system more directly and that is
+1:21
+what conditional types enable you to do
+1:22
+so
+1:24
+here we can declare a
+1:27
+label for type
+1:30
+so I give you a t
+1:32
+and then when T extends string I want
+1:35
+you to give me back name and when T
+1:37
+extends number I want to get ID and when
+1:38
+T extends Boolean I want to get check
+1:40
+otherwise
+1:42
+this should never happen is what this
+1:45
+type says and now I can declare create
+1:47
+label as just it takes some T that is a
+1:50
+string or number a Boolean and then it
+1:52
+gets back a label type that corresponds
+1:55
+to that type right
+1:57
+and now
+1:59
+it's just sort of I don't have to write
+2:01
+overloads it just comes out of the types
+2:04
+if you will right that if I give you Joe
+2:06
+you get a name and blah blah blah but if
+2:08
+I give you say Joe or 42 well then
+2:10
+that's a string or number so you're
+2:12
+going to get a name or ID back right
+2:14
+because we understand how the types flow
+2:17
+and in fact we will spread
+2:20
+Union types over we will distribute
+2:22
+Union types over these conditional types
+2:25
+so so that that last the D and E
+2:27
+examples are interesting because
+2:30
+the type that goes in that we infer in
+2:32
+is number or string and then we apply
+2:36
+that to
+2:38
+each of number and string and and
+2:40
+produce a resulting Union type out so if
+2:43
+you gave us a union type in a union type
+2:44
+comes out that has been mapped for each
+2:46
+individual element
+2:48
+um
+2:49
+so
+2:52
+this cleverness you can use we can we
+2:54
+can use to to create interesting types
+2:57
+like a a thing that reduces a union type
+3:00
+or extracts stuff from a union type so
+3:02
+for example here if I have a string or
+3:04
+number or some function type and I
+3:07
+exclude a function then I get just
+3:10
+string a number or if I extract function
+3:12
+then I get only the function parts of it
+3:15
+but now I can make a non-nullable of T
+3:17
+that gets rid of null and undefined from
+3:20
+some T when that's actually quite useful
+3:24
+um
+3:25
+also
+3:27
+we support the ability in conditional
+3:29
+types to infer constituent types so say
+3:33
+I want to write a flatten or a smoosh of
+3:36
+T operator
+3:38
+um
+3:39
+and this one says if you give me an
+3:42
+array then please infer the element type
+3:44
+of the array and give me that back
+3:45
+otherwise just give me back the type
+3:47
+that I gave you and now
+3:50
+flat enough string is just a string but
+3:52
+flatten up number array is a number and
+3:54
+so so you can you can actually do some
+3:58
+interesting reaching into types and this
+4:00
+turns out to be very useful for creating
+4:03
+a very wanted type operator called
+4:06
+return type say I have some function
+4:08
+type I want to I want now to to get the
+4:11
+return type of that function type well
+4:12
+you can create a conditional type that
+4:14
+reaches in and and and gives you that
+4:17
+um it's useful like let's say I have
+4:20
+written some function that returned some
+4:22
+complicated object literal well
+4:25
+return type of type of Foo will give you
+4:27
+back that type and in fact we can we can
+4:32
+now build all of these into
+4:34
+lib.d.ts the predefined types we already
+4:37
+have uh partial read-only and pick and
+4:40
+record that that some of you may have
+4:41
+seen But now in typescript 2.8 we've
+4:45
+added exclude and extract non-nullable
+4:48
+return type instance type and and so
+4:51
+forth
+4:52
+okay so that's a lot

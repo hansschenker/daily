@@ -1,0 +1,89 @@
+Daishi Kato - React Micro State Management
+
+
+Micro state management is more purpose-oriented and used with specific coding patterns
+whereas monolithic state management is more general
+
+single source of state
+---------------------
+one giant state object (one store)
+
+
+
+
+shared state
+--------------
+redux: single source of truth, one global state, but is shared state
+multiple state, (multiple stores)
+
+
+context
+-------
+problem: big state, context will render whole application on every state change
+	when parent changes, all children will rerender no matter what
+	combine react reactive system (state change - render ) with proxies
+	useWrappedState ( state with proxies)
+
+solution: state tracking with proxies
+
+no problem: small context data, small state changes, only single components will rerender
+
+Explore the varjious patterns of state management with React hooks.
+Focus is on global state in which multiple components can share state
+
+React hooks already provide good functionality for local states (state wihin a single c or a small tree of cs9
+React hooks miss the capabiltx to directly provide global state
+
+Libraries for micro state management: zustand, Jotai, Valtio and React Tracked
+
+Global state: multiple components can share a state
+
+Understanding micro state management
+
+State: any data that represents the user interface
+       state can change over time, and react cares for rerender the c
+Form state: should not be handeled in global state
+Server cache: not in global state (refetching!)
+Navigation: not in global state
+
+Special hooks libraries for Server cache (React Query), Form state (Formik),...
+
+Server state:  handle in global state
+
+Micro state management requirements:
+ - read state
+ - update state
+ - render with state change
+
+ - optimize re-render
+ - interact with other systems
+ - async support
+ - derived state
+
+Working with hooks
+-----------------
+
+ useState
+ ----------
+ create local state, 
+
+ useReducer
+ ----------
+ create local state, 
+
+ useEffect
+ ---------
+ run logic outside the React render process
+ 
+
+ React hooks allow us to extract logic out of UI Components: 
+ Counter sample
+ ---------------
+ useCounter - counter logic, we can add functionality without breaking the Component
+ Counter  - template for counter
+
+
+
+
+ 
+

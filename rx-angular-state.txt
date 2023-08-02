@@ -1,0 +1,824 @@
+*/
+stateful operator - push distinct not null and cache state
+----------------------------------------------------------------------------------------------------------
+export function stateful<T, R>(...optionalDerive: OperatorFunction<T, R>[]): OperatorFunction<T, T | R> {
+
+  return (s: Observable<T>): Observable<T | R> => {
+
+    return s.pipe(
+
+      // distinct same base-state objects 
+      //(a default emission of default switch cases, 
+      // incorrect mutable handling of data) @TODO evaluate benefits vs. overhead
+      distinctUntilChanged(),
+      
+	// CUSTOM LOGIC HERE
+      (o: Observable<T>): Observable<T | R> => {
+        if (isOperateFnArrayGuard(optionalDerive)) {
+          return o.pipe(pipeFromArray(optionalDerive));
+        }
+        return o;
+      },
+
+      // initial emissions, undefined is no base-state, pollution with skip(1)
+      filter((v) => v !== undefined),
+
+      // distinct same derivation value
+      distinctUntilChanged(),
+
+      // reuse custom operations result for multiple subscribers and reemit the last calculated value.
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+  };
+}
+
+------------------------------------------------------------------------
+select operator - select state
+---------------------------------------------------------------------------
+import { MonoTypeOperatorFunction, Observable, OperatorFunction } from 'rxjs';
+import { pluck } from 'rxjs/operators';
+import { isOperateFnArrayGuard, isStringArrayGuard, pipeFromArray } from '../../core/utils';
+import { stateful } from './stateful';
+
+/**
+ * @description
+ * returns the state as shared, replayed and distinct `Observable<T>`. This way you don't have to think about late
+ * subscribers, multiple subscribers or multiple emissions of the same value.
+ *
+ * @example
+ * const state$ = state.pipe(select());
+ * state$.subscribe(state => doStuff(state));
+ *
+ * @returns Observable<T>
+ */
+
+export function select<T>(): MonoTypeOperatorFunction<T>;
+
+/**
+ * @description
+ * returns the state as cached and distinct `Observable<A>`. Accepts arbitrary
+ * [rxjs operators](https://rxjs-dev.firebaseapp.com/guide/operators) to enrich the selection with reactive composition.
+ *
+ * @example
+ * const profilePicture$ = state.pipe(
+ *   select(
+ *    pluck('profilePicture'),
+ *    switchMap(profilePicture => mapImageAsync(profilePicture))
+ *   )
+ * );
+ * @param  { OperatorFunction<T, A> } op
+ * @returns Observable<A>
+ *
+ * @docsPage select
+ * @docsCategory operators
+ */
+export function select<T, A>(
+  op: OperatorFunction<T, A>
+): OperatorFunction<T, A>;
+
+export function select<T>(...opOrMapFn: OperatorFunction<T, any>[] | string[]): OperatorFunction<T, any> {
+
+  return (state$: Observable<T>) => {
+
+    if (!opOrMapFn || opOrMapFn.length === 0) {
+      return state$.pipe(stateful());
+    } else if (isStringArrayGuard(opOrMapFn)) {
+
+      return state$.pipe(stateful(pluck(...opOrMapFn)));
+    } else if (isOperateFnArrayGuard(opOrMapFn)) {
+
+      return state$.pipe(stateful(pipeFromArray(opOrMapFn)));
+    } else {
+
+      throw new Error('wrong params passed to select');
+    }
+  };
+}
+
+----------------------------------------------------------------------------------
+selectSlice
+---------------------------------------------------------------------------------
+import { KeyCompareMap } from '../interfaces';
+import { Observable, OperatorFunction } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { distinctUntilSomeChanged } from './distinctUntilSomeChanged';
+
+/**
+ * @description
+ *
+ * Returns an Observable that emits only the provided `keys` emitted by the source Observable. Each key will get
+ * filtered to only emit _defined_ values as well as checked for distinct emissions.
+ * Comparison will be done for each set key in the `keys` array.
+ *
+ * `selectSlice` will only emit _valid_ selections. A selection is _valid_ if every
+ * selected key exists and is defined in the source Observable. This ensures that the `selectSlice`
+ * operator will always return a complete slice with all values defined.
+ *
+ * You can fine grain your distinct checks by providing a `KeyCompareMap` with those keys you want to compute
+ * explicitly different
+ *
+ * @example
+ *
+ * // An example with a custom comparison applied to each key
+ * import { of } from 'rxjs';
+ * import { selectSlice } from 'rx-angular/state';
+ *
+ *
+ * const state$: Observable<MyState> = of(
+ *  { title: 'myTitle', panelOpen: true},
+ *  { title: 'myTitle2', panelOpen: true},
+ *  { title: 'newTitle', panelOpen: true},
+ *  { title: 'newTitle', panelOpen: false}
+ * )
+ * .pipe(
+ *     selectSlice(['title', 'panelOpen']),
+ *   )
+ *   .subscribe(x => console.log(x));
+ *
+ * // displays:
+ * //  { title: 'myTitle', panelOpen: true },
+ * //  { title: 'myTitle2', panelOpen: true },
+ * //  { title: 'newTitle', panelOpen: true },
+ * //  { title: 'newTitle', panelOpen: false }
+ *
+ * @example
+ *
+ * import { of, Observable } from 'rxjs';
+ * import { tap } from 'rxjs/operators';
+ * import { selectSlice } from 'rx-angular/state';
+ *
+ * interface MyState {
+ *    title: string;
+ *    items: string[];
+ *    panelOpen: boolean;
+ * }
+ * // Select items and title.
+ * // apply custom compare logic for the items array
+ * const customComparison: KeyCompareMap<MyState> = {
+ *   items: (oldItems, newItems) => compareItems(oldItems, newItems)
+ * };
+ * const state$: Observable<MyState> = of(
+ * { title: 'myTitle', items: ['foo', 'bar'], panelOpen: true },
+ * { title: 'myTitle', items: ['foo', 'bar'], panelOpen: false },
+ * { title: 'nextTitle', items: ['foo', 'baR'], panelOpen: true },
+ * { title: 'nextTitle', items: ['fooRz', 'boo'], panelOpen: false },
+ * );
+ * const slice$ = state$.pipe(selectSlice(['title', 'items'], customComparison), tap(console.log)).subscribe();
+ *
+ * // displays:
+ * // { title: 'myTitle', items: ['foo', 'bar'] }
+ * // { title: 'nextTitle', items: ['foo', 'baR'] }
+ * // { title: 'nextTitle', items: ['fooRz', 'boo'] }
+ *
+ * @param {(K)[]} keys - the array of keys which should be selected
+ * @param {KeyCompareMap<{ [P in K]: T[P] }>} [keyCompareMap] Optional KeyCompareMap to provide custom compare logic
+ * for some the keys
+ * @docsPage selectSlice
+ * @docsCategory operators
+ */
+
+export function selectSlice<T extends object, K extends keyof T>(
+  keys: K[],
+  keyCompareMap?: KeyCompareMap<{ [P in K]: T[P] }>
+): OperatorFunction<T, PickSlice<T, K>> {
+  return (o$: Observable<T>): Observable<PickSlice<T, K>> =>
+    o$.pipe(
+      filter((state) => state !== undefined),
+      map((state) => {
+        // forward null
+        if (state === null) {
+          return null;
+        }
+        // an array of all keys which exist and are _defined_ in the state object
+        const definedKeys = keys
+          // filter out undefined properties e. g. {}, { str: undefined }
+          .filter((k) => state.hasOwnProperty(k) && state[k] !== undefined);
+
+        // we want to ensure to only emit _valid_ selections
+        // a selection is _valid_ if every selected key exists and has a value:
+
+        // {} => selectSlice(['foo']) => no emission
+        // {str: 'test'} => selectSlice([]) => no emission
+        // {str: 'test'} => selectSlice(['notPresent']) => no emission
+        // {str: 'test'} => state.select(selectSlice([])) => no emission
+        // {str: 'test'} => state.select(selectSlice(['notPresent'])) => no emission
+        // {str: undefined} => state.select(selectSlice(['str'])) => no emission
+        // {str: 'test', foo: undefined } => state.select(selectSlice(['foo'])) => no emission
+        if (definedKeys.length < keys.length) {
+          return undefined;
+        }
+
+        // create the selected slice
+        return definedKeys
+          .reduce((vm, key) => {
+            vm[key] = state[key];
+            return vm;
+          }, {} as PickSlice<T, K>);
+      }),
+      filter((v) => v !== undefined),
+      distinctUntilSomeChanged(keys, keyCompareMap)
+    );
+}
+
+type PickSlice<T extends object, K extends keyof T> = Pick<T,
+  { [I in K]: I }[K]>;
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+distinctUntilSomeChanged
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+import { MonoTypeOperatorFunction } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
+import { CompareFn, KeyCompareMap } from '../interfaces';
+import { safePluck } from '../../core/utils/safe-pluck';
+
+/**
+ * @internal
+ */
+function defaultCompare<T>(oldVal: T, newVal: T): boolean {
+  return oldVal === newVal;
+}
+
+/**
+ * @description
+ *
+ * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from
+ * the previous item. Comparison will be done for each set key in the `keys` array.
+ *
+ * You can fine grain your distinct checks by providing a `KeyCompareMap` with those keys you want to compute
+ * explicitly different
+ *
+ * The name `distinctUntilSomeChanged` was picked since it internally iterates over the `keys` and utilizes the
+ * [some](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Array/some) method in order to
+ * compute if values are distinct or not.
+ *
+ * @example
+ *
+ * import { of } from 'rxjs';
+ * import { distinctUntilSomeChanged } from 'rx-angular/state';
+ *
+ * interface Person {
+ *    age: number;
+ *    name: string;
+ * }
+ *
+ * of(
+ *   { age: 4, name: 'Hans'},
+ *   { age: 7, name: 'Sophie'},
+ *   { age: 5, name: 'Han Solo'},
+ *   { age: 5, name: 'HanSophie'},
+ * ).pipe(
+ *   distinctUntilSomeChanged(['age', 'name']),
+ * )
+ * .subscribe(x => console.log(x));
+ *
+ * // displays:
+ * // { age: 4, name: 'Hans'}
+ * // { age: 7, name: 'Sophie'}
+ * // { age: 5, name: 'Han Solo'}
+ * // { age: 5, name: 'HanSophie'}
+ *
+ * @example
+ * // An example with `KeyCompareMap`
+ * import { of } from 'rxjs';
+ * import { distinctUntilSomeChanged } from 'rxjs/operators';
+ *
+ * interface Person {
+ *     age: number;
+ *     name: string;
+ *  }
+ * const customComparison: KeyCompareMap<Person> = {
+ *   name: (oldName, newName) => oldName.substring(0, 2) === newName.substring(0, 2)
+ * };
+ *
+ * of(
+ *     { age: 4, name: 'Hans'},
+ *     { age: 7, name: 'Sophie'},
+ *     { age: 5, name: 'Han Solo'},
+ *     { age: 5, name: 'HanSophie'},
+ *   ).pipe(
+ *     distinctUntilSomeChanged(['age', 'name'], customComparison),
+ *   )
+ *   .subscribe(x => console.log(x));
+ *
+ * // displays:
+ * // { age: 4, name: 'Hans' }
+ * // { age: 7, name: 'Sophie' }
+ * // { age: 5, name: 'Han Solo' }
+ *
+ * @param {K[]} keys String key for object property lookup on each item.
+ * @param {KeyCompareMap<T>} [compare] Optional KeyCompareMap to explicitly define comparisons for some of the keys
+ * @docsPage distinctUntilSomeChanged
+ * @docsCategory operators
+ */
+export function distinctUntilSomeChanged<T extends object, K extends keyof T>(
+  keys: K[],
+  keyCompareMap?: KeyCompareMap<T>
+): MonoTypeOperatorFunction<T> {
+  // default compare function applying === to every key
+  let distinctCompare: CompareFn<T> = (oldState, newState) =>
+    keys.some(
+      (key) =>
+        !defaultCompare(safePluck(oldState, [key]), safePluck(newState, [key]))
+    );
+
+  // generate compare function respecting every case of provided keyCompareMap
+  if (keyCompareMap !== undefined) {
+    const compare = (key: K) => {
+      return keyCompareMap.hasOwnProperty(key) &&
+      keyCompareMap[key] !== undefined
+        ? (keyCompareMap[key] as CompareFn<T[K]>)
+        : defaultCompare;
+    };
+    distinctCompare = (oldState, newState) => {
+      return keys.some(
+        (key) =>
+          !compare(key)(safePluck(oldState, [key]), safePluck(newState, [key]))
+      );
+    };
+  }
+  return distinctUntilChanged((oldV, newV) => !distinctCompare(oldV, newV));
+}
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+rx-state-service
+------------------------------------------------------------------------------------------------------------------------------------
+import { Injectable, OnDestroy } from '@angular/core';
+import { EMPTY, isObservable, Observable, OperatorFunction, Subscribable, Subscription, Unsubscribable } from 'rxjs';
+import { catchError, map, pluck, tap } from 'rxjs/operators';
+import { isKeyOf, isOperateFnArrayGuard, isStringArrayGuard, pipeFromArray, safePluck } from './core';
+import { AccumulationFn, createAccumulationObservable, createSideEffectObservable } from './cdk';
+import { stateful } from './rxjs/operators';
+
+type ProjectStateFn<T> = (oldState: T) => Partial<T>;
+type ProjectValueFn<T, K extends keyof T> = (oldState: T) => T[K];
+
+type ProjectStateReducer<T, V> = (oldState: T, value: V) => Partial<T>;
+
+type ProjectValueReducer<T, K extends keyof T, V> = (
+  oldState: T,
+  value: V
+) => T[K];
+
+/**
+ * @description
+ * RxState is a light-weight reactive state management service for managing local state in angular.
+ *
+ * @example
+ * Component({
+ *   selector: 'app-stateful',
+ *   template: `<div>{{ state$ | async | json }}</div>`,
+ *   providers: [RxState]
+ * })
+ * export class StatefulComponent {
+ *   readonly state$ = this.state.select();
+ *
+ *   constructor(private state: RxState<{ foo: string }>) {}
+ * }
+ *
+ * @docsCategory RxState
+ * @docsPage RxState
+ */
+-------------------------------------------------------------------------------------------------------------------------------------------
+RxState Service class
+-------------------------------------------------------------------------------------------------------------------------------------------
+@Injectable()
+export class RxState<T extends object> implements OnDestroy, Subscribable<T> {
+  private subscription = new Subscription();
+
+  private accumulator = createAccumulationObservable<T>();
+  private effectObservable = createSideEffectObservable();
+
+  /**
+   * @description
+   * The unmodified state exposed as `Observable<T>`. It is not shared, distinct or gets replayed.
+   * Use the `$` property if you want to read the state without having applied {@link stateful} to it.
+   */
+  readonly $: Observable<T> = this.accumulator.signal$;
+
+  /**
+   * @internal
+   */
+  constructor() {
+    this.subscription.add(this.subscribe());
+  }
+
+  /**
+   * @internal
+   */
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
+  /**
+   * @description
+   *
+   * Allows to customize state accumulation function.
+   * This can be helpful to implement deep updates and tackle other immutability problems in a custom way.
+   * @example
+   *
+   * ```typescript
+   * const myAccumulator = (state: MyState, slice: Partial<MyState>) => deepCopy(state, slice);
+   *
+   * this.state.setAccumulator(myAccumulator);
+   * ```
+   */
+  setAccumulator(accumulatorFn: AccumulationFn): void {
+    this.accumulator.nextAccumulator(accumulatorFn);
+  }
+
+  /**
+   * @description
+   * Read from the state in imperative manner. Returns the state object in its current state.
+   *
+   * @example
+   * const { disabled } = state.get();
+   * if (!disabled) {
+   *   doStuff();
+   * }
+   *
+   * @return T
+   */
+  get(): T;
+
+  /**
+   * @description
+   * Read from the state in imperative manner by providing keys as parameters.
+   * Returns the part of state object.
+   *
+   * @example
+   * // Access a single property
+   *
+   * const bar = state.get('bar');
+   *
+   * // Access a nested property
+   *
+   * const foo = state.get('bar', 'foo');
+   *
+   * @return T | T[K1] | T[K1][K2]
+   */
+--------------------------------------------------------------------------------------------------------------------------------------
+  get<K1 extends keyof T>(k1: K1): T[K1];
+---------------------------------------------------------------------------------------------------------------------------------------
+  /**
+   * @description
+   * Manipulate one or many properties of the state by providing a `Partial<T>` state or a `ProjectionFunction<T>`.
+   *
+   * @example
+   * // Update one or many properties of the state by providing a `Partial<T>`
+   *
+   * const partialState = {
+   *   foo: 'bar',
+   *   bar: 5
+   * };
+   * state.set(partialState);
+   *
+   * // Update one or many properties of the state by providing a `ProjectionFunction<T>`
+   *
+   * const reduceFn = oldState => ({
+   *   bar: oldState.bar + 5
+   * });
+   * state.set(reduceFn);
+   *
+   * @param {Partial<T>|ProjectStateFn<T>} stateOrProjectState
+   * @return void
+   */
+------------------------------------------------------------------------------------------------------------------------------------
+  set(stateOrProjectState: Partial<T> | ProjectStateFn<T>): void;
+------------------------------------------------------------------------------------------------------------------------------------
+  /**
+   * @description
+   * Manipulate a single property of the state by the property name and a `ProjectionFunction<T>`.
+   *
+   * @example
+   * const reduceFn = oldState => oldState.bar + 5;
+   * state.set('bar', reduceFn);
+   *
+   * @param {K} key
+   * @param {ProjectValueFn<T, K>} projectSlice
+   * @return void
+   */
+  set<K extends keyof T, O>(key: K, projectSlice: ProjectValueFn<T, K>): void;
+  /**
+   * @description
+   * Connect an `Observable<Partial<T>>` to the state `T`.
+   * Any change emitted by the source will get merged into the state.
+   * Subscription handling is done automatically.
+   *
+   * @example
+   * const sliceToAdd$ = interval(250).pipe(mapTo({
+   *   bar: 5,
+   *   foo: 'foo'
+   * });
+   * state.connect(sliceToAdd$);
+   * // every 250ms the properties bar and foo get updated due to the emission of sliceToAdd$
+   *
+   * // Additionally you can provide a `projectionFunction` to access the current state object and do custom mappings.
+   *
+   * const sliceToAdd$ = interval(250).pipe(mapTo({
+   *   bar: 5,
+   *   foo: 'foo'
+   * });
+   * state.connect(sliceToAdd$, (state, slice) => state.bar += slice.bar);
+   * // every 250ms the properties bar and foo get updated due to the emission of sliceToAdd$. Bar will increase by
+   * // 5 due to the projectionFunction
+   */
+---------------------------------------------------------------------------------------------------------------------------------
+  connect(inputOrSlice$: Observable<Partial<T>>): void;
+------------------------------------------------------------------------------------------------------------------------------------
+  /**
+   * @description
+   * Connect an `Observable<V>` to the state `T`.
+   * Any change emitted by the source will get forwarded to to project function and merged into the state.
+   * Subscription handling is done automatically.
+   *
+   * You have to provide a `projectionFunction` to access the current state object and do custom mappings.
+   *
+   * @example
+   * const sliceToAdd$ = interval(250);
+   * state.connect(sliceToAdd$, (s, v) => ({bar: v}));
+   * // every 250ms the property bar get updated due to the emission of sliceToAdd$
+   *
+   */
+  connect<V>(
+    inputOrSlice$: Observable<V>,
+    projectFn: ProjectStateReducer<T, V>
+  ): void;
+  /**
+   *
+   * @description
+   * Connect an `Observable<T[K]>` source to a specific property `K` in the state `T`. Any emitted change will update
+   * this
+   * specific property in the state.
+   * Subscription handling is done automatically.
+   *
+   * @example
+   * const myTimer$ = interval(250);
+   * state.connect('timer', myTimer$);
+   * // every 250ms the property timer will get updated
+   */
+  connect<K extends keyof T>(key: K, slice$: Observable<T[K]>): void;
+  /**
+   *
+   * @description
+   * Connect an `Observable<V>` source to a specific property in the state. Additionally you can provide a
+   * `projectionFunction` to access the current state object on every emission of your connected `Observable`.
+   * Any change emitted by the source will get merged into the state.
+   * Subscription handling is done automatically.
+   *
+   * @example
+   * const myTimer$ = interval(250);
+   * state.connect('timer', myTimer$, (state, timerChange) => state.timer += timerChange);
+   * // every 250ms the property timer will get updated
+   */
+  connect<K extends keyof T, V>(
+    key: K,
+    input$: Observable<V>,
+    projectSliceFn: ProjectValueReducer<T, K, V>
+  ): void;
+  /**
+   * @internal
+   */
+  connect<K extends keyof T, V>(
+    keyOrInputOrSlice$: K | Observable<Partial<T> | V>,
+    projectOrSlices$?: ProjectStateReducer<T, V> | Observable<T[K]>,
+    projectValueFn?: ProjectValueReducer<T, K, V>
+  ): void {
+    if (
+      isObservable<Partial<T>>(keyOrInputOrSlice$) &&
+      projectOrSlices$ === undefined &&
+      projectValueFn === undefined
+    ) {
+      this.accumulator.nextSliceObservable(keyOrInputOrSlice$);
+      return;
+    }
+
+    if (
+      isObservable<V>(keyOrInputOrSlice$) &&
+      typeof projectOrSlices$ === 'function' &&
+      !isObservable<T[K]>(projectOrSlices$) &&
+      projectValueFn === undefined
+    ) {
+      const project = projectOrSlices$;
+      const slice$ = keyOrInputOrSlice$.pipe(
+        map((v) => project(this.get(), v))
+      );
+      this.accumulator.nextSliceObservable(slice$);
+      return;
+    }
+
+    if (
+      isKeyOf<T>(keyOrInputOrSlice$) &&
+      isObservable<T[K]>(projectOrSlices$) &&
+      projectValueFn === undefined
+    ) {
+      const key = keyOrInputOrSlice$;
+      const slice$ = projectOrSlices$.pipe(
+        map((value) => ({ ...{}, [key]: value }))
+      );
+      this.accumulator.nextSliceObservable(slice$);
+      return;
+    }
+
+    if (
+      isKeyOf<T>(keyOrInputOrSlice$) &&
+      isObservable<V>(projectOrSlices$) &&
+      typeof projectValueFn === 'function'
+    ) {
+      const key = keyOrInputOrSlice$;
+      const slice$ = projectOrSlices$.pipe(
+        map((value) => ({ ...{}, [key]: projectValueFn(this.get(), value) }))
+      );
+      this.accumulator.nextSliceObservable(slice$);
+      return;
+    }
+
+    throw new Error('wrong params passed to connect');
+  }
+
+  /**
+   * @description
+   * returns the state as cached and distinct `Observable<T>`. This way you don't have to think about **late
+   * subscribers**,
+   * **multiple subscribers** or **multiple emissions** of the same value
+   *
+   * @example
+   * const state$ = state.select();
+   * state$.subscribe(state => doStuff(state));
+   *
+   * @returns Observable<T>
+   */
+  select(): Observable<T>;
+
+  /**
+   * @description
+   * returns the state as cached and distinct `Observable<A>`. Accepts arbitrary
+   * [rxjs operators](https://rxjs-dev.firebaseapp.com/guide/operators) to enrich the selection with reactive composition.
+   *
+   * @example
+   * const profilePicture$ = state.select(
+   *  pluck('profilePicture'),
+   *  switchMap(profilePicture => mapImageAsync(profilePicture))
+   * );
+   * @param op { OperatorFunction<T, A> }
+   * @returns Observable<A>
+   */
+  select<A = T>(op: OperatorFunction<T, A>): Observable<A>;
+  /**
+   * @internal
+   */
+  select<A = T, B = A>(
+    op1: OperatorFunction<T, A>,
+    op2: OperatorFunction<A, B>
+  ): Observable<B>;
+  /**
+   * @internal
+   */
+  select<A = T, B = A, C = B>(
+    op1: OperatorFunction<T, A>,
+    op2: OperatorFunction<A, B>,
+    op3: OperatorFunction<B, C>
+  ): Observable<C>;
+  /**
+   * @internal
+   */
+  select<A = T, B = A, C = B, D = C>(
+    op1: OperatorFunction<T, A>,
+    op2: OperatorFunction<A, B>,
+    op3: OperatorFunction<B, C>,
+    op4: OperatorFunction<C, D>
+  ): Observable<D>;
+  /**
+   * @internal
+   */
+  select<A = T, B = A, C = B, D = C, E = D>(
+    op1: OperatorFunction<T, A>,
+    op2: OperatorFunction<A, B>,
+    op3: OperatorFunction<B, C>,
+    op4: OperatorFunction<C, D>,
+    op5: OperatorFunction<D, E>
+  ): Observable<E>;
+  /**
+   * @description
+   * Access a single property of the state by providing keys.
+   * Returns a single property of the state as cached and distinct `Observable<T[K1]>`.
+   *
+   * @example
+   * // Access a single property
+   *
+   * const bar$ = state.select('bar');
+   *
+   * // Access a nested property
+   *
+   * const foo$ = state.select('bar', 'foo');
+   *
+   * @return Observable<T[K1]>
+   */
+  select<K1 extends keyof T>(k1: K1): Observable<T[K1]>;
+  /**
+   * @internal
+   */
+  select<K1 extends keyof T, K2 extends keyof T[K1]>(
+    k1: K1,
+    k2: K2
+  ): Observable<T[K1][K2]>;
+  /**
+   * @internal
+   */
+  select<K1 extends keyof T,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2]>(k1: K1, k2: K2, k3: K3): Observable<T[K1][K2][K3]>;
+  /**
+   * @internal
+   */
+  select<K1 extends keyof T,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2],
+    K4 extends keyof T[K1][K2][K3]>(k1: K1, k2: K2, k3: K3, k4: K4): Observable<T[K1][K2][K3][K4]>;
+  /**
+   * @internal
+   */
+  select<K1 extends keyof T,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2],
+    K4 extends keyof T[K1][K2][K3],
+    K5 extends keyof T[K1][K2][K3][K4]>(k1: K1, k2: K2, k3: K3, k4: K4, k5: K5): Observable<T[K1][K2][K3][K4][K5]>;
+  /**
+   * @internal
+   */
+  select<K1 extends keyof T,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2],
+    K4 extends keyof T[K1][K2][K3],
+    K5 extends keyof T[K1][K2][K3][K4],
+    K6 extends keyof T[K1][K2][K3][K4][K5]>(
+    k1: K1,
+    k2: K2,
+    k3: K3,
+    k4: K4,
+    k5: K5,
+    k6: K6
+  ): Observable<T[K1][K2][K3][K4][K5][K6]>;
+  /**
+   * @internal
+   */
+  select<R>(
+    ...opOrMapFn: OperatorFunction<T, R>[] | string[]
+  ): Observable<T | R> {
+    if (!opOrMapFn || opOrMapFn.length === 0) {
+      return this.accumulator.state$.pipe(stateful());
+    } else if (isStringArrayGuard(opOrMapFn)) {
+      return this.accumulator.state$.pipe(stateful(pluck(...opOrMapFn)));
+    } else if (isOperateFnArrayGuard(opOrMapFn)) {
+      return this.accumulator.state$.pipe(stateful(pipeFromArray(opOrMapFn)));
+    }
+    throw new Error('wrong params passed to select');
+  }
+
+  /**
+   * @description
+   * Manages side-effects of your state. Provide an `Observable<any>` **side-effect** and an optional
+   * `sideEffectFunction`.
+   * Subscription handling is done automatically.
+   *
+   * @example
+   * // Directly pass an observable side-effect
+   * const localStorageEffect$ = changes$.pipe(
+   *  tap(changes => storeChanges(changes))
+   * );
+   * state.hold(localStorageEffect$);
+   *
+   * // Pass an additional `sideEffectFunction`
+   *
+   * const localStorageEffectFn = changes => storeChanges(changes);
+   * state.hold(changes$, localStorageEffectFn);
+   *
+   * @param {Observable<S>} obsOrObsWithSideEffect
+   * @param {function} [sideEffectFn]
+   */
+  hold<S>(
+    obsOrObsWithSideEffect: Observable<S>,
+    sideEffectFn?: (arg: S) => void
+  ): void {
+    const sideEffect = obsOrObsWithSideEffect.pipe(catchError(e => EMPTY))
+    if (typeof sideEffectFn === 'function') {
+      this.effectObservable.nextEffectObservable(
+        sideEffect.pipe(tap(sideEffectFn))
+      );
+      return;
+    }
+    this.effectObservable.nextEffectObservable(sideEffect);
+  }
+
+  /**
+   * @internal
+   */
+  subscribe(): Unsubscribable {
+    const subscription = new Subscription();
+    subscription.add(this.accumulator.subscribe());
+    subscription.add(this.effectObservable.subscribe());
+    return subscription;
+  }
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,222 @@
+
+Solution
+
+Generalize their behavior using generics.
+
+Discussion
+
+You are writing an application that stores several language files (for e.g. subtitles) in an object. 
+The keys are the language codes, the values are URLs. You load language files by selecting them via a 
+language code, which comes from some API or user interface as string. To make sure the language code 
+is correct and valid, you add an isLanguageAvailable function, that does an in check and sets the 
+correct type using a type predicate.
+
+type Languages = {
+  de: URL;
+  en: URL;
+  pt: URL;
+  es: URL;
+  fr: URL;
+  ja: URL;
+};
+
+function isLanguageAvailable(
+  collection: Languages,
+  lang: string
+): lang is keyof Languages {
+  return lang in collection;
+}
+
+function loadLanguage(collection: Languages, lang: string) {
+  if (isLanguageAvailable(collection, lang)) {
+    // lang is keyof Languages
+    collection[lang]; // access ok!
+  }
+}
+Same application, different scenario, entirely different file. 
+You load media data into an HTML element. Either audio, video, 
+or a combination with certain animations in a canvas element. 
+All elements exist in the application already, but you need to select 
+the right one based on some input from an API. Again, the selection comes 
+as string, and you write an isElementAllowed function to ensure that the 
+input is actually a valid key of your AllowedElements collection.
+
+type AllowedElements = {
+  video: HTMLVideoElement;
+  audio: HTMLAudioElement;
+  canvas: HTMLCanvasElement;
+};
+
+function isElementAllowed(
+  collection: AllowedElements,
+  elem: string
+): elem is keyof AllowedElements {
+  return elem in collection;
+}
+
+function selectElement(collection: AllowedElements, elem: string) {
+  if (isElementAllowed(collection, elem)) {
+    // elem is keyof AllowedElements
+    collection[elem]; // access ok
+  }
+}
+
+
+}
+
+function loadLanguage(collection: Language			
+
+Generics
+----------
+function isIn<Obj>(
+  obj: Obj,
+  key: string | number | symbol
+): key is keyof Obj {
+  return key in obj;
+}
+
+function loadLanguage(languages: Languages, lang: string) {
+  if (isIn(languages, lang)) {
+    // lang is keyof Languages
+    collection[lang]; // access ok!
+  }
+}
+
+function selectElement(elements: AllowedElements, elem: string) {
+  if (isIn(elements, elem)) {
+    // elem is keyof AllowedElements
+    elements[elem]; // access ok
+  }
+}
+
+Generic Filter
+-----------------------------------------------------------------------
+
+type FilterRule = {
+  field: string;
+  operator: string;
+  value: any;
+};
+
+type CombinatorialFilter = {
+  combinator: "and" | "or";
+  rules: FilterRule[];
+};
+
+type ChainedFilter = {
+  rules: (CombinatorialFilter | FilterRule)[];
+};
+
+type Filter = CombinatorialFilter | ChainedFilter;
+
+function reset(filter: Filter): Filter {
+  if ("combinator" in filter) {
+    // filter is CombinatorialFilter
+    return { combinator: "and", rules: [] };
+  }
+  // filter is ChainedFilter
+  return { rules: [] };
+}
+
+const filter: CombinatorialFilter = { rules: [], combinator: "or" };
+const resetFilter = reset(filter); // resetFilter is Filter
+
+function reset<F extends Filter>(filter: F): F {
+  if ("combinator" in filter) {
+    return { combinator: "and", rules: [] };
+//  ^ '{ combinator: "and"; rules: never[]; }' is assignable to
+//     the constraint of type 'F', but 'F' could be instantiated
+//     with a different subtype of constraint 'Filter'.
+  }
+  return { rules: [] };
+//^ '{ rules: never[]; }' is assignable to the constraint of type 'F',
+//   but 'F' could be instantiated with a different subtype of
+//   constraint 'Filter'.(
+}
+
+const resetFilter = reset(filter); // resetFilter is CombinatorialFilter
+
+function reset<F extends Filter>(filter: F): F {
+  const result = { ...filter }; // result is F
+  result.rules = [];
+  if ("combinator" in result) {
+    result.combinator = "and";
+  }
+  return result;
+}
+
+const resetFilter = reset(filter); // resetFilter is CombinatorialFilter
+
+Use case: You want to create a tree data structure, and write a recursive type that stores all tree items
+----------------------------------------------------------------------------------------------------------
+type TreeItem = {
+  id: string;
+  children: TreeItem[];
+  collapsed?: boolean;
+};
+
+function createRootItem<T extends TreeItem>(): T {
+  return {
+    id: "root",
+    children: [],
+  };
+// '{ id: string; children: never[]; }' is assignable to the constraint
+//   of type 'T', but 'T' could be instantiated with a different subtype
+//   of constraint 'TreeItem'.(2322)
+}
+
+const root = createRootItem(); // root is TreeItem
+
+type BaseTreeItem = {
+  id: string;
+  children: BaseTreeItem[];
+};
+
+type TreeItem<Children extends TreeItem = BaseTreeItem> = {
+  id: string;
+  children: Children[];
+  collapsed?: boolean;
+};
+
+function attachToRoot<T extends TreeItem>(children: T[]): TreeItem<T> {
+  return {
+    id: "root",
+    children,
+  };
+}
+
+const root = attachToRoot([
+  {
+    id: "child",
+    children: [],
+
+    collapsed: false,
+    marked: true,
+  },
+]);
+/*
+root is TreeItem<{
+    id: string;
+    children: never[];
+    collapsed: false;
+    marked: boolean;
+}>
+*/
+
+Use case:
+----------
+Model type: You have a type in your application that is related to your model. 
+Every time the model changes, you need to change your types as well
+-------------------------------------------------------------------------------------------------
+Solution:
+------------
+Use generic mapped types to create new object types based on the original type
+
+function flip<T, K extends keyof T>(obj: T, k1: K, k2: K) {
+    const temp = obj[k1];
+    obj[k1] = obj[k2];
+    obj[k2] = temp;
+}
+
+let x = { a: 'abc', b: 42 };
+flip(x, 'a', 'b');  // Bam!

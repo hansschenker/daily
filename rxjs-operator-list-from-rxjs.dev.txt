@@ -1,0 +1,242 @@
+Creation Operators
+-----------------------------------------------------------------------------------
+ajax
+
+bindCallback
+bindNodeCallback
+
+defer
+
+empty
+
+from
+fromEvent
+fromEventPattern
+
+generate
+
+interval
+of
+range
+
+throwError
+
+timer
+
+iif
+
+join Creation Operators
+------------------------------------------------------------------------------------
+These are Observable creation operators that also have join functionality 
+-- emitting values of multiple source Observables.
+
+combineLatest
+concat
+forkJoin
+merge
+partition
+race
+zip
+
+Transformation Operators
+-------------------------------------------------------------------------------------------
+buffer
+bufferCount
+bufferTime
+bufferToggle
+bufferWhen
+concatMap
+concatMapTo
+exhaust
+exhaustMap
+expand
+groupBy
+map
+mapTo
+mergeMap
+mergeMapTo
+mergeScan
+pairwise
+partition
+pluck
+scan
+switchScan
+switchMap
+switchMapTo
+window
+windowCount
+windowTime
+windowToggle
+windowWhen
+Filtering Operators
+audit
+auditTime
+debounce
+debounceTime
+distinct
+distinctUntilChanged
+distinctUntilKeyChanged
+elementAt
+filter
+first
+ignoreElements
+last
+sample
+sampleTime
+single
+skip
+skipLast
+skipUntil
+skipWhile
+take
+takeLast
+takeUntil
+takeWhile
+throttle
+throttleTime
+
+Join Operators
+---------------------------------------------------------------------------------------------------
+Also see the Join Creation Operators section above.
+
+combineLatestAll
+concatAll
+exhaustAll
+mergeAll
+switchAll
+startWith
+withLatestFrom
+Multicasting Operators
+multicast
+publish
+publishBehavior
+publishLast
+publishReplay
+share
+Error Handling Operators
+catchError
+retry
+retryWhen
+
+Utility Operators
+----------------------------------------------------------------------------------------------------
+tap
+delay
+delayWhen
+dematerialize
+materialize
+observeOn
+subscribeOn
+timeInterval
+timestamp
+timeout
+timeoutWith
+toArray
+
+Conditional and Boolean Operators
+---------------------------------------------------------------------------------------------------
+defaultIfEmpty
+every
+find
+findIndex
+isEmpty
+
+Mathematical and Aggregate Operators
+----------------------------------------------------------------------------------------------------
+count
+max
+min
+reduce
+
+Creating custom operators
+-------------------------------------------------------------------------------------------------------
+Use the pipe() function to make new operators
+If there is a commonly used sequence of operators in your code, use the pipe() function to 
+extract the sequence into a new operator. Even if a sequence is not that common, breaking it out 
+into a single operator can improve readability.
+
+For example, you could make a function that discarded odd values and doubled even values like this:
+
+content_copyopen_in_new
+import { pipe, filter, map } from 'rxjs';
+
+function discardOddDoubleEven() {
+  return pipe(
+    filter((v) => !(v % 2)),
+    map((v) => v + v)
+  );
+}
+(The pipe() function is analogous to, but not the same thing as, the .pipe() method on an Observable.)
+
+Creating new operators from scratch
+-----------------------------------------------------------------------------------------------------
+It is more complicated, but if you have to write an operator that cannot be made from a combination 
+of existing operators (a rare occurrence), you can write an operator from scratch using the Observable 
+constructor, like this:
+
+content_copyopen_in_new
+import { Observable, of } from 'rxjs';
+ 
+function delay<T>(delayInMillis: number) {
+  return (observable: Observable<T>) =>
+    new Observable<T>((subscriber) => {
+      // this function will be called each time this
+      // Observable is subscribed to.
+      const allTimerIDs = new Set();
+      let hasCompleted = false;
+      const subscription = observable.subscribe({
+        next(value) {
+          // Start a timer to delay the next value
+          // from being pushed.
+          const timerID = setTimeout(() => {
+            subscriber.next(value);
+            // after we push the value, we need to clean up the timer timerID
+            allTimerIDs.delete(timerID);
+            // If the source has completed, and there are no more timers running,
+            // we can complete the resulting observable.
+            if (hasCompleted && allTimerIDs.size === 0) {
+              subscriber.complete();
+            }
+          }, delayInMillis);
+ 
+          allTimerIDs.add(timerID);
+        },
+        error(err) {
+          // We need to make sure we're propagating our errors through.
+          subscriber.error(err);
+        },
+        complete() {
+          hasCompleted = true;
+          // If we still have timers running, we don't want to complete yet.
+          if (allTimerIDs.size === 0) {
+            subscriber.complete();
+          }
+        },
+      });
+ 
+      // Return the finalization logic. This will be invoked when
+      // the result errors, completes, or is unsubscribed.
+      return () => {
+        subscription.unsubscribe();
+        // Clean up our timers.
+        for (const timerID of allTimerIDs) {
+          clearTimeout(timerID);
+        }
+      };
+    });
+}
+ 
+// Try it out!
+of(1, 2, 3).pipe(delay(1000)).subscribe(console.log);
+Note that you must
+
+implement all three Observer functions,
+ 
+- next(), 
+- error(), and 
+- complete() when subscribing to the input Observable.
+
+implement a "finalization" function that cleans up when the Observable completes 
+(in this case by unsubscribing and clearing any pending timeouts).
+return that finalization function from the function passed to the Observable constructor.
+Of course, this is only an example; the delay() operator already exists.

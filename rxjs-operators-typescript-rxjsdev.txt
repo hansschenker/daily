@@ -1,0 +1,19 @@
+
+interface UnaryFunction<T, R> {(source: T): R}
+type UnaryFunction<T,R> = (src:T) => R
+
+interface OperatorFunction<T, R> extends UnaryFunction<Observable<T>, Observable<R>> {(source: T): R}
+
+interface MonoTypeOperatorFunction<T> extends OperatorFunction<T, T> {(source: T): R}
+
+
+map<T, R>(project: (value: T, index: number) => R, thisArg?: any): OperatorFunction<T, R>
+map<T,R> = (project:UnaryFunction<T,R>) => OperatorFunction<T,R>
+
+pluck<T, R>(...properties: (string | number | symbol)[]): OperatorFunction<T, R>
+OperatorFunction<T, R>: A function that returns an Observable of property values from the source values.
+
+Filter items emitted by the source Observable by only emitting those that satisfy a specified predicate.
+
+filter<T>(predicate: (value: T, index: number) => boolean, thisArg?: any): MonoTypeOperatorFunction<T>
+

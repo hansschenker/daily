@@ -1,0 +1,155 @@
+typescript setup
+----------------
+
+#tpescript devDependencies
+
+npm install --save-dev 
+@types/react 
+@types/react-dom 
+awesome-typescript-loader 
+css-loader 
+html-webpack-plugin 
+mini-css-extract-plugin 
+source-map-loader 
+typescript 
+webpack 
+webpack-cli 
+webpack-dev-server
+
+typescript config
+..---------------
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "outDir": "./build/",
+    "preserveConstEnums": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "target": "es5"
+  },
+  "include": [
+    "src/components/index.tsx"
+  ]
+}
+
+Let’s also look at the different options we added to tsconfig.json:
+
+compilerOptions Represents the different compiler options.
+jsx:react Adds support for JSX in .tsx files.
+lib Adds a list of library files to the compilation (for example, using es2015 allows us to use ECMAScript 6 syntax).
+module Generates module code.
+noImplicitAny Raises errors for declarations with an implied any type.
+outDir Represents the output directory.
+sourceMap Generates a .map file, which can be very useful for debugging the app.
+target Represents the target ECMAScript version to transpile our code down to (we can add a version based on our specific browser requirements).
+include Used to specify the file list to be included.
+
+
+#react Dependencies
+npm install react react-dom
+
+webpack config
+--------------
+Add webpack.config.js to add webpack-related configurations.
+Add tsconfig.json for all of our TypeScript configurations.
+Add a new directory, src.
+Create a new directory, components, in the src folder.
+Finally, add index.html, App.tsx, and index.tsx in the components folder.
+
+App component
+--------------
+import * as React from "react";
+export interface HelloWorldProps {
+  userName: string;
+  lang: string;
+}
+export const App = (props: HelloWorldProps) => (
+  <h1>
+    Hi {props.userName} from React! Welcome to {props.lang}!
+  </h1>
+);
+
+
+index.tsx
+---------
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import { App } from "./App";
+
+ReactDOM.render(
+  <App userName="Beveloper" lang="TypeScript" />,
+  document.getElementById("output")
+);
+
+webpack config
+----------------
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+module.exports = {
+  entry: "./src/components/index.tsx",
+  target: "web",
+  mode: "development",
+  output: {
+    path: path.resolve(\__dirname, "build"),
+    filename: "bundle.js",
+  },
+  resolve: {
+    extensions: [".js", ".jsx", ".json", ".ts", ".tsx"],
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(ts|tsx)$/,
+        loader: "awesome-typescript-loader",
+      },
+      {
+        enforce: "pre",
+        test: /\.js$/,
+        loader: "source-map-loader",
+      },
+      {
+        test: /\.css$/,
+        loader: "css-loader",
+      },
+    ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: path.resolve(\__dirname, "src", "components", "index.html"),
+    }),
+    new MiniCssExtractPlugin({
+      filename: "./src/yourfile.css",
+    }),
+  ],
+};
+
+Let’s look at the different options we’ve added to webpack.config.js:
+
+entry This specifies the entry point for our app. 
+It may be a single file or an array of files that we want to include in our build.
+output This contains the output configuration. The app looks at this when trying to output bundled 
+code from our project to the disk. The path represents the output directory for code to be outputted to, 
+and the file name represents the file name for the same. It is generally named bundle.js.
+resolve Webpack looks at this attribute to decide whether to bundle or skip the file. Thus, in our project, 
+webpack will consider files with the extensions .js, .jsx, .json, .ts , and .tsx for bundling.
+module We can enable webpack to load a particular file when requested by the app, using loaders. 
+It takes a rules object that specifies that:
+any file that ends with the extension .tsx or .ts should use awesome-typescript-loader to be loaded;
+files that end with the .js extension should be loaded with source-map-loader;
+files that end with the .css extension should be loaded with css-loader.
+plugins Webpack has its own limitations, and it provides plugins to overcome them and extend its capabilities. 
+For example, html-webpack-plugin creates a template file that is rendered 
+to the browser from the index.html file in the ./src/component/index.html directory.
+MiniCssExtractPlugin renders the parent CSS file of the app.
+
+packages.json scripts
+----------------------
+"scripts": {
+"start": "webpack-dev-server --open",
+"build": "webpack"
+},
+

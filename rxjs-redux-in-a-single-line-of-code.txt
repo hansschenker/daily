@@ -1,0 +1,158 @@
+- when thought of as a stream of states, it can be expressed in a single line of RxJS code
+- streams a flexible way to handle application state
+- application as a signal network through which data is sent through
+- from signal source to signal destination over a signal path ( directed graph)
+
+Flow-based programming
+-----------------------
+In computer programming, flow-based programming (FBP) is a programming paradigm that defines 
+applications as networks of "black box" processes, which exchange data across predefined connections 
+by message passing, where the connections are specified externally to the processes. 
+These black box processes can be reconnected endlessly to form different applications 
+without having to be changed internally. FBP is thus naturally component-oriented.
+
+Max, audio visual prog language
+-------------------------------
+Max, also known as Max/MSP/Jitter, is a visual programming language for music and multimedia developed 
+and maintained by San Francisco-based software company Cycling '74. Over its more than thirty-year history, 
+it has been used by composers, performers, software designers, researchers, 
+and artists to create recordings, performances, and installations.[1]
+
+Redux is baked in to RxJS
+--------------------------
+action$.scan(reducer).subscribe(renderer)  
+
+actions$ - The stream
+----------------------
+Basically action$ is an Observable stream. 
+The $ in the name is merely convention for showing that the variable is a stream
+
+The reducer - scan
+---------------------------
+The reducer is one of Dan Abramov's reducers; a function that takes 
+- a state and an action and immutably returns a newState. 
+In a real app this would be composed of a bunch of other reducer functions combined in whatever way you see fit.
+
+scan - reducing actions to state
+---------------------------------
+the poorly named .scan() method on the observable is the thing that gives us all the power here. 
+
+accumulation function-
+(acc, val) => acc + val, initial value
+
+- "accumulation function" over our state$ stream and 
+- returns each value as more data comes down the stream.
+
+- pass an action data object to the head of the action$ stream (BehaviorSubject or startWith)
+- out pops your resolved state at the other end thanks to your reducer function. 
+The renderer can then render the output state on the view.
+
+Rudy Yardley version with Subject and startWith
+-------------------------------------------------------------------------------------
+const action$ = new Subject();
+
+// Initial State
+const initState = { name: 'Harry' };
+
+// Redux reducer
+const reducer = (state, action) => {  
+  switch(action.type) {
+    case 'NAME_CHANGED':
+      return {
+        ...state,
+        name: action.payload
+      };
+    default:
+      return state;
+  }
+}
+
+// Reduxification
+const store$ = action$  
+    .startWith(initState)
+    .scan(reducer);
+
+// Higher order function to send actions to the stream
+const actionDispatcher = (func) => (...args) =>  action$.next(func(...args));
+
+// Example action function
+const changeName = actionDispatcher((payload) => ({  
+  type: 'NAME_CHANGED',
+  payload
+}));
+
+// React view component 
+const App = (props) => {  
+  const { name } = props;
+  return (
+    <div>
+      <h1>{ name }</h1>
+      <button onClick={() => changeName('Harry')} >Harry</button>
+      <button onClick={() => changeName('Sally')} >Sally</button>
+    </div>
+  );
+}
+
+// subscribe and render the view
+const dom =  document.getElementById('app');  
+store$.subscribe((state) =>  
+    ReactDOM.render(<App {...state} />, dom));
+
+-------------------------------------------------------------------------------------------------------
+
+
+Andrew Burgess - with BehaviorSubject
+-------------------------------------
+const inputEl = document.querySelector('input');
+const activeEl = document.querySelector('#active');
+const doneEl = document.querySelector('#done');
+
+const appState = new Rx.BehaviorSubject({ todos: [] });
+
+const dispatcher = fn => (...args) => appState.next(fn(...args));
+
+const createTodo = dispatcher(data => ({ type: 'CREATE_TODO', data }));
+const toggleTodo = dispatcher(data => ({ type: 'TOGGLE_TODO', data }));
+  
+// accumulator:  acc, val => state + val, initialVal
+-----------------------------------------------------------------------
+function reducer(state, action) {
+  switch(action.type) {
+    case 'CREATE_TODO':
+      return Object.assign({},
+        state,
+        { todos: state.todos.concat([ { text: action.data, done: false } ]) });
+    case 'TOGGLE_TODO':
+      return Object.assign({},
+        state,
+        { todos: state.todos.map(todo => todo.text === action.data ?
+          Object.assign({}, todo, { done: !todo.done }) : todo) });
+    default:
+      return state || {};
+  }
+}
+
+const li = todo => `<li>${todo.text}</li>`;
+
+function updateView(state) {
+  activeEl.innerHTML = state.todos.filter(todo => !todo.done).map(li).join('');
+  doneEl.innerHTML = state.todos.filter(todo => todo.done).map(li).join('');
+}
+
+appState.scan(reducer).subscribe(updateView);
+
+Rx.Observable.fromEvent(inputEl, 'keyup')
+  .filter(e => e.key === 'Enter')
+  .map(e => e.target.value)
+  .subscribe(text => {
+    createTodo(text);
+    inputEl.value = '';
+  });
+
+Rx.Observable.fromEvent(activeEl, 'click')
+  .merge(Rx.Observable.fromEvent(doneEl, 'click'))
+  .filter(e => e.target.matches('li'))
+  .map(e => e.target.innerText.trim())
+  .subscribe(toggleTodo);
+
+.-------------------------------------------------------------------------------------------------------------------------------

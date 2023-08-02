@@ -1,0 +1,257 @@
+// useCounter hook code
+function useCounter
+// every second get a number for the count output
+
+const source2$ = useMemo(() => {
+  interval(1000).pipe(
+    tap(m => {
+      if (m === 2) {
+        throw new Error('boom');
+      }
+    })
+  );
+  
+  // handle error state
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // handle count state from interval input
+  const [count] = useObservable(
+    source2s$, 0, (err) => setErrorMsg(err.message)
+  ) as const;
+
+  // return state and possible error message
+  return [count, errorMsg];
+
+});
+
+
+// react rxjs hook useCounter v2 called from App
+function Counter() {
+  const [count, errorMsg] = useCounter();
+  return (
+    <div className="App">
+      {count} {errorMsg}
+    </div>
+  );
+}
+
+// react rxjs hook useCounter renamed from App
+function useCounter() {
+
+  const source2$ = useMemo(() => 
+    interval(1000).pipe(
+      tap((n) => {
+        if (n === 2) {
+          throw new Error('boom');
+        }
+      }
+    )
+  );
+}
+
+
+// react rxjs hook counter hook used in App
+function Counter() {
+  const [count, errorMsg] = useCounter();
+
+  return (
+    <div className="App">
+      {count} {errorMsg}
+    </div>
+  );
+}
+
+// use useStateChange<T> in App
+function App() {
+
+  const [clickHandler, clickChanges] = useStateChange();
+
+  const source$ = useMemo(() => clickChanges.pipe(map((_, i) => i)), [clickChanges]);
+
+  const clickCount = useObservable(source$, 0);
+  return (
+    <div>
+      <button onClick={clickHandler}>Click me</button>
+      {clickCount}
+      <Counter />
+    </div>
+  )
+}
+
+
+// react rxjs hook useObservable in App with Error Handling
+const [errorMsg, setErrorMsg] = useState('');
+const count = useObservable(source2$, 0, (err) => setErrorMsg(err.message));
+
+return (
+  <div className="App">
+    {count} {errorMsg?.message}
+  </div>
+)
+
+
+// react rxjs useObservable inside App called with source inside and initial state
+function App() {
+  const source2$ = useMemo(() => interval(1000), []);
+
+  const count = useObservable(source2$, 0);
+
+  return <div className="App">{count}</div>;
+}
+// useObservable with useSubscription Hook
+function useObservable<T>(source$: Observable<T>, initialState: T): T {
+  const [value, setValue] = useState(initialState);
+
+  useSubscription(source$, setValue);
+
+  return value;
+}
+------------------------------------------
+// source inside App
+function App() {
+  const [count, setCount] = useState(0);
+
+  const source2$ = useMemo(() => interval(1000), []);
+
+  useSubscription(source2$, (n) => {
+    setCount(n);
+  });
+}
+-----------------------------------
+useSubscription in App
+----------------------
+// source created outside App component
+
+const source1$ = interval(500);
+
+function App() {
+  const [count, setCount] = useState(9);
+
+  const source1$ = interval(1009);
+
+  useSubscription(source$, (n) => {
+    setCount(n);
+  });
+
+  return <div className="App">{count}</div>;
+}
+
+-----------------------------
+
+import { interval, Observable } from 'rxjs';
+import { useEffect } from 'react';
+
+function useSubscription<T>(source$: Observable<any>, 
+                            nextHandler: (value:T) => void, e) ,
+                            errorHandler: (err:any) => void)
+{
+
+  useEffect(() => {
+   
+    if (source$) {
+
+      const subs = source$.subscribe(nextHandler, errorHandler);
+
+      return () => {
+        subs.unsubscribe();
+      };
+    }
+  }, [source$]); // 
+}
+------------------------------
+function useSubscriptioncT>(
+  source$: Observable<T>,
+  nextHandler: (value: T) => void,
+  errorHandler: (err: any) => void
+{
+  useEffect(() => {
+    if (source$) {
+        const subs = source$.subscribe({
+        next: nextHandler,
+        error: errorHandler,
+      });
+
+      return () => { 
+         subs.unsubscribe();
+
+      };
+  }
+}
+--------------------------------
+function useObservable<T>(
+  source$: Observable<T>,
+  initialState: T,
+  errorHandler?: (err: any) => void
+) {
+  const [value, setValue] = useState(initialState);
+
+  useSubscription(source$, setValue, errorHandler);
+  
+  return value;
+}
+
+-------------------------
+const [errorMsg, setErrorMsg] = useState('');
+
+const count = useObservable(source2$, 0, (err) => setErrorMsg(err.message));
+
+return (
+  <div className="App">
+    {count} {errorMsg}
+  </div>
+);
+
+----------------------
+function useStateChange<T>() {
+  const reactiveRef = useRef(null as any);
+  if (reactiveRef.current) {
+    const state = new Subject<T>();
+    const nextHandler = (value: T) => state.next(value);
+    const stateChange = state.asObservable();
+    reactiveRef.current = [nextHandler, stateChange] as const;
+  }
+  return reactiveRef.current;
+}
+-----------------------
+function Counter() {
+  const [count, errorMsg] = useCounter();
+
+  return (
+    <div className="App">
+      {count} {errorMsg}
+    </div>
+  );
+}
+---------------------
+const count = useObservable(source2$, null, (err) => setErrorMsg(err.message));
+return [count, errorMsg] as const;
+
+const sourceIs = interval(500);
+
+function Counter() {
+  const [count, errorMsg] = useCounter();
+  return (
+    <div className="app">
+      {count} {errorMsg}
+    </div>
+  )
+}
+
+function App() {}
+
+------------------
+const count = useObservable(source2$, null, (err) => setErrorMsg(err.message));
+return [count, errorMsg] as const;
+
+const sourceIs = interval(500);
+
+function Counter() {
+  const [count, errorMsg] = useCounter();
+  return (
+    <div className="app">
+      {count} {errorMsg}
+    </div>
+  )
+}
+
+function App() {}

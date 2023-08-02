@@ -1,0 +1,11 @@
+function useObservable<T>(
+  source$: Observable<T>,
+  initialState: T,
+  errorHandler?: (err: any) => void
+) {
+  const [value, setValue] = useState(initialState);
+
+  useSubscription(source$, setValue, errorHandler);
+  
+  return value;
+}

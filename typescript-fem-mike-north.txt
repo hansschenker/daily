@@ -1,0 +1,931 @@
+ts fundamentals 3
+-----------------
+
+Introduction
+00:00:00 - 00:13:11
+
+Introduction
+Mike North introduces the course by providing some personal background with TypeScript, 
+an overview of what TypeScript is, and discusses the goals of the course. Student questions 
+regarding how to support consumer applications with TypeScript, if there are any open source 
+beginner TypeScript projects, and if there are any plans on introducing parts of TypeScript into 
+JavaScript are also covered in this segment.
+Setup
+
+Compiling a TypeScript Program
+00:13:12 - 00:26:05
+Compiling a TypeScript Program
+Mike walks through the structure of a TypeScript program, the TSC compiler CLI command, discusses 
+how the compiler-emitted JS code changes depending on JS language level and module type, and 
+demonstrates a program’s compiled output, including the type declaration file. A student's question 
+regarding how to define multi-target output is also covered in this segment.
+
+Variables & Values
+00:26:06 - 00:36:28
+Variables & Values
+Mike discusses simple let and const declarations, literal types, demonstrates TypeScript throwing a 
+type error, implicit any, and adding type annotations. Defining function arguments and return values 
+are also covered in this segment.
+Type Categories
+
+Typing Functions
+00:36:29 - 00:42:03
+Typing Functions
+Mike demonstrates the benefits of explicitly defining return types and discusses how to narrow down 
+the location return type errors. A student's question regarding type and test driven development is 
+also covered in this segment.
+
+Typing Functions Q&A and Objects
+00:42:04 - 00:50:05
+Typing Functions Q&A and Objects
+Mike answers a student's question regarding why TypeScript doesn't throw an error when the result is 
+any and why TypeScript valuable when typing can be accomplished in JavaScript. A brief overview of the 
+properties of objects in Typescript is also provided in this segment.
+
+Optional Properties
+00:50:06 - 01:00:50
+Optional Properties
+Mike demonstrates how to state optional properties for objects using the ? operator and discusses the 
+difference between optional properties and properties that have the option of being undefined. 
+A demonstration of TypeScript throwing an excess property error, why the error exists, and how to handle 
+the error is also provided in this segment.
+
+Index Signatures & Object Q&A
+01:00:51 - 01:06:10
+Index Signatures & Object Q&A
+Mike demonstrates how to represent a type for dictionaries to allow values of a consistent type to be 
+retrievable by keys. Student questions regarding the excess property erroring case and why storing the 
+object as a variable removes the error are also covered in this segment.
+
+Arrays & Tuples
+01:06:11 - 01:15:03
+Arrays & Tuples
+Mike discusses how to add a type to arrays using a pair of square brackets [ ], this can also be used to 
+type an array using an object type. Also discussed is how TypeScript handles inference with tuples, 
+how to state the type of a tuple, and what some of the limitations of tuples are. A student's question 
+regarding how likely it is that JavaScript will be made a statically typed language is also covered in 
+this segment.
+
+Structural vs Nominal Types
+01:15:04 - 01:24:56
+Structural vs Nominal Types
+Mike discusses type checking as the attempt to evaluate the question of compatibility or type equivalence 
+and the meaning of duck typing. The difference between static and dynamic type systems, nominal and 
+structural type systems, and strong and weak types are also described in this segment.
+Union Types
+
+01:24:57 - 01:38:08
+Union Types
+Mike briefly discusses both union and intersection types which can conceptually be thought of as logical
+ boolean operators (AND, OR) as they pertain to types. Union types in TypeScript can be described using 
+the | (pipe) operator. How to narrow with type guards and a description of discriminated unions is also 
+covered in this segment.
+
+Intersection Types
+01:38:09 - 01:46:26
+Intersection Types
+Mike demonstrates intersection types in TypeScript which can be described using the & (ampersand) operator 
+and walks through an example of adding extra data to a Date object. A student's question regarding 
+clarification on the difference between union and intersection types is also covered in this segment.
+
+Type Aliases
+01:46:27 - 01:54:48
+Type Aliases
+Mike provides a brief overview of the material covered Type Aliases and Interfaces segments, discusses 
+what type aliases allow in TypeScript, and inheritance. Type aliases can define a more meaningful name 
+for a type, declare the particulars of the type in a single place, and import and export this type from 
+modules.
+
+Interfaces
+01:54:49 - 02:08:07
+Interfaces
+Mike discusses interfaces which can only be used to define object types and the formalities in regards 
+to inheritance including extends and implements. Open interfaces, how to choose which to use between 
+type aliases and interfaces, and recursive types are also covered in this segment.
+
+JSON Types Exercise
+02:08:08 - 02:20:58
+JSON Types Exercise
+Mike walks through an exercise of defining correct types to describe given JSON values and suppress 
+the thrown type check errors.
+Functions
+
+Functions & Function Overloads
+02:20:59 - 02:34:39
+Functions & Function Overloads
+Mike discusses a brief overview of the functions section, the return type void, callable types, and 
+construct signatures, which are interfaces or type aliases that describe something that can be invoked 
+or instructed. Function overloads, where multiple function heads that serve as entry points to a single 
+implementation are defined, are also demonstrated in this segment.
+
+this Types & Best Practices
+02:34:40 - 02:39:55
+this Types & Best Practices
+Mike discusses how to handle and invoke a function that uses a this element, such as a click handler. 
+A this type needs to be created in order for TypeScript to know which element this is talking about. 
+Best practices for coding function types by explicitly defining return types is also covered in this segment.
+
+Classes & Access Modifier Keywords
+02:39:56 - 02:54:28
+Classes & Access Modifier Keywords
+Mike discusses how to define classes in TypeScript and access modifier keywords for limited exposure 
+including public, private, and protected. JS private class fields, readonly, and param properties are 
+also discussed in this segment.
+Types & Values
+
+Top Types: any & unknown
+02:54:29 - 03:03:22
+Top Types: any & unknown
+Mike discusses top types which describe any possible value allowed by the system with the key words any 
+and unknown. Practical uses of top types including converting a project from JavaScript to TypeScript 
+are also covered in this segment.
+
+Bottom Types: never
+03:03:23 - 03:12:43
+Bottom Types: never
+Mike discusses bottom types which describe types that hold no possible value in the system with the key 
+word never and walks through a use case for a bottom type in an exhaustive conditional. How to handle an 
+exhaustive conditional with an unreachable error using an error subclass is also covered in this segment.
+
+Type Guards & Narrowing
+03:12:44 - 03:25:06
+Type Guards & Narrowing
+Mike discusses some of TypeScript's built-in type guards including typeof, instanceof, and property 
+checks and demonstrates the types user-defined type guard. The two types of user-defined type guards 
+covered in this segment include value is and asserts value is.
+
+Nullish Values
+03:25:07 - 03:36:15
+Nullish Values
+Mike discusses nullish values including null, undefined, and void, the non-null assertion operator, 
+and definite assignment operator. Although null, void, and undefined are all used to describe “nothing” 
+or “empty”, they are independent types in TypeScript.
+Generics
+
+Generics
+03:36:16 - 03:52:27
+Generics
+Mike discusses generics which are a way of creating types that are expressed in terms of other types. 
+A walk through of a potential use case, how to define a type parameter, and a demonstration of an example 
+function running in TypeScript playground is also covered in this segment.
+Dictionary map, filter & reduce
+03:52:28 - 04:06:12
+Dictionary map, filter & reduce
+Mike provides and then live codes an exercise to practice using generics by building out some higher-order 
+functions that can operate on dictionaries. The functions looked at in this segment are map, filter, and 
+reduce.
+
+Generics Scopes & Restraints
+04:06:13 - 04:20:04
+Generics Scopes & Restraints
+Mike discusses where type parameters can be used depending on where they are defined and minimum requirements 
+that can be imposed on type parameters. How to describe type constraints, the scope of generics, and best 
+practices when defining a type parameter are also covered in this segment.
+Wrapping Up
+
+Wrapping Up
+04:20:05 - 04:27:46
+Wrapping Up
+Mike wraps up the course by summerizing the material covered in this course. A student's question 
+regarding if there are more declaritive ways to inspect an object is also covered in this segment.
+
+--------------------------------
+Typescript Intermediate
+.......................
+Table of Contents
+Introduction
+
+Introduction
+00:00:00 - 00:04:16
+Introduction
+Mike North introduces the course by discussing goals of this course, prerequisites, and a brief 
+workshop setup. A brief overview of other TypeScript courses on Frontend Masters and their relation 
+to this course is also provided in this segment.
+Code Infrastructure
+
+Declaration Merging
+00:04:17 - 00:14:59
+Declaration Merging
+Mike discusses stacking types and values on an identifier, how to understand what is attached to an 
+identifier, and what a namespace is. A walk through of applying type and value tests to a class and 
+how classes relate to declaration merging is also provided in this segment.
+Modules & CJS Setup
+00:15:00 - 00:27:07
+Modules & CJS Setup
+Mike discusses ES Module imports and exports, CommonJS Interop, how avoid ECMAScript errors, and 
+importing outside of JavaScript and TypeScript. If the esModuleInterop and allowSyntheticDefaultImports 
+compiler flags are enabled in order to satisfy ECMAScript errors, anyone who depends on those types will 
+also have to enable them.
+Conditional Types
+
+Type Queries
+00:27:08 - 00:35:05
+Type Queries
+Mike discusses how to obtain a type from a value with the type queries keyof and typeof. The query 
+keyof obtains the type representing all property keys on a given interface while typeof extracts a 
+type from a value. An example for each of these type queries provided in this segment.
+Conditional Types
+00:35:06 - 00:39:50
+Conditional Types
+Mike demonstrates the syntax similarities between JavaScript ternary operators and conditional types. 
+A walk through of each part of a conditional type is also covered in this segment.
+
+Conditional Types Practice
+00:39:51 - 00:49:06
+Conditional Types Practice
+Mike provides a short exercise to practice with the extends keyword by determining whether a conditional 
+type will evaluate to true or false. A walk through of each example and a student question regarding the 
+modern set theory limitations are also covered in this segment.
+
+Extract & Exclude
+00:49:07 - 00:57:16
+Extract & Exclude
+Mike discusses the built-in utility types Extract and Exclude, walks through an example of each utility 
+type, and describes how each utility type works. Exclude is the opposite of Extract, in that it’s useful 
+for obtaining the part of a type that’s not assignable to some other type.
+Type Q&A
+00:57:17 - 01:02:07
+Type Q&A
+Mike answers student questions regarding if generics are more appropriately used in libraries compared 
+to applications, if there is a standard for representing types in generics, and if Extract is an 
+equivalent to the and operator.
+
+Inference with Conditional Types
+01:02:08 - 01:21:11
+Inference with Conditional Types
+Mike discusses using inference with conditional types to access sub-parts of type information within a 
+larger type and walks through an example of using infer. The infer keyword can only be used within the 
+condition expression of a conditional type.
+¨
+Inference Q&A
+01:21:12 - 01:26:09
+Inference Q&A
+Mike answers a student's question regarding if the TypeScript team plans on making the type ConstuctorArg 
+a standard type and discusses the benefits of creating package libraries of useful custom types.
+Mapped Types
+
+Indexed Access Types
+01:26:10 - 01:29:39
+Indexed Access Types
+Mike discusses indexed access types which provide a mechanism for retrieving parts of an array or object 
+type via indices, how they work, and provides a few use case examples. How to access a more specific type 
+from an array or object is also covered in this segment.
+
+Mapped Types
+01:29:40 - 01:42:18
+Mapped Types
+Mike discusses where mapped types name originates, the basics of mapped type, mapped type compared to index 
+signature, and demonstrates the built in utility type Record. Mapped allow types to be defined in other 
+types through a much more flexible version of an index signature.
+Advanced Mapped Types
+01:42:19 - 01:56:24
+Advanced Mapped Types
+Mike discusses using mapped types with indexed access types, demonstrates generalizing using type params, 
+and allowing the type to work on anything and not just Window. A student's question regarding if mapped 
+types extend from dictionary is also covered in this segment.
+
+Pick & Mapping Modifiers
+01:56:25 - 02:01:28
+Pick & Mapping Modifiers
+Mike demonstrates using the built in utility type Pick and applying and removing modifiers with - and ?. 
+A brief overview of modifying the built in utilities Partial, Required, and Readonly are also covered in 
+this segment.
+
+Template Literal Types & Key Mapping
+02:01:29 - 02:09:19
+Template Literal Types & Key Mapping
+Mike discusses using the ECMAScript template literal syntax to create a template literal type, briefly 
+discusses special types: UpperCase, LowerCase, Capitalize, and Uncapitalize, and walks through an example 
+of key mapping to manipulate the keys as they are being mapped over. A brief demonstration of a package 
+made using key mapping is also provided in this segment.
+Filtering Out Properties
+02:09:20 - 02:29:49
+Filtering Out Properties
+Mike demonstrates how to filter properties out using Extract and a template literal type, filtering 
+based on the value, a flawed approach to filtering, and walks through a more refined example to filter 
+values by filtering the keys first. An in depth walk through of filtering values based on keys and 
+conditions is also provided in this segment.
+
+Typing a Data Layer
+02:29:50 - 02:45:58
+Typing a Data Layer
+Mike provides a practical exercise of properly typing a data layer with TypeScript to combine the 
+topics discussed in this course and provides a walk through of the exercise.
+Wrapping Up
+
+Wrapping Up
+02:45:59 - 02:48:49
+Wrapping Up
+Mike wraps up the course by briefly summarizin
+-----------------------------------------------
+
+Making TypeScript Stick
+..........................
+
+
+00:00:00 - 00:06:49
+Introduction
+Mike North introduces the course by providing some brief background information, the purpose and inspiration 
+for this course, and what to expect from this course.
+Intro Quiz
+
+TypeScript Basics Quiz
+00:06:50 - 00:15:38
+TypeScript Basics Quiz
+Mike walks through the first few questions from the introduction quiz that focus on TypeScript basics. 
+TypeScript fields, immutable values, and a fill-in-the-blank question regarding how to expand a string 
+are covered in this segment.
+
+Primitive Types Quiz
+00:15:39 - 00:24:17
+Primitive Types Quiz
+Mike discusses questions from the introduction quiz regarding primitive types. The union of the two 
+primitive types, string and number, results in a never, whereas the interface types String and Number 
+do not.
+
+Async vs Promise Quiz
+00:24:18 - 00:30:17
+Async vs Promise Quiz
+Mike walks through the last question from the introduction quiz regarding the order of execution when 
+it comes to async functions and promises. If a promise has been resolved it does not mean the corresponding 
+.then or await is called immediately.
+Recent TypeScript Features
+
+Variadic Tuple Types
+00:30:18 - 00:45:40
+Variadic Tuple Types
+Mike discusses the recent change to TypeScript, which allows variadic tuple types. A variadic tuple type 
+is a tuple type that has the same properties, defined length, and the type of each element is known, but 
+where the exact shape is yet to be defined.
+
+Class Property Inference
+00:45:41 - 00:51:22
+Class Property Inference
+Mike demonstrates the ability to no longer add types to every class field with class property inference when 
+noImplicitAny is set to true. A student's question regarding what happens when there are conflicting types 
+in the constructor and declaration is also covered in this segment.
+
+Thrown Values as unknown
+00:51:23 - 00:55:43
+Thrown Values as unknown
+Mike discusses how thrown values used to be considered type any but now can be chosen to be regarded as 
+type unknown. The useUnknownInCatchVariables compilerOption allows any error found in a catch block to be 
+labeled as type unknown automatically.
+Template Literal & Key Remapping
+00:55:44 - 01:03:13
+Template Literal & Key Remapping
+Mike demonstrates that template literal types build on string literal types and can expand into many strings 
+via unions. Key remapping has been given a new syntax to allow the transformation of keys in a more d
+eclarative way.
+
+Checked index access
+01:03:14 - 01:09:14
+Checked index access
+Mike discusses the compiler flag that automatically describes the possibility of being undefined: 
+noUncheckedIndexAccess.
+
+Typed Data Store Exercise
+01:09:15 - 01:16:20
+Typed Data Store Exercise
+Students are instructed to build a data store with type errors that alert on miss-named methods in 
+the class. If a new entity such as Comic is added, type errors should alert the absence of a clearComics, 
+getAllComics, and getAllSongs method. There should be no externally-visible properties on an instance of 
+DataStore beyond the required methods, the code and the test suite should type-check, and all pre-existing 
+tests should pass.
+
+Typed Data Store Solution
+01:16:21 - 01:45:24
+Typed Data Store Solution
+Mike walks through the solution to the typed data store exercise.
+Compiling TypeScript
+
+Will It Compile Quiz
+01:45:25 - 02:12:19
+Will It Compile Quiz
+Mike walks through 13 brief exercises to help familiarize with whether or not TypeScript will compile and, 
+if not, what kind of error to expect with the given code example. A student's questions regarding what an 
+abstract class is also covered in this segment.
+
+Typing jQuery Exercise
+02:12:20 - 02:16:34
+Typing jQuery Exercise
+Students are instructed to implement new code to allow the refactored jQuery snippets to run correctly.
+Typing jQuery Solution
+02:16:35 - 02:36:31
+Typing jQuery Solution
+Mike walks through the solution to the typing jQuery exercise.
+Challenges
+Typerdy
+02:36:32 - 02:42:50
+Typerdy
+Mike provides a brief TypeScript version of the game Jeopardy. Categories covered include language features, 
+compiler options, utility types, tools and ecosystem, best practices, and JS/TS conversion.
+
+Beginner Type Challenges
+02:42:51 - 03:00:28
+Beginner Type Challenges
+Mike walks through a few examples of beginner-level exercises from the type-challenges GitHub repo and 
+answers a student's question regarding why a read-only array and array are treated differently. Examples 
+in this segment include implementing the correct types for each of the following If<C, T, F>, 
+LengthOfTuple<T>, EndsWith<A, B>, and Concat<A, B>.
+
+Intermediate Type Challenges: ReturnOf & Split
+03:00:29 - 03:19:15
+Intermediate Type Challenges: ReturnOf & Split
+Mike demonstrates some intermediate type challenges, including correctly typing ReturnOf<F> and 
+Split<S, SEP>.
+
+Intermediate Type Challenges: Q&A and IsTuple
+03:19:16 - 03:35:55
+Intermediate Type Challenges: Q&A and IsTuple
+Mike answers student questions regarding how practical the type challenges are for everyday use of 
+TypeScript and if ternary expressions with the extends keyword are the only way to do conditional types. 
+A walkthrough of the last intermediate type challenge involving correctly typing IsTuple is also covered 
+in this segment.
+
+Expert Type Challenges
+03:35:56 - 03:45:29
+Expert Type Challenges
+Mike walks through an example of an expert type challenge, including solving for the correct type for 
+IndexOf<T, U>.
+Example Exercise
+
+Penpal Types Exercise
+03:45:30 - 03:52:16
+Penpal Types Exercise
+Students are instructed to create a utility type WrapForPenpal<T> that takes an object T with methods 
+and emits a type with similar methods. Any non-promise return types become ”Promise-ified.”
+
+Penpal Types Solution
+03:52:17 - 03:58:56
+Penpal Types Solution
+Mike walks through the solution to the penpal types exercise.
+Wrapping Up
+
+Production-Grade TypeScript
+-----------------------------
+production
+Mike North introduces TypeScript as a programming language, compiler, and a langage server.TypeScript is 
+a syntactic superset of JavaScript, built upon the existing JavaScript language. It allows for more robust 
+linting, better IDE tooling, and compile-time error checking.
+
+Course Project Setup
+00:09:42 - 00:16:16
+Course Project Setup
+Mike walks through the project setup guide which is located in the README.md file in the GitHub repository. 
+The project requires Yarn for dependency management. The notes folder contains a Markdown file with code 
+snippets and other information for each topic.
+
+Features Volta
+00:16:17 - 00:21:42
+Volta
+Mike explains the difference between Volta and the Node Version Manager (NVM). Volta seamlessly switches 
+between command-line tool versions depending on a project's requirements. This segment also addresses why 
+Yarn is recommended with TypeScript and Volta's compatibility between Yarn and NPM.
+
+Optional Chaining & Nullish Coalescing
+00:21:43 - 00:30:48
+Optional Chaining & Nullish Coalescing
+Mike demonstrates TypeScript language features added in versions 3.7 and 3.8. This segment covers optional 
+chaining, nullish coalescing, ECMAScript private fields, and namespace exports.
+
+Tuple Types & Recursive Type Aliases
+00:30:49 - 00:44:18
+Tuple Types & Recursive Type Aliases
+Mike demonstrates TypeScript language features added in versions 4.0 and 4.1. This segment covers tuple 
+types, recursive type aliases, and template type literals.
+ts-ignore
+00:44:19 - 00:47:59
+ts-ignore
+Mike introduces the @ts-expect-error assertion added to TypeScript 3.9. This assertion is more descriptive 
+than @ts-ignore because, rather than just ignoring the next line, it is explicitly ignoring a compiler error.
+
+Error Handling with Unknown
+00:48:00 - 00:57:53
+Error Handling with Unknown
+Mike uses the "unknown" type on an error property in a catch() clause. If an error is thrown as a String 
+instead of an Error object, the catch() class can still handle the error and determine its type.
+
+Declaration Files & Type-only Imports
+00:57:54 - 01:01:50
+Declaration Files & Type-only Imports
+Mike explains how declaration files can be generated from JavaScript files so projects containing JavaScript 
+code can still offer first-class TypeScript support. Modules also support type-only imports so compilers 
+can skip importing entire codebases when the type information is the only requirement.
+TypeScript in Apps vs Libraries
+01:01:51 - 01:12:10
+TypeScript in Apps vs Libraries
+Mike describes the benefits TypeScript brings to both library and application development. Any codebase 
+benefits from TypeScript's in-editor documentation and the formalized contracts it creates between components. 
+Applications benefit from better encapsulation and the descriptive changes between major version upgrades. 
+Libraries benefit from a more descriptive public API and tighter semantic versioning.
+Project Implementation
+
+Creating a Project from Scratch
+01:12:11 - 01:22:36
+Creating a Project from Scratch
+Mike creates an empty TypeScript project to demonstrate best practices around dependency management, 
+and configuration. The project uses Volta to ensure the correct version of Node and Yarn will be installed. 
+The "dev" NPM script uses the "--watch" flag to rebuild the project when a file is changed and the 
+"--preserveWatchOutput" flag to keep console information from the last rebuild.
+
+tsconfig
+01:22:37 - 01:39:34
+tsconfig
+Mike walks through common settings used in the tsconfig.json file. Setting the rootDir property omits 
+the source directory from being included in the output directory. Using properties like noUnusedLocals 
+and noUnusedParameters adheres to coding standards and can be more consistent than linting rules.
+Configuring ESLint
+01:39:35 - 01:54:11
+Configuring ESLint
+Mike configures ESLint for the TypeScript project. ESLint has a series of questions that help determine 
+what plugins are required and how to configure the linting rules. Additional customization can be added 
+in the .eslintrc.json configuration file.
+Testing
+01:54:12 - 02:04:14
+Testing
+Mike installs Jest and the type definitions for Jest to enable testing in the TypeScript Project. 
+The preset-env and preset-typescript Babel plugins allow the test code to be written in TypeScript and the source code can be tested without first being transpiled to JavaScript.
+API Extraction
+
+API Extractor Setup
+02:04:15 - 02:15:04
+API Extractor Setup
+Mike adds the API Extractor and API Documentor modules to the project to generate surface reports and 
+documentation. The API Extractor is configured to include methods based on build version, and exports 
+the surface reports to an "/etc" directory.
+Running API Extractor
+02:15:05 - 02:26:44
+Running API Extractor
+Mike runs API Extractor after building the project. The TypeScript declaration files are analyzed, and 
+API Extractor exports the surface reports.
+API Documenter
+02:26:45 - 02:36:42
+API Documenter
+Mike generates the documentation files using the API Documenter module. The GitHub repository is configured 
+to use the docs folder as the source for the Github Pages site. This segment also discusses alternative 
+documentation libraries and the compatibility between TypeScript and JavaScript.
+
+strict In-Depth
+02:36:43 - 02:45:59
+strict In-Depth
+Mike explains the different strict type-checking options that can be configured in the tsconfig.json 
+configuration file. This segment covers noImplicitAny, noImplicitThis, strictBindCallApply, strictNullChecks, 
+strictFunctionTypes, and strictPropertyInitialization.
+
+Even More strict
+02:46:00 - 02:49:14
+Even More strict
+Mike covers additional strict type-checking options which prevent unused variables and implicit returns 
+from being included in the project. The stripInternal property can be used to remove exported private 
+functions from the project's type information.
+
+Viral Options
+02:49:15 - 02:59:34
+Viral Options
+Mike explains why the allowSyntheticDefaultImports, esModuleInterop, and skipLibCheck cause type information 
+to be leaked out of a library and should be avoided. This segment demonstrates alternative methods for 
+importing code from modules without enabling these properties.
+Converting a Project to TypeScript
+
+Converting a Project to TypeScript
+02:59:35 - 03:04:54
+Converting a Project to TypeScript
+Mike discusses the steps for converting a JavaScript project to a TypeScript project. Files should be 
+renamed with a .ts extension and only have non-type-checking errors fixed. Then files should be only 
+allowed "explicit any" type information. Lastly, enable strict mode and replace the remaining 
+"explicit any" object with a specific type.
+Typing a Project to strict
+03:04:55 - 03:22:02
+Typing a Project to strict
+Mike begins converting the project to TypeScript by renaming the old files to the appropriate extension. 
+When files are renamed in a repository, the code should be committed before additional changes are made so the history is preserved. Disable strict mode and allow "implicit any" types to be used before debugging errors.
+
+Typing React Components
+03:22:03 - 03:27:14
+Typing React Components
+Mike adds the React.FunctionComponent type to most of the untyped React components. A React component's 
+props can use the <any> type parameter.
+
+Typing 3rd Party Libraries
+03:27:15 - 03:43:37
+Typing 3rd Party Libraries
+Mike updates the compiler settings to not allow implicit any types. Parameter types are copied from JS 
+Doc comments or explicitly typed as an "any". This segment also explains using the hard-privacy syntax 
+to prevent a property from being accessible outside of the class.
+
+Enabling Stricter Settings
+03:43:38 - 03:47:32
+Enabling Stricter Settings
+Mike enables the noUnusedLocals and noImplicitReturns rules in the tsconfig.json file, and recompiles 
+the project.
+Using ESLint
+03:47:33 - 03:59:08
+Using ESLint
+Mike install @typescript-eslint/eslint-parser so ESLint can interpret the TypeScript code and 
+@typescript-eslint/eslint-plugin so ESLint can provide feedback about the TypeScript code.
+Using Interfaces
+03:59:09 - 04:03:27
+Using Interfaces
+Mike uses an interface to import type information for API calls in the application's data layer. 
+Interfaces do not contain any implementation code so the impact on the application's codebase size 
+is minimal.
+
+Local Type Overrides
+04:03:28 - 04:17:55
+Local Type Overrides
+Mike demonstrates how type definitions in third-party libraries can be overridden locally in a project. 
+The TypeScript compiler can be configured to check a local folder for type definitions before locating 
+the original definition files in the node_modules folder.
+
+Types at Runtime
+04:17:56 - 04:30:16
+Types at Runtime
+Mike creates a type guard which will add type-checking logic to asynchronous runtime data. The type guard 
+uses assertions to throw runtime errors when the asynchronous data does not meet the validation rules.
+
+Converting to TypeScript Q&A
+04:30:17 - 04:39:29
+Converting to TypeScript Q&A
+Mike answers questions about handling large type definition files, moving configuration files into 
+subdirectories, maintaining type guard files, and how to handle publishing new versions of a library 
+when there are still local type overrides.
+Tests & Linting
+Tests for Types
+
+04:39:30 - 04:45:06
+Tests for Types
+Mike emphasises the importance of writing tests in a TypeScript project. A test suite can be configured 
+to run against nightly TypeScript builds to ensure compatibility with the project.
+
+dtslint Setup
+04:45:07 - 04:52:13
+dtslint Setup
+Mike configures dtslint to test the TypeScript declaration files for style and correctness. This helps 
+guard against compatibility regressions.
+
+Writing dtslint Assertions
+04:52:14 - 05:04:50
+Writing dtslint Assertions
+Mike uses dtslint to test the project code against nightly TypeScript builds. Comments specific to dslint 
+are added in the code specifying the minimum TypeScript version and annotating test assertions. Using the 
+tsd library instead of dtslint eliminates the need to use special comments but can only test against a 
+single TypeScript version.
+Wrapping Up
+
+Wrapping Up
+05:04:51 - 05:10:44
+Wrapping Up
+Mike wraps up the course, and answers question about extending declaration files and why Jest isn't the 
+only testing tool used in the projec
+
+
+Visual Studio Code
+-----------------------------------------------------------------------------
+
+troduction
+Mike North introduces his Visual Studio Code (VS Code) course. VS Code is a source code editor 
+developed by Microsoft for Windows, Linux, and macOS.
+
+Editor Features
+00:02:32 - 00:08:16
+Editor Features
+After reviewing the trends of text editors for JavaScript, Mike discusses benefits features found 
+in IDE in VS Code.
+
+Developer Focus
+00:08:17 - 00:13:29
+Developer Focus
+While showing how VS Code is built on web technology for web developers, Mike discusses how teams 
+from VS Code, Edge, Visual Studio, and TypeScript are collaborating closely.
+
+Up and Running
+00:13:30 - 00:17:22
+Up and Running
+While not requiring extensive tweaking or configuring, Mike reviews that VS Code quickly allows 
+developers to get up and running on various projects: TypeScript, NET, C#, and more. Mike takes a 
+question from a student about getting set up.
+
+Course Agenda
+00:17:23 - 00:22:09
+Course Agenda
+Mike reviews the course agenda, which covers Documents, Emmet, Refactoring, Type-Checking, and Debugging.
+
+Setting Up
+00:22:10 - 00:33:00
+Setting Up
+After reviewing the course's example project that will be used throughout the course, Mike walks 
+through the steps to set up the project.
+Documents
+
+Markdown
+00:33:01 - 00:46:21
+Markdown
+Mike shows how to create documents with Markdown, a lightweight markup language with plain text 
+formatting syntax.
+
+Emmet & HTML
+00:46:22 - 00:59:36
+
+Emmet & HTML
+Mike introduces Emmet, a text editor plugin for an abbreviation syntax that generates snippet 
+auto-completions optimizing workflows for HTML, CSS, and JSX. Mike reviews Emmet's HTML abbreviations syntax.
+
+Emmet & CSS
+00:59:37 - 01:04:27
+Emmet & CSS
+After demonstrating Emmet abbreviation syntax for coding CSS rules, Mike reviews tips for productive 
+use with Emmet.
+
+Challenge 1: Rapid Expansion
+01:04:28 - 01:09:07
+Challenge 1: Rapid Expansion
+In this challenge, students use Emmet autocompletions to build the appropriate HTML structure.
+
+Challenge 1: Solution, Part 1
+01:09:08 - 01:16:02
+Challenge 1: Solution, Part 1
+Mike walks through the solution to Challenge 1.
+
+Challenge 1: Solution, Part 2
+01:16:03 - 01:23:18
+Challenge 1: Solution, Part 2
+While wrapping up the solution to Challenge 8, Mike shows how to use source control within VS Code.
+
+Code Navigation & Refactoring
+Go To
+01:23:19 - 01:32:36
+Go To
+After showing how to do a quick file navigation with the Go To, Mike explains how to perform code 
+searches for type definitions, symbols, and line navigation.
+Selection
+01:32:37 - 01:36:55
+Selection
+Mike demonstrates the use advanced code selection features such as being able to select the next 
+occurrence or all occurrences of the current selection. Mike takes questions from students.
+Multi-Cursor & Line Manipulation
+01:36:56 - 01:40:45
+Multi-Cursor & Line Manipulation
+After reviewing multi-cursor selection techniques including box select to add or edit the same code 
+in multiple places, Mike demonstrates how to move individual lines of code up and down into the desired 
+position.
+Peek Editing
+01:40:46 - 01:48:23
+Peek Editing
+Mike shows peek features such as Find All References, which displays an inline editor that allows 
+for navigating between different references and making quick edits.
+Renaming
+01:48:24 - 01:54:40
+Renaming
+Mike introduces renaming code from simple Find/Replace to refactoring code with Rename in All Files.
+Challenge 2: Refactoring
+01:54:41 - 01:57:27
+Challenge 2: Refactoring
+In this challenge, students refactor code through two exercises.
+Challenge 2: Solution
+01:57:28 - 02:04:30
+Challenge 2: Solution
+Mike walks through the solution to Challenge 2.
+Type Checking
+Introducing Type Checking
+02:04:31 - 02:12:23
+Introducing Type Checking
+Mike introduces TypeScript's advanced type checking and error reporting functionality in regular JavaScript 
+files.
+Benefits of Types
+02:12:24 - 02:21:47
+Benefits of Types
+Mike reviews the benefits of using types as part of development workflow. Mike takes questions from students.
+Categories of Type Systems
+02:21:48 - 02:24:43
+Categories of Type Systems
+After discussing the difference between nominal and structural type systems, Mike states that VS Code 
+uses structural type system.
+Type Checking in VS Code
+02:24:44 - 02:26:50
+Type Checking in VS Code
+Mike demonstrates how to activate in VS Code.
+Annotating Types
+02:26:51 - 02:37:33
+Annotating Types
+After showing how to add types with comments, Mikes takes questions from students.
+Functions
+02:37:34 - 02:41:20
+Functions
+Mike illustrates how to define the types of expected arguments. Arrow functions can also be used to 
+define argument types
+Generics
+02:41:21 - 02:46:23
+Generics
+Mike reviews how to incorporate type checking for generics. For example, promises that wrap other 
+values, which have their own types, are defined using this concept of generics
+Custom Types
+02:46:24 - 02:48:07
+Custom Types
+Mike shows how to define custom named types using the @typedef tag
+Challenge 3: Data Layer Types
+02:48:08 - 02:52:57
+Challenge 3: Data Layer Types
+In this challenge, students update the TypeScript compiler configurations, add type annotations, and 
+troubleshoot errors.
+Challenge 3: Solution
+02:52:58 - 03:12:11
+Challenge 3: Solution
+Mike walks through the solution to Challenge 3.
+Debugging
+Debugging Node
+03:12:12 - 03:20:15
+Debugging Node
+After showing the less than desirable default debugging experience in node, Mike shows Chrome's Node.js 
+debugging feature that is activated when running node application with the --inspect flag.
+Debugging Node with Editors
+03:20:16 - 03:28:30
+Debugging Node with Editors
+Mike reviews the evolution of debugging in code editors.
+Debugging Node with VS Code
+03:28:31 - 03:40:38
+Debugging Node with VS Code
+Mike illustrates how to debug node applications within VS Code by troubleshooting the course demo application.
+Debugging Chrome with VS Code
+03:40:39 - 03:43:10
+Debugging Chrome with VS Code
+Continuing to showcase how to debug, Mike demonstrates how to debug with multiple JavaScript runtimes 
+with VS Code.
+Challenge 4: Multi-Process Debugging
+03:43:11 - 03:46:43
+Challenge 4: Multi-Process Debugging
+In this challenge, students find and fix multiple issues with the course project through debugging tools.
+Challenge 4: Solution
+03:46:44 - 03:53:31
+Challenge 4: Solution
+Mike walks through the solution to Challenge 4.
+Workspace Customization
+Benefits of Customization
+03:53:32 - 03:56:24
+Benefits of Customization
+After detailing the benefits of customizing a code editor, Mike reviews the areas within VS code that 
+can be modified.
+VS Code Themes
+03:56:25 - 04:01:41
+VS Code Themes
+After demonstrating how to change the color theme of the VS Code editor and icons of the File Explorer, 
+Mike shows how to customize colors in settings.
+Custom Fonts
+04:01:42 - 04:06:01
+Custom Fonts
+After examining typefaces enhanced specifically for coding, Mike shows how to set up the fonts to 
+customize the display in VS Code.
+Key Bindings
+04:06:02 - 04:08:14
+Key Bindings
+In addition to the default keyboard shortcuts provided in VS Code, Mike demonstrates how custom key 
+bindings can be added through extension files, called keymaps, that mirror other popular editors can 
+be installed. For advanced customizations, key bindings can be made through the VS Code's 
+keybindings.json file.
+Code Snippets
+04:08:15 - 04:10:46
+Code Snippets
+Mike introduces code snippets, which are templates for entering repeating code patterns.
+Challenge 5: VS Code Tune-Up
+04:10:47 - 04:12:17
+Challenge 5: VS Code Tune-Up
+In this challenge, students demonstrate that they can customize the VS Code editor.
+Challenge 5: Solution
+04:12:18 - 04:18:18
+Challenge 5: Solution
+Mike walks through the solution to Challenge 5.
+Tasks
+Introducing Custom VS Code Tasks
+04:18:19 - 04:28:24
+Introducing Custom VS Code Tasks
+Mike introduces tools for automating tasks, "task runners," that can be run within VS Code. 
+While VS Code auto-detects tasks for Gulp, Grunt, Jake and npm, Mike shows how VS Code can support 
+custom tasks or scripts.
+Challenge 6: TSLint Problems
+04:28:25 - 04:29:43
+Challenge 6: TSLint Problems
+In this challenge, students create a custom task to run TSLint and capture output.
+Challenge 6: Solution
+04:29:44 - 04:38:02
+Challenge 6: Solution
+Mike walks through the solution to Challenge 6.
+Launch Configuration
+Launch Settings
+04:38:03 - 04:45:30
+Launch Settings
+Going further into launch configurations, Mike reviews additional features that can be set when VS 
+Code starts.
+Challenge & Solution 7: Analyze & Monitor
+04:45:31 - 04:51:54
+Challenge & Solution 7: Analyze & Monitor
+After stating the challenge that students should build two launch configurations, Mike walks through 
+the solution to Challenge 7.
+Wrapping Up VS Code
+VS Code Extension Recommendations
+04:51:55 - 04:59:25
+VS Code Extension Recommendations
+Mike reviews a few of his favorite VS Code extensions.
+Wrapping Up
+04:59:26 - 04:59:57
+Wrapping Up
+Mike wraps up the VS Code course.

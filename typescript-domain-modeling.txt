@@ -1,0 +1,121 @@
+Typescript Domain Modeling: Giulio Canti, Debiash Ghosh
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Typescript Domain Modeling with Algebraic Data Types (ADT)
+
+ADT:	is a kind of composite type, i.e. a type formed by combining other types-
+
+2 common classes of algebraic types are: product types and sum types
+
+*** Product Types
+------------------------------------------------------------------------------------------------------------------------------
+can be acollection:
+-------------------
+A product type is a collection of types T, indexed by a set I
+Two common members of this familiy are n-tuples, where I is a non empty interval of natural numbers.
+
+type Tuple1 = [string]				// I = 1
+type Tuple2 = [string, number]			// I = 2
+type Tuple3 = [string, number, boolean]		// I = 3
+
+can be an interface (struct)
+-------------------------------------------
+where I is a set of labels
+
+inferface Person {
+  name: string;
+  age: number;
+}
+
+type Name = Person["name"]
+type Age = Person["age"]
+
+Why the name Product Types?
+-------------------------
+
+If we write C(A) for the number of inhabitants of type A (cardinality)
+then the following equality holds:
+C([A, B]) = C(A) * C(B), the cardinality of the product is the product of the cardinalities of A and B
+
+type Hour = 1 | 2 | 3 |4 | 5 | 6 |7 | 8 | 9 |10 | 11 | 12 
+type Period = "AM" | "PM"
+type Clock = [ Hour, Period], cardinality = 12 * 2 = 24
+
+When to use Product Types?
+-------------------------
+Whenever its components are independent- Because there is no relationship we have to multiply all possibilites
+
+
+
+*** Sum Types
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+A sum type is a data structure used to hold a value that could take on 
+several different, but fixed types. Only one of the types can be in use
+at any one time and a tag field explicitly ndicates which one is in use.
+
+in the TS Docs they are nameed tagged union types (sum types)
+
+type Action = 
+  | { type: "Add_TODO", text: string}
+  | { type: "UPDATE_TODO", id:number, text: string, completed: boolean}
+
+the type field is the tag and ensures that its members are disjoint.
+
+Constructors:
+-----------------
+A sum type with n members requires n constructors.
+
+const add = (text: string): Action => ( type: "ADD_TODO", text)
+
+Sum types can be polymorphic and/or recursive (tree, list)
+
+Pattern Matching
+--------------------
+Javascript does not have Pattern Matching, however we can define poor man pattern maching by defining
+a fold function:
+
+const fold = <A, R> (
+  fa: List<A>, 
+  onNil: () => R,
+  onCons: (head: A, tail: List<A> => R) : R =>
+ (fa.type === "Nil" ? nonNil() : onCons(fa.head, fa.tail) )
+
+calculate the length of a list recursivley
+
+Why the name sum types?
+---------------------------------------------
+C(A | B) = C(A) + C(B)
+the cardinality of the sum is the sum of its cardinalities
+
+type Option<A> = 
+ | { type: "None}
+ | { type: "Some", value: A}
+
+C(Option<A>) = 1 + C(A)  => 1 + 2 = 3
+
+When should I use sum types?
+-----------------------------------------------
+when its components would be dependent if implemented as product types.
+
+
+sample: React component props
+--------------------------------
+
+interface Propes {
+  editable: boolean
+  onChange: (text: string) => void
+} 
+
+class Textbox extends React.Component<Props> {
+  render() {
+    if (this.props.editable) {
+      this.propes.onChange(...)
+    }
+  }
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Sum types are an incredibly useful and fundamental language feature they
+are the key to design excellent domain models by allowing to make illegal states irrespresentable.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------

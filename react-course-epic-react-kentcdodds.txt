@@ -1,0 +1,42 @@
+useState
+--------
+- always define intial value
+- use function format: setState(v => v + 1)
+- triggers render when state change
+
+
+useEffect - synchronize the state of the world with the state of the app
+          - effect can either be an user input or a response from an async request
+	   user input -> app <- response from server request
+--------
+- called when component mounted, updated and unmounted
+- useEffect( () => {}, [])
+
+custom Hook: useLocalStorage: compose useState with useEffect
+
+
+tic-tac-toe sample
+
+useRef - get reference to DOM Node
+-------
+
+const tiltRef = useRef()
+const tiltNode = tiltRef.current - is the refernce to the DOM Node and is mutable
+
+in component
+-----------------
+div ref={tiltRef}
+
+clear reference when not needed any more
+
+return function cleanup() {
+	
+}
+
+useEffect for Api calls: handle diff states: load, error, success
+-------------------------
+pokemon api
+
+
+
+

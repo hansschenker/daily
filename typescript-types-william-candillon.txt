@@ -1,0 +1,101 @@
+type CountTo<N extends number, S extends 0[] = []> = S["length"] extends N
+  ? S
+  : CountTo<N, [...S, 0]>;
+type Inc<N extends number> = [...CountTo<N>, 0]["length"];
+type Dec<N extends number> = CountTo<N> extends [infer _H, ...infer T]
+  ? T["length"]
+  : 0;
+
+type Before<
+  Memory extends number[],
+  Index extends number,
+  S extends number[] = []
+> = S["length"] extends Index
+  ? S
+  : Before<Memory, Index, [...S, Memory[S["length"]]]>;
+
+type After<Memory extends number[], Index extends number> = Memory extends [
+  ...Before<Memory, Index>,
+  infer _Value,
+  ...infer Rest
+]
+  ? Rest
+  : never;
+
+type Write<
+  Memory extends number[],
+  Index extends number,
+  Value extends number
+> = [...Before<Memory, Index>, Value, ...After<Memory, Index>];
+
+type BrainFuck<
+  Program extends string,
+  Input extends number[],
+  InputPtr extends number = 0,
+  Memory extends number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  MemoryPtr extends number = 0,
+  Output extends string = "",
+  Stack extends string = ""
+> = Program extends `,${infer Rest}`
+  ? BrainFuck<
+      Rest,
+      Input,
+      Inc<InputPtr>,
+      Write<Memory, MemoryPtr, Input[InputPtr]>,
+      MemoryPtr,
+      Output,
+      Stack
+    >
+  : Program extends `.${infer Rest}`
+  ? BrainFuck<
+      Rest,
+      Input,
+      InputPtr,
+      Memory,
+      MemoryPtr,
+      `${Output}${Memory[MemoryPtr]}`,
+      Stack
+    >
+  : Program extends `+${infer Rest}`
+  ? BrainFuck<
+      Rest,
+      Input,
+      InputPtr,
+      Write<Memory, MemoryPtr, Inc<Memory[MemoryPtr]>>,
+      MemoryPtr,
+      Output,
+      Stack
+    >
+  : Program extends `-${infer Rest}`
+  ? BrainFuck<
+      Rest,
+      Input,
+      InputPtr,
+      Write<Memory, MemoryPtr, Dec<Memory[MemoryPtr]>>,
+      MemoryPtr,
+      Output,
+      Stack
+    >
+  : Program extends `>${infer Rest}`
+  ? BrainFuck<Rest, Input, InputPtr, Memory, Inc<MemoryPtr>, Output, Stack>
+  : Program extends `<${infer Rest}`
+  ? BrainFuck<Rest, Input, InputPtr, Memory, Dec<MemoryPtr>, Output, Stack>
+  : Program extends `[${infer SubRoutine}]${infer Rest}`
+  ? BrainFuck<
+      Memory[MemoryPtr] extends 0 ? Rest : `${SubRoutine}]${Rest}`,
+      Input,
+      InputPtr,
+      Memory,
+      MemoryPtr,
+      Output,
+      Program
+    >
+  : Program extends `]${infer _Rest}`
+  ? BrainFuck<Stack, Input, InputPtr, Memory, MemoryPtr, Output>
+  : Output;
+
+type Program = ",>,<[->+<]>.";
+type Input = [35, 7];
+
+type Result = BrainFuck<Program, Input>;
+

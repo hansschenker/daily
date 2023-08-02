@@ -1,0 +1,35 @@
+https://stackblitz.com/edit/rxjs-log-operator?file=app%2Fapp.component.ts
+
+
+import { OperatorFunction } from 'rxjs/interfaces';
+import { Observable } from 'rxjs/Observable';
+import { tap } from 'rxjs/operators';
+
+export function log1<T>(message?: string): OperatorFunction<T, T> {
+
+  return function(source$: Observable<T>): Observable<T> {
+    return new Observable<T>(observer => {  
+      const wrapper = {
+        next: value => {
+          console.log(message, value);
+          observer.next(value);
+        },
+        error: observer.error,
+        complete: observer.complete
+      }
+      return source$.subscribe(wrapper);
+    });
+  }
+}
+
+export function log2<T>(message?: string): OperatorFunction<T, T> {
+  return function(source$: Observable<T>): Observable<T> {
+    return source$.pipe(
+      tap(e => console.log(message, e))
+    );
+  };
+}
+
+export function log3<T>(message?: string): OperatorFunction<T, T> {
+  return tap(e => console.log(message, e));
+}

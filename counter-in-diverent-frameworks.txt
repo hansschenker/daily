@@ -1,0 +1,116 @@
+rxjs
+-------------------
+viewof Counter = {
+  const { BehaviorSubject } = Rx;
+  const { fromEvent } = Rx.Observable;
+  const { map, scan } = Rx.operators;
+
+  // HTML.
+  const view = html`
+    <button id="dec">-</button>
+    <span id="count">0</span>
+    <button id="inc">+</button>
+  `;
+
+  // Elements.
+  const decButton = view.querySelector('#dec');
+  const count = view.querySelector('#count');
+  const incButton = view.querySelector('#inc');
+
+  // Create an initial BehaviorSubject that our reducer$ subscribes to for it's action$.
+  // Upon subscription BehaviorSubject sends 'INIT'.
+  const action$ = new BehaviorSubject('INIT');
+
+  // Map increment button clicks to BehaviorSubject action$.
+  const inc$ = fromEvent(incButton, 'click')
+  	.pipe(
+      map(() => 'INC')
+    )
+  	.subscribe(action$);
+
+  // Map decrement button clicks to BehaviorSubject action$.
+  const dec$ = fromEvent(decButton, 'click')
+  	.pipe(
+      map(() => 'DEC')
+    )
+  	.subscribe(action$);
+
+  // Use scan() to reduce and emit new state we get from the BehaviorSubject action$.
+  const reducer$ = action$.pipe(
+    scan((state, actionType) => {
+      switch (actionType) {
+        case 'INC':
+          return state + 1;
+        case 'DEC':
+          return state - 1;
+        case 'INIT':
+          return 0;
+        default:
+          return state;
+      }
+    }, 0),
+  );
+
+  // Subscribe to BehaviorSubject action$ after they are scanned and update the count.
+  reducer$.subscribe(
+  	state => count.innerText = state
+  );
+
+  return view;
+}
+...........................
+
+angular rxjs typescript counter (rekna viewmodel)
+--------------------------------------------------------
+
+interface ICounterVm {   
+    counter:number; 
+}
+
+class counter
+----------------------------------------------------------------
+// normally it could be done with a single subject, but for demonstration  
+// purposes, I'll use 2 subjects  
+public incrSubj = new Subject<number>();   
+public decrSubj = new Subject<number>();
+
+
+public vm$ : Observable<ICounterVm>;
+public incrSubj = new Subject<number>;
+public decrSubj = new Subject<number>;
+constructor() {
+
+  // the subjects are mapped to an anonymous function that 
+  // - accepts as parameter the previous state of the viewmodel (vm:ICounterVm)
+  // - and that returns the mutated viewmodel
+  // they are the viewmodel mutation functions
+  const incr$ = this.incrSubj.pipe(
+    map( delta => (vm:ICounterVm) => ({...vm, counter:vm.counter+delta}) )
+  );
+  const decr$ = this.decrSubj.pipe(
+    map( delta => (vm:ICounterVm) => ({...vm, counter:vm.counter-delta}))
+  );
+
+  // the viewmodel observable is a merge of all mutation observables (incr$ and decr$) 
+  // piped into a scan function 
+  // scan has two arguments
+  // the first is the accumulator (the viewmodel) and the second the mutation function
+  // the body of the scan operator executes the mutation function : mutationFn(prevVm) passing the previous state of the viewmodel.
+  // this function returns the mutated viewmodel which is the new accumulated value of the vm$ observable
+  this.vm$ = merge(of({counter:0}), incr$, decr$).pipe(
+    scan( (prevVm:ICounterVm, mutationFn:(vm:ICounterVm)=>ICountVm) 
+      => mutationFn(prevVm)
+    )
+  )
+}
+
+view
+--------
+<!-- vm$ is subscribed by async pipe and exposes a variable named vm -->
+<div *ngIf="vm$ | async as vm">
+  Current counter : {{vm.counter}}
+  <button type="button" (click)="decrSubj.next(1)">Decrement</button>
+  <button type="button" (click)="incrSubj.next(1)">Increment</button> 
+</div>
+
+............................................................................

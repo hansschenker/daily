@@ -1,0 +1,347 @@
+what is javascript reactivity
+
+JavaScript reactivity refers to a programming paradigm 
+- where a system automatically updates or responds to changes in data or state. 
+  In the context of web development and JavaScript frameworks, 
+  - reactivity is a core feature that allows for efficient and seamless updates to 
+    the user interface (UI) when the underlying data or state changes.
+
+Modern JavaScript frameworks like Vue.js, React, and Svelte employ different approaches to 
+achieve reactivity:
+
+Vue.js: the reactive data model
+---------------------------------
+Vue.js uses a reactive data model built around an observer pattern. It tracks 
+dependencies between data properties and UI components, and updates the UI whenever the 
+data changes. Vue.js achieves this by using Object.defineProperty to 
+
+- create getters and setters for data properties, and 
+- watchers to track dependencies and trigger updates.
+
+React: track changes in virtual DOM and update real DOM
+--------------------------------------------------------
+React uses a virtual DOM (VDOM) to track changes in the application state. 
+When the state changes, React updates the virtual DOM first, then calculates the 
+difference between the new virtual DOM and the current actual DOM. This process, 
+known as 
+- reconciliation or diffing, results in the minimum number of changes required 
+  to update the actual DOM, leading to optimized performance.
+
+Svelte: compile component into efficient Javascript
+------------------------------------------------------------
+Svelte takes a different approach to reactivity by shifting most of the work to 
+compile time. It compiles the components into efficient JavaScript code that updates the 
+DOM directly when the state changes. This approach eliminates the need for a virtual DOM 
+or runtime reactivity system, resulting in smaller, faster applications.
+
+In summary, JavaScript reactivity is a concept that allows web applications to efficiently 
+and automatically update the UI in response to changes in data or state, and it's a key 
+feature of modern JavaScript frameworks.
+
+Javascript reactivity with javascript proxies
+--------------------------------------------------------------------------
+JavaScript Proxy objects are another way to implement reactivity in web applications.
+ 
+Proxies were introduced in ECMAScript 6 (ES6) and provide a way to 
+- create custom behavior for fundamental operations on objects, like 
+  - getting or 
+  - setting properties.
+
+To create a reactive data object using JavaScript Proxies, you can create a handler object that 
+defines 
+- specific traps (functions) for operations like get and set. 
+  These traps intercept the operations and allow you to execute custom logic before 
+  or after the operation is performed.
+
+-----------------------------------------------------------------------
+function reactiveHandler(target, prop, value) {
+  console.log(`Setting property "${prop}" to value "${value}"`);
+  target[prop] = value;
+  // Perform any other necessary updates, like re-rendering components
+  return true;
+}
+
+const data = { message: 'Hello, world!' };
+
+const reactiveData = new Proxy(data, {
+  set: reactiveHandler
+});
+
+reactiveData.message = 'Hello, Proxy!';
+---------------------------------------------------------------------------
+// Logs: "Setting property "message" to value "Hello, Proxy!""
+
+In this example, the reactiveHandler function is a trap for the "set" operation. 
+- When a property is set on the reactiveData proxy, 
+  the custom logic in reactiveHandler is executed.
+
+Using JavaScript Proxies for reactivity can be a powerful technique, particularly for more 
+fine-grained control over property access and modification. 
+
+In fact, Vue.js 3 switched to using Proxies for its reactivity system, 
+which improved performance and allowed for better handling of nested objects and arrays 
+compared to its previous implementation with Object.defineProperty.
+
+Javascript reactivity with Javascript Reactive Extensions
+-------------------------------------------------------------------------
+Reactive programming is a paradigm that deals with asynchronous 
+data streams and the propagation of change. The Reactive Extensions (Rx) library is an 
+implementation of the reactive programming concepts, which provides a set of tools and 
+utilities for working with asynchronous data streams in a more manageable and declarative way.
+
+Reactive Extensions for JavaScript (RxJS) is a specific implementation of the ReactiveX API for 
+JavaScript. RxJS allows you to work with Observables, which are data streams that can emit 
+multiple values over time, and can be manipulated, combined, and transformed using various 
+operators. This makes it easier to manage complex asynchronous operations in your code.
+
+RxJS can be used for implementing reactivity in JavaScript applications by treating changes 
+in data or state as asynchronous data streams. You can 
+- create Observables to emit new values when the data changes 
+  and then use RxJS operators to react to these changes and 
+  perform the necessary updates to the user interface or other parts of the application.
+
+----------------------------------------------------------------------------
+import { BehaviorSubject } from 'rxjs';
+
+// Create a BehaviorSubject to represent a reactive data stream
+const dataStream = new BehaviorSubject('Hello, world!');
+
+// Subscribe to the data stream to react to new values
+dataStream.subscribe((value) => {
+  console.log(`New value: ${value}`);
+  // Perform necessary updates, like updating the UI
+});
+
+// Update the data stream with a new value
+dataStream.next('Hello, RxJS!');
+
+// Logs: "New value: Hello, RxJS!"
+--------------------------------------------------------------------------
+
+In this example, a 
+- BehaviorSubject is used to create a reactive data stream, and a 
+- subscription is made to react to new values emitted by the stream. 
+- When the data stream is updated with a new value using the next() method, 
+  the subscribed function is executed.
+
+RxJS can be a powerful tool for creating reactive applications and managing complex 
+asynchronous operations. It can be used in conjunction with popular JavaScript frameworks 
+like Angular, React, or Vue.js, or as a standalone library in your applications.
+
+sample reactive Javascript application written in Model View Update Architecture
+----------------------------------------------------------------------------------
+
+The Model-View-Update (MVU) architecture is a pattern for organizing code in 
+web applications, which clearly 
+
+- separates the concerns of 
+  - managing state, 
+  - rendering UI, 
+  - and handling updates. 
+
+The key components of MVU architecture are:
+
+Model: 
+------------------------------------------
+Represents the application's state
+
+
+View: 
+------------------------------------------
+A function that takes the model and generates the UI (usually as a virtual DOM tree).
+
+Update: 
+------------------------------------------
+A function that takes the current model and an action, then produces a new model 
+based on the action.
+
+Below is a simple example of a reactive JavaScript application using the MVU architecture. 
+The application will feature a counter that can be incremented or decremented using buttons:
+
+----------------------------------------------------------
+<!DOCTYPE html>
+html:
+--------------------
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MVU Counter Example</title>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+    // Model State Object
+---------------------
+    const initialState = {
+      count: 0,
+    };
+
+    // Actions: Action Definitions
+----------------------
+    const INCREMENT = 'INCREMENT';
+    const DECREMENT = 'DECREMENT';
+
+    // Update function - updates the State with an action, carrying the state change
+
+    function update(model, action) {
+      switch (action.type) {
+        case INCREMENT:
+          return { ...model, count: model.count + 1 };
+        case DECREMENT:
+          return { ...model, count: model.count - 1 };
+        default:
+          return model;
+      }
+    }
+
+    // View - view dispatches the defined actions
+----------------------------------
+    function view(model, dispatch) {
+      return `
+        <div>
+          <h1>Counter: ${model.count}</h1>
+          <button onclick="dispatch({ type: '${INCREMENT}' })">Increment</button>
+          <button onclick="dispatch({ type: '${DECREMENT}' })">Decrement</button>
+        </div>
+      `;
+    }
+
+    // Application - brings the 3 parts together
+-------------------------------------------------
+
+    function app(initModel, update, view, node) {
+      let model = initModel;
+      let currentView = view(initModel, dispatch);
+
+      node.innerHTML = currentView;
+
+      function dispatch(action) {
+        model = update(model, action);
+        const updatedView = view(model, dispatch);
+        node.innerHTML = updatedView;
+      }
+    }
+
+    // Mounting the application
+-------------------------------------------------
+    const rootNode = document.getElementById('app');
+    app(initialState, update, view, rootNode);
+
+  </script>
+</body>
+</html>
+
+In this example, the MVU architecture is used to create a simple counter application. 
+The update function takes the current model and an action, and returns a new model with 
+the updated state. The view function takes the model and a dispatch function, and returns 
+an HTML string representing the UI. The app function manages the state and the DOM updates.
+
+When the buttons are clicked, the dispatch function is called with the corresponding action. 
+The update function then calculates the new model, and the view function generates the updated UI. 
+The app function takes care of updating the DOM with the new UI.
+
+This is a basic example of how to create a reactive JavaScript application using the MVU 
+architecture, which clearly separates state management, UI rendering, and updates.
+
+
+Reactive Model View Update Architecture written with RxJs
+----------------------------------------------------------------------------------------
+
+You can incorporate RxJS in the MVU architecture to handle actions and state updates 
+in a more reactive way. In this example, I'll use RxJS to 
+
+-create a reactive stream for actions and to 
+- manage the state updates. Here's the modified version of the MVU counter 
+
+-----------------------------------------------------------------
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RxJS MVU Counter Example</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/7.5.2/rxjs.umd.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    // Model
+    const initialState = {
+      count: 0,
+    };
+
+    // Actions
+    const INCREMENT = 'INCREMENT';
+    const DECREMENT = 'DECREMENT';
+
+    // Update
+    function update(model, action) {
+      switch (action.type) {
+        case INCREMENT:
+          return { ...model, count: model.count + 1 };
+        case DECREMENT:
+          return { ...model, count: model.count - 1 };
+        default:
+          return model;
+      }
+    }
+
+    // View
+    function view(model, dispatch) {
+      return `
+        <div>
+          <h1>Counter: ${model.count}</h1>
+          <button onclick="dispatch({ type: '${INCREMENT}' })">Increment</button>
+          <button onclick="dispatch({ type: '${DECREMENT}' })">Decrement</button>
+        </div>
+      `;
+    }
+
+    // Application
+    function app(initModel, update, view, node) {
+
+      // action stream
+      const actions$ = new rxjs.Subject();
+
+      // state stream
+      const model$ = new rxjs.BehaviorSubject(initModel);
+
+      // scan actions and call the update function with state and action, start with initialState
+      actions$
+        .pipe(
+          rxjs.scan((model, action) => update(model, action), initModel)
+        )
+        .subscribe(updatedModel => {
+          model$.next(updatedModel);
+        });
+
+      // Update the UI when the model changes
+      model$.subscribe(model => {
+        node.innerHTML = view(model, action => actions$.next(action));
+      });
+    }
+
+    // Mounting the application
+    const rootNode = document.getElementById('app');
+    app(initialState, update, view, rootNode);
+  </script>
+</body>
+</html>
+
+In this version of the counter example, we use an 
+
+- RxJS Subject for handling actions 
+- and a BehaviorSubject for managing the model's state. 
+
+The actions$ stream receives actions dispatched by the view, 
+and then the rxjs.scan operator is used to apply the update function and produce the new model. 
+The new model is then emitted through the model$ stream.
+
+The model$ stream is subscribed to, and the UI is updated whenever a new model is emitted. 
+
+The view function now takes a dispatch function that pushes actions into the actions$ stream 
+using actions$.next(action).
+
+

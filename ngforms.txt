@@ -1,0 +1,75 @@
+Template Driven  - build from Template
+Reactive - build - build model in component
+
+Template Driven
+--------------------------------------------------------------------------------------------------------------------------------
+html						Template Driven					
+						import FormsModule				
+
+form						ngForm (FormGroup), ngSubit output
+input						FormControl
+
+input						ngModel // one-way data binding , creates a new FormControl with the name of the name attribute, connects DOM element to COM
+						name="fieldname"
+						[(ngModel)]="fieldname" // two-way data binding
+
+button type="submit"				press enter to submit
+form						ngForm
+						#f="ngForm"
+						(ngSubmit)="onSubmit(f.value)"
+
+
+
+bootstrap classses for validation
+---------------------------------
+.has-error
+.has-success
+
+[ngClass]="{'has-error': name.invalid && name.touched,
+            'has-success': name.valid && name.touched
+ }"
+
+check for forms validity:
+------------------------------
+create template variable for form: #form="ngForm"
+
+{{form.valid}}
+
+
+
+
+
+Reactive Forms (Model driven, model in class)
+------------------------------------------------------------------------------------------------------------------------------
+AbstractControl
+  FormGroup (holds FormControls, and manages the validity of all controls, all controls must be valid for the FormGroup to be valid too
+  FormControl
+  FormArray
+name;FormControl()
+
+.form-group>label+input[name=username].form-control
+.form-group>buttton[type=submit].btn.btn-danger
+
+use of FormBuilder (import FormBuilder, FormGroup)
+
+hold a COM field for form: myForm:FormGroup
+
+inject FormBuilder in COOM Constructor
+and in constructor define form: this.myForm= fb.group({new FormControl('fieldname': ['initial value', Validators.required])})
+
+DOM Template
+input [formControl]="myForm.controls['fieldname']"
+
+
+COM Component
+set up a COM field for each input:
+myForm: FormGroup
+myField: AbstractControl
+
+constructor(fb:FormBuilder)
+  this.myForm = fb.group({'myField': ['initial value', Validators.required]});
+  this.myField = this.myForm.controls('myField')
+
+form.io
+ngx-formly
+juristrumpflohner, egghead.io

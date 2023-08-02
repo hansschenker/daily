@@ -1,0 +1,196 @@
+// juri str
+---------------------------------------------------------------------------------------
+interface StateObject {
+  [prop: string]: any;
+}
+...
+state$ = this.stateSubject.asObservable().pipe(
+  scan((acc: StateObject, newVal: StateObject) => {
+    // create a new object
+    return { ...acc, ...newVal };
+  }, this.initialState),
+  startWith(this.initialState),
+  shareReplay(1)
+);
+----------------------------------------------------------------------------------------
+// brian troncone - rxjs masterclass ultimatecourses
+---------------------------------------------------------------------------------------
+import { BehaviorSubject, Subject } from 'rxjs';
+import { map, distinctUntilKeyChanged, scan } from 'rxjs/operators';
+
+export class ObservableStore {
+  private _store: BehaviorSubject<any>;
+  private _stateUpdate = new Subject();
+
+  constructor(initialState:{}) {
+    this._store = new BehaviorSubject(initialState);
+    this._stateUpdate.pipe(
+      /*
+       * Accumulate state over time using scan.
+       * For this example we will just merge our current state
+       * with updated state and emit the result, however
+       * this could be any reducer / pattern you wish to follow.
+       */
+      scan((current, updated) => {
+        return { ...current, ...updated as {} }
+      }, initialState)
+    ).subscribe(this._store);
+  }
+
+  /*
+   * Select a slice of state based on key.
+   */
+  selectState(key: string) {
+    return this._store.pipe(
+      distinctUntilKeyChanged(key),
+      map(state => state[key])
+    );
+  }
+
+  /*
+   * Update state with new object to merge.
+   */
+  updateState(newState: object) {
+    this._stateUpdate.next(newState);
+  }
+
+  /*
+   * Subscribe to any store state changes.
+   */
+  stateChanges() {
+    return this._store.asObservable();
+  }
+}
+
+-------------- index brian troncone
+import '../style.css';
+console.clear();
+
+// begin lesson code
+import { ObservableStore } from './store';
+
+const store = new ObservableStore({
+  user: 'joe',
+  isAuthenticated: true
+});
+
+/*
+ * Select a slice of state from store.
+ */
+store.selectState('user').subscribe(console.log);
+
+/*
+ * Update a property with new value.
+ */
+store.updateState({
+  user: 'bob'
+});
+
+store.updateState({
+  isAuthenticated: true
+});
+
+/*
+ * Selected state above (user) only emits when value has changed
+ * for the requested property.
+ */
+store.updateState({
+  isAuthenticated: false
+});
+
+
+/********************
+ * Have a question, comment, or just want to chat about RxJS?
+ * Ping me on Ultimate Courses slack or on
+ * Twitter https://twitter.com/btroncone
+ * I look forward to hearing from you!
+ * For additional RxJS info and operator examples check out
+ * Learn RxJS (https://www.learnrxjs.io) and
+ * the Ultimate Course RxJS blog!
+ * (https://ultimatecourses.com/blog/category/rxjs)
+ ********************/
+
+
+
+
+----------------------------------------------------------------------------------------
+// kim maida
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------
+// rudy yardley - action$.scan(reducer).subscribe(renderer)  
+-----------------------------------------------------------------------------------------
+import React from 'react';  
+import ReactDOM from 'react-dom';  
+import { Subject } from 'rxjs/Subject';
+
+// create our stream as a subject so arbitrary data can be sent on the stream
+const action$ = new Subject();
+
+// Initial State
+const initState = { name: 'Harry' };
+
+// Redux reducer
+const reducer = (state, action) => {  
+  switch(action.type) {
+    case 'NAME_CHANGED':
+      return {
+        ...state,
+        name: action.payload
+      };
+    default:
+      return state;
+  }
+}
+
+// Reduxification
+const store$ = action$  
+    .startWith(initState)
+    .scan(reducer);
+
+// Higher order function to send actions to the stream
+const actionDispatcher = (func) => (...args) =>  
+  action$.next(func(...args));
+
+// Example action function
+const changeName = actionDispatcher((payload) => ({  
+  type: 'NAME_CHANGED',
+  payload
+}));
+
+// React view component 
+const App = (props) => {  
+  const { name } = props;
+  return (
+    <div>
+      <h1>{ name }</h1>
+      <button onClick={() => changeName('Harry')} >Harry</button>
+      <button onClick={() => changeName('Sally')} >Sally</button>
+    </div>
+  );
+}
+
+// subscribe and render the view
+const dom =  document.getElementById('app');  
+store$.subscribe((state) =>  
+    ReactDOM.render(<App {...state} />, dom));
+
+
+
+
+
+
+
+

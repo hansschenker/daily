@@ -1,0 +1,423 @@
+Advanced Typescript - Milosz Piechoki
+
+unit type - Every value in TypeScript has a type. 
+          - functions are values too and have types (param type, return type)
+
+            const add = (x: number, y: number) => x + y;
+
+	    function sub(x: number, y: number) {
+              return x - y;
+             }
+ 
+            const operation: (x: number, y: number) => number = sub;
+
+          - callback is a function too
+	    function fetchTitles(count: number, onSuccess: (titles: string[]) => void) {
+   		/* ... */
+ 	    }
+          - A function that accepts callbacks is an example of a higher-order function.
+
+any map function typing
+---------------------------
+ function map(items: any[], mappingFunction: (item: any) => any): any[] {
+   /* ... */
+ }
+
+generic map function typing
+----------------------------
+ function map<T, R>(items: T[], fn: (item: T) => R):R[] {}
+
+generic reduce function typing
+--------------------------------
+
+Our reduce will be a function that accepts three arguments:
+
+array 		- the array to be reduced
+reducer 	- a function that accepts an element of the array and the partial result (calculated based on elements processed so far)
+initialResult 	- a value that will be passed to the reducer before any array elements have been processed
+
+array 		- since T is the type of array element, the type of the whole array is T[]
+initialResult 	- R the type should be the same as the type of the final result; so it’s R
+reducer 	- it’s a function that takes a result (R) and an array element (T) and returns an updated result (R); 
+		  therefore, it’s type is (result: R, el: T) => R
+
+generic reduce function typing
+------------------------------
+function reduce<T, R>(array: T[], reducer: (acc: R, el: T) => R, initial: R): R {
+                     -----------  ------------------------------ -----------
+    let result = initial;
+    for (const element of array) {
+      result = reducer(result, element);
+    }
+   return result;
+ }
+
+generic interfaces - FP Perspective
+-----------------------------------
+shape of a type - Interfaces are used not to enumerate methods of an object, but to describe the shape of the data contained by the object.
+                  generic interfaces are used to describe a data shape
+
+FormField as generic Container with a special shappe: value, defaultValue, isValid
+-----------------------------
+interface FormField<T> {
+   value?	: T;
+   defaultValue	: T;
+   isValid	: boolean
+}
+
+restrict generic type arguments (field value can only be a string, number or a boolean
+---------------------------------
+  interface FormField<T extends string | number | boolean> {
+    value?: T;
+    defaultValue: T;
+    isValid: boolean;
+  }
+  
+  // Type 'T' does not satisfy the constraint 'string | number | boolean'
+  function getFieldValue<T>(field: FormField<T>): T {
+    /* ... */
+ }
+
+Constraining with index type query operator
+--------------------------------------------
+We can put a constraint on K and require it to extend keyof T. 
+
+index type query operator
+------------------------
+index type query operator 
+- where keyof K returns a type that is a union of string literal types 
+- corresponding to the property names of T.
+
+  interface Person {
+    name: string;
+    age: number;
+  }
+  
+  type PersonKeys = keyof Person; // ‘name' | ‘age'
+  
+  function get<T, K extends keyof T>(object: T, key: K): T[K] {
+    return object[key];
+ }
+ 
+ declare const person: Person;
+ get(person, "name"); // No errors
+ get(person, "foo"); // Error!
+
+Type Constructors
+------------------------------------------------------------------
+- is a function (not a regular function, a mathematical function) that 
+  takes a type and returns a new type (based on the original type).
+  T -> R
+  Notice that a generic interface with only one type argument is exactly that
+  FormField type from the previous chapter is a function with one type argument, T
+
+World of Values and World of Types
+-----------------------------------------------------------------------
+the world of types as a universe that is parallel to the world of values. 
+
+world of values
+- where functions take some values and return other values
+
+world of types
+- type constructors are functions that take some types and return other types.
+
+Category theory
+---------------
+It turns out that the world of values and the world of types are both categories! 
+There are some universal laws that are true for all categories
+
+Typescript interesting Type Constructors
+----------------------------------------
+- NonNullable<T> 	is a function that takes a type and returns the same type with null and undefined removed from the domain.
+- Partial<T> 		takes a type and returns a type with the same properties as the source, but each one optional.
+- ReturnType<T> 	takes a function type and returns the return type of that function.
+
+generic interfaces are very much like functions that transform types
+
+Type Argument Propagation
+---------------------------------------------------------------------------
+function getIds<T extends Record<"id", string>>(elements: T[]) {
+   return elements.map((el) => el.id);
+ }
+
+Typescript typing getIds
+-------------------------
+<T>(list: readonly Record<"id", T>[]) => T[]
+
+point free with the help of ramda library
+--------------------------------------
+ import * as R from "ramda";
+ const getIds = R.map(R.prop("id"));
+ map is partially applied with a mapper function, prop, which extracts the id property from any object. 
+ The result of getIds is a function that accepts a collection of objects.
+ R.map(R.prop('id')) is an example of a situation when we pass a generic function as an argument to another generic function.
+
+Composing Types
+-----------------------------------------------------------------------------------------------------------
+
+Union and Intersection
+----------------------
+composing types with union and intersection operations
+
+Simple union types
+--------------------
+Union type is very often used with either null or undefined.
+const sayHello = (name: string | undefined) => {
+   /* ... */
+ };
+
+Union and intersection of object types
+---------------------------------------
+ interface Foo {
+    foo: string;
+    xyz: string;
+  }
+  
+  interface Bar {
+    bar: string;
+    xyz: string;
+  }
+ 
+ const sayHello = (obj: Foo | Bar) => {
+   /* ... */
+ };
+
+either Foo or Bar (Sum type)
+------------------
+Foo | Bar is a type that has either all required properties of Foo OR all required properties of Bar.
+
+Intersection of object types (Product Type)
+---------------------------
+Foo & Bar is a type that has a property which is common to both types -> xyz:string
+
+Discriminated unions 
+---------------------
+ interface EmailContact {
+    kind: "email"; // discriminand
+    email: string;
+  }
+  
+  interface PhoneContact {
+    kind: "phone"; // discriminands
+    phone: number;
+  }
+ 
+ type Contact = EmailContact | PhoneContact;
+  interface Customer {
+   name: string;
+   contact: Contact;
+ }
+type Contact =
+   | { kind: "email"; email: string }
+   | { kind: "phone"; phone: number }; 
+
+ function printCustomerContact({ contact }: Customer) {
+   if (contact.kind === "email") {
+     // Type of `contact` is `EmailContact`!
+     console.log(contact.email);
+   } else {
+     // Type of `contact` is `PhoneContact`!
+     console.log(contact.phone);
+   }
+ }
+
+Algebraic data types
+--------------------------------------------------------------------------------------
+Discriminated unions are not unique to TypeScript. 
+Statically-typed functional languages often make heavy use of algebraic data types
+
+data Tree = Empty
+             | Leaf Int
+             | Node Tree Tree
+ type Tree =
+   | { type: "empty" }
+   | { type: "leaf"; value: number }
+   | { type: "node"; left: Tree; right: Tree };
+
+Precise domain modeling
+--------------------------
+So far, we have seen an example of how discriminated unions help encode business rules in the type system. 
+In this exercise, you’re going to write types that capture a slightly more complex domain.
+
+Create types for the following domain:
+----------------------------------------
+
+Users place orders for products.
+Users have contact information, email or postal addresses, and at least one is required.
+Orders should include price, product name, quantity, payment date, paid amount, sending date, and delivery date.
+
+ type Order = {
+   productName: string;
+   price: number;
+   quantity: number;
+ };
+
+State Machines (finite discrete states)
+------------------------------------------
+There are four states:
+-----------------------
+empty 		- fetching has not started yet or has been canceled
+loading 	- fetching is in progress
+withData 	- fetching was successful
+error 		- fetching failed
+
+Let’s create a discriminated union that represents all of the possible states. 
+Next, let’s look at all possible actions that can result in state transitions. 
+Finally, we’ll build a reducer which describes all of the possible transitions.
+
+  type State =
+    | { type: "initial" }
+    | { type: "loading" }
+    | { type: "success"; data: string[] }
+    | { type: "failure"; errorMessage: string };
+ 
+there are four actions:  request submitted, request success, request failure, request cancelled
+----------------------- 
+  type Action =
+    | { type: "requestSubmitted" }
+    | { type: "requestSucceeded"; data: string[] }
+    | { type: "requestFailed"; errorMessage: string }
+    | { type: "requestCancelled" };
+ 
+ function reducer(prevState: State, action: Action): State {
+
+   // first switch on state
+   switch (prevState.type) {
+     case "loading":
+       // second switch on action
+       switch (action.type) {
+         case "requestSucceeded":
+           return { type: "withData", data: action.data };
+         case "requestCancelled":
+           return { type: "empty" };
+         case "requestFailed":
+           return { type: "error", errorMessage: action.errorMessage };
+         case "requestSubmitted":
+           return prevState;
+       }
+     case "initial":
+     case "failure":
+     case "success":
+       switch (action.type) {
+         case "requestSubmitted":
+           return { type: "loading" };
+         case "requestCancelled":
+         case "requestFailed":
+         case "requestSucceeded":
+           return prevState;
+       }
+   }
+ }
+
+As you can see, the reducer closely matches the state machine. 
+- First, we switch over possible states. What actions can be performed on what state
+  State
+   Action
+  For each state, we defined what happens when a certain action is triggered. 
+  In a certain state only defined actions can be performed
+  ---------------------------------------------------------
+  For some actions, we return prevState which means that this transition is not possible.
+
+Advanced Types
+-------------------------------------------------------------------------------------------------------------------------
+
+Conditional Types: 		T extends U ? X : Y
+------------------
+Conditional types are type constructors that create a type based on some condition
+
+they are a special kind of generic type where you can inspect the type argument and “return” 
+a different type based on whether or not it satisfies a given type condition
+
+type IsString<T> = T extends string ? true : false;
+ 
+ type A = IsString<string>; // A === true
+ type B = IsString<"abc">; // B === true
+ type C = IsString<123>; // C === false
+
+
+Mapped Types: 			{ [P in K ]: X}
+-------------
+
+
+
+Type Guards
+-------------------
+
+
+
+Distributive conditional types
+--------------------------------------------------------------------------------------------------------------------------
+
+One very important aspect of conditional types is that they’re distributive. 
+
+ type NonNullable<T> = T extends null | undefined ? never : T;
+
+NonNullable (TypeScript 2.8)
+---------------------------. 
+- takes any type and returns a non-optional or a type with 
+  - null and undefined removed from the domain of that type 
+    (e.g., function foo<T>(bar: NonNullable<T>) {}).
+
+ // Define Not and Or
+  type Not<T> = never;
+  type Or<T> = never;
+  
+  // The following assignments should compile correctly
+  const foo: Not<true> = false;
+  const foo: Not<false> = true;
+  
+  const bar: Or<[true, false]> = true;
+  const bar: Or<[false, false]> = false;
+
+Built-in Conditional Types: 
+Extract, Exclude, Omit, NonNullable, Parameters, ConstructorParameter, ReturnType, InstanceType, ...
+------------------------------------------------------------------------------------------------------------------------------
+
+Exclude Exclude<UnionType, ExcludedMembers>
+Constructs a type by excluding from UnionType all union members that are assignable to ExcludedMembers.
+
+Example
+type T0 = Exclude<"a" | "b" | "c", "a">;
+     
+type T0 = "b" | "c"
+
+-------------------------
+Exclude takes a union type, T, and removes the members that are assignable to U. 
+It’s another example of the distributiveness of conditional types. 
+
+For all union members that extend U, the conditional expression will return never. 
+The result will be a union of the remaining members
+
+
+Intrinsic String Manipulation Types
+---------------------------------------
+Uppercase<StringType>
+Lowercase<StringType>
+Capitalize<StringType>
+Uncapitalize<StringType>
+
+
+The infer Keyword
+---------------------------------------------------
+
+The Parameters type 
+- takes a function type and 
+- returns a tuple type representing types of all parameters of the function
+
+T is matched against the (...args: infer P) => any pattern. 
+If it matches the pattern, then P becomes the type that is at the same place in T as infer P in the pattern
+
+sample:
+T is (name: string, age: number) => string. 
+It gets matched against (...args: infer P) => any. 
+Since it can also be represented as (...args: [string, number]) => string, it matches the pattern. 
+The equivalent of infer P in T is [string, number], so P gets resolved to [string, number]
+
+
+                           takes a function type              infer all parameters // sayHello(name:string, age:number) -> [string, number]
+                           ----------------------             ----------------------------------------------------------------------------- 
+ type Parameters<T extends (...args: any) => any> = T extends ( ...args: infer P) => any? P: never;
+                           ----------------------             -----------------------------------------------------------------------------
+ const sayHello = (name: string, age: number) => `Hello ${name}, your age is ${age}`;
+
+ type SayHelloParams = Parameters<typeof sayHello>; // [string, number]

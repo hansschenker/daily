@@ -1,0 +1,140 @@
+type Dictionary<K extends string | number, T> = Partial< Record<K, T> >;
+
+type PostId = number;
+type Day = string;
+
+type Post = {
+  id: PostId;
+  title: string;
+  author: string;
+  day: Day;
+  status: string;
+  isSticky: boolean;
+};
+
+type State = {
+  posts: Dictionary<PostId, Post>;
+  days: Dictionary<Day, PostId[]>;
+};
+
+function getPost( state: State, id: PostId ): Post | undefined {
+  return state.posts[ id ];
+}
+
+function getPostsInDay( state: State, day: Day ): PostId[] {
+  return state.days[ day ] ?? [];
+}
+
+function receiveNewPost( post: Post ): any {
+  return {
+    type: 'RECEIVE_NEW_POST',
+    post,
+  };
+}
+
+function updatePost( postId: PostId, attributes: any ): any {
+  return {
+    type: 'UPDATE_POST',
+    postId,
+    attributes,
+  }
+}
+
+function reducer( state: State, action: any ): State {
+  state = state ?? { posts: {}, days: {} };
+  const postIds = Object.keys( state.posts );
+  
+  switch ( action.type ) {
+    case 'RECEIVE_NEW_POST':
+      if ( postIds.includes( action.postId ) ) {
+        return state;
+      }
+      return {
+        posts: {
+          ...state.posts,
+          [ action.post.id ]: action.post,
+        },
+        days: {
+          ...state.days,
+          [ action.post.day ]: [
+            ...( state.days[ action.post.day ] ?? [] ),
+            action.post.id,
+          ],
+        },
+      };
+
+    case 'UPDATE_POST':
+      if ( ! postIds.includes( action.postId ) ) {
+        return state;
+      }
+      const post = {
+         ...state.posts[ action.postId ],
+         ...action.attributes,
+      };
+      return {
+        posts: {
+          ...state.posts,
+          [ post.id ]: post,
+        },
+        days: {
+          ...Object.keys( state.days ).reduce(
+            ( acc, day ) => ( {
+              ...acc,
+              [ day ]: ( state.days[ day ] ?? [] ).filter(
+                ( postId ) => postId !== post.id
+              ),
+            } ),
+            {}
+          ),
+          [ post.day ]: [
+            ...( state.days[ post.day ] ?? [] ),
+            post.id,
+          ],
+        },
+      };
+  }
+  return state;
+}
+
+---------------------
+post 2
+https://neliosoftware.com/blog/advanced-typescript-part-2/
+
+type Dictionary<K extends string | number, T> = Partial< Record<K, T> >;
+
+type PostId = number;
+type Day = string;
+
+type Post = {
+  id: PostId;
+  title: string;
+  author: string;
+  day: Day;
+  status: string;
+  isSticky: boolean;
+};
+
+type State = {
+  posts: Dictionary<PostId, Post>;
+  days: Dictionary<Day, PostId[]>;
+};
+
+function getPost( state: State, postId: PostId ): Post | undefined {
+  return state.posts[ postId ];
+}
+
+function getPostsInDay( state: State, day: Day, mode: 'id' ): PostId[];
+function getPostsInDay( state: State, day: Day, mode: 'all' ): Post[];
+function getPostsInDay( state: State, day: Day, mode: 'id' | 'all' ): PostId[] | Post[] {
+  const postIds = state.days[ day ] ?? [];
+  if ( 'id' === mode ) {
+    return postIds;
+  }
+  return postIds
+    .map( ( pid ) => getPost( state, pid ) )
+    .filter( ( p ): p is Post => !! p );
+}
+
+const state: State = { posts: {}, days: {} };
+const ids: PostId[] = getPostsInDay( state, '2020-10-01', 'id' );
+const posts: Post[] = getPostsInDay( state, '2020-10-01', 'all' );

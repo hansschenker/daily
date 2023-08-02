@@ -1,0 +1,37 @@
+Events and State
+---------------------------
+
+We often talk about events or event streams when discussing reactivity. Event streams are an important category of reactive objects, but we should not forget about the second important category–the state. Let’s compare their properties.
+
+Events ([time, message]) - discrete, order matters because of time
+--------------------------------------------------------------------------------
+Events are discrete and cannot be skipped. Every single event matters, including the order in which the events are emitted. 
+The “most recent event” is not a special thing we care about. Finally, very rarely are events directly displayed to the user.
+- state is often created from a sequence of events.
+
+State - is continuous, defined at any point in time (initial state,state changes, only most recent value is interesting)
+-----------------------------------------------------------------------------------
+The state, on the other hand, is continuous, i.e., it is defined at any point in time. 
+We usually do not care about how many times it gets updated–only the most recent value matters. 
+The state is often displayed or has a meaningful serialization form.
+- state is often created from a sequence of events.
+
+- *When indicates event: When the user moves the mouse the observable will emit
+--------------------
+Events, sequences of values produced over a period of time. 
+
+- *Every indicates state change
+----------------------------
+State, a value of a property that varies over time.
+
+------------------------------------------------------------------------------------------------------------
+type Pair = [number, number]; 
+
+const moves: Observable<Pair> = 
+  fromEvent(document.body, "mousemove").
+  map(e => [e.screenX, e.screenY]); 
+
+const position = new BehaviorSubject<Pair>([0,0]); moves.subscribe(position); 
+
+position.value // returns the current position of the mouse
+-------------------------------------------------------------------------------------------------------------

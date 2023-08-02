@@ -1,0 +1,80 @@
+--------------------------------------------------------------------------------------------------
+Observer (public API)
+
+The manifestation of a consumer. A type that may have some (or all) handlers for each type of notification: 
+- next, 
+- error
+- complete 
+
+"full observer": 	Having all three types of handlers generally, 
+"partial observer": 	where if it is missing any of the notification handlers
+--------------------------------------------------------------------------------------------------
+An object interface that defines a set of callback functions a user can use to get notified 
+of any set of Observable notification events.
+
+interface Observer<T> {
+  next: (value: T) => void
+  error: (err: any) => void
+  complete: () => void
+}
+
+Child Interfaces
+---------------------------------
+TapObserver
+SubjectLike
+TapObserver
+
+Subscriber (internal API) is an Observer
+----------------------------------------------
+Implements the Observer interface and extends the Subscription class. 
+While the Observer is the public API for consuming the values of an Observable, 
+all Observers get converted to a Subscriber, in order to provide Subscription-like capabilities 
+such as unsubscribe. 
+
+Subscriber is a common type in RxJS, and crucial for implementing operators, 
+but it is rarely used as a public API.
+
+
+const observer:Observer<string> = {
+    next: value => console.log('next', value),
+    error: error => console.log('error', error),
+    complete: () => console.log('complete!')
+};
+
+const observable = new Observable(subscriber => {
+    subscriber.next('Hello');
+    subscriber.next('World');
+    /*
+     * Once complete is called, observable will be cleaned up
+     * and no future values delivered.
+     */
+    subscriber.complete();
+    /*
+     * These values will not be logged as the observable
+     * has already completed.
+     */
+    subscriber.next('Hello');
+    subscriber.next('World');
+});
+
+
+Observable - manifestation of a producer (producer function)
+--------------------------------------------------------------------------------------------------
+The primary type in RxJS. At its highest level, an observable represents a template 
+- for connecting an Observer, as a consumer, 
+- to a producer, 
+- via a subscribe action, resulting in a subscription.
+-------------------------------------------------------------------------------------------------
+
+import { Observable } from 'rxjs';
+
+const observable = new Observable((subscriber) => {
+  subscriber.next(1);
+  subscriber.next(2);
+  subscriber.next(3);
+  setTimeout(() => {
+    subscriber.next(4);
+    subscriber.complete();
+  }, 1000);
+});
+

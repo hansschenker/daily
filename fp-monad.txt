@@ -1,0 +1,106 @@
+- monad (Luis Atenico)
+- https://bartoszmilewski.com/2011/01/09/monads-for-the-curious-programmer-part-1/
+------------------------------
+- A monad is nothing more than an algebraic data type that follows a certain interface or protocol
+
+- A monad is a design pattern to control state and data flow
+  (state mutations, I/O, error handling, reading input from the user)
+
+- monads that allow you to perform side effects are also lazily evaluated 
+  (I’m referring particularly to cold observables in this case). 
+
+IO Monad vs Observable Monad
+------------------------------
+
+lazy - Both monads are lazy in that the ¨
+----------------------------------------
+- Observable won’t begin executing until subscribe() is called, 
+  subscribe() receives any events propagated from the streams that it’s made up of and performs any necessary IO operations, 
+  rotating the DIV in this case. 
+  In a pure FRP observable chain, all of the side effects should be propagated downstream to the subscribers.
+
+- IO won’t start until run() is called.IO’s run() is what causes the chain of side effects to propagate and flush out any pending IO operations. 
+
+  Observable is just a specialized form of IO — the AsyncIO monad ?— 
+  with a whole arsenal of timer and async operators built-in to it
+
+  newtype Observable a = S (IO a) deriving (Functor , Applicative, Monad)
+
+algebraic data type
+-----------------------------
+
+
+certain interface or protocol
+-----------------------------
+- A unit function used to place (lift) a value into the monad container. 
+  You could also find it as from() or return().
+
+- A mapping function that lifts regular functions that work over these values, 
+  returning back a new instance of (generally) the same type containing the newly computed value.
+
+- A flatMap() also known as (bind()) that lifts a monad-returning function to work 
+  over the value in the container and flatten its result into a single structure.
+
+interface Monad {
+    of      (a): 	Monad<a>
+    map     (a -> b): 	Monad<b>
+    flatMap(a -> M<b>): Monad<b>
+}
+
+different types of Monads
+-----------------------------
+each monad uniquely depending on the problem it tries to solve. For instance, the 
+
+- Maybe monad in Folktale.js implements an additional unit function called fromNullable() 
+  that extends the functionality of the abstract unit function of() with additional null-check logic. The 
+
+- Try monad, used to wrap computations that may succeed or throw an exception, 
+  includes additional methods such as isSuccess() or isFailure(). 
+  These are all implemented in addition to base methods outlined above.
+
+- Observable monad:
+  The Observable monad, has built-in logic that allows you to thread together 
+  a sequence of asynchronous computations as if you we’re mapping regular synchronous functions 
+
+- IO Monad
+---------------------------------------
+
+const rotate = function(document, id) {
+   return function(deg) { 
+      let elem = document.querySelector(`${id}`);
+      elem.style[‘transform’] = `rotate(${deg}deg)`;
+   };
+};
+
+I’m using a deferred (lazy) function so that I can partially evaluate 
+the initial conditions using Lodash.js and allow it easily compose:
+
+const rotateDom = _.partial(rotate, document)
+
+- Observable Monad
+--------------------------------------
+
+A stream is just a list expressed over time.
+
+observables can feature optional shared backpressure. Like generators, your program 
+can consume observable values at its own pace, as it becomes ready to handle them
+
+Rx.Observable.interval(100)
+ .map(val => val * 30 + 30)
+ .take(12)
+ .subscribe(rotateDom('#name2'));
+
+const domChanges = interval(1000).pipe(
+  map(val => val * 30 + 30
+  take(12)
+).subscribe(rotateDom('#elem')
+
+-interval the unit function (return) (also called static factory operator) is interval(), 
+ which lifts a sequence of integers separated by 100 milliseconds. 
+
+- map() with a pure function, and then 
+
+- take(), which you can think as a filter() underneath. 
+
+- flatMap() operation (called mergeMap() in RxJS 5).
+

@@ -1,0 +1,166 @@
+A key feature of flex box is that items inside a flex layout 
+have relationship to the other items in that layout.
+
+flex box defaults:
+------------------
+- dispaly in a row with no wrap
+- equal spacing
+- equal hight
+
+main axis:
+-----------
+The main axis is defined by the flex-direction property as a row or column
+justify-content: row is default and equal spacing, flex-start is the default
+
+cross axis:
+-------------
+align-items: stretch is default and equal hight
+
+display as a row
+display in natural (DOM) order
+stretch to the height of the tallest item (the align-items property is set to stretch)
+the flex-wrap property is set to nowrap so your items will not wrap.
+
+Due to understanding themselves as part of a complete layout flex items 
+can easily stretch to the height of the tallest, align against each other
+
+You can replace flex-direction and flex-wrap with a single property flex-flow. 
+The value is the two values of the longhand properties so flex-flow: row wrap; creates a wrapping row. 
+To reverse the order you would use flex-flow: row-reverse wrap;
+
+shorthand:
+-------------------
+display: flex
+flex-flow: row wrap
+-------------------
+
+multi-line flex container with flex-wrap : align-content
+------------------------------------------
+then you may also find the align-content property useful: 
+how space is distributed between multiple lines.
+
+
+
+<nav class="main-nav">
+  <ul>
+    <li><a href="">Page 1 more<br>and more</a></li>
+    <li><a href="">Page 2</a></li>
+    <li><a href="">Page 3</a></li>
+    <li><a href="">Page 4</a></li>
+  </ul>
+</nav>
+The ul element will become the flex container by adding the display property with a value of flex.
+
+.main-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+This is because the default flex-direction is row. It’s as if we had added 
+a flex-direction property to our container with a value of row.
+
+Other values for flex-direction are column but also 
+row-reverse and 
+column-reverse
+
+equal spacing (justify-content: space-between)
+-------------
+equal space between them. Flexbox makes this easy. We can add the property 
+justify-content to the flex container with a value of space-between
+
+
+equal hight (align-items: stretch)
+------------
+
+Cross-Axis: Items
+------------------------------------------------------------------------------------------------------------
+The initial value of align-items is stretch. If you do not add an align-items value to your flex container 
+or an align-self value to an individual item, and have your items in a row, 
+they will stretch to the height of the tallest.
+
+This is because the tallest is normally defining the height of the flex container. 
+If the flex container is made taller - as in my example in the video where 
+I have set the height of the flex container to be 90vh you can see how the items extend to meet it.
+
+.wrapper {
+  width: 90%;
+  margin: 0 auto;
+}
+
+.inner {
+  display: flex;
+  height: 90vh;
+  border: 5px solid #ccc;
+}
+
+.card {
+  border: 2px solid #490A3D;
+  border-radius:5px;
+  background-color: #BD1550;
+  color: #fff;
+  margin: 0 10px 0 10px;
+}
+
+
+
+
+.card h2 {
+  background-color: #490A3D;
+  margin: 0;
+  padding: 10px;
+}
+
+.card p {
+  padding: 10px;
+}
+
+
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+flex items:
+-----------------------------------------------------------------------------------------
+The flex property is a shorthand for the values flex-grow, flex-shrink and flex-basis. 
+flex:1 1 100px;
+
+
+flex item order:
+-----------------
+order: 4;
+
+---------------------------------------------------------------------------------------
+Advanced Flexbox
+---------------------------------------------------------------------------------------
+flex-grow
+flex-shrink
+flex-basis
+
+flex:1 1 100%; // one single item takes the whole available space
+flex:1 1 auto; // one single item takes the whole available space
+
+.box {
+  flex: 1 1 200px; // item has basis value: 200px
+}
+
+There are four values that you can give the flex property, 
+rather than specifying the individual components.
+
+flex: initial: this is the initial value of flex items when you create a flex container 
+and is the same as flex: 0 1 auto. This will size your items according to width and height 
+(or the contents if no width or height is set), the item cannot grow but can shrink.
+
+flex: auto: like setting flex: 1 1 auto;. The item is sized as above but can grow as well as shrink.
+
+flex: none: this is the equivalent of setting flex: 0 0 auto, you will have fully inflexible items.
+
+flex: 1 or 
+flex: 2 and so on: this sets the flex-grow to the integer you specify, flex-shrink to 0 
+and flex-basis to 0. This means that the items will grow according to the factor you specify.
+
+

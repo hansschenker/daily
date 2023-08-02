@@ -1,0 +1,275 @@
+Typescript Type System explained by Anders Hejlsberg
+
+Object type : { x:T, y:U}
+--------------------------------------
+
+types you know X colon T and Y colon U
+
+javascript's runtime Dynamic type system and typescript static type system meet
+-------------------------------------------------------------------------------
+
+At the very bottom of JavaScript and typescript we have values
+and that's sort of where where javascript's runtime Dynamic type system
+and typescript static type system meet
+
+At the bottom where there are values JavaScript programs are all
+about producing values and writing logic that can make new values out of existing
+values right like and there are groups of values in there
+
+
+Unit types - Literal typex
+----------------------------
+the type 42 has the value 42
+
+Types are sets of possible values
+-------------------------------------------------------------------------------
+
+string type
+------------
+all unit types that are strings and 
+
+number type
+-------------
+all unit types that are numbers
+
+Boolean type - with 2 inhabitants: true and false - a union of true and false
+---------------
+Constructors that allow you to make more complex types out of that like true or false 
+that is actually exactly the same as the built-in Boolean type 
+it has two possible values and it's a union of either true or false 
+
+Building complex types from simpler types
+-------------------------------------------
+that's sort of how everything builds up if you will here's another type zero or false
+or undefined uh you know and you can make types in in any combination you want 
+
+this is very unlike C sharp or Java where everything is sortof single rooted and 
+then there's a base class and whatever 
+
+that's not how this works this this works this is really more like 
+reasoning about sets are possible values that's really what what the type system is doing 
+
+string or number or undefined - Union types are this deep enabler
+----------------------------------------------------------------------------------
+and of course it gets particularly interesting here like you can build types like 
+string or number or undefined right and Union types are this deep enabler that we use 
+in control flow based type analysis because we understand now what JavaScript statement
+constructs what effects they have on types 
+
+if for example I have a variable whose type is string or number undefined say 
+it's X call it X and I say if x open curly well we know that that construct 
+removes the type undefined because that would not execute and that means we can restrict 
+the union type down to string and number and that's this narrowing the control flow based type analysis 
+does and that's really in a sense where where the type Checker magically knows what
+
+what values could your variables have and it can prove you know this is the
+Deep enabler for non-nullable types for example and many other features
+
+Intersection type
+-----------------------------------------------------------------------------------------
+in in the language um we also have this feature called intersection types which are in a sense
+they're just the opposite of Union types imagine we have two types a colon string
+and B colon string when you define an object type a colon string you're really
+just saying this is any object that has a property named a of type string and
+then some other set of properties that is unconstrained so you're basically
+dealing with an infinitely large number of possible objects but they all have a
+property of type A that that is of type three sorry our name d and the same for
+
+but now we can we get intersection types which is you know those those objects
+that have an A and A B and some people have sort of commented why is it that
+when I intersect two object types that I end up with a union of the property names
+well it's because you're actually constraining it more for every property
+
+declaration you add there are fewer possible values right the most possible values is Curly curly
+there are no constraints on any of the properties and the more declarations you
+add the more you're actually constraining the values into smaller the
+set gets and that's why it's it's an intersection so this is sort of the mental state that
+if you want to understand the terminology of why the type system looks this way
+now over time then we've added a bunch of interesting uh new type Constructors like index and index access
+
+
+
+
+
+
+Union types and Intersection types
+----------------------------------------------------------------------------------------------
+
+intersection types uh index index access and so forth and I'll give you some
+examples of what these are and how it is that this makes it a very different uh
+type system so at the very bottom of JavaScript and typescript we have values
+and that's sort of where where javascript's runtime Dynamic type system
+and typescript static type system meet they meet soda at the bottom where there
+are values JavaScript programs are all about producing values and writing logic
+that can make new values out of existing values right like and there are groups
+of values in there um like strings and numbers and trues and falses and whatever now in
+typescript all of these values are also types there's a type called and it has one possible value the
+value . and these are called Unit types and everything sort of comes from that and then there are
+different categories of types so the string type is actually all unit types
+of that are strings and the number category is all unit types that are
+numbers and and then we have type Constructors that allow you to make more
+complex types out of that like Union types true or false that is actually exactly
+the same as the built-in Boolean type it has two possible values and it's a union
+of either true or false right and that's sort of how everything builds up if you
+will here's another type zero or false or undefined uh you know and you can
+make types in in any combination you want this is very unlike C sharp or Java where everything is sort
+of single rooted and then as a base class and whatever that's not how this
+works this this works this is really more like reasoning about sets of possible values
+that's really what what the type system is doing and of course it gets
+particularly interesting here like you can build types like string or number or
+undefined right and Union types are this deep enabler that we use in control flow
+based type analysis because we understand now what JavaScript statement
+constructs what effects they have on types if for example I have a variable
+whose type is string or number undefined say it's X call it X and I say if x open
+curly well we know that that construct removes the type undefined because that
+would not execute and that means we can restrict the union type down to string
+and number and that's this narrowing the control flow based type analysis does
+and that's really in a sense where where the type Checker magically knows what
+what values could your variables have and it can prove you know this is the
+
+Deep enabler for uh non-nullable types for example um and many other features
+in in the language Union and intersection types we also have this feature called
+intersection types which are in a sense they're just the opposite of Union types
+imagine we have two types a colon string and B colon string when you define an
+object type a colon string you're really just saying this is any object that has
+a property named a of type string and then some other set of properties that
+is unconstrained so you're basically dealing with an infinitely large number
+of possible objects but they all have a property of type A that that is of type
+
+stream sorry our name d and the same for
+
+now we can we get intersection types which is you know those those objects
+that have an A and A B and some people have sort of commented why is it that
+when I intersect two object types that I end up with a union of the property names
+well it's because you're actually constraining it more for every property
+declaration you add there are a few of possible values right the most possible values is Curly curly
+there are no constraints on any of the properties and the more declarations you
+add the more you're actually constraining the values into smaller the set gets and that's 
+why it's it's an intersection so this is sort of the mental state that
+if you want to understand the terminology of why the type system looks this way
+um now over time then we've added a bunch of interesting uh new type
+
+Constructors like index and index access types um were added in in the in the last year
+or so um and this is the ability now to
+
+----------------
+
+The ability now to in the type system reason over the names of the properties of an object 
+so here for example I have a food type that has a three properties and we have a a
+built-in type operator called Kiev that allows you to say what are the possible
+names of properties of this type and that'll give you a union type A or B or C those 
+are the possible string names of those properties we also have this thing we call index
+access type where you say I'd like a type that is the same as the type of the
+a property in Foo so you can reach into things that is an index access type
+but remember again that this all operates on sets so if you have a full
+type and you index it with key of Foo well that means you're now saying I it's
+going to be a or b or c I don't know which one it's going to be though
+but if I index a foo with an A or B or C what type would I get well you would get
+a number or string or string array right and so you see how we're operating on
+sets all the time and we're trying to figure out you know what what are these
+things and this so you're going to ask because there are lots of patterns in
+JavaScript where you you pass around objects and property names and then you
+want to like fish out the property by that name it's parameterized like for
+example a get property method this is how get and setting properties in react
+works right but you need to now be able to reason about that at a higher level
+so you want to be able to say here's a get property that takes some object T
+and some key that is whatever the permissible property names
+of TR and it returns a t sub k but we don't know what T and K are yet
+but once we infer it then we would like to type check it accordingly right
+and so here if I declare myself a variable of typhoon and some key
+then if I say get property of Foo comma a then we know now we can infer type number for a and
+we can infer an error or give an error for because we know X is not a valid
+property name and we could even say if you give us something that is an A or a
+b or c well then you're going to get a number or string or a string array so
+with these type operators we can now actually start to give types to patterns
+that occur in JavaScript libraries and therefore we can finally give you better
+statement completion and index
+-----------------------------------------------
+ 
+An Index map types are sort of the same idea here where you can you can make a
+function that creates a record type where you pass in the names of the
+properties you want and and the value that you want to put in each
+property and then we can strongly type understand what comes out of it and you
+can also write crazy things like wrapping a proxy around an object and
+have us understand how this all pans out so here is for example a thing that
+wraps a get and set proxy around every property in an object type and now if I
+give you a an item here then I get back something that has the same properties but each
+property has been turned into a getter or Setter of the same type which is something 
+that all also happens a lot in JavaScript Frameworks
+
+
+Conditional types
+-----------------------------------------------------------------------------------------
+which allows us to express non-uniform type mappings and I'll give you some
+examples here let's say I have three types Name ID and check and
+let's say that they represent labels that I want to put in my UI I have a
+certain kind of UI element that's called name that I use for Strings and IDs I
+use for numbers and checks I use for for Boolean values right now let's say I
+want to write a function that takes some value and creates the label that
+corresponds to that value well now I would have to write a whole
+bunch of overloads I'm sure some of you have written overloads like this where
+hey if you give me a string then you get back a name and if you give me a number
+you get back an ID and if you give me a Boolean you get a check
+but then of course you might give me something that is string or number of
+Boolean in which case you get one of the others in fact it's not even complete
+here because you might give me just string or number in which case you
+should only get name or ID back and not check because it couldn't be that right
+and so you see how this can very quickly get unwieldy to try to write a whole bunch of overloads
+and really what you want is sort of the ability uh instead to express it in the
+type system more directly and that is what conditional types enable you to do
+so here we can declare a label for type so I give you a t and then when T extends string I want
+you to give me back name and when T extends number I want to get ID and when
+T extends Boolean I want to get check otherwise this should never happen is what this
+type says and now I can declare create label as just it takes some T that is a
+string or number a Boolean and then it gets back a label type that corresponds
+
+to that type right
+
+
+Control Flow Type Analysis
+--------------------------------------------------------------------------------------
+Because we understand how the types flow and in fact we will spread
+Union types over we will distribute Union types over these conditional types
+so so that that last the D and E examples are interesting because
+the type that goes in that we infer in is number or string and then we apply
+that to each of number and string and and produce a resulting Union type out so if
+you gave us a union type in a union type comes out that has been mapped for each
+individual element this cleverness you can use we can we can use to to create interesting types
+like a a thing that reduces a union type or extracts stuff from a union type so
+for example here if I have a string or number or some function type and I
+exclude a function then I get just string a number or if I extract function
+then I get only the function parts of it but now I can make a non-nullable of T
+that gets rid of null and undefined from some T when that's actually quite useful
+
+Conditional types 
+--------------------------------------------------------------------------------------
+
+to infer constituent types so say I want to write a flatten or a smoosh of
+T operator and this one says if you give me an array then please infer the element type
+of the array and give me that back otherwise just give me back the type
+that I gave you and now flat enough string is just a string but
+flatten up number array is a number and so so you can you can actually do some
+interesting reaching into types and this turns out to be very useful for creating
+a very wanted type operator called return type say I have some function
+type I want to I want now to to get the return type of that function type well
+
+you can create a conditional type that reaches in and and and gives you that
+it's useful like let's say I have written some function that returned some
+complicated object literal well return type of type of Foo will give you
+back that type and in fact we can we can now build all of these into
+lib.d.ts the predefined types we already have uh partial read-only and pick and
+record that that some of you may have seen But now in typescript . we've
+added exclude and extract non-nullable ,return type instance type and and so
+
+
+Higher Order type Equivalences
+---------------------------------------------------------------------------------------
+
+part of what this all turns into is sort of like us having to actually reason a
+lot about these higher order type equivalences that's really what what our
+job becomes you know and and we understand like like the compiler
+understands all of these higher order type relationships this is the the part
+that gets hard for for the compiler implementer but behind all this crazy
+
+
+-----------------

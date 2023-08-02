@@ -1,0 +1,106 @@
+---------------------------------------------------------------------------
+	Generic State Service
+---------------------------------------------------------------------------
+export class StateService<T> {
+  private state$: BehaviorSubject<T>;
+  protected get state(): T {
+    return this.state$.getValue();
+  }
+
+  constructor(initialState: T) {
+    this.state$ = new BehaviorSubject<T>(initialState);
+  }
+
+  protected select<K>(mapFn: (state: T) => K): Observable<K> {
+    return this.state$.asObservable().pipe(
+      map((state: T) => mapFn(state)),
+      distinctUntilChanged()
+    );
+  }
+
+  protected setState(newState: Partial<T>) {
+    this.state$.next({
+      ...this.state,
+      ...newState,
+    });
+  }
+}
+
+Use case
+-------------------------------------
+
+Skip to content
+Search...
+Log in
+Create account
+
+55
+
+18
+
+90
+
+Cover image for Simple yet powerful state management in Angular with RxJS
+Angular profile image
+interface TodoState {
+  todos: Todo[];
+  selectedTodoId: number;
+}
+
+const initialState: TodoState = {
+  todos: [],
+  selectedTodoId: undefined
+};
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TodosStateService extends StateService<TodoState>{
+  todos$: Observable<Todo[]> = this.select(state => state.todos);
+
+  selectedTodo$: Observable<Todo> = this.select((state) => {
+    return state.todos.find((item) => item.id === state.selectedTodoId);
+  });
+
+  constructor() {
+    super(initialState);
+  }
+
+  addTodo(todo: Todo) {
+    this.setState({todos: [...this.state.todos, todo]})
+  }
+
+  selectTodo(todo: Todo) {
+    this.setState({ selectedTodoId: todo.id });
+  }
+}
+Home Listings Podcasts Videos Tags Code of Conduct FAQ DEV Shop Sponsors About Privacy Policy Terms of use Contact Sign In/Up
+    
+DEV Community – A constructive and inclusive social network for software developers. With you every step of your journey.
+
+Built on Forem — the open source software that powers DEV and other inclusive communities.
+
+Made with love and Ruby on Rails. DEV Community © 2016 - 2021.
+
+Sloan, the sloth mascot
+
+-----------------------------------------------------------------------------
+end Generic State Service
+-----------------------------------------------------------------------------
+
+Julian Jandl-Ephemeral State
+--------------------------------
+https://github.com/hoebbelsB/ng-ephemeral-state-demo/blob/master/libs/ephemeral-state/src/lib/operators/stateful.ts
+
+import { Observable } from 'rxjs';
+import { distinctUntilChanged, filter, shareReplay } from 'rxjs/operators';
+
+export function stateful<T>() {
+  return (o: Observable<T>): Observable<T> => {
+    return o.pipe(
+      filter(v => v !== undefined),
+      distinctUntilChanged(),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+  };
+}

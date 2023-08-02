@@ -1,0 +1,274 @@
+RxJs lets you:
+----------------------------------------------------------------------------------------
+ReactiveX
+ReactiveX is a library for composing asynchronous and event-based programs by using observable sequences.
+
+ReactiveX Observables, on the other hand, are intended for composing flows and sequences of asynchronous data.
+
+ReactiveX Observables support not just the emission of single scalar values (as Futures do), 
+but also of sequences of values or even infinite streams. Observable is a single abstraction that can be used for any of these use cases. 
+An Observable has all of the flexibility and elegance associated with its mirror-image cousin the Iterable.
+
+Code that deals with more than one event or asynchronous computation gets complicated quickly as 
+it needs to build a state-machine to deal with ordering issues. Next to this, the code needs to deal with successful 
+and failure termination of each separate computation. 
+This leads to code that doesn’t follow normal control-flow, is hard to understand and hard to maintain.
+
+RxJS makes these computations first-class citizens. This provides a model that allows 
+for readable and composable APIs to deal with these asynchronous computations.
+
+Gang of Four Patterns
+-----------------------
+The Observable type adds two missing semantics to the Gang of Four’s Observer pattern, 
+to match those that are available in the Iterable type:
+
+onCompleted
+---------------
+the ability for the producer to signal to the consumer that there is no more data available 
+(a foreach loop on an Iterable completes and returns normally in such a case; an Observable calls its observer’s onCompleted method)
+
+onError
+--------------------
+the ability for the producer to signal to the consumer that an error has occurred (an Iterable throws an exception 
+if an error takes place during iteration; an Observable calls its observer’s onError method)
+
+Harmonize Iterable and Observable types
+-------------------------------------------
+With these additions, ReactiveX harmonizes the Iterable and Observable types. The only difference 
+between them is the direction in which the data flows. This is very important because now any operation 
+
+Iterable or Observable
+-----------------------------------------------
+you can perform on an Iterable, you can also perform on an Observable.
+
+The Observer and Objects interfaces provide a generalized mechanism for push-based notification, 
+also known as the observer design pattern. 
+
+The Observable object represents the object that sends notifications (the provider); 
+
+the Observer object represents the class that receives them (the observer).
+
+
+
+An Observable is the asynchronous/push “dual” to the synchronous/pull Iterable
+----------------------------------------------------------------------------------------
+event		Iterable (pull)		Observable (push)
+retrieve data	T next()		onNext(T)
+discover error	throws Exception	onError(Exception)
+complete	!hasNext()		onCompleted()
+-------------------------------------------------------------------------------------
+
+It extends the observer pattern to support sequences of data and/or events and adds operators that allow you to 
+- compose sequences together declaratively while abstracting away concerns about things like 
+  - low-level threading, 
+  - synchronization, 
+  - thread-safety, 
+  - concurrent data structures, and 
+  - non-blocking I/O.
+
+Observables fill the gap by being the ideal way to access asynchronous sequences of multiple items
+-------------------------------------------------------------------------------------------------------
+		single items			multiple items
+		--------------------------	-------------------------
+synchronous	T getData()			Iterable<T> getData()
+asynchronous	Future<T> getData()		Observable<T> getData()
+
+It is sometimes called “functional reactive programming” but this is a misnomer. ReactiveX may be functional, 
+and it may be reactive, but “functional reactive programming” is a different animal. One main point of difference 
+is that functional reactive programming operates on values that change continuously over time, 
+while ReactiveX operates on discrete values that are emitted over time
+
+ReactiveX is a combination of the best ideas from
+the Observer pattern, the Iterator pattern, and functional programming
+
+Functional
+Avoid intricate stateful programs, using clean input/output functions over observable streams.
+
+Less is more
+ReactiveX's operators often reduce what was once an elaborate challenge into a few lines of code.
+
+Async error handling
+Traditional try/catch is powerless for errors in asynchronous computations, but ReactiveX is equipped with proper mechanisms for handling errors.
+
+Concurrency made easy
+Observables and Schedulers in ReactiveX allow the programmer to abstract away low-level threading, synchronization, and concurrency issues.
+
+- easily compose asynchronous
+      streams of data.
+
+- provides a common interface to combine
+      and transform data from wildly different sources, such as
+      filesystem operations, user interaction, and social-network updates
+
+Rx’s main data type, the Observable, is a monad
+-------------------------------------------------
+A monad is nothing more than an:
+ 
+- algebraic data type that (Type that can hold other types, a List is an ADT, a kind of composite type, i.e., a type formed by combining other types.
+- follows a certain interface or protocol 
+  Two common classes of algebraic types are 
+  ------------------------------------------
+  - product types (i.e., tuples and records) and 
+  - sum types (tagged or disjoint unions, coproduct types or variant types).[1]
+
+Product Types
+---------------
+The values of a product type typically contain several values, called fields. 
+All values of that type have the same combination of field types. 
+The set of all possible values of a product type is the set-theoretic product, i.e., 
+the Cartesian product, of the sets of all possible values of its field types.
+
+Sum Types
+----------------
+The values of a sum type are typically grouped into several classes, called variants. 
+A value of a variant type is usually created with a quasi-functional entity called a constructor. 
+Each variant has its own constructor, which takes a specified number of arguments with specified types. 
+The set of all possible values of a sum type is the set-theoretic sum, i.e., the disjoint union, 
+of the sets of all possible values of its variants. Enumerated types are a special case of sum types 
+in which the constructors take no arguments, as exactly one value is defined for each constructor.
+
+Values of algebraic types are analyzed with pattern matching, which identifies a value 
+by its constructor or field names and extracts the data it contains.
+(this is by no means a complete explanation of monads, so I’ll refer you to this page for more info on this topic):
+
+A unit function used to place (lift) a value into the monad container. You could also find it as from() or return().
+
+A mapping function that lifts regular functions that work over these values, returning back
+ a new instance of (generally) the same type containing the newly computed value.
+
+A flatMap() also known as (bind()) that lifts a monad-returning function to work over the value 
+in the container and flatten its result into a single structure.
+
+Your Mouse is a Database
+--------------------------
+Web and mobile applications are increasingly composed of asynchronous and realtime streaming services and push notifications.
+
+With Observer<T> instead of AsyncCallback<T>, the possible sequences of interaction between an asynchronous computation and its client are: 
+- (a) successful termination after n ≥ 0 values; 
+- (b) unsuccessful termination after i values; or 
+- (c) an infinite stream of values that never completes, as shown in figure 2.
+Instead of Future<T> and Observer<T>,
+ .NET has the standard IObservable<T> and IObserver<T> interfaces; and instead of Closable, it has IDisposable. 
+Values of type IObservable<T> (or Observer<T> depending on your preferred programming language) 
+represent asynchronous data streams, or event streams, with values of type T.
+
+------------------------------------
+interface IObservable<T>
+{
+  IDisposable Subscribe(IObserver<T> observer);
+}
+------------------------------------
+interface IObserver<T>
+{
+  void OnNext(T value);
+  void OnError(Exception error);
+  void OnCompleted();
+}
+------------------------------------
+interface IDisposable
+{
+  void Dispose();
+}
+
+A closer inspection of the resulting interface trinity reveals a 
+------------------------------------------------------------------
+- generic variation of the classic Subject/Observer interface2 for the publish/subscribe pattern, 
+
+The Rx library makes some additional behavioral assumptions about the 
+- IObserver<T> and 
+- IObservable<T> interfaces that are not expressed 
+  by their (syntactic) type signatures:
+
+IObserver<T> interface call signature
+-----------------------------------------------------------------------
+* The sequence of calls to an instance of the IObserver<T> interface should follow the 
+  regular expression 
+
+  - OnNext(t)* 
+  - (OnCompleted() | OnError(e))?. 
+
+In other words, after zero or more OnNext calls, 
+  either one of OnCompleted or OnError will optionally be called.
+
+IObserver<T> call signature
+------------------------------------------------------------------------------------
+* Implementations of IObserver<T> can be assumed to be synchronized; conceptually they run under a lock, similar to regular 
+  .NET event handlers, or the reactor pattern.9
+
+
+* All resources associated with an observer should be cleaned up at the moment OnError or OnCompleted is called. 
+------------------------------------------------------------------------------------------------------------------
+  In particular, the subscription returned by the Subscribe call of the observer will be disposed of by the observable 
+  as soon as the stream completes. In practice this is implemented by closing over the IDisposable returned by 
+  Subscribe in the implementation of the OnError and OnCompleted methods.
+
+* When a subscription is disposed of externally, the IObservable<T> stream should make a best-effort attempt 
+-------------------------------------------------------------------------------------------------------------
+  to stop all outstanding work for that subscription. Any work already in progress might still complete 
+  as it is not always safe to abort work in progress but should not be signaled to unsubscribed observers.
+
+This contract ensures it is easy to reason about and prove the correctness of operators and user code.
+
+Asynchronous data streams represented by the IObservable<T> interface (or Observable<T> in Java) behave 
+as regular collections of values of type T, except that they are push-based or streaming instead 
+of the usual pull-based collections such as arrays and lists that implement the IEnumerable<T> interface (or in Java iterable<T>). 
+This means that you can wire asynchronous data streams together using a fluent API of standard query operators 
+to create complex event-processing systems in a highly composable and declarative way.
+
+or example, the Where operator takes a predicate of type Func<S,bool> and filters out all values 
+for which the predicate does not hold an input-observable collection of type IObservable<S>,
+ precisely the same as its cousin that works on pull-based IEnumerable<T> collections. 
+
+Observable is a Monad
+-----------------------------------------------------------------------------------------------------
+SHOW ME THE (CO)MONADS!
+So far we have been able to avoid the "M" word (and the "L" word as well), but there's no more hiding it. 
+If we ignore operational concerns such as exceptions, termination, and canceling subscriptions and boil things down to their essence, 
+
+the IObservable<T> and IObserver<T> interfaces represent functions of type (T->())->(), 
+
+which is the continuation monad, the mother of all monads, and a co-monad.
+
+Historically, we did not discover the Rx interfaces by the refactorings performed in this article. 
+Instead we 
+
+applied the definition of categorical duality 
+----------------------------------------------------------------------
+categorial duality: 
+duality is a correspondence between the properties of a category C and the dual properties of the opposite category Cop
+
+  - to the IEnumerable<T> and IEnumerator<T> interfaces for pull-based collections, and thus derived 
+  - to the IObservable<T> and IObserver<T> interfaces completely mechanically by swapping the arguments and results of all method signatures, 
+
+not guided by any operational intuition in the process.
+
+Note that our model of asynchronous data streams makes no special assumptions about time. This makes the 
+approach different from the typical reactive programming approaches in functional programming such as
+ Fran or FlapJax that emphasize (continuous) time-varying values, called behaviors, and SQL-based complex 
+event-processing systems such as StreamBase and StreamInsight that also emphasize time in their semantic model. 
+Instead clocks and timers are treated just as regular asynchronous data streams of type IObservable<DateTimeOffset>.
+ We parameterize over concurrency and logical clocks by another interface IScheduler (slightly simplified here), 
+which represents an execution context that has a local notion of time on which work can be scheduled in the future:
+
+interface IScheduler
+{
+  DateTimeOffset Now { get; }
+  IDisposable Schedule(Action work, TimeSpan dueTime)
+}
+Java programmers will immediately see the correspondence with the executor interface that in the Java SDK plays 
+the same role of abstracting over the precise introduction of concurrency.
+
+CONCLUSION
+Web and mobile applications are increasingly composed of asynchronous and realtime streaming services and
+ push notifications, a particular form of big data where the data has positive velocity. This article has 
+shown how to expose asynchronous data streams as push-based collections of type IObservable<T>
+ (in contrast to pull-based collections of type IEnumerable<T>) and how to query asynchronous data streams using 
+the fluent API operators provided by the Rx library. This popular library is available for .NET 
+and JavaScript (including bindings for prevalent frameworks such as JQuery and Node) and also ships in the ROM of Windows Phone. 
+F#'s first-class events are based on Rx, and alternative implementations 
+for other languages such as Dart7 or Haskell6 are created by the community.
+
+
+Your Mouse is a Database
+--------------------------
+

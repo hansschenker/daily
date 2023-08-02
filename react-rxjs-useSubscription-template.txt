@@ -1,0 +1,20 @@
+// Importing necessary modules
+import { interval, Observable } from 'rxjs';
+// Importing useEffect hook from React
+import { useEffect } from 'react';
+
+// Defining a function named useSubscription which takes an Observable as an argument
+function useSubscription(source$: Observable<any>) {
+  // Using useEffect hook to subscribe to the Observable
+  useEffect(() => {
+    // Checking if the Observable is not null or undefined
+    if (source$) {
+      // Subscribing to the Observable and storing the subscription in a variable named subs
+      const subs = source$.subscribe(/* 22? */);
+      // Returning a cleanup function to unsubscribe from the Observable when the component unmounts
+      return () => {
+        subs.unsubscribe();
+      };
+    }
+  }, [source$]); // Adding the Observable as a dependency to useEffect
+}

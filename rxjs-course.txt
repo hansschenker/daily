@@ -1,0 +1,174 @@
+Reactive Extensions (Rx) is a library for 
+
+- composing asynchronous and event-based programs 
+- using observable sequences and LINQ-style query operators.
+
+- Data sequences can take many forms, such as 
+  - a stream of data from a file or web service, 
+  - web services requests, 
+  - system notifications, or a series of events such as 
+  - user inputevents 
+
+Reactive Extensions represents all these 
+ . data sequences as observable sequences. 
+
+Subscription
+ - An application can subscribe to these observable sequences to receive asynchronous notifications as new data arrive.
+
+RxJS has 
+ - synchronous data streams such as 
+   - iterable objects in JavaScript and 
+   - single-value asynchronous computations such as Promises 
+
+ Synchronous/Interactive/Pull		Single return value	Multiple values
+-----------------------------------------------------------------------------------------
+ -					Object			Iterables (Array | Set | Map | Object)
+
+ - Asynchronous/Reactive/Push		Single return value	Multiple values
+					Promise			Observable
+
+
+Example code showing how similar high-order functions can be applied to an Array and an Observable
+-------------------------------------------------------------------------------------------------
+Iterable	
+------------------------------------------------
+getDataFromLocalMemory()
+    .filter (s => s != null)
+    .map(s => `${s} transformed`)
+    .forEach(s => console.log(`next => ${s}`))
+
+                
+Observable
+-----------------------------------------------
+getDataFromNetwork()
+    .filter (s => s != null)
+    .map(s => `${s} transformed`)
+    .subscribe(s => console.log(`next => ${s}`))
+
+Observable object
+-----------------------------------------------
+The Observable object represents a push based collection.
+It represents a data source that can be observed, meaning that it can send data to anyone who is interested
+
+The Observer and Observable interfaces provide a generalized mechanism for push-based notification, 
+
+also known as the observer design pattern. The 
+- Observable object represents the object that sends notifications (the provider); 
+- Observer object represents the class that receives them (the observer).
+
+IObservable<T> - a streaming sequnce of T objects
+-------------------------------------------------------------------------------------------------------------
+IObservable<T> is meant to be the "functional dual of IEnumerable<T>
+ You should be able to think of anything that implements IObservable<T> as a streaming sequence of T objects. 
+So if a method returned an IObservable<Price> I could think of it as a stream of Prices.
+
+//Defines a provider for push-based notification.
+--------------------------------------------------------------------------------------------------------------
+public interface IObservable<out T>
+{
+//Notifies the provider that an observer is to receive notifications.
+IDisposable Subscribe(IObserver<T> observer);
+}
+
+Observer object
+-------------------------------------------------------------------
+The Observer object provides support for push-style iteration over an observable sequence.
+
+It represents an observer who registers an interest through a subscription. 
+Items are subsequently handed to the observer from the observable sequence to which it subscribes
+
+IEnumerable<T> can effectively yield three things (the next value, an exception or the end of the sequence), 
+so too can IObservable<T> via IObserver<T>'s three methods OnNext(T), OnError(Exception) and OnCompleted().
+
+//Provides a mechanism for receiving push-based notifications.
+public interface IObserver<in T>
+{
+//Provides the observer with new data.
+void OnNext(T value);
+//Notifies the observer that the provider has experienced an error condition.
+void OnError(Exception error);
+//Notifies the observer that the provider has finished sending push-based notifications.
+void OnCompleted();
+}
+
+
+Subscription - Communication channel between Observable and Observer
+--------------------------------------------------------------------
+- subscribe to Observable to open the communication channel, subscribe method returns a Subscriptioon Object for closing the channel (unsubscribe)
+  In order to receive notifications from an observable collection, you use the subscribe method of Observable 
+  to hand it an Observer object. 
+
+Subscription object - the subscribe method returns a Subscription object
+------------------------------------------------------------------------
+This allows you to clean up the subscription after you are done. 
+Unsubscribing detaches the observer from the source so that notifications are no longer delivered.
+
+3 Observer Communication methods 
+--------------------------------------------------------------------------
+- next(value) can be called zero or more times and carries a value
+- errorThe other two methods are used to indicate completion or errors.
+
+RxJs Communication Protocol
+------------------------------------------------------------------------
+Rx has an implicit contract that must be followed. 
+An implementation of IObserver<T> may have zero or more calls to 
+- OnNext(T) followed optionally by a call to either 
+  - OnError(Exception) or 
+  - OnCompleted(). 
+
+This protocol ensures that if a sequence terminates, 
+- it is always terminated by an 
+  - OnError(Exception), or an 
+  - OnCompleted(). 
+
+Finite and Infinite sequences
+-----------------------------------------------------------------------------
+This protocol does not however demand that an OnNext(T), OnError(Exception) or OnCompleted() ever be called. 
+This enables to concept of empty and infinite sequences.
+
+Implementing IObserver<T> and IObservable<T>
+-------------------------------------------------
+It is quite easy to implement each interface. 
+If we wanted to create an observer that printed values to the console it would be as easy as this.
+
+Observer
+--------------------------------------------------
+public class MyConsoleObserver<T> : IObserver<T>
+{
+public void OnNext(T value)
+{
+Console.WriteLine("Received value {0}", value);
+}
+public void OnError(Exception error)
+{
+Console.WriteLine("Sequence faulted with {0}", error);
+}
+public void OnCompleted()
+{
+Console.WriteLine("Sequence terminated");
+}
+}
+
+Observable
+-----------------------------------------------------
+public class MySequenceOfNumbers : IObservable<int>
+{
+public IDisposable Subscribe(IObserver<int> observer)
+{
+observer.OnNext(1);
+observer.OnNext(2);
+observer.OnNext(3);
+observer.OnCompleted();
+return Disposable.Empty;
+}
+}
+
+
+Communication Channel with calling subscribe on the source observable
+-----------------------------------------------------------------------
+We can tie these two implementations together to get the following output
+
+var numbers = new MySequenceOfNumbers();
+var observer = new MyConsoleObserver<int>();
+numbers.Subscribe(observer);
+

@@ -1,0 +1,742 @@
+auto
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+default value for most box-model properties (top, left, right,z-index, bottom, height, width, margin, background-size)
+value is computed by the user agent based on context and content
+
+center block of content with auto: margin-left auto, max-width: 50%, margin-right: auto
+width auto, takes padding into accoutn
+width 100%, set width to 100% of parent + default margin
+set box-sizing: boder-box
+
+css positioning: absolut, top left corner and bottom left corner
+top: auto
+left: auto
+bottom:0
+rigth:0
+
+
+box model
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+every element is a box
+* {
+box-sizing: border-box
+}
+
+box-model properties: margin, border, padding , width, height
+
+box-sizing: width: padding and border are inside box
+
+interactive box-model, demo, routeledge guy, https://guyroutledge.github.io/box-model/
+
+
+color syntax
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+4 different colour syntaxes:
+
+- color keywords
+- hex
+- rgb
+- hsl
+
+color keywords: 147
+
+rgb: red green blue, red, gren, blue:0 - 255
+rgb(red, gree, blue)
+rgba(red, green, blue, alpha), transparency: 0 to 1
+
+hex -  hexidecimal . 0- 9. a-f, 00 00 00, FF FF FF (255)
+
+hsl - hue, saturation , lightness, 0 - 100%
+hsla 
+
+hue		0 - 360, 0:red , 120:gren , 360:blue
+saturation	0 - 100%
+lightness	0 - 100%
+
+color , only effects text
+background-clor
+text-shadow
+svg fill color
+border-color
+
+currentColor: color default value is black
+
+display
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2 display types: inline, block-level elements
+
+inline elements: img, i, a, span, em: no width, height, margin
+
+block-level elements: div, p, ul, li, 
+
+inline-block: height, width, margin
+
+list-item
+
+none
+
+table
+
+table-cell: has equal hights, table-column, table-column-group
+
+flex
+
+inline-flex
+
+grid
+
+inline-grid
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                              ****** SELECTORS *****
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+selector list
+---------------
+
+Basic Selectors
+------------------
+Type selectors
+Class selectors
+ID selectors
+Universal selectors
+Attribute selectors
+
+Combinator selectors
+-----------------------------------
+Adjacent sibling combinator
+General sibling combinator
+Child combinator
+Descendant combinator
+Column combinator
+
+
+Pseudo-class selectors
+--------------------------------------
+:active
+:any-link
+:checked
+:blank
+:default
+:defined
+:dir()
+:disabled
+:empty
+:enabled
+:first
+:first-child
+:first-of-type
+:fullscreen
+:focus
+:focus-visible
+:focus-within
+:has()
+:host()
+:host-context()
+:hover
+:indeterminate
+:in-range
+:invalid
+:is() (:matches(), :any())
+:lang()
+:last-child
+:last-of-type
+:left
+:link
+:not()
+:nth-child()
+:nth-last-child()
+:nth-last-of-type()
+:nth-of-type()
+:only-child
+:only-of-type
+:optional
+:out-of-range
+:placeholder-shown
+:read-only
+:read-write
+:required
+:right
+:root
+:scope
+:target
+:valid
+:visited
+:where()
+
+Pseudo-element selectors
+-----------------------------------------------------------------------------
+::-moz-progress-bar
+::-moz-range-progress
+::-moz-range-thumb
+::-moz-range-track
+::-webkit-progress-bar
+::-webkit-progress-value
+::-webkit-slider-runnable-track
+::-webkit-slider-thumb
+::after (:after)
+::backdrop
+::before (:before)
+::cue
+::cue-region
+::first-letter (:first-letter)
+::first-line (:first-line)
+::grammar-error
+::marker
+::part()
+::placeholder
+::selection
+::slotted()
+::spelling-error
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Pseudo Class: help us style different states
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+:enabled
+:disabled
+:checked
+:unchecked
+
+
+float property: used for creating column layout, originally allow text to flow around an object
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+float: left , right or none
+float: left, from left to right in order
+float: right, from right to left in order
+
+setting clear to next to the floating elements: content and sidebar floating, footer: clear:both
+clear: clear floating behaviour
+clear: both
+
+block formatting context
+----------------------------
+create a new block formating context: float, position, display, overflow
+
+prevent container collapse:
+--------------------------
+- overflow: hidden on the section which is collapsing
+- use a pseudo element to do the clearing 
+ .clearfix:before,
+ .clearfix:after {
+    content: " ";
+    display: table;
+  }
+
+
+Combinator Selectors: div ~ p, div p, div * p, div > p , div + p
+---------------------------------------------------------------
+descendant selector:	div p 		// all paragraphs in any div
+grantparent selector:	div * p		// match all children in a div
+child selector		div > p		// matches only the first direct child
+adjascent sibling	div + p 	// match all p that follow directly after div
+
+General Sibling: ~ style all p elements that are after h2 ( they do not have to adjacent), sibling means on the same dom level hierarchy not child or parent
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+h2 ~ p { color: red}
+
+sampe for general following sibling selector: open and closed state without javascript£:
+
+html:
+section
+  input type checkbox hidden
+  h1
+    label
+  h1
+section
+
+css:
+input[type="checkbox"] ~ .accordian { max-height: 0 ; overflow: hidden}
+input[type="checkbox"]:checked ~ .accordian { max-height: 10000px; }
+
+The Hover Pseudo Class can be used to style state: text links, buttons
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+a:hover { color: }
+a:visited
+a:active
+a:focus
+--------
+:enabled
+:disabled
+----------
+
+The ID Selector: styling a single element (avoid id selector, prefer class selector)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+classes for structure
+classes for look and feel
+
+reusable button:
+------------
+structure
+---------
+display: inline-block
+margin
+padding
+look
+------
+font-size
+text-align
+
+modified buttons
+---------------
+button-large
+
+button-confirm
+
+button-cancel
+
+button-rounded
+
+sample usage:
+
+a href class= button button-large button-confirm>OK </a>
+
+Specificity
+---------------------------------------------------------------
+determines what styles gets applied to the element. css further down overwrites things above them
+
+Calculate Specificity: 4 digit number
+--------------------------------
+- all style attributes:			0          // count style attributes
+- all ID's				1	   // count id selectors
+- all Classes and Pseudo Classes	2	   // cout classes and pseudo classe
+- all elements and pseudo elements	3          // count elements and pseudo elements
+
+keep specificity low to be able to overwrite  with higher specificity
+
+
+Justify Text: text-align 12 possibilites	
+-----------------------------------------------------------------------------
+left, start		// direction: rtl ltr
+center
+right, end
+justify
+match-parent
+inherit
+<string>
+start <string>
+end <string>
+
+css columns with column-count
+------------------------------------------------------------------------------
+
+justified-grid
+-------------------------------------------------------------------------------
+.grid-container: font-size: 0, text-align: justify
+.grid-container:after content:"" display:inline-block width:100%
+.grid-item display:inline-block width:45%
+
+ul li with display:inline-block // to be justified
+
+
+animation: @keyframes              animation
+-------------------------------------------------------------------------------------------------------------------------
+animations can be triggered by: 
+- page load, 
+- after a delay, 
+- state based change: :hover :focus :active
+- by javascript: animationPlayState
+
+@keyframes (from to over certain amount of time)
+tweening: during the animation , xtyles between keyframes are automatically calculated by the browser
+
+// define as many porperties and keyframes as you like
+@keyframes grow {
+  0% { font-size: 20px; }
+  75% { font-size: 100px; }
+  100% { font-size: 10px; }
+}
+
+animation name used to apply keyframes
+--------------------------------------------
+animation-name				// block of keyframes to use
+animation-duration			// time (in secs/ms) the animation lasts
+animation-delay				// delay until animation start
+animation-iteration-count		// how many times the animation loops
+animation-direction			// forward, reverse , alternate
+animation-play-state			// pause, resume, stopp animation
+animation-timeing-function		// easing, acceleration curve
+animation-fill-mode			// how styles are applied before and after the animation
+
+shorthand version:
+-------------------------------------------
+.box 
+  animation: name duration delay count direction play-state timing fill-mode
+  name and duration are required
+
+.ball 
+ position:absolute
+ height:100px
+ width:100px
+ border-radius: 100%
+ background-color:red
+ animation: bounce 3s linear infinite
+            moveLeft 12s linear infinite
+
+@keyframes bounce
+ 0% { bottom: 100%; }
+ 25% { bottom: 0; width:100px height:100px }
+ 30% { bottom: 0;  width:110px height:50px}
+ 35% { bottom: 0;  width:100px height:100px}
+ 70% { bottom: 100%; }
+ 100% { bottom: 100%; }
+
+@keyframes moveLeft
+ from { left:0; }
+ to { left:100%; }
+
+
+line-height property
+------------------------------------------------------------------------------------------------------------
+with line-height yoou can control the vertical rhythm in the document
+
+leading: distance between baselines, space is always added below baseline
+
+sample: font-size: 16px, line-height:24px; 4px above and 4px below
+
+vertical centering with line-height is possible
+
+project default settings:
+body {
+  font-size:16px;
+  line-height:1.5 (1.5 * 16 = 24px) //keep factor consistent in element styling
+}
+
+
+Conditionaly styling of Elements: @media
+-------------------------------------------------------------------------------------------------------------------
+the @media rule allows conditonal styling of elements
+----------------------------------------------------------------------------------------------------------------
+conditon: - based on type of device used, or characterristics of the device (screen width, screen resolution
+
+Responsive Web Design
+--------------------------------------------------------------
+combining media queries with fluid layout (relative units) and flexible images (width: 100%) of container element
+
+Media queries: print , screen
+---------------------------
+print style @mdeia print (all, braille, embossed, handheld, projection, screen, speech, tty, tv)
+
+@media (min-width:600px): query types: width, height, device-width, device-height, orientation, aspect-ratio
+                          device-aspect-ratio, resolution, color, color-index, monochrome, scan, grid
+
+
+Nth-Child
+--------------------------------------------------------------------------------------------------------
+
+
+
+
+selectors
+---------------------------------------------------------
+peseudo classes:
+------------------------------------------------------ 
+ :active 
+
+order matters
+--------------------------
+:link 
+:visited 
+:hover 
+:active
+
+a:link:hover, button:hovcer {
+  border: 1px solid black
+}
+
+input:focus { outline:none, box-shadow border }
+
+input:checke + label
+
+input:invalid
+
+input:valid
+
+input:required
+
+input:optioanl
+
+location in dom hierarchy
+---------------------------------------
+li:first-child, nth-child(1)
+li:last-child
+li:nth-child(2)
+li:nth-child(2n) 		// start with 0, even elements
+li:nth-child(2n+1) 		// start with 1, odd elements
+li-nth-child(-n + 4)		// 
+li-nth-child(n+4)
+:only-child
+:only-of-child
+
+
+Pseudo class list
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+A
+:active
+:any-link 
+B
+:blank 
+C
+:checked
+:current 
+D
+:default
+:defined
+:dir() 
+:disabled
+:drop 
+E
+:empty
+:enabled
+F
+:first
+:first-child
+:first-of-type
+:fullscreen 
+:future 
+:focus
+:focus-visible 
+:focus-within
+H
+:has() 
+:host
+:host()
+:host-context() 
+:hover
+I
+:indeterminate
+:in-range
+:invalid
+:is() 
+L
+:lang()
+:last-child
+:last-of-type
+:left
+:link
+:local-link 
+N
+:not()
+:nth-child()
+:nth-col() 
+:nth-last-child()
+:nth-last-col() 
+:nth-last-of-type()
+:nth-of-type()
+O
+:only-child
+:only-of-type
+:optional
+:out-of-range
+P
+:past 
+:picture-in-picture
+:placeholder-shown 
+R
+:read-only
+:read-write
+:required
+:right
+:root
+S
+:scope
+:state() 
+T
+:target
+:target-within 
+U
+:user-invalid 
+V
+:valid
+:visited
+W
+:where() 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+pseudo elements: ::before, ::after
+-----------------------------------------------------------------------
+blockquote::after {
+  content:"'"
+}
+
+::first-line
+::first-letter
+
+::
+
+
+Opacity property: 0 to 1, 0:transparent but keeeps position
+--------------------------------------------------------------------
+opacity can be animated, fade in , fade out
+
+Css Slideshow, using series of keyframes to set opacity
+--------------------------------------------------------
+class="slide1"
+class="slide2"
+class="slide3"
+class="slide4"
+class="slide5"
+
+.slide1 { animation:fade, 20% infinite}
+.slide2 { animation:fade, 20% 4s infinite}
+.slide3 { animation:fade, 20% 8s infinite}
+.slide4 { animation:fade, 20% 12s infinite}
+.slide5 { animation:fade, 20% 16s infinite}
+
+@keyframes fade {
+  0% { opacity:0;}
+
+  10% { opacity:1;}
+  20% { opacity:1;}  
+
+  30% { opacity:0;}
+  40% { opacity:0;}
+
+  50% { opacity:1;}
+  60% { opacity:1;}
+
+  70% { opacity:0;}
+  80% { opacity:0;}
+
+  90% { opacity:01;}
+  100% { opacity:1;}
+}
+
+
+CSS Box Model: width, height, margin, padding, border
+------------------------------------------------------------------------------------------------------------------------------------------------------
+box-model: Every Element is a box  with The five box-model properties are: width, height, border, margin, padding
+
+box-model: box-sizing: border-box (box width: border + padding + content), border included in the width calculation
+
+
+Color Syntax
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+color keywords
+hsl, hsla
+rgb, rgba (red:0 - 255 , green:0 - 255 , blue:0 - 255)
+hex: base 16 number, 3 couplets: 00 -- FF,            00: no color, FF: full color: rrggbb: ##00FF00: green, #FF0000:red, @0000FF:green
+
+color
+border-color
+background-color
+fill-color svg
+
+Role of Normalizer, CSS Reset (Generic Layer: ITCSS) -> Suitcss
+ --------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reset: remove all browser set in default style, margin 0, ...., start css styling from scratch
+useful reset
+--------------
+*{ padding;0; margin:0; }
+
+popular normalizer: github.com/necolas/normalize.css
+popular reset: eric meyers css reset 2.0: nom reset-css
+
+
+Normalizer: it makes elements consistent across all browsser, same marging and padding in all browsers
+
+
+
+Hierachical Structuring: ITCSS
+--------------------------
+Header
+ left Sidebar
+ Main
+ right Sidebar
+Footer
+
+
+Module (Group of components) - Layout - Component (single responsibility, specific task)
+
+smple Module: Form Module
+
+Component
+-----------
+self contained (css html js)
+reusable building block
+may use miixins, utilities
+Html, Css, Javascript
+
+Layout: Header, Main, Navigation, Banner, Footer, Sidebar, Menu
+
+Lyout: specific part of the page, contains modules and/or components
+layout rules define the positiono fo page section
+
+
+Page
+----------------------------
+collection of layouts
+
+Elements
+----------------------------
+consistent styling to markup elements
+overrides reset and normalizer
+
+Objects
+----------------------------
+genieric classes
+positoning rules of components
+
+
+UI
+Components
+---------------------------
+Building blocks of the page
+self contained, no addional css necessoar
+
+Trumps
+----------------------------
+overrides
+
+
+SMACSS Hierachy
+------------------------------------------------------------------------------------------------------------------------
+
+
+
+Base
+----------------------------
+
+
+
+Layout
+----------------------------
+
+
+
+Module
+----------------------------
+
+
+
+State
+----------------------------
+
+
+
+Theme
+----------------------------
+
+ITCSS Architecture
+-------------------------------------------------------------------------------------------------------------------------------------
+

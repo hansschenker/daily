@@ -1,0 +1,87 @@
+-------------------------------------------------------------------------
+Timer
+-----------------------------------------------------------------------
+Challenges: concurrency, competing user/signal interactions, responsiveness.
+
+
+UI Design
+----------------------------------------------------------------
+The task is to build a frame containing 
+-----------------------------------------------------------------
+Display
+---------------------------
+G 	- a gauge G for the elapsed time e, (progress , 0% to 100%)
+Te 	- elapsed Time ( Time Format: hours:minutes:seconds), running Time (TF), elapsed Time (TF)
+TeL	- a label which shows the elapsed time as a numerical value, 
+----------------------------
+Input
+----------------------------
+S	- a slider S by which the duration d of the timer can be adjusted: 
+	  Duration Hours, Duration Minutes (0 - 60) (0 - 60), Duration Seconds (0 - 60)
+Td	- Timer Duration Set (Hours:Minutes:Seconds), set Duration
+------------------------------
+Buttons
+-----------------------------
+R 	- a reset button R. 
+P	- play button
+B	- pause button
+U	- resume button
+
+- sdjusting S must immediately reflect on d and not only when S is released. 
+- moving S the filled amount of G will (usually) change immediately. 
+- eT ≥ d is true then the timer stops (and G will be full). 
+- if d is increased such that d > e will be true then the timer restarts to tick until e ≥ d is true again. 
+- clicking R will reset e to zero.
+
+Timer deals with concurrency in the sense that a timer process that 
+---------------------------------------------------------------------
+- updates the elapsed time runs concurrently to the user’s interactions with the GUI application. 
+- solution to competing user and signal interactions is tested. 
+- slider adjustments must be reflected immediately moreover tests the responsiveness of the solution. 
+- good solution will make it clear that the signal is a timer tick and, as always, has not much scaffolding.
+
+
+Modeling Timer
+------------------------------------------------------------------------------------------------------------------
+
+Signals, Inputs
+----------------------------------------------------------------------------------------------------------------------
+The key point in modeling this timer is in the description itself:
+
+Timer 		- trigger for the time, A good solution will make it clear that the signal is a timer tick
+		Indeed, we can model timer ticks as a signal (event) that updates the context of some parent timer machine. 
+		The timer can be in either the paused state or the running state, and these timer ticks should ideally only 
+TICK    	- timer event after interval 1000
+
+States
+--------------------------------------------------------------------------------------------------------------------------
+States		- paused, running ,stopped, initial (reset to initial state)
+		be active when the machine is in the running state. This gives us a good basis for how we can model the other requirements:
+
+Running		- Te is incremented by some interval (10009 on every tick
+		When in the running state, some elapsed variable is incremented by some interval on every TICK event.
+		- invoke a service: invoke a service that calls setInterval(...) to send a TICK event on the desired interval.
+Runnig
+Guard		- check that elapsed Te does not exceed duration Td (guarded transition) in the running state (transient transition)
+          	Te >= Td elapsed exceeds duration then transition to the paused state.
+
+Paused
+Guard		- Te >= Td :check that duration does not exceed elapsed (guarded transition) in the paused state.
+	  	Te > Te: If duration exceeds elapsed, transition to the running state.
+
+States:
+
+"running" 	- the state where the timer is running, receiving TICK events from some invoked interval service, and updating context.elapsed.
+"paused" 	- the state where the timer is not running and no longer receiving TICK events.
+
+
+
+Events
+----------------------------------------------------------------------
+TICK		- timer signal
+
+DURATION.UPDATE - update Td, The duration can always be updated via some DURATION.UPDATE event.
+
+RESET 		- event resets elapsed to 0, Te = 0, Td = 0
+
+

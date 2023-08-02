@@ -1,0 +1,358 @@
+Props Typing
+--------------------------------------------------------
+type PersonProps = {
+  name: string
+  age: number
+  income?: number
+  children: ReactNode
+  buttonClick: (e:MouseEvent<HTMLButtonElement>, id:number) => void
+  inputChange: (e: ChangeEvent<HTMLButtonElement>) => void
+  styles: CSSProperties 
+}
+export const Person = ({name, age, income=0, buttonClick, inputChange, styles}:PersonProps) {
+
+  return (
+    <div styles={styles}>
+     { name } - { age }
+    <Home />
+    </div>
+  )
+}
+
+Action
+--------------------------------------------------------
+export type GenericAction<ActionType, PayloadType> = {
+
+  type: ActionType
+  payload?: PayloadType
+  }
+}
+
+
+Status
+------------------------------------------------
+type StatusProps = {
+
+  status: 'loading' | 'success' | 'error'
+}
+export const Status = ({status}:StatusProps) => {
+
+  let message = ''
+    if (status === 'loading') {
+      message = 'loading'
+  } else if (status === 'success') {
+      message = 'Data Fetch success'
+  } else if (status === 'error') {
+      message = 'Error Fetching Data' 
+
+  return (
+    <div>
+      <h2> Status: { message } </h2>
+    </div>
+  )
+
+}
+----------------------------------------------------
+
+Hooks
+---------------------------------------------------------
+
+
+useState
+----------
+
+type AuthUser = {
+ name: string
+ email: string
+}
+
+const [user, setUser] = useState<AuthUser | null>(null) // null = loggedOut, null needs optional chaining: user?.name
+const [user, setUser] = useState({} as AuthUser)
+
+const [loggedIn, setLoggedIn] = useState(false) 
+const handleLogin = () => { setLoggedIn(true) }
+const handleLogout = () => { setLoggedIn(false)}
+
+useReducer
+------------------------
+
+type CounterState = {
+ count: number
+}
+type UpdateAction = {
+ type: 'increment' | 'decrement'
+ payload: number
+}
+type ResetAction = {
+ type: 'reset'
+}
+type CounterAction = UpdateAction | ResetAction
+
+const reducer(state:CounterState, action:CounterAction) {
+ switch (action.type) {
+  case 'increment':
+   return { count: state.count + action.payload}
+  case 'decrement':
+   return { count: state.count - action.payload}
+  case 'reset':
+   return initialState
+  default:
+   return state
+ }
+}
+
+const initialState = {
+ count: 0
+}
+
+ button conClick={ dispatch({})}
+const [state, dispatch] = useReducer(reducer, initialState)
+
+
+useContext
+--------------------------------------------------------------
+import theme from './theme'  // theme = { primary:{main: '#efefef', text:'#fff'}, secondary: {main:..., text:...}}
+
+const themeContext = createContext(theme)
+
+type ThemeContextProvider = {
+  children: ReactNode
+}
+
+export const ThemeContextProvider = ({Children}: ThemeContextProvider) => {
+
+  return <ThemeContext.Provider value={theme}>{Children}</ThemeContext.Provider>
+} 
+
+
+ import ThemeContext
+
+ Box = () => {
+   const theme = useContext(ThemeContext)
+   return (
+    <div style={backgroundColor: theme.primary.main, color: theme.primary.text} </div>
+  )
+ }
+
+app
+ ThemeContextProvider
+  <Box />
+ ThemeContextProvider
+
+-------------------------------------------------------------------------------------------
+track User State with Context
+-------------------------------------------------------------------------------------------
+
+import { createContext, useState} from 'react'
+
+type AuthUser = {
+ email:string
+ password: string
+} 
+
+type UserContextType = {
+
+  user: AuthUser | null
+  setUser: Dispatch<SetStateAction<AuthUser | null>>
+}
+
+
+export UserContext = createContext<UserContextType>({} as UserContextType)
+
+type UserContextProviderProps = {
+ children: ReactNode
+}
+
+
+export const UserContextProvider = ({children}: UserContextProviderProps) => {
+  const [user,setUser] = useState<AuthUser | null>(null)
+  return (
+    <UserContext.Provider value={user, setUser} >
+      {children}
+    </UserContext.Provider>
+}
+
+use UserContext in App
+---------------------
+  import User
+         UserContextProvider
+
+  <UserContextProvider>
+    <User />
+  </UserContextProvider>
+
+
+User Component
+----------------------
+  import useContext
+         User Context
+
+
+export cons User = ()  => {
+  
+  const userContext = useContext(UserContext)
+  const handleLogin = () => {
+
+      userContext.setUser({
+        name:'Vishwas',
+        email: 'vishwas@example.com'
+      })
+
+  }
+  const handleLogout = () => {
+
+      userContext.setUser(null)
+
+  }  
+  return (
+
+  <div>
+   <div>User name is: { userContext.user?.name }</div>
+   <div>Email is: { userContext.user?.email}</div>
+  </div>
+ )
+}
+
+-------------------------------------------------------------------------------------------
+end track User State with Context
+-------------------------------------------------------------------------------------------
+
+
+useRef Hook - mutable value (MutableRefObject<null>)
+-------------------------------------------------------------------------------------------
+import useRef, useEffect
+
+const DOMRef = () => { 
+
+  const inputRef = useRef<HTMLInputElement>(null)
+ 
+  useEffect(() => {
+    inputRef.current?.focus()
+  },[])
+  return (
+    <div>
+      <input type="text" ref={inputRef} />
+    </div>
+  )
+}
+
+
+Timer as MutableRefObject with useEffect for updating the timer
+-----------------------------------------------------------------------------------------------
+import useState, useEffect, useRef
+
+const MutableRef = ()  => {
+  const [timer, setTimer] = useState(0)
+  const timerRef = useRef<number | null>(null)
+
+  const stopTimer = () => {
+    window.clearInterval(timerRef.current)
+
+  }
+  useEffect(()=>{
+
+  timerRef.current = window.setInterval(() => {
+
+    setTimer((timer) => timer +1)
+     
+  }, 1000)
+
+  return () => {
+    stopTimer()
+  }
+  },[])
+
+  return (
+   <div>
+     Timer: { timer }
+     <button onClick()= {() => stopTimer()} >Stop timer</button>
+   </div>
+  )
+
+end Timer as MutableRefObject with useEffect for updating the timer
+-----------------------------------------------------------------------------------------------
+
+
+Type Class Components
+--------------------------------------------------------------------------------------
+type CounterProps = {}
+type CounterState = {}
+export class Counter extends Component<CounterProps, CounterState>
+
+Class Component pass Component as Prop
+.-----------------------------------------------------------------------------------------
+
+const Login
+
+const Profile
+
+type PrivateProps = {
+  isLoggedIn: boolean
+  Component: React.ComponentType<ProfileProps>
+}
+const Private = ({isLoggedIn, Component}: PrivateProps) => {
+
+  
+
+  if (isLoggedIn) {
+   return <Component name="Vishwas" />
+  } else {
+   return <Login />s
+  }
+  
+}
+}
+
+Generic List Component
+---------------------------------------------------------------------------------------------------
+type Entity = {
+  id: string | number
+  name: string
+}
+type ListProps<T extends Entity> = {
+  items: T[]
+  onClick: (item:T) => void
+}
+
+export const List = <T extends Entity>({items, onClick}:ListProps<T>) => {
+  
+  return (
+
+    <div>
+
+      <h2>{name} List</h2>
+      {items.map((item,index) => {
+        return (
+          <div key={item.id} onClick={() => onClick(item)}>
+            {item.name}
+          </div>
+        )
+      })
+
+      }
+    </div>
+  )
+}
+
+use Generic List Component
+---------------------------
+
+App
+  <List>
+    items={['apples','oranges','bananas']}
+    onClick={ (item) => console.log(item) } />
+
+
+import React from 'react';
+
+generic list - dragomir titian
+------------------------------
+const List = <T,>({ data, displayAttribute, ...rest }: { data: T[], displayAttribute: keyof T } & JSX.IntrinsicElements['ul']) => (
+  <ul {...rest}>
+    {data.map((el, index) => (
+      <li key={index}>{el[displayAttribute]}</li>
+    ))}
+  </ul>
+);
+
+export default React.memo(List) as any as typeof List;

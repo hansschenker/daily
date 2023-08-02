@@ -1,0 +1,717 @@
+// video transcript - https://www.youtube.com/watch?v=O6xtMrDEhcE&t=8s
+
+
+
+as you said my name's Ryan I'm the creator of solo.js and today I'm going to present an 
+introduction to it um
+
+you're like wait isn't this a react conference um I want to challenge our expectations of 
+what the future web Frameworks will
+
+look like and I don't mean purely looks if you've ever seen solid which many you probably haven't
+
+um it looks a lot like reacted as jsx it has composable Primitives and you might
+
+be wondering like what am I doing here um and really it's not worth my time trying to promote
+
+it on features um one framework adds a feature the next framework adds that it just kind of goes on 
+I think we're past that being a
+
+differentiator the cut it short solid has most of the features of react . um just to kind of get get an idea
+
+um nor am I going to try and sell you on benchmarks and performance no matter how
+
+dominating a display in server and browser i i people tend to tend to kind of tune out after a while 
+like it's a
+
+meme at this point like blazingly fast like um I'm just gonna say good performance and we'll move on
+
+okay so I swear this is not a reenactment of a JavaScript framework conversation on Twitter
+
+um but I wouldn't blame people sometimes if it feels this way um it wasn't so long ago when the mere
+
+mention of a new JavaScript framework brought anger um and
+
+it's only been actually really recently that I've noticed that people have been a little bit more open
+ to new ideas than
+
+they've been for a long time um there's been this kind of sense and this is kind of inside and outside of
+
+react like this new paradigm changes happening right and it's often accompanied by some faint memory of a
+
+time when uh react burst on the scene Conquering the jQuery hordes and thrusting the web development for years
+
+in one swift stroke and I don't know is that really how it happened history is written by The Victors and my
+
+memory events is actually a little bit different the time before react was one full of innovation and 
+exploration many
+
+of the pieces actually kind of already existed but we hadn't really figured out how to put things 
+together in the right way we didn't have the right opinions on
+
+what we were doing we just kind of were just playing with it and I feel like right now
+
+we're kind of back in one of those scenarios again so yeah here's here's my big headline
+
+um modern front-end web for years has been about components class components function components option 
+components
+
+web components components components components and for good reason components are essential building 
+blocks that allow our programs to be modular
+
+and composable and we all react for this change in mindset however in almost every JavaScript framework 
+components
+
+have runtime implications the update model and the life cycles are tied together and this has led to basically
+
+two views of the world um either you're going to have like a virtual Dom the diffs or it's like tag 
+template literals
+
+can run top down or alternatively you're going to rely really heavily on compilation
+
+um you know but in both cases the components still update top down and when you're running things top down
+
+over and over again a certain point you you start thinking about like what what needs to run what you know 
+what matters
+
+when it reruns or not and this sort of begs the question um when or what do we memorize
+
+um there's a great talk last year at react confer  that addressed this exact topic um so I'm gonna steal 
+a few slides from
+
+there up here so your first inkling might be to build a to-do app in a framework like react kind of like 
+this uh declare some State vent Handler wire
+
+it up but you know if anything other than the to-do list changes the to-do list still
+
+ends up re-rendering again right it's just kind of how it works and this is okay we have a virtual Dom make 
+sure
+
+this isn't very expensive um but we still want to optimize
+
+and as your program grows you apply some optimizations and things start looking a bit like this maybe you 
+add a filter and
+
+some props coming in from above and then you kind of annotate things with memo and use memo and use callback 
+and get
+
+your dependency raise and like everything's working exactly how you want it to now but it's a bit of a
+
+departure like hmm okay um from where we started and it kind of
+
+puts the onus on the developer so what can we do about this well compile it right
+
+this meme floated around Twitter about a year ago I definitely felt the lack of the dependency array Envy 
+from some
+
+circles and I mean after all it wouldn't be better just to express our intents with less code
+
+um let's hold that thought for a moment okay um so back to our to-do list now this is
+
+this is like the most crazy slide from that presentation and this is the compiled output no one no one writes
+
+that code but this was kind of like a pseudo code from what a react compiler would generate and
+
+um it actually isn't all that different from what a framework like svelte actually generates um
+
+uh it's a bunch of shallow checks there's this memcache object you see floating around and basically we can
+
+kind of check at every decision point to make sure that we don't do extra work and the developer just writes 
+nice JavaScript and it just all works but
+
+there's a common ground here basically a user or an event updates the state we Mark the component as dirty 
+and then we
+
+rerun it and we check against some memoized values to reduce that work it doesn't matter if the original code
+
+called set state or used an assignment equal sign like just it's actually amazingly similar from a
+
+mechanical standpoint um but I'm here because I want to I wanted
+
+to throw this out here what if we didn't do any of this what if we only ran what was needed to be run and 
+didn't rely have that heavily
+
+on compilation what if the boundaries of our components didn't dictate the performance of our web applications
+
+to do that I kind of need to go all the way back to the beginning yeah so we're all the way back here
+
+hello World um you know it wasn't very long before we kind of realized we could you know set a
+
+value to a variable and console log it right and then you're like oh we can set it again in console log it 
+again and
+
+then we're like okay this is not very dry it's too much work so let's extract that into a function so now we 
+have our
+
+greeting component and we're pretty happy we can change the name we certainly not component function we can 
+change the name we can call great
+
+do it again and whatnot but at a certain point we might be thinking what if I always want to greet
+
+my friend whenever I change the name and to do that there's lots of ways of
+
+doing it but my personal favorite ways uh is something called reactivity and I I want to talk about it 
+because it's
+
+reactivity's been kind of it was around a long time ago and then it started kind of spreading itself out 
+again and kind
+
+of making a comeback and basically I would argue that almost all
+
+UI Frameworks are reactive in a sense um it's at the heart of it you want your user interfaces to stay in 
+sync and the
+
+way I think about it is like a system of live equations like a spreadsheet see a normal assignment represents
+ a moment of
+
+time like it means at the end of running this equation a is the sum of B plus c but if you change B or C 
+well you you
+
+have to do the sum again but um with reactivity that relationship does hold through time it means that a
+
+will always reflect the sum of B and C it's it's a rule
+
+and what I like talking about often is something called fine-grained reactivity um some of you might have 
+seen this before like mobx
+
+um and things like View and pre-actus released some signals uh last week
+
+and I think it's really interesting because we're seeing a lot of this actually at the framework level 
+because
+
+there's a lot of nice properties about this um declarative you know relationships are set once and then 
+executed you describe the behavior
+
+rather than the implementation and the composable the easy to wrap you can just you know build up build 
+them up and the
+
+most important thing is there's actually three Primitives that you can basically build a whole system off of
+
+um and I sold this right out of the mobac stocks it's great um basically there's like our observable
+
+State I tend to call these signals there is our Drive state or computed values
+
+and then there's our side effects which could really be any kind of size effects you know obviously 
+I've been showing you console logs but it could be rendering
+
+and with these three you can accomplish amazing things so
+
+react hooks right um not exactly from a language perspective you can consider this little
+
+react hooks or something like Felts let and dollar signs but both of those are tied to the component right 
+you mark the
+
+component as dirty and these composition patterns um that I'm talking about have actually existed almost a 
+decade earlier
+
+in JavaScript and like Knockout JS in  had this reactivity is a system
+
+onto itself and has no connection to rendering or components and that's really really important here but 
+it's
+
+probably easier for me just to try and show you this first thing we need is a new primitive
+
+um setting a simple uh variable can't cause other code to run so we need we need
+
+some things special kind of like a promise here in order to do this so I'm going to introduce to you a 
+signal and
+
+all signal is is a getter function and a Setter function basically it holds a value call it to get the 
+value set it to
+
+update the value um and as you can see now in our greet function we actually kept the call name
+
+as a function but we're also just and we're also setting um friend when we update the name
+
+but this doesn't do much on its own so um I'm going to introduce a second primitive let's call it create 
+effect
+
+you start seeing some analogs here between like react hooks but there's some differences here and our 
+create effect
+
+um basically we've moved our greet function into it and now the idea here is whenever
+
+our friend name changes we console log it it runs initially so it runs top down
+
+and we sit you know console like hello John but then later when we call set friend and update to Mary it 
+runs that
+
+effect again and logs it and the real power is actually this is
+
+transitive so if I wanted to make the
+
+friend name uppercase for some reason I don't know why but I decided to make it uppercase um all we have 
+to do is call the upper
+
+function inside of create effect and because it's called underneath it using the call stack we actually 
+can still
+
+track that signal if you notice there's no dependency arrays yet so like is this some kind of magic am I 
+using a compiler
+
+here no this is completely run time and I mean at one time people did really
+
+think this is Magic but what I love about this honestly is we can probably implement this easier than that 
+interview question where someone asks
+
+you how to implement a promise because it's about  lines of code to actually get this concept it's a little 
+bit
+
+complicated so this is probably the most technical part of my talk here um bear with me for a moment at least
+
+but the way I kind of look at this is our signal here is just a read function
+
+and the right function I'm just using a closure here and essentially you can see you update the value and 
+you return the
+
+two functions of course this doesn't do anything so we need to do like a little bit more here and the way 
+we do that is
+
+we add this idea of subscribers which is a set in this case and essentially now
+
+whenever we read it we go is anyone listening and I'll show how that works in a minute and if they are add 
+them to
+
+our subscription list and then later on someone writes the value and then you just go through all the 
+subscribers and
+
+tell them it's changed it's an event emitter if you're familiar with those um
+
+and then the other side which is our effect we've got a global stack it's called I'm
+
+calling it context here but it's just it's just a stack that's globally available so when we get the 
+current Observer we're just saying like what's
+
+on top of the stack and then we can go through the cycle essentially every time we run our effect we clean 
+up any previous dependencies we
+
+push ourselves onto the stack so that signals that we read during that call stack like while it's running 
+can see us
+
+then we execute the provided function and then we pop ourselves off the stack that that's it this is all 
+the code here
+
+I'm going to put it side by side for a minute um to try and kind of run through our example in our head a 
+little bit but
+
+essentially we create our friend which returns our read and write functions and
+
+then we go to run that effect for the first time and essentially uh the effect
+
+goes over into here and it pushes it runs that execute function immediately which pushes itself onto the 
+stack and
+
+then it runs the function so it starts running that console log it calls upper upper in turn calls our 
+friend's name
+
+and then when it calls the read internally there it sees that that effect is on the stack
+
+so then it goes oh okay adds it to its subscribers then we just clean we run the rest of the function log 
+it out to
+
+the console and it pops itself off sometime later someone goes and updates the value which at that point 
+the right
+
+function triggers and in that list we have our one effect so we rerun our effect again push ourselves back 
+onto
+
+the stack see the latest value and do it all over again that's that's basically it that's that's all 
+reactivity is
+
+that's and from there we can build a foundation for other Primitives a lot of
+
+them are not essential but you can use this needed um here's a few examples for example that I just graph 
+and solid um
+
+create memo which is for expensive uh computations it's a derived values create store which is for nested
+
+reactivity uses proxies and then create resource which is a kind of a simple data primitive design for 
+suspense and
+
+uh and concurrent rendering just takes a promise returns kind of signal back but
+
+at this point what I'm describing actually isn't that different than a lot of solutions that might already 
+exist out there view as I said works this way
+
+react with mobx works this way but the next step is actually where
+
+things actually get interesting um and I'm going to do some live coding I
+
+know that's lots of fun but um it's kind of funny to me that whenever we teach reactivity it's always
+
+like some console log hello so I've got a counter here and I want to do something a little bit more 
+substantial
+
+so I'm going to try coding live and we'll just see how this goes so wish me luck but let's let's make an 
+element
+
+let's make an H let's say and I'm going to use vanilla JavaScript here because I think it'll be more
+
+um subscribers so I'm gonna make an H and I'm going to append this to the document in this environment 
+I don't
+
+actually have hot reloading really good because I'm like not using a framework
+
+I'm just kind of um ad limit and actually I'm going to turn off typescript because I'll probably do
+
+terrible stuff while I'm doing this but essentially my idea is we're just going to append our H to the 
+page and we're
+
+going to set the content of our H like there's no reason you have to use create effect to synchronize 
+State you can use
+
+it to you know maybe tell the H that it's text content
+
+should equal the string and if all works well here we go we now have this working
+
+example now the problem here is obviously this jump straight to count equals one it happened too fast you 
+didn't actually see anything update so
+
+let's add a button and to save myself some time typing I already have this prepared so now I just added a 
+vanilla
+
+JavaScript button this is all pure vanilla JavaScript and that basically our runtime we just showed a few 
+minutes
+
+ago so here we go we have our H we have an effect that updates the text content and then we create a button 
+we've got
+
+some text for it and then I added like an inline click Handler which sets the count to count plus one so and 
+then we
+
+append both the H and the button to the screen uh to the body sorry so this is just pure vanilla and this 
+should just
+
+work here we go we have a working counter component the thing is this is fine and this seems fun but no
+
+one writes code like this it's too much like there's a reason we use Frameworks we don't all want to just 
+go in and do do vanilla JavaScript so wouldn't it be
+
+cool if we could like have some syntax and stuff to help us well maybe we already do like there's this thing
+
+called jsx right so like what if we could just you know take our button and what was it
+
+click me and we're at a event handler to it
+
+click and where is Irvin Handler here we go
+
+and drop it in and then we don't really need this anymore we just assigned our button
+
+which is just a Dom element here like what if we could just compile jsx to what I just typed before so then 
+we
+
+still have a counter that works right our button here is just a real Dom element we don't have to necessarily 
+have vdom we just make it it's a nice
+
+shorthand right and similarly here for our H element maybe we don't
+
+um you know want to do all this stuff manually so what if we could just take an H
+
+and it with you know a slight bit of compilation essentially change it so
+
+that it's like this and there's something a little fancy going on because we're
+
+calling a function um the compiler here it goes oh I should wrap that in an effect it could be
+
+dynamic so that way we don't have to worry about writing crate effect or anything and
+
+suddenly that kind of simple vanilla JavaScript it's not it's just combined with jsx we
+
+didn't compile the reactivity we just compiled the jsx and we we still have a working counter component 
+using GSX and
+
+I can do a little better than this because I mean again who writes code like this so maybe we should make 
+it
+
+like a counter component or something and we can kind of pull in
+
+all this stuff and just bring it up here maybe like this and
+
+um let's just for now as I figure this out uh return our H and our button from our
+
+component and if we have prettier in here yes we do format document much better and then we can just call our
+
+counter function because it's just a function and and spread it in and I mean
+
+sure enough this should still work right I'm just making Dom elements now they're in a function there's 
+there's nothing fancy about it
+
+basically we click the click me and just that one effect that updates that one text node here that one 
+number six here
+
+is the only thing that that runs it's just our effect right um that we had at the very beginning
+
+so um again no one really writes code like this so I feel like we can do better we
+
+can probably get rid of these temporary variables like we we don't need the H
+
+and I can probably get rid of this button assignment here and let's go to
+
+new line like this and actually no honestly why even use a raise we
+
+probably could use something like a fragment jsx fragment and
+
+if I've done this right and I format stuff again to make it look nice our
+
+counter should still be working good and actually this this stuff at the bottom is kind of nasty so I'm 
+going to import
+
+a function here maybe render from
+
+solid.js web which is kind of like react Dom same
+
+idea and then we can kind of just go like render counter document dot body or
+
+whatever and now we can just get rid of this stuff and um where are we yes here we are
+
+loaded and our counter still works so this is starting to look kind of familiar like I feel like I've seen
+
+something that looks like this before have you guys seen anything that looks like this before yeah okay well
+
+um this is where things get kind of weird because if I console log in the middle here and
+
+go you know counter we get our counter and I hope you can see this a little smaller but if I click
+
+this button well wait a second it's not console logging it again and that's because we only I mean this 
+counter is
+
+just a function you saw me write it so it only runs once we just have that one effect updating that one 
+text node so I
+
+can click this as many times as I want and it's not going to rerun the component like it's not even 
+a component it's actually just a function if you
+
+think about it so in a sense um you know I mean I can do whatever I want here you know set interval let's
+
+let's do something that will blow up the world um let's let's let's set interval at
+
+every second and let's grab the click Handler there too why not let's just use
+
+the same code and drop it in here sorry because I don't need the function thumb okay sweet so we have 
+we have a we have
+
+our thing counting up because it only ran once um and you know I can obviously click it
+
+I don't know if you've ever tried this in react um you will crash your browser
+
+um but I I just just kind of just just throwing this out here because this is this is
+
+kind of cool um but it's obviously very very different I mean it looks kind of similar but it is very 
+very different
+
+but uh what can we do with this because that's not really enough right so let's keep on going
+
+now let's put two counters on the page okay so I've I'm returning a fragment and I've counted one 
+encounter two and
+
+each of them you know if you look at the bottom hopefully you can see this it might not be blowing up 
+the best but there's there's a two beside that
+
+counter and because we made two of them and I click it and I click it and the
+
+counter thing doesn't update anymore and they have their own independent state because again we can just 
+get states by
+
+wrapping them into closure so that is essentially um
+
+you know State Management local state it's pretty easy pattern but what if I
+
+want Global State well if you've been paying attention it might occur to you that you could
+
+just do this what if we just pull the state out because now you have both
+
+components uh basically referencing the same object and now we have Global State
+
+because it's all the same thing and nothing is re-rendering in fact the only thing re-rendering are 
+those two text
+
+nodes for each counter that we started at the beginning so you see we're not in Kansas anymore I've 
+got one more example
+
+for you um for on this line is prop drilling that's a lot of fun right so let's let's
+
+instead of making it Global put it in our app component and pass it through in this case one count is 
+just count and
+
+the other is Count times two and I'm going to make it so that one button is plus one and one plus two 
+and if you look at our logs we have app and then
+
+two beside the counter because so each component ran once it doesn't really matter here because even as 
+I click and go up
+
+by one or go up by two no console logs are re-running in fact it doesn't matter how many components I
+
+have on the page nothing reruns we're only updating those two text nodes you
+
+know you can use context like there's no performance consideration tied to components or contacts or any 
+of that
+
+stuff it just it just it just works so this is super powerful stuff at least from where I'm sitting
+
+um so I'm going to kind of pull this back around again you might be going okay what's going on here it's 
+gonna be
+
+a little bit more than you showed me before and it's true when we see something that looks like a function
+
+call or a member expression because of proxies we go the compiler either wraps
+
+it in an effect which we saw earlier with the Dom element if the component we just wrap it in together so 
+we just
+
+transform the props a little bit and if you know anything about JavaScript Getters it just makes it lazy 
+so what we've done essentially is flattened the
+
+tree graph because we just call these functions when you're in that final effect the whole component tree 
+vanishes
+
+to the point that you just literally have the one placed in the dawn that updates okay I
+
+had a trade-off here and I gotta talk about this a little bit because if anyone's seen solid they're like 
+they're like you you use this weird control flow
+
+components um because there's a problem with we have a map I already showed you we use real Dom nodes and 
+we do these fine
+
+grain updates the problem with map is if I'm mapping to real Dom nodes anytime the data changes I'd have 
+to remake all
+
+the Dom notes that's terrible so I do need to memorize that and I could we could use a helper function 
+but I
+
+actually kind of made a choice I was like why don't we just use a component for it and and people like 
+where's my
+
+just JavaScript um but I'm going to argue that this is super super composable and actually
+
+aligns really well um what do I mean by that pretend now that you need a paginated component or a 
+virtualized
+
+list or something what do you do in react well you import it and then
+
+like it's the same pattern again right lists become paginated lists of virtualized lists uh conditionals 
+become
+
+suspense or error boundaries we have those components in react so it's not unexpected to use components
+
+for control flow um so that's that's that's basically it
+
+and with that we can actually return to that demo at the beginning here that I want to show because 
+I actually have
+
+that to do app from uh free.com and uh
+
+it's it's almost like the original version of that example right we created some State we created an event 
+handler
+
+this looks a little bit different albeit but then we have our for loop I showed you we filter the list 
+here and we pass
+
+the property this is the final version that has all the interactivity on it and at the bottom I'm logging 
+stuff so yeah
+
+if I hit a checkbox it does update this count if you can see it's really small but yeah there it goes the 
+updates
+
+account because I am updating that if I change the filtered list it does trigger the filter because nothing 
+re-rendered
+
+on the items it didn't bother triggering it obviously if an item was hidden then
+
+when I switch it will also create one of those items again like the work that needs to be done has to be
+
+done but you know if I go to theme color which you see this is a prop  in color going through the component
+
+because of what I've showed you already it doesn't matter how many times I do this no more console logs 
+because it's not
+
+updating anything that it doesn't need to and this is super powerful because like what's not here
+
+what are we missing where's the dependency arrays where's the use callback where's the use ref where's 
+where where is all that those things it
+
+was actually really hard for me to make this demo to show off anything changed because so little change 
+like in the to-do I had to kind of jump a console
+
+log in the middle of a jsx binding to actually show that something changed so I I just want to put it out 
+here because
+
+again we changed the mindset a bit we can do a lot of things um and that's what I call the reactive
+
+Advantage right components run once no hook rules no stale closures templates compiled to real Dom notes 
+so this is
+
+like a super low level abstraction over the Dom like you have that escape hatch you can always just go 
+like grab it and most importantly state is
+
+independent of components component boundaries are for your sake how you want to organize your code not for
+
+performance the performance is really good regardless so I mean to summarize I guess I'm just
+
+going to go with this right and as for that compiler from earlier
+
+if you aren't careful you no longer have the language to represent certain ideas if your whole world for 
+example is
+
+component then how do you represent what lies outside of it this is just illustrative to be fair um
+
+there are solutions for this and compilation is an important tool but I want to point out that it's not
+
+necessarily a silver bullet um there are trade-offs with this and
+
+to me all of this everything I've been talking about is part of a larger Trend um how many of you saw it 
+today
+
+um to illustrate this but this is just the beginning reactivity has already been serving as a Common 
+Language between UI Frameworks solid View and I
+
+mentioned recently preact are using fine-grained reactivity in their Frameworks and if you squint really 
+hard
+
+to a certain degree reactants felt are too they're not the same fine-grained reactivity but they use the 
+same
+
+language um so I'm saying why don't we apply this Beyond component boundaries we've seen this used to great 
+effect with solid Vue
+
+announced that they're actually working on new compiler that generates code eerily similar to solid and 
+um I think
+
+this is just the beginning there's other applications as well we're talking about bleeding edge here I've 
+been talking a
+
+lot about the cost of components for several years now but recently we've seen it applied in amazing new 
+ways components that need to rerun like we've
+
+seen means you need all the JavaScript in the browser even after server rendering
+
+um this is known as hydration if you've ever come across it when a server rendered app starts up
+
+um we didn't have this problem in jQuery days we invented this problem ourselves this is hydration is is 
+our fault and
+
+but you we can if we can get rid of runtime components we can also eliminate hydration
+
+um this has been realized actually but uh I mentioned I work on Marco um the new next version of Marco 
+actually
+
+eliminates hydration and another framework Builder i o is quick also has figured out to how to eliminate
+
+hydration and this all comes down to going Beyond Components I I'm I'm hoping great seeing solid
+
+joins that list as well so it's not about vdom or not or about diffing or not you can embed a whole
+
+Venom instead of reactive system if you wanted you could do concurrent rendering without a vdom and we do
+
+it's about recognizing that our Change Model will very much entwine with our UI representation isn't the 
+same thing for
+
+this reason the conversation around the world Beyond Components starts with reactivity so a system of change 
+until
+
+itself reactivity is already everywhere in JavaScript Frameworks from State Management to compilation but 
+we can
+
+leverage it best if we fully embrace it and live in its declarative world so maybe A revolution is not in the
+
+cards maybe just a reactive Renaissance but who knows what new worlds are only a
+

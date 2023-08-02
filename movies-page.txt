@@ -1,0 +1,88 @@
+page
+---------------------------------------------------------------------------------------------------------
+@Component({
+  template: `
+    <li *ngFor="let movie of (movies$ | async)">
+      {{ movie.name }}
+    </li>
+  `,
+  providers: [ComponentStore],
+})
+export class MoviesPageComponent {
+  readonly movies$ = this.componentStore.state$.pipe(
+    map(state => state.movies),
+  );
+
+  constructor(
+    private readonly componentStore: ComponentStore<{movies: Movie[]}>
+  ) {}
+
+  ngOnInit() {
+    this.componentStore.setState({movies: []});
+  }
+}
+
+writing
+--------------------------
+@Component({
+  template: `
+    Add a Movie
+  `,
+  providers: [MoviesStore],
+})
+export class MoviesPageComponent {
+
+  constructor(private readonly moviesStore: MoviesStore) {}
+
+  add(movie: string) {
+    moviesStore.addMovie(movie);
+  }
+}
+
+----------------------------------------------------
+@Component({
+  template: `...`,
+  providers: [ComponentStore],
+})
+export class MoviesPageComponent {
+  constructor(
+    private readonly componentStore: ComponentStore<MoviesState>
+  ) {}
+
+  ngOnInit() {
+    this.componentStore.setState({movies: []});
+  }
+
+  resetMovies() {
+    //    resets the State to empty array ??
+    this.componentStore.setState({movies: []});
+  }
+
+  addMovie(movie: Movie) {
+    this.componentStore.setState((state) => {
+      return {
+        ...state,
+        movies: [...state.movies, movie],
+      };
+    })
+  }
+}
+
+page reading
+---------------------------------------------------------------
+@Component({
+  template: `
+    <li *ngFor="let movie of (movies$ | async)">
+      {{ movie.name }}
+    </li>
+  `,
+  providers: [MoviesStore],
+})
+export class MoviesPageComponent {
+  movies$ = this.moviesStore.movies$;
+
+  constructor(private readonly moviesStore: MoviesStore) {}
+}
+
+
+----------------------------------------------------------------

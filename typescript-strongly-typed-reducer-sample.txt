@@ -1,0 +1,63 @@
+import React, { Context, createContext, useReducer } from "react";
+
+export type ItemState = {
+    id: string,
+    title: string,
+    description?: string,
+    quantity: number
+}
+
+type Setters<T> = {
+    [P in keyof T as `set${Capitalize<string & P>}`]-?: T[P]
+}
+
+type ItemSetters = Setters<ItemState>
+
+type ActionsMap = {
+    [S in keyof ItemSetters]: {
+        action: S,
+        value: ItemSetters[S]
+    }
+}
+
+export type ItemActions = ActionsMap[keyof ActionsMap]
+
+const itemReducer = (state: ItemState, action: ItemActions) : ItemState => {
+    switch(action.action) {
+        case 'setId':
+            return {...state, id: action.value};
+        case 'setTitle':
+            return {...state, title: action.value};
+        case 'setDescription':
+            return {...state, description: action.value};
+        case 'setQuantity':
+            return {...state, quantity: action.value};
+        default:
+            console.error(`Action of ${action.action} is not supported`);
+     }
+     return state;
+}
+
+
+interface IProviderProps {
+  children?:any
+}
+
+interface IContextProps {
+  item: ItemState,
+  dispatch: (action: ItemActions) => void
+}
+
+const ItemContext = createContext({} as IContextProps) as Context<IContextProps>
+
+function ItemProvider({children}: IProviderProps){
+  const [item, dispatch] = useReducer(itemReducer, {} as ItemState)
+  const contextObj = {item, dispatch}
+  return (
+    <ItemContext.Provider value={contextObj}>
+      {children}
+    </ItemContext.Provider>
+  )
+}
+
+export {ItemContext, ItemProvider}

@@ -1,0 +1,38 @@
+Monads
+---------
+Programming with Effects (Side effects)
+
+In functional programming: 
+- a monad is a software design pattern with a structure 
+  - that combines program fragments (functions) 
+  - and wraps their return values in a type with additional computation. 
+
+In addition to defining a wrapping monadic type, monads define two operators: 
+- one to wrap a value in the monad type, 
+- and another to compose together functions that output values of the monad type (these are known as monadic functions). 
+
+General-purpose languages use monads to reduce boilerplate code needed for common operations (such as 
+ - dealing with undefined values or 
+ - fallible functions, or 
+ - encapsulating bookkeeping code). 
+
+Functional languages use monads to turn complicated sequences of functions into succinct pipelines 
+that abstract away control flow, and side-effects.[1][2]
+
+Side effects
+-----------
+In computer science, an operation, function or expression is said to have a side effect 
+ - if it modifies some state variable value(s) outside its local environment, 
+   which is to say if it has any observable effect other than its primary effect of returning a value to the invoker of the operation. 
+
+Example side effects include 
+ - modifying a non-local variable, 
+ - modifying a static local variable, 
+ - modifying a mutable argument passed by reference, 
+ - performing I/O or 
+ - calling other functions with side-effects.[1] 
+
+In the presence of side effects, a program's behaviour may depend on history; that is, 
+- the order of evaluation matters. 
+
+Understanding and debugging a function with side effects requires knowledge about the context and its possible histories.[2][3]

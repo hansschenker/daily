@@ -1,0 +1,117 @@
+First, it’s awesome that you want to clean up bad observable code. 
+If I were to just critique your method I would do something like so:
+
+import { observable } from 'fp-ts-rxjs/lib/Observable';
+import { sequenceS } from 'fp-ts/lib/Apply';
+import { tap } from 'rxjs/operators';
+
+// Setup Raw Observables
+const welcomeMessage$ = this.http.get('some/api/welcomeMessage');
+
+const language$ = languageObs();
+
+
+// Encapsulate Side Effects
+const dataRange$ = dateRangeObs();
+const dateRangeSideEffect$ = dateRange$.pipe(
+  tap(([startDate, endDate]) => { 
+    this.startDate = startDate;
+    this.endDate = endDate;
+  })
+);
+
+// users
+const users$ = usersObs();
+const usersSideEffect$ = users$.pipe(
+  tap(users => this.setUsers(users))
+);
+
+// api call
+const apiCallTwo$ = this.http.get('some/api/chart');
+const apiCallTwoSideEffect$ = apiCallTwo$.pipe(
+  tap(chart => this.chartData = chart)
+);
+
+// Construct Merged Observable
+const mergedObs$ = sequenceS(observable)({
+  welcomeMessage: welcomeMessage$,
+  apiCallTwo: apiCallTwoSideEffect$,
+  language: language$,
+  dataRange: dateRangeSideEffect$
+  users: usersSideEffect$
+})
+
+// Setup Subscription
+const mySub = mergedObs$
+  .subscribe(({ welcomeMessage, language }) => {
+    this.setWelcomeMessage(welcomeMsg, lang);
+    // all data aquired, wire-up everything
+    this.launch();
+  }
+);
+
+But even this is problematic, as it’s possible that language, dataRange, and users can emit more than once! 
+In the future we might want to react to changes in users or dateRange or language, instead of rerunning this entire block of code.
+In this case we should just return the raw observables as the values themselves and only unbox when we need to.
+
+In react you’d probably pass all of the observables you want to watch into a component 
+then use a few hooks to unwrap the values. 
+Here is a sample rxjs hook for such an occasion (pardon the typescript if you’re not familiar):
+
+// react
+import { some, none, fromNullable } from 'fp-ts/lib/Option';
+import { Observable } from 'rxjs'
+import { useEffect, useState } from 'react'
+
+const useRxjs = <T>(obs: Observable<T>, init?: T) => {
+  const [state, setState] = useState(fromNullable(init));
+  const [errorState, setErrorState] = useState(none);
+  const [completeState, setCompleteState] = useState(false);
+  
+  useEffect(() => obs
+    .subscribe(
+      n => setState(some(n)),
+      e => setErrorState(some(e)),
+      () => setCompleteState(true),
+    ).unsubscribe, [obs, init]);
+  return [state, errorState, completeState];
+}
+
+// angular
+In angular you wouldn’t even subscribe in your component class. 
+You’d remove the side effects and do something more like:
+
+
+import { observable } from 'fp-ts-rxjs/lib/Observable';
+import { sequenceS } from 'fp-ts/lib/Apply';
+import { tap } from 'rxjs/operators';
+
+@Component({
+  template: `
+  <div *ngIf="myData$ | async as myData">
+    {{ myData.welcomeMessage }}
+    {{ myData.chart }}
+    {{ myData.language }}
+    {{ myData.dataRange }}
+    {{ myData.users }}
+  </div>
+  `
+})
+export class MyComponent {
+  readonly welcomeMessage$ = this.http.get('some/api/welcomeMessage');
+  readonly chart$ = this.http.get('some/api/chart');
+  readonly language$ = languageObs();
+  readonly dataRange$ = dateRangeObs();
+  readonly users$ = usersObs();
+readonly myData$ = sequenceS(observable)({
+    welcomeMessage: welcomeMessage$,
+    chart: chart$,
+    language: language$,
+    dataRange: dateRange$
+    users: users$
+  })
+}
+
+And your component would update as the data changed.
+Hope this opens your eyes to some other patterns. Sorry I didn’t include 
+a full example of a react component. It’s late and I’m pretty tired.

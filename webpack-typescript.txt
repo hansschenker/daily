@@ -1,0 +1,46 @@
+npm install --save-dev typescript ts-loader
+
+webpack.config.js
+
+tsconfig.json
+
+Let's set up a simple configuration to support JSX and compile TypeScript down to ES5...
+
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "module": "es6",
+    "target": "es5",
+    "jsx": "react",
+    "allowJs": true
+  }
+}
+
+webpack.config.js
+
+const path = require('path');
+
+module.exports = {
+  entry: './src/index.ts',
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: [ '.tsx', '.ts', '.js' ],
+  },
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+};
+
+plugins
+---------------------
+https://github.com/jaketrent/html-webpack-template

@@ -1,0 +1,3478 @@
+useState
+---------
+- import useState : import React {useState} from 'react'
+- use only for single value state changes
+- const [state,setState] = (0), allways initialize setState with a value, 
+				allways call setState in function format: setState(v => v+1)
+
+- useState can not be used in a if or loop
+
+useEffect
+----------
+
+- will at least run once , when component mounts
+- will allways run when no dependency array
+- will run allways when a specific value updates with dependency array
+
+- stands for 3 lifecycle hooks: component didmount, component didupdate, component didunmount
+- format for mount: useEffect(()=> {}, [])
+- format for updates: useEffect(()=> {}) // when no dependency indicated
+- format for specific updates: useEffect(()=> {}, [dependency])
+- format for unmount: useEffect(()=> { return a cleanup function}, [])
+
+- do not run setState inside an effect
+- react compares values inside useEffect with ==== :you can not have an object inside dependency array (object ref is on every update new)
+
+cleanup:
+- return () => {}
+useEffect use cases
+-----------------------
+- Running once on mount: fetch API data.
+---------------------------------------
+Skip to content
+DEV Community
+Search...
+
+Log in
+Create account
+
+99
+
+22
+
+248
+
+Cover image for 6 use cases of the useEffect ReactJS hook
+Damian Demasi
+Damian Demasi
+Posted on Sep 18, 2021
+
+6 use cases of the useEffect ReactJS hook
+#
+react
+#
+javascript
+#
+webdev
+#
+hooks
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Whenever we need to make use of side effects in our application, useEffect is the way to go. This hook doesn't present many complications, except for non-primitive data types, due to how JavaScript handles them.
+
+According to the official documentation, effects run after every completed render, but you can choose to fire them only when certain values have changed. This hook uses an array of "dependencies": variables or states that useEffect listen to for changes. When their values change, the main body of the useEffect hook is executed.
+
+The return statement of this hook is used to clean methods that are already running, such as timers. The first time this hook is called, its main body is the one that is going to be evaluated first. All other subsequent times the hook is called, the return statement will be evaluated first, and, after that, the hook's main body. This behaviour is especially useful for cleaning code that is already running before run it again, which enable us to prevent memory leaks.
+
+There is an interesting behaviour with this hook when we use non-primitive JavaScript data types as dependencies (e.g., arrays, objects, functions). With primitive values, such as numbers and strings, we can define a variable from another variable, and they will be the same:
+const a = 1
+const b = 1
+a === b
+// Output: true
+But with non-primitive values, such as objects, this behaviour is not the same:
+{} === {}
+// Output: false
+So we need to be very careful when using objects as dependencies, because even though they may look like unaltered data, they may not be so. Instead of using objects, we may want to use their properties as dependencies:
+useEffect(() => {
+        // Some code that uses the properties
+    }, [myObject.property1, myObject.property2]);
+Now, let's take a look at some use cases for this hook.
+
+useEffect use cases
+Running once on mount: fetch API data
+Running on state change: validating input field
+Running on state change: live filtering
+Running on state change: trigger animation on new array value
+Running on props change: update paragraph list on fetched API data update
+Running on props change: updating fetched API data to get BTC updated price
+Running once on mount: fetch API data
+When we want to perform an action once, especially when the app loads or mounts, we can use useEffect to do it. In this case, we are triggering a fetch() GET request when the app is mounted, using an empty array as useEffect dependency.
+import { useState, useEffect } from "react";
+
+const UseCaseFetchApi = props => {
+    // useState is needed in order to display the result on the screen
+    const [bio, setBio] = useState({});
+
+    // 'async' shouldn't be used in the useEffect callback function because these callbacks are synchronous to prevent race conditions. We need to put the async function inside.
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+    }, []);
+    // Empty dependencies array will make useEffect to run only once at startup because that array never changes
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running once on mount: fetch API data</h3>
+            <p>Luke Skywalker's bio:</p>
+            <pre>{JSON.stringify(bio, null, '\t')}</pre>
+        </>
+    );
+};
+
+export default UseCaseFetchApi;
+Running on state change: validating input field
+Validating an input while it's receiving characters is another great application for useEffect. Whilst the input is being stored in a state using useState, the validation takes place every time the input changes, giving immediate feedback to the user.
+
+We could add a setTimeout() function to check the input field after some time, to delay the checking on each user keystroke, and we would need to clear that timer by using the clearTimeout() function in the return statement of the useEffect hook. A similar example of this is implemented in the useEffect animation trigger, further ahead.
+import { useEffect, useState } from "react";
+
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const [isValid, setIsValid] = useState(false);
+
+    const inputHandler = e => {
+        setInput(e.target.value);
+    };
+
+    useEffect(() => {
+        if (input.length < 5 || /\d/.test(input)) {
+            setIsValid(false);
+        } else {
+            setIsValid(true);
+        }
+    }, [input]);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: validating input field</h3>
+            <form>
+                <label htmlFor="input">Write something (more than 5 non numerical characters is a valid input)</label><br />
+                <input type="text" id="input" autoComplete="off" onChange={inputHandler} style={{ height: '1.5rem', width: '20rem', marginTop: '1rem' }} />
+            </form>
+            <p><span style={isValid ? { backgroundColor: 'lightgreen', padding: '.5rem' } : { backgroundColor: 'lightpink', padding: '.5rem' }}>{isValid ? 'Valid input' : 'Input not valid'}</span></p>
+        </>
+    );
+};
+
+export default UseCaseInputValidation;
+Running on state change: live filtering
+We can use useEffect to filter an array "on the fly" by typing letters into an input element. To do so, we will need to use a state to save the input, and a filter implementation inside the useEffect that will be triggered when the input changes, thanks to useEffect dependencies.
+import { useEffect, useState } from "react";
+
+const array = [
+    { key: '1', type: 'planet', value: 'Tatooine' },
+    { key: '2', type: 'planet', value: 'Alderaan' },
+    { key: '3', type: 'starship', value: 'Death Star' },
+    { key: '4', type: 'starship', value: 'CR90 corvette' },
+    { key: '5', type: 'starship', value: 'Star Destroyer' },
+    { key: '6', type: 'person', value: 'Luke Skywalker' },
+    { key: '7', type: 'person', value: 'Darth Vader' },
+    { key: '8', type: 'person', value: 'Leia Organa' },
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const [filteredArray, setFilteredArray] = useState(array);
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    useEffect(() => {
+        setFilteredArray((_) => {
+            const newArray = array.filter(item => item.value.includes(inputValue)).filter(item => item.type.includes(inputType));
+            return newArray;
+        });
+    }, [inputValue, inputType]);
+
+    // Prepare array to be rendered
+    const listItems = filteredArray.map((item) =>
+        <>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </>
+    );
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: live filtering</h3>
+            <form style={{ maxWidth: '23rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <label htmlFor="input-type">Filter by <b>type</b></label><br />
+                    <input type="text" id="input-type" autoComplete="off" onChange={inputTypeHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+                <div>
+                    <label htmlFor="input-value">Filter by <b>value</b></label><br />
+                    <input type="text" id="input-value" autoComplete="off" onChange={inputValueHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+            </form>
+            <br />
+            <table style={{ width: '20rem', border: '1px solid gray', padding: '0 1rem' }}>
+                <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                </tr>
+                {listItems}
+            </table>
+        </>
+    );
+};
+
+export default UseCaseLiveFilter;
+Running on state change: trigger animation on new array value
+We can use the useEffect hook to trigger an animation on a shopping cart as a side effect of adding a new product to it. In this case, we'll need a state to handle the cart items, and another state to handle the animation trigger.
+
+As we are using a timer inside the useEffect, It is a good practice to clear it before it gets set again by using the return statement of the useEffect, which gets executed before the main body of the useEffect hook gets evaluated (except for the first render).
+import { useState, useEffect } from 'react';
+import classes from './UseCaseAnimation.module.css';
+
+const products = [
+    'Death Star',
+    'CR90 corvette',
+    'Millennium Falcon',
+    'X-wing fighter',
+    'TIE fighter'
+];
+
+const UseCaseAnimation = props => {
+    const [cart, setCart] = useState([]);
+    const [triggerAnimation, setTriggerAnimation] = useState(false);
+
+    // Add item to the cart (array)
+    const clickHandler = e => {
+        e.preventDefault();
+        setCart(prevCart => {
+            const newCart = [...prevCart];
+            newCart.push(e.target.value);
+            return newCart;
+        });
+    };
+
+    // Clear the cart (array)
+    const clearHandler = e => {
+        e.preventDefault();
+        setCart([]);
+    };
+
+    // Trigger cart animation
+    useEffect(() => {
+        setTriggerAnimation(true);
+
+        const timer = setTimeout(() => {
+            setTriggerAnimation(false);
+        }, 900); // The duration of the animation defined in the CSS file
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [cart]);
+
+    const cartClasses = triggerAnimation ? `${classes['jello-horizontal']} ${classes.cart}` : classes.cart;
+
+    const itemsOnSale = products.map(itemOnSale => {
+        return <li><form><span className={classes.item}>{itemOnSale}  <button onClick={clickHandler} value={`"${itemOnSale}"`}>Add to cart</button></span></form></li >;
+    });
+
+    const cartItems = cart.map(item => {
+        return <li>{item}</li>;
+    });
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: trigger animation on new array value</h3>
+            <h4 style={{ color: 'blue' }}>Starship Marketplace</h4>
+            <ul>
+                {itemsOnSale}
+            </ul>
+            <div className={cartClasses}><span>Cart</span></div>
+            <div>
+                <p>Elements in cart:</p>
+                <ul>
+                    {cartItems}
+                </ul>
+            </div>
+            <form><button className={classes.margin} onClick={clearHandler} value="clear">Clear cart</button></form>
+        </>
+    );
+};
+
+export default UseCaseAnimation;
+Running on props change: update paragraph list on fetched API data update
+In this use case, we want to trigger a state update due to an updated fetch() call. We are sending the fetched data to a child component, and whenever that data is changed, the child component re-process it.
+import { useState, useEffect, useCallback } from "react";
+
+const BaconParagraphs = props => {
+    const [baconParagraphText, setBaconParagraphText] = useState([]);
+
+    useEffect(() => {
+        setBaconParagraphText(props.chopBacon.map(piece => <p key={Math.random()}>{piece}</p>));
+    }, [props.chopBacon]); // Props
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+
+const UseCaseUpdateFetch = () => {
+    const [bacon, setBacon] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const submitHandler = async e => {
+        e.preventDefault();
+
+        setIsLoading(true);
+        const response = await fetch(`https://baconipsum.com/api/?type=all-meat&paras=${e.target.paragraphs.value}&start-with-lorem=1`);
+        const data = await response.json();
+        setIsLoading(false);
+        setBacon(data);
+    };
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: update paragraph list on fetched API data update</h3>
+            <form onSubmit={submitHandler}>
+                <label htmlFor="paragraphs" style={{ display: "block", marginBottom: "1rem" }}>How many paragraphs of "Bacon ipsum" do you want?</label>
+                <select id="paragraphs" name="paragraphs">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+                <input type="submit" value="Show me the bacon!" style={{ marginLeft: "1rem" }} /> {isLoading && <span>Getting paragraphs... 🐷</span>}
+            </form>
+            <BaconParagraphs chopBacon={bacon} />
+        </>
+    );
+};
+
+export default UseCaseUpdateFetch;
+Running on props change: updating fetched API data to get updated BTC price
+In this example, useEffect is used to fetch new data from an API every 3 seconds. The child component useEffect receives the time as dependency and every time that dependency changes, a new fetch() is triggered. This way, we can have an updated BTC exchange rate in our app.
+import { useState, useEffect } from "react";
+import classes from './UseCaseUpdateApi.module.css';
+
+// SECTION - Functions
+
+const getCurrentTime = () => {
+    const now = new Date();
+    const time = now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+    return time;
+};
+
+// SECTION - Components
+
+const ExchangeRate = props => {
+    const [exchangeRate, setExchangeRate] = useState(0);
+    const [isAnimated, setIsAnimated] = useState(false);
+
+    useEffect(() => {
+        const getExchangeRate = async () => {
+            // Please don't abuse my personal API key :)
+            const response = await fetch("https://api.nomics.com/v1/exchange-rates?key=86983dc29fd051ced016bca55e301e620fcc51c4");
+            const data = await response.json();
+            console.log(data.find(item => item.currency === "BTC").rate);
+            setExchangeRate(data.find(item => item.currency === "BTC").rate);
+        };
+        getExchangeRate();
+
+        // Triggering animation
+        setIsAnimated(true);
+        const classTimer = setTimeout(() => {
+            setIsAnimated(false);
+        }, 1500);
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(classTimer);
+            setExchangeRate(exchangeRate); // Preventing Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
+        };
+    }, [props.onTime]);
+
+    const priceClasses = isAnimated ? `${classes.price} ${classes.heartbeat}` : `${classes.price}`;
+
+    return <div className={priceClasses}>USD <b>{exchangeRate}</b></div>;
+};
+
+const UseCaseUpdateApi = props => {
+    const [time, setTime] = useState(getCurrentTime());
+
+    // Trigger the update interval on startup (mount)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTime(getCurrentTime());
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []); // Empty dependencies array, so it will run once at mount and keep running 'in the background'
+
+    console.log(time);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: updating fetched API data to get updated BTC price</h3>
+            <span>Last updated: {time} (polling every 3 seconds)</span><ExchangeRate onTime={time} />
+        </>
+    );
+};
+
+export default UseCaseUpdateApi;
+Finally, you can take a look at these use cases live here, and you can find the source code here.
+
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Discussion (6)
+Subscribe
+pic
+Add to the discussion
+ 
+dikamilo profile image
+dikamilo
+•
+Sep 18 '21
+
+Fetching API data in useEffect is always tricky and you should always remember to cancel you subscription here. Your component may be unmounted when promise resolves and this will try to set state that will cause memory leaks. You will also see warning in console about this.
+useEffect(() => {
+    let mounted = true;
+
+    const fetchData = async () => {
+        const response = await fetch('https://swapi.dev/api/people/1/');
+        const data = await response.json();
+
+        if(mounted) {
+            setBio(data);
+        }
+    };
+    fetchData();
+
+    return () => mounted = false;
+}, []);
+
+13
+ likes
+Reply
+ 
+digitalbrainjs profile image
+Dmitriy Mozgovoy
+•
+Sep 22 '21
+
+Or we can use a bit of magic :) (Live Demo)
+import { useAsyncEffect } from "use-async-effect2";
+import cpAxios from "cp-axios";
+
+function TestComponent({url}) {
+  const [cancel, done, result, err] = useAsyncEffect(
+    function* () {
+      return (yield cpAxios(url)).data;
+    },
+    { states: true }
+  );
+
+  return (
+    <div>
+      {done ? (err ? err.toString() : JSON.stringify(result)) : "loading..."}
+      <button className="btn btn-warning" onClick={cancel} disabled={done}>
+        Cancel async effect (abort request)
+      </button>
+    </div>
+  );
+}
+
+3
+ likes
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I definitely have to check Axios out!
+
+
+1
+ like
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I didn't know about that, so thank you very much for pointing that out! I'll take this into account in future implementations of useEffect.
+
+
+1
+ like
+Reply
+ 
+xabitrigo profile image
+xabitrigo
+•
+Jan 7
+
+IMHO the following use cases do not really need the useEffect, because those values are derived state that can be calculated on the render phase.
+
+Running on state change: validating input field
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const isValid = (input.length < 5 || /\d/.test(input))
+
+    return (/* jsx that uses isValid */ );
+};
+Running on state change: live filtering
+const array = [
+    // array data
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const filteredArray = array
+        .filter(item => item.value.includes(inputValue))
+        .filter(item => item.type.includes(inputType))
+    ;
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    // Prepare array to be rendered
+    // FIXED key
+    const listItems = filteredArray.map((item) =>
+        <Fragment key={item.key}>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </Fragment>
+    );
+
+    return (/* jsx that uses filteredArray */);
+};
+Running on props change: update paragraph list on fetched API data update
+const BaconParagraphs = props => {
+    // WRONG key
+    const baconParagraphText = props.chopBacon
+        .map(piece => <p key={Math.random()}>{piece}</p>)
+    ;
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+Also note that for every map that returns jsx, we should use the key prop in its first jsx element. And it has to be a unique value that doesn't change between renders. Using Math.random(), like you do in this last example, defeats the purpose of the key prop.
+
+
+2
+ likes
+Reply
+ 
+mrfacundo profile image
+Facundo Troitero
+•
+Apr 8 • Edited on Apr 8
+
+On the first case, "fetch API data", why not just fetchData? What's the use of useEffect?
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+fetchData will be run and data will be provided to the return part of the component. However, I tried that and it results in a loop, the component keeps fetching data. Why?
+
+On the second case, "validating input field", why not just validate inside of the inputHandler like this?
+    const inputHandler = e => {
+        setInput(e.target.value);
+        if (input.length < 5 || /\d/.test(input)) {
+          setIsValid(false);
+      } else {
+          setIsValid(true);
+      }
+    };
+this seems to work, what's the use of useEffect here?
+
+
+1
+ like
+Reply
+Code of Conduct • Report abuse
+Read next
+riskfrosh profile image
+Why Web Development
+Risk-frosh - Apr 18
+
+osam1010 profile image
+Javascript 1O1 series: Scopes and Execution Contexts.
+Osama - Apr 21
+
+ggoodman profile image
+Introducing Full-stack Plugins
+Geoff Goodman - Apr 21
+
+freebeliever profile image
+How to change your website's font with google fonts
+Blogger and Programmer - Apr 17
+
+
+Damian Demasi
+Follow
+Web Developer - I switched careers in my 40s - Writer of web development blog posts - I love to share Notion templates
+LOCATION
+Adelaide, Australia
+WORK
+Web Developer
+JOINED
+Jun 29, 2020
+More from Damian Demasi
+Problem-solving techniques to avoid yelling at your computer
+#webdev #javascript #programming #discuss
+CSS Study Progress Tracker and Roadmap Notion Template
+#webdev #beginners #css #html
+🤔 I’m curious: what was your biggest struggle in your web development learning path?
+#webdev #beginners #programming #discuss
+import { useState, useEffect } from "react";
+
+const UseCaseFetchApi = props => {
+    // useState is needed in order to display the result on the screen
+    const [bio, setBio] = useState({});
+
+    // 'async' shouldn't be used in the useEffect callback function because these callbacks are synchronous to prevent race conditions. We need to put the async function inside.
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+    }, []);
+    // Empty dependencies array will make useEffect to run only once at startup because that array never changes
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running once on mount: fetch API data</h3>
+            <p>Luke Skywalker's bio:</p>
+            <pre>{JSON.stringify(bio, null, '\t')}</pre>
+        </>
+    );
+};
+
+export default UseCaseFetchApi;
+------------------------------------------------
+
+
+- Running on state change: validating input field.
+----------------------------------------------------
+Whilst the input is being stored in a state using useState, $^
+the validation takes place every time the input changes, giving immediate feedback to the user
+Skip to content
+DEV Community
+Search...
+
+Log in
+Create account
+
+99
+
+22
+
+248
+
+Cover image for 6 use cases of the useEffect ReactJS hook
+Damian Demasi
+Damian Demasi
+Posted on Sep 18, 2021
+
+6 use cases of the useEffect ReactJS hook
+#
+react
+#
+javascript
+#
+webdev
+#
+hooks
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Whenever we need to make use of side effects in our application, useEffect is the way to go. This hook doesn't present many complications, except for non-primitive data types, due to how JavaScript handles them.
+
+According to the official documentation, effects run after every completed render, but you can choose to fire them only when certain values have changed. This hook uses an array of "dependencies": variables or states that useEffect listen to for changes. When their values change, the main body of the useEffect hook is executed.
+
+The return statement of this hook is used to clean methods that are already running, such as timers. The first time this hook is called, its main body is the one that is going to be evaluated first. All other subsequent times the hook is called, the return statement will be evaluated first, and, after that, the hook's main body. This behaviour is especially useful for cleaning code that is already running before run it again, which enable us to prevent memory leaks.
+
+There is an interesting behaviour with this hook when we use non-primitive JavaScript data types as dependencies (e.g., arrays, objects, functions). With primitive values, such as numbers and strings, we can define a variable from another variable, and they will be the same:
+const a = 1
+const b = 1
+a === b
+// Output: true
+But with non-primitive values, such as objects, this behaviour is not the same:
+{} === {}
+// Output: false
+So we need to be very careful when using objects as dependencies, because even though they may look like unaltered data, they may not be so. Instead of using objects, we may want to use their properties as dependencies:
+useEffect(() => {
+        // Some code that uses the properties
+    }, [myObject.property1, myObject.property2]);
+Now, let's take a look at some use cases for this hook.
+
+useEffect use cases
+Running once on mount: fetch API data
+Running on state change: validating input field
+Running on state change: live filtering
+Running on state change: trigger animation on new array value
+Running on props change: update paragraph list on fetched API data update
+Running on props change: updating fetched API data to get BTC updated price
+Running once on mount: fetch API data
+When we want to perform an action once, especially when the app loads or mounts, we can use useEffect to do it. In this case, we are triggering a fetch() GET request when the app is mounted, using an empty array as useEffect dependency.
+import { useState, useEffect } from "react";
+
+const UseCaseFetchApi = props => {
+    // useState is needed in order to display the result on the screen
+    const [bio, setBio] = useState({});
+
+    // 'async' shouldn't be used in the useEffect callback function because these callbacks are synchronous to prevent race conditions. We need to put the async function inside.
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+    }, []);
+    // Empty dependencies array will make useEffect to run only once at startup because that array never changes
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running once on mount: fetch API data</h3>
+            <p>Luke Skywalker's bio:</p>
+            <pre>{JSON.stringify(bio, null, '\t')}</pre>
+        </>
+    );
+};
+
+export default UseCaseFetchApi;
+Running on state change: validating input field
+Validating an input while it's receiving characters is another great application for useEffect. Whilst the input is being stored in a state using useState, the validation takes place every time the input changes, giving immediate feedback to the user.
+
+We could add a setTimeout() function to check the input field after some time, to delay the checking on each user keystroke, and we would need to clear that timer by using the clearTimeout() function in the return statement of the useEffect hook. A similar example of this is implemented in the useEffect animation trigger, further ahead.
+import { useEffect, useState } from "react";
+
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const [isValid, setIsValid] = useState(false);
+
+    const inputHandler = e => {
+        setInput(e.target.value);
+    };
+
+    useEffect(() => {
+        if (input.length < 5 || /\d/.test(input)) {
+            setIsValid(false);
+        } else {
+            setIsValid(true);
+        }
+    }, [input]);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: validating input field</h3>
+            <form>
+                <label htmlFor="input">Write something (more than 5 non numerical characters is a valid input)</label><br />
+                <input type="text" id="input" autoComplete="off" onChange={inputHandler} style={{ height: '1.5rem', width: '20rem', marginTop: '1rem' }} />
+            </form>
+            <p><span style={isValid ? { backgroundColor: 'lightgreen', padding: '.5rem' } : { backgroundColor: 'lightpink', padding: '.5rem' }}>{isValid ? 'Valid input' : 'Input not valid'}</span></p>
+        </>
+    );
+};
+
+export default UseCaseInputValidation;
+Running on state change: live filtering
+We can use useEffect to filter an array "on the fly" by typing letters into an input element. To do so, we will need to use a state to save the input, and a filter implementation inside the useEffect that will be triggered when the input changes, thanks to useEffect dependencies.
+import { useEffect, useState } from "react";
+
+const array = [
+    { key: '1', type: 'planet', value: 'Tatooine' },
+    { key: '2', type: 'planet', value: 'Alderaan' },
+    { key: '3', type: 'starship', value: 'Death Star' },
+    { key: '4', type: 'starship', value: 'CR90 corvette' },
+    { key: '5', type: 'starship', value: 'Star Destroyer' },
+    { key: '6', type: 'person', value: 'Luke Skywalker' },
+    { key: '7', type: 'person', value: 'Darth Vader' },
+    { key: '8', type: 'person', value: 'Leia Organa' },
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const [filteredArray, setFilteredArray] = useState(array);
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    useEffect(() => {
+        setFilteredArray((_) => {
+            const newArray = array.filter(item => item.value.includes(inputValue)).filter(item => item.type.includes(inputType));
+            return newArray;
+        });
+    }, [inputValue, inputType]);
+
+    // Prepare array to be rendered
+    const listItems = filteredArray.map((item) =>
+        <>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </>
+    );
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: live filtering</h3>
+            <form style={{ maxWidth: '23rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <label htmlFor="input-type">Filter by <b>type</b></label><br />
+                    <input type="text" id="input-type" autoComplete="off" onChange={inputTypeHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+                <div>
+                    <label htmlFor="input-value">Filter by <b>value</b></label><br />
+                    <input type="text" id="input-value" autoComplete="off" onChange={inputValueHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+            </form>
+            <br />
+            <table style={{ width: '20rem', border: '1px solid gray', padding: '0 1rem' }}>
+                <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                </tr>
+                {listItems}
+            </table>
+        </>
+    );
+};
+
+export default UseCaseLiveFilter;
+Running on state change: trigger animation on new array value
+We can use the useEffect hook to trigger an animation on a shopping cart as a side effect of adding a new product to it. In this case, we'll need a state to handle the cart items, and another state to handle the animation trigger.
+
+As we are using a timer inside the useEffect, It is a good practice to clear it before it gets set again by using the return statement of the useEffect, which gets executed before the main body of the useEffect hook gets evaluated (except for the first render).
+import { useState, useEffect } from 'react';
+import classes from './UseCaseAnimation.module.css';
+
+const products = [
+    'Death Star',
+    'CR90 corvette',
+    'Millennium Falcon',
+    'X-wing fighter',
+    'TIE fighter'
+];
+
+const UseCaseAnimation = props => {
+    const [cart, setCart] = useState([]);
+    const [triggerAnimation, setTriggerAnimation] = useState(false);
+
+    // Add item to the cart (array)
+    const clickHandler = e => {
+        e.preventDefault();
+        setCart(prevCart => {
+            const newCart = [...prevCart];
+            newCart.push(e.target.value);
+            return newCart;
+        });
+    };
+
+    // Clear the cart (array)
+    const clearHandler = e => {
+        e.preventDefault();
+        setCart([]);
+    };
+
+    // Trigger cart animation
+    useEffect(() => {
+        setTriggerAnimation(true);
+
+        const timer = setTimeout(() => {
+            setTriggerAnimation(false);
+        }, 900); // The duration of the animation defined in the CSS file
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [cart]);
+
+    const cartClasses = triggerAnimation ? `${classes['jello-horizontal']} ${classes.cart}` : classes.cart;
+
+    const itemsOnSale = products.map(itemOnSale => {
+        return <li><form><span className={classes.item}>{itemOnSale}  <button onClick={clickHandler} value={`"${itemOnSale}"`}>Add to cart</button></span></form></li >;
+    });
+
+    const cartItems = cart.map(item => {
+        return <li>{item}</li>;
+    });
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: trigger animation on new array value</h3>
+            <h4 style={{ color: 'blue' }}>Starship Marketplace</h4>
+            <ul>
+                {itemsOnSale}
+            </ul>
+            <div className={cartClasses}><span>Cart</span></div>
+            <div>
+                <p>Elements in cart:</p>
+                <ul>
+                    {cartItems}
+                </ul>
+            </div>
+            <form><button className={classes.margin} onClick={clearHandler} value="clear">Clear cart</button></form>
+        </>
+    );
+};
+
+export default UseCaseAnimation;
+Running on props change: update paragraph list on fetched API data update
+In this use case, we want to trigger a state update due to an updated fetch() call. We are sending the fetched data to a child component, and whenever that data is changed, the child component re-process it.
+import { useState, useEffect, useCallback } from "react";
+
+const BaconParagraphs = props => {
+    const [baconParagraphText, setBaconParagraphText] = useState([]);
+
+    useEffect(() => {
+        setBaconParagraphText(props.chopBacon.map(piece => <p key={Math.random()}>{piece}</p>));
+    }, [props.chopBacon]); // Props
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+
+const UseCaseUpdateFetch = () => {
+    const [bacon, setBacon] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const submitHandler = async e => {
+        e.preventDefault();
+
+        setIsLoading(true);
+        const response = await fetch(`https://baconipsum.com/api/?type=all-meat&paras=${e.target.paragraphs.value}&start-with-lorem=1`);
+        const data = await response.json();
+        setIsLoading(false);
+        setBacon(data);
+    };
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: update paragraph list on fetched API data update</h3>
+            <form onSubmit={submitHandler}>
+                <label htmlFor="paragraphs" style={{ display: "block", marginBottom: "1rem" }}>How many paragraphs of "Bacon ipsum" do you want?</label>
+                <select id="paragraphs" name="paragraphs">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+                <input type="submit" value="Show me the bacon!" style={{ marginLeft: "1rem" }} /> {isLoading && <span>Getting paragraphs... 🐷</span>}
+            </form>
+            <BaconParagraphs chopBacon={bacon} />
+        </>
+    );
+};
+
+export default UseCaseUpdateFetch;
+Running on props change: updating fetched API data to get updated BTC price
+In this example, useEffect is used to fetch new data from an API every 3 seconds. The child component useEffect receives the time as dependency and every time that dependency changes, a new fetch() is triggered. This way, we can have an updated BTC exchange rate in our app.
+import { useState, useEffect } from "react";
+import classes from './UseCaseUpdateApi.module.css';
+
+// SECTION - Functions
+
+const getCurrentTime = () => {
+    const now = new Date();
+    const time = now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+    return time;
+};
+
+// SECTION - Components
+
+const ExchangeRate = props => {
+    const [exchangeRate, setExchangeRate] = useState(0);
+    const [isAnimated, setIsAnimated] = useState(false);
+
+    useEffect(() => {
+        const getExchangeRate = async () => {
+            // Please don't abuse my personal API key :)
+            const response = await fetch("https://api.nomics.com/v1/exchange-rates?key=86983dc29fd051ced016bca55e301e620fcc51c4");
+            const data = await response.json();
+            console.log(data.find(item => item.currency === "BTC").rate);
+            setExchangeRate(data.find(item => item.currency === "BTC").rate);
+        };
+        getExchangeRate();
+
+        // Triggering animation
+        setIsAnimated(true);
+        const classTimer = setTimeout(() => {
+            setIsAnimated(false);
+        }, 1500);
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(classTimer);
+            setExchangeRate(exchangeRate); // Preventing Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
+        };
+    }, [props.onTime]);
+
+    const priceClasses = isAnimated ? `${classes.price} ${classes.heartbeat}` : `${classes.price}`;
+
+    return <div className={priceClasses}>USD <b>{exchangeRate}</b></div>;
+};
+
+const UseCaseUpdateApi = props => {
+    const [time, setTime] = useState(getCurrentTime());
+
+    // Trigger the update interval on startup (mount)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTime(getCurrentTime());
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []); // Empty dependencies array, so it will run once at mount and keep running 'in the background'
+
+    console.log(time);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: updating fetched API data to get updated BTC price</h3>
+            <span>Last updated: {time} (polling every 3 seconds)</span><ExchangeRate onTime={time} />
+        </>
+    );
+};
+
+export default UseCaseUpdateApi;
+Finally, you can take a look at these use cases live here, and you can find the source code here.
+
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Discussion (6)
+Subscribe
+pic
+Add to the discussion
+ 
+dikamilo profile image
+dikamilo
+•
+Sep 18 '21
+
+Fetching API data in useEffect is always tricky and you should always remember to cancel you subscription here. Your component may be unmounted when promise resolves and this will try to set state that will cause memory leaks. You will also see warning in console about this.
+useEffect(() => {
+    let mounted = true;
+
+    const fetchData = async () => {
+        const response = await fetch('https://swapi.dev/api/people/1/');
+        const data = await response.json();
+
+        if(mounted) {
+            setBio(data);
+        }
+    };
+    fetchData();
+
+    return () => mounted = false;
+}, []);
+
+13
+ likes
+Reply
+ 
+digitalbrainjs profile image
+Dmitriy Mozgovoy
+•
+Sep 22 '21
+
+Or we can use a bit of magic :) (Live Demo)
+import { useAsyncEffect } from "use-async-effect2";
+import cpAxios from "cp-axios";
+
+function TestComponent({url}) {
+  const [cancel, done, result, err] = useAsyncEffect(
+    function* () {
+      return (yield cpAxios(url)).data;
+    },
+    { states: true }
+  );
+
+  return (
+    <div>
+      {done ? (err ? err.toString() : JSON.stringify(result)) : "loading..."}
+      <button className="btn btn-warning" onClick={cancel} disabled={done}>
+        Cancel async effect (abort request)
+      </button>
+    </div>
+  );
+}
+
+3
+ likes
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I definitely have to check Axios out!
+
+
+1
+ like
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I didn't know about that, so thank you very much for pointing that out! I'll take this into account in future implementations of useEffect.
+
+
+1
+ like
+Reply
+ 
+xabitrigo profile image
+xabitrigo
+•
+Jan 7
+
+IMHO the following use cases do not really need the useEffect, because those values are derived state that can be calculated on the render phase.
+
+Running on state change: validating input field
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const isValid = (input.length < 5 || /\d/.test(input))
+
+    return (/* jsx that uses isValid */ );
+};
+Running on state change: live filtering
+const array = [
+    // array data
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const filteredArray = array
+        .filter(item => item.value.includes(inputValue))
+        .filter(item => item.type.includes(inputType))
+    ;
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    // Prepare array to be rendered
+    // FIXED key
+    const listItems = filteredArray.map((item) =>
+        <Fragment key={item.key}>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </Fragment>
+    );
+
+    return (/* jsx that uses filteredArray */);
+};
+Running on props change: update paragraph list on fetched API data update
+const BaconParagraphs = props => {
+    // WRONG key
+    const baconParagraphText = props.chopBacon
+        .map(piece => <p key={Math.random()}>{piece}</p>)
+    ;
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+Also note that for every map that returns jsx, we should use the key prop in its first jsx element. And it has to be a unique value that doesn't change between renders. Using Math.random(), like you do in this last example, defeats the purpose of the key prop.
+
+
+2
+ likes
+Reply
+ 
+mrfacundo profile image
+Facundo Troitero
+•
+Apr 8 • Edited on Apr 8
+
+On the first case, "fetch API data", why not just fetchData? What's the use of useEffect?
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+fetchData will be run and data will be provided to the return part of the component. However, I tried that and it results in a loop, the component keeps fetching data. Why?
+
+On the second case, "validating input field", why not just validate inside of the inputHandler like this?
+    const inputHandler = e => {
+        setInput(e.target.value);
+        if (input.length < 5 || /\d/.test(input)) {
+          setIsValid(false);
+      } else {
+          setIsValid(true);
+      }
+    };
+this seems to work, what's the use of useEffect here?
+
+
+1
+ like
+Reply
+Code of Conduct • Report abuse
+Read next
+riskfrosh profile image
+Why Web Development
+Risk-frosh - Apr 18
+
+osam1010 profile image
+Javascript 1O1 series: Scopes and Execution Contexts.
+Osama - Apr 21
+
+ggoodman profile image
+Introducing Full-stack Plugins
+Geoff Goodman - Apr 21
+
+freebeliever profile image
+How to change your website's font with google fonts
+Blogger and Programmer - Apr 17
+
+
+Damian Demasi
+Follow
+Web Developer - I switched careers in my 40s - Writer of web development blog posts - I love to share Notion templates
+LOCATION
+Adelaide, Australia
+WORK
+Web Developer
+JOINED
+Jun 29, 2020
+More from Damian Demasi
+Problem-solving techniques to avoid yelling at your computer
+#webdev #javascript #programming #discuss
+CSS Study Progress Tracker and Roadmap Notion Template
+#webdev #beginners #css #html
+🤔 I’m curious: what was your biggest struggle in your web development learning path?
+#webdev #beginners #programming #discuss
+import { useEffect, useState } from "react";
+
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const [isValid, setIsValid] = useState(false);
+
+    const inputHandler = e => {
+        setInput(e.target.value);
+    };
+
+    useEffect(() => {
+        if (input.length < 5 || /\d/.test(input)) {
+            setIsValid(false);
+        } else {
+            setIsValid(true);
+        }
+    }, [input]);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: validating input field</h3>
+            <form>
+                <label htmlFor="input">Write something (more than 5 non numerical characters is a valid input)</label><br />
+                <input type="text" id="input" autoComplete="off" onChange={inputHandler} style={{ height: '1.5rem', width: '20rem', marginTop: '1rem' }} />
+            </form>
+            <p><span style={isValid ? { backgroundColor: 'lightgreen', padding: '.5rem' } : { backgroundColor: 'lightpink', padding: '.5rem' }}>{isValid ? 'Valid input' : 'Input not valid'}</span></p>
+        </>
+    );
+};
+
+export default UseCaseInputValidation;
+
+--------------------------------------------------------------------------
+
+- Running on state change: live filtering.
+----------------------------------------------------------------------------
+We can use useEffect to filter an array "on the fly" by typing letters into an input element
+
+Skip to content
+DEV Community
+Search...
+
+Log in
+Create account
+
+99
+
+22
+
+248
+
+Cover image for 6 use cases of the useEffect ReactJS hook
+Damian Demasi
+Damian Demasi
+Posted on Sep 18, 2021
+
+6 use cases of the useEffect ReactJS hook
+#
+react
+#
+javascript
+#
+webdev
+#
+hooks
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Whenever we need to make use of side effects in our application, useEffect is the way to go. This hook doesn't present many complications, except for non-primitive data types, due to how JavaScript handles them.
+
+According to the official documentation, effects run after every completed render, but you can choose to fire them only when certain values have changed. This hook uses an array of "dependencies": variables or states that useEffect listen to for changes. When their values change, the main body of the useEffect hook is executed.
+
+The return statement of this hook is used to clean methods that are already running, such as timers. The first time this hook is called, its main body is the one that is going to be evaluated first. All other subsequent times the hook is called, the return statement will be evaluated first, and, after that, the hook's main body. This behaviour is especially useful for cleaning code that is already running before run it again, which enable us to prevent memory leaks.
+
+There is an interesting behaviour with this hook when we use non-primitive JavaScript data types as dependencies (e.g., arrays, objects, functions). With primitive values, such as numbers and strings, we can define a variable from another variable, and they will be the same:
+const a = 1
+const b = 1
+a === b
+// Output: true
+But with non-primitive values, such as objects, this behaviour is not the same:
+{} === {}
+// Output: false
+So we need to be very careful when using objects as dependencies, because even though they may look like unaltered data, they may not be so. Instead of using objects, we may want to use their properties as dependencies:
+useEffect(() => {
+        // Some code that uses the properties
+    }, [myObject.property1, myObject.property2]);
+Now, let's take a look at some use cases for this hook.
+
+useEffect use cases
+Running once on mount: fetch API data
+Running on state change: validating input field
+Running on state change: live filtering
+Running on state change: trigger animation on new array value
+Running on props change: update paragraph list on fetched API data update
+Running on props change: updating fetched API data to get BTC updated price
+Running once on mount: fetch API data
+When we want to perform an action once, especially when the app loads or mounts, we can use useEffect to do it. In this case, we are triggering a fetch() GET request when the app is mounted, using an empty array as useEffect dependency.
+import { useState, useEffect } from "react";
+
+const UseCaseFetchApi = props => {
+    // useState is needed in order to display the result on the screen
+    const [bio, setBio] = useState({});
+
+    // 'async' shouldn't be used in the useEffect callback function because these callbacks are synchronous to prevent race conditions. We need to put the async function inside.
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+    }, []);
+    // Empty dependencies array will make useEffect to run only once at startup because that array never changes
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running once on mount: fetch API data</h3>
+            <p>Luke Skywalker's bio:</p>
+            <pre>{JSON.stringify(bio, null, '\t')}</pre>
+        </>
+    );
+};
+
+export default UseCaseFetchApi;
+Running on state change: validating input field
+Validating an input while it's receiving characters is another great application for useEffect. Whilst the input is being stored in a state using useState, the validation takes place every time the input changes, giving immediate feedback to the user.
+
+We could add a setTimeout() function to check the input field after some time, to delay the checking on each user keystroke, and we would need to clear that timer by using the clearTimeout() function in the return statement of the useEffect hook. A similar example of this is implemented in the useEffect animation trigger, further ahead.
+import { useEffect, useState } from "react";
+
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const [isValid, setIsValid] = useState(false);
+
+    const inputHandler = e => {
+        setInput(e.target.value);
+    };
+
+    useEffect(() => {
+        if (input.length < 5 || /\d/.test(input)) {
+            setIsValid(false);
+        } else {
+            setIsValid(true);
+        }
+    }, [input]);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: validating input field</h3>
+            <form>
+                <label htmlFor="input">Write something (more than 5 non numerical characters is a valid input)</label><br />
+                <input type="text" id="input" autoComplete="off" onChange={inputHandler} style={{ height: '1.5rem', width: '20rem', marginTop: '1rem' }} />
+            </form>
+            <p><span style={isValid ? { backgroundColor: 'lightgreen', padding: '.5rem' } : { backgroundColor: 'lightpink', padding: '.5rem' }}>{isValid ? 'Valid input' : 'Input not valid'}</span></p>
+        </>
+    );
+};
+
+export default UseCaseInputValidation;
+Running on state change: live filtering
+We can use useEffect to filter an array "on the fly" by typing letters into an input element. To do so, we will need to use a state to save the input, and a filter implementation inside the useEffect that will be triggered when the input changes, thanks to useEffect dependencies.
+import { useEffect, useState } from "react";
+
+const array = [
+    { key: '1', type: 'planet', value: 'Tatooine' },
+    { key: '2', type: 'planet', value: 'Alderaan' },
+    { key: '3', type: 'starship', value: 'Death Star' },
+    { key: '4', type: 'starship', value: 'CR90 corvette' },
+    { key: '5', type: 'starship', value: 'Star Destroyer' },
+    { key: '6', type: 'person', value: 'Luke Skywalker' },
+    { key: '7', type: 'person', value: 'Darth Vader' },
+    { key: '8', type: 'person', value: 'Leia Organa' },
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const [filteredArray, setFilteredArray] = useState(array);
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    useEffect(() => {
+        setFilteredArray((_) => {
+            const newArray = array.filter(item => item.value.includes(inputValue)).filter(item => item.type.includes(inputType));
+            return newArray;
+        });
+    }, [inputValue, inputType]);
+
+    // Prepare array to be rendered
+    const listItems = filteredArray.map((item) =>
+        <>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </>
+    );
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: live filtering</h3>
+            <form style={{ maxWidth: '23rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <label htmlFor="input-type">Filter by <b>type</b></label><br />
+                    <input type="text" id="input-type" autoComplete="off" onChange={inputTypeHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+                <div>
+                    <label htmlFor="input-value">Filter by <b>value</b></label><br />
+                    <input type="text" id="input-value" autoComplete="off" onChange={inputValueHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+            </form>
+            <br />
+            <table style={{ width: '20rem', border: '1px solid gray', padding: '0 1rem' }}>
+                <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                </tr>
+                {listItems}
+            </table>
+        </>
+    );
+};
+
+export default UseCaseLiveFilter;
+Running on state change: trigger animation on new array value
+We can use the useEffect hook to trigger an animation on a shopping cart as a side effect of adding a new product to it. In this case, we'll need a state to handle the cart items, and another state to handle the animation trigger.
+
+As we are using a timer inside the useEffect, It is a good practice to clear it before it gets set again by using the return statement of the useEffect, which gets executed before the main body of the useEffect hook gets evaluated (except for the first render).
+import { useState, useEffect } from 'react';
+import classes from './UseCaseAnimation.module.css';
+
+const products = [
+    'Death Star',
+    'CR90 corvette',
+    'Millennium Falcon',
+    'X-wing fighter',
+    'TIE fighter'
+];
+
+const UseCaseAnimation = props => {
+    const [cart, setCart] = useState([]);
+    const [triggerAnimation, setTriggerAnimation] = useState(false);
+
+    // Add item to the cart (array)
+    const clickHandler = e => {
+        e.preventDefault();
+        setCart(prevCart => {
+            const newCart = [...prevCart];
+            newCart.push(e.target.value);
+            return newCart;
+        });
+    };
+
+    // Clear the cart (array)
+    const clearHandler = e => {
+        e.preventDefault();
+        setCart([]);
+    };
+
+    // Trigger cart animation
+    useEffect(() => {
+        setTriggerAnimation(true);
+
+        const timer = setTimeout(() => {
+            setTriggerAnimation(false);
+        }, 900); // The duration of the animation defined in the CSS file
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [cart]);
+
+    const cartClasses = triggerAnimation ? `${classes['jello-horizontal']} ${classes.cart}` : classes.cart;
+
+    const itemsOnSale = products.map(itemOnSale => {
+        return <li><form><span className={classes.item}>{itemOnSale}  <button onClick={clickHandler} value={`"${itemOnSale}"`}>Add to cart</button></span></form></li >;
+    });
+
+    const cartItems = cart.map(item => {
+        return <li>{item}</li>;
+    });
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: trigger animation on new array value</h3>
+            <h4 style={{ color: 'blue' }}>Starship Marketplace</h4>
+            <ul>
+                {itemsOnSale}
+            </ul>
+            <div className={cartClasses}><span>Cart</span></div>
+            <div>
+                <p>Elements in cart:</p>
+                <ul>
+                    {cartItems}
+                </ul>
+            </div>
+            <form><button className={classes.margin} onClick={clearHandler} value="clear">Clear cart</button></form>
+        </>
+    );
+};
+
+export default UseCaseAnimation;
+Running on props change: update paragraph list on fetched API data update
+In this use case, we want to trigger a state update due to an updated fetch() call. We are sending the fetched data to a child component, and whenever that data is changed, the child component re-process it.
+import { useState, useEffect, useCallback } from "react";
+
+const BaconParagraphs = props => {
+    const [baconParagraphText, setBaconParagraphText] = useState([]);
+
+    useEffect(() => {
+        setBaconParagraphText(props.chopBacon.map(piece => <p key={Math.random()}>{piece}</p>));
+    }, [props.chopBacon]); // Props
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+
+const UseCaseUpdateFetch = () => {
+    const [bacon, setBacon] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const submitHandler = async e => {
+        e.preventDefault();
+
+        setIsLoading(true);
+        const response = await fetch(`https://baconipsum.com/api/?type=all-meat&paras=${e.target.paragraphs.value}&start-with-lorem=1`);
+        const data = await response.json();
+        setIsLoading(false);
+        setBacon(data);
+    };
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: update paragraph list on fetched API data update</h3>
+            <form onSubmit={submitHandler}>
+                <label htmlFor="paragraphs" style={{ display: "block", marginBottom: "1rem" }}>How many paragraphs of "Bacon ipsum" do you want?</label>
+                <select id="paragraphs" name="paragraphs">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+                <input type="submit" value="Show me the bacon!" style={{ marginLeft: "1rem" }} /> {isLoading && <span>Getting paragraphs... 🐷</span>}
+            </form>
+            <BaconParagraphs chopBacon={bacon} />
+        </>
+    );
+};
+
+export default UseCaseUpdateFetch;
+Running on props change: updating fetched API data to get updated BTC price
+In this example, useEffect is used to fetch new data from an API every 3 seconds. The child component useEffect receives the time as dependency and every time that dependency changes, a new fetch() is triggered. This way, we can have an updated BTC exchange rate in our app.
+import { useState, useEffect } from "react";
+import classes from './UseCaseUpdateApi.module.css';
+
+// SECTION - Functions
+
+const getCurrentTime = () => {
+    const now = new Date();
+    const time = now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+    return time;
+};
+
+// SECTION - Components
+
+const ExchangeRate = props => {
+    const [exchangeRate, setExchangeRate] = useState(0);
+    const [isAnimated, setIsAnimated] = useState(false);
+
+    useEffect(() => {
+        const getExchangeRate = async () => {
+            // Please don't abuse my personal API key :)
+            const response = await fetch("https://api.nomics.com/v1/exchange-rates?key=86983dc29fd051ced016bca55e301e620fcc51c4");
+            const data = await response.json();
+            console.log(data.find(item => item.currency === "BTC").rate);
+            setExchangeRate(data.find(item => item.currency === "BTC").rate);
+        };
+        getExchangeRate();
+
+        // Triggering animation
+        setIsAnimated(true);
+        const classTimer = setTimeout(() => {
+            setIsAnimated(false);
+        }, 1500);
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(classTimer);
+            setExchangeRate(exchangeRate); // Preventing Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
+        };
+    }, [props.onTime]);
+
+    const priceClasses = isAnimated ? `${classes.price} ${classes.heartbeat}` : `${classes.price}`;
+
+    return <div className={priceClasses}>USD <b>{exchangeRate}</b></div>;
+};
+
+const UseCaseUpdateApi = props => {
+    const [time, setTime] = useState(getCurrentTime());
+
+    // Trigger the update interval on startup (mount)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTime(getCurrentTime());
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []); // Empty dependencies array, so it will run once at mount and keep running 'in the background'
+
+    console.log(time);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: updating fetched API data to get updated BTC price</h3>
+            <span>Last updated: {time} (polling every 3 seconds)</span><ExchangeRate onTime={time} />
+        </>
+    );
+};
+
+export default UseCaseUpdateApi;
+Finally, you can take a look at these use cases live here, and you can find the source code here.
+
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Discussion (6)
+Subscribe
+pic
+Add to the discussion
+ 
+dikamilo profile image
+dikamilo
+•
+Sep 18 '21
+
+Fetching API data in useEffect is always tricky and you should always remember to cancel you subscription here. Your component may be unmounted when promise resolves and this will try to set state that will cause memory leaks. You will also see warning in console about this.
+useEffect(() => {
+    let mounted = true;
+
+    const fetchData = async () => {
+        const response = await fetch('https://swapi.dev/api/people/1/');
+        const data = await response.json();
+
+        if(mounted) {
+            setBio(data);
+        }
+    };
+    fetchData();
+
+    return () => mounted = false;
+}, []);
+
+13
+ likes
+Reply
+ 
+digitalbrainjs profile image
+Dmitriy Mozgovoy
+•
+Sep 22 '21
+
+Or we can use a bit of magic :) (Live Demo)
+import { useAsyncEffect } from "use-async-effect2";
+import cpAxios from "cp-axios";
+
+function TestComponent({url}) {
+  const [cancel, done, result, err] = useAsyncEffect(
+    function* () {
+      return (yield cpAxios(url)).data;
+    },
+    { states: true }
+  );
+
+  return (
+    <div>
+      {done ? (err ? err.toString() : JSON.stringify(result)) : "loading..."}
+      <button className="btn btn-warning" onClick={cancel} disabled={done}>
+        Cancel async effect (abort request)
+      </button>
+    </div>
+  );
+}
+
+3
+ likes
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I definitely have to check Axios out!
+
+
+1
+ like
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I didn't know about that, so thank you very much for pointing that out! I'll take this into account in future implementations of useEffect.
+
+
+1
+ like
+Reply
+ 
+xabitrigo profile image
+xabitrigo
+•
+Jan 7
+
+IMHO the following use cases do not really need the useEffect, because those values are derived state that can be calculated on the render phase.
+
+Running on state change: validating input field
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const isValid = (input.length < 5 || /\d/.test(input))
+
+    return (/* jsx that uses isValid */ );
+};
+Running on state change: live filtering
+const array = [
+    // array data
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const filteredArray = array
+        .filter(item => item.value.includes(inputValue))
+        .filter(item => item.type.includes(inputType))
+    ;
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    // Prepare array to be rendered
+    // FIXED key
+    const listItems = filteredArray.map((item) =>
+        <Fragment key={item.key}>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </Fragment>
+    );
+
+    return (/* jsx that uses filteredArray */);
+};
+Running on props change: update paragraph list on fetched API data update
+const BaconParagraphs = props => {
+    // WRONG key
+    const baconParagraphText = props.chopBacon
+        .map(piece => <p key={Math.random()}>{piece}</p>)
+    ;
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+Also note that for every map that returns jsx, we should use the key prop in its first jsx element. And it has to be a unique value that doesn't change between renders. Using Math.random(), like you do in this last example, defeats the purpose of the key prop.
+
+
+2
+ likes
+Reply
+ 
+mrfacundo profile image
+Facundo Troitero
+•
+Apr 8 • Edited on Apr 8
+
+On the first case, "fetch API data", why not just fetchData? What's the use of useEffect?
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+fetchData will be run and data will be provided to the return part of the component. However, I tried that and it results in a loop, the component keeps fetching data. Why?
+
+On the second case, "validating input field", why not just validate inside of the inputHandler like this?
+    const inputHandler = e => {
+        setInput(e.target.value);
+        if (input.length < 5 || /\d/.test(input)) {
+          setIsValid(false);
+      } else {
+          setIsValid(true);
+      }
+    };
+this seems to work, what's the use of useEffect here?
+
+
+1
+ like
+Reply
+Code of Conduct • Report abuse
+Read next
+riskfrosh profile image
+Why Web Development
+Risk-frosh - Apr 18
+
+osam1010 profile image
+Javascript 1O1 series: Scopes and Execution Contexts.
+Osama - Apr 21
+
+ggoodman profile image
+Introducing Full-stack Plugins
+Geoff Goodman - Apr 21
+
+freebeliever profile image
+How to change your website's font with google fonts
+Blogger and Programmer - Apr 17
+
+
+Damian Demasi
+Follow
+Web Developer - I switched careers in my 40s - Writer of web development blog posts - I love to share Notion templates
+LOCATION
+Adelaide, Australia
+WORK
+Web Developer
+JOINED
+Jun 29, 2020
+More from Damian Demasi
+Problem-solving techniques to avoid yelling at your computer
+#webdev #javascript #programming #discuss
+CSS Study Progress Tracker and Roadmap Notion Template
+#webdev #beginners #css #html
+🤔 I’m curious: what was your biggest struggle in your web development learning path?
+#webdev #beginners #programming #discuss
+import { useEffect, useState } from "react";
+
+const array = [
+    { key: '1', type: 'planet', value: 'Tatooine' },
+    { key: '2', type: 'planet', value: 'Alderaan' },
+    { key: '3', type: 'starship', value: 'Death Star' },
+    { key: '4', type: 'starship', value: 'CR90 corvette' },
+    { key: '5', type: 'starship', value: 'Star Destroyer' },
+    { key: '6', type: 'person', value: 'Luke Skywalker' },
+    { key: '7', type: 'person', value: 'Darth Vader' },
+    { key: '8', type: 'person', value: 'Leia Organa' },
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const [filteredArray, setFilteredArray] = useState(array);
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    useEffect(() => {
+        setFilteredArray((_) => {
+            const newArray = array.filter(item => item.value.includes(inputValue)).filter(item => item.type.includes(inputType));
+            return newArray;
+        });
+    }, [inputValue, inputType]);
+
+    // Prepare array to be rendered
+    const listItems = filteredArray.map((item) =>
+        <>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </>
+    );
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: live filtering</h3>
+            <form style={{ maxWidth: '23rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <label htmlFor="input-type">Filter by <b>type</b></label><br />
+                    <input type="text" id="input-type" autoComplete="off" onChange={inputTypeHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+                <div>
+                    <label htmlFor="input-value">Filter by <b>value</b></label><br />
+                    <input type="text" id="input-value" autoComplete="off" onChange={inputValueHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+            </form>
+            <br />
+            <table style={{ width: '20rem', border: '1px solid gray', padding: '0 1rem' }}>
+                <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                </tr>
+                {listItems}
+            </table>
+        </>
+    );
+};
+
+export default UseCaseLiveFilter;
+
+-------------------------------------------------------------------------------------------------------------------
+
+
+- Running on state change: trigger animation on new array value.
+-----------------------------------------------------------------------
+
+We can use the useEffect hook to trigger an animation on a shopping cart as a side effect of adding a new product to it
+Skip to content
+DEV Community
+Search...
+
+Log in
+Create account
+
+99
+
+22
+
+248
+
+Cover image for 6 use cases of the useEffect ReactJS hook
+Damian Demasi
+Damian Demasi
+Posted on Sep 18, 2021
+
+6 use cases of the useEffect ReactJS hook
+#
+react
+#
+javascript
+#
+webdev
+#
+hooks
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Whenever we need to make use of side effects in our application, useEffect is the way to go. This hook doesn't present many complications, except for non-primitive data types, due to how JavaScript handles them.
+
+According to the official documentation, effects run after every completed render, but you can choose to fire them only when certain values have changed. This hook uses an array of "dependencies": variables or states that useEffect listen to for changes. When their values change, the main body of the useEffect hook is executed.
+
+The return statement of this hook is used to clean methods that are already running, such as timers. The first time this hook is called, its main body is the one that is going to be evaluated first. All other subsequent times the hook is called, the return statement will be evaluated first, and, after that, the hook's main body. This behaviour is especially useful for cleaning code that is already running before run it again, which enable us to prevent memory leaks.
+
+There is an interesting behaviour with this hook when we use non-primitive JavaScript data types as dependencies (e.g., arrays, objects, functions). With primitive values, such as numbers and strings, we can define a variable from another variable, and they will be the same:
+const a = 1
+const b = 1
+a === b
+// Output: true
+But with non-primitive values, such as objects, this behaviour is not the same:
+{} === {}
+// Output: false
+So we need to be very careful when using objects as dependencies, because even though they may look like unaltered data, they may not be so. Instead of using objects, we may want to use their properties as dependencies:
+useEffect(() => {
+        // Some code that uses the properties
+    }, [myObject.property1, myObject.property2]);
+Now, let's take a look at some use cases for this hook.
+
+useEffect use cases
+Running once on mount: fetch API data
+Running on state change: validating input field
+Running on state change: live filtering
+Running on state change: trigger animation on new array value
+Running on props change: update paragraph list on fetched API data update
+Running on props change: updating fetched API data to get BTC updated price
+Running once on mount: fetch API data
+When we want to perform an action once, especially when the app loads or mounts, we can use useEffect to do it. In this case, we are triggering a fetch() GET request when the app is mounted, using an empty array as useEffect dependency.
+import { useState, useEffect } from "react";
+
+const UseCaseFetchApi = props => {
+    // useState is needed in order to display the result on the screen
+    const [bio, setBio] = useState({});
+
+    // 'async' shouldn't be used in the useEffect callback function because these callbacks are synchronous to prevent race conditions. We need to put the async function inside.
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+    }, []);
+    // Empty dependencies array will make useEffect to run only once at startup because that array never changes
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running once on mount: fetch API data</h3>
+            <p>Luke Skywalker's bio:</p>
+            <pre>{JSON.stringify(bio, null, '\t')}</pre>
+        </>
+    );
+};
+
+export default UseCaseFetchApi;
+Running on state change: validating input field
+Validating an input while it's receiving characters is another great application for useEffect. Whilst the input is being stored in a state using useState, the validation takes place every time the input changes, giving immediate feedback to the user.
+
+We could add a setTimeout() function to check the input field after some time, to delay the checking on each user keystroke, and we would need to clear that timer by using the clearTimeout() function in the return statement of the useEffect hook. A similar example of this is implemented in the useEffect animation trigger, further ahead.
+import { useEffect, useState } from "react";
+
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const [isValid, setIsValid] = useState(false);
+
+    const inputHandler = e => {
+        setInput(e.target.value);
+    };
+
+    useEffect(() => {
+        if (input.length < 5 || /\d/.test(input)) {
+            setIsValid(false);
+        } else {
+            setIsValid(true);
+        }
+    }, [input]);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: validating input field</h3>
+            <form>
+                <label htmlFor="input">Write something (more than 5 non numerical characters is a valid input)</label><br />
+                <input type="text" id="input" autoComplete="off" onChange={inputHandler} style={{ height: '1.5rem', width: '20rem', marginTop: '1rem' }} />
+            </form>
+            <p><span style={isValid ? { backgroundColor: 'lightgreen', padding: '.5rem' } : { backgroundColor: 'lightpink', padding: '.5rem' }}>{isValid ? 'Valid input' : 'Input not valid'}</span></p>
+        </>
+    );
+};
+
+export default UseCaseInputValidation;
+Running on state change: live filtering
+We can use useEffect to filter an array "on the fly" by typing letters into an input element. To do so, we will need to use a state to save the input, and a filter implementation inside the useEffect that will be triggered when the input changes, thanks to useEffect dependencies.
+import { useEffect, useState } from "react";
+
+const array = [
+    { key: '1', type: 'planet', value: 'Tatooine' },
+    { key: '2', type: 'planet', value: 'Alderaan' },
+    { key: '3', type: 'starship', value: 'Death Star' },
+    { key: '4', type: 'starship', value: 'CR90 corvette' },
+    { key: '5', type: 'starship', value: 'Star Destroyer' },
+    { key: '6', type: 'person', value: 'Luke Skywalker' },
+    { key: '7', type: 'person', value: 'Darth Vader' },
+    { key: '8', type: 'person', value: 'Leia Organa' },
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const [filteredArray, setFilteredArray] = useState(array);
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    useEffect(() => {
+        setFilteredArray((_) => {
+            const newArray = array.filter(item => item.value.includes(inputValue)).filter(item => item.type.includes(inputType));
+            return newArray;
+        });
+    }, [inputValue, inputType]);
+
+    // Prepare array to be rendered
+    const listItems = filteredArray.map((item) =>
+        <>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </>
+    );
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: live filtering</h3>
+            <form style={{ maxWidth: '23rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <label htmlFor="input-type">Filter by <b>type</b></label><br />
+                    <input type="text" id="input-type" autoComplete="off" onChange={inputTypeHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+                <div>
+                    <label htmlFor="input-value">Filter by <b>value</b></label><br />
+                    <input type="text" id="input-value" autoComplete="off" onChange={inputValueHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+            </form>
+            <br />
+            <table style={{ width: '20rem', border: '1px solid gray', padding: '0 1rem' }}>
+                <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                </tr>
+                {listItems}
+            </table>
+        </>
+    );
+};
+
+export default UseCaseLiveFilter;
+Running on state change: trigger animation on new array value
+We can use the useEffect hook to trigger an animation on a shopping cart as a side effect of adding a new product to it. In this case, we'll need a state to handle the cart items, and another state to handle the animation trigger.
+
+As we are using a timer inside the useEffect, It is a good practice to clear it before it gets set again by using the return statement of the useEffect, which gets executed before the main body of the useEffect hook gets evaluated (except for the first render).
+import { useState, useEffect } from 'react';
+import classes from './UseCaseAnimation.module.css';
+
+const products = [
+    'Death Star',
+    'CR90 corvette',
+    'Millennium Falcon',
+    'X-wing fighter',
+    'TIE fighter'
+];
+
+const UseCaseAnimation = props => {
+    const [cart, setCart] = useState([]);
+    const [triggerAnimation, setTriggerAnimation] = useState(false);
+
+    // Add item to the cart (array)
+    const clickHandler = e => {
+        e.preventDefault();
+        setCart(prevCart => {
+            const newCart = [...prevCart];
+            newCart.push(e.target.value);
+            return newCart;
+        });
+    };
+
+    // Clear the cart (array)
+    const clearHandler = e => {
+        e.preventDefault();
+        setCart([]);
+    };
+
+    // Trigger cart animation
+    useEffect(() => {
+        setTriggerAnimation(true);
+
+        const timer = setTimeout(() => {
+            setTriggerAnimation(false);
+        }, 900); // The duration of the animation defined in the CSS file
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [cart]);
+
+    const cartClasses = triggerAnimation ? `${classes['jello-horizontal']} ${classes.cart}` : classes.cart;
+
+    const itemsOnSale = products.map(itemOnSale => {
+        return <li><form><span className={classes.item}>{itemOnSale}  <button onClick={clickHandler} value={`"${itemOnSale}"`}>Add to cart</button></span></form></li >;
+    });
+
+    const cartItems = cart.map(item => {
+        return <li>{item}</li>;
+    });
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: trigger animation on new array value</h3>
+            <h4 style={{ color: 'blue' }}>Starship Marketplace</h4>
+            <ul>
+                {itemsOnSale}
+            </ul>
+            <div className={cartClasses}><span>Cart</span></div>
+            <div>
+                <p>Elements in cart:</p>
+                <ul>
+                    {cartItems}
+                </ul>
+            </div>
+            <form><button className={classes.margin} onClick={clearHandler} value="clear">Clear cart</button></form>
+        </>
+    );
+};
+
+export default UseCaseAnimation;
+Running on props change: update paragraph list on fetched API data update
+In this use case, we want to trigger a state update due to an updated fetch() call. We are sending the fetched data to a child component, and whenever that data is changed, the child component re-process it.
+import { useState, useEffect, useCallback } from "react";
+
+const BaconParagraphs = props => {
+    const [baconParagraphText, setBaconParagraphText] = useState([]);
+
+    useEffect(() => {
+        setBaconParagraphText(props.chopBacon.map(piece => <p key={Math.random()}>{piece}</p>));
+    }, [props.chopBacon]); // Props
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+
+const UseCaseUpdateFetch = () => {
+    const [bacon, setBacon] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const submitHandler = async e => {
+        e.preventDefault();
+
+        setIsLoading(true);
+        const response = await fetch(`https://baconipsum.com/api/?type=all-meat&paras=${e.target.paragraphs.value}&start-with-lorem=1`);
+        const data = await response.json();
+        setIsLoading(false);
+        setBacon(data);
+    };
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: update paragraph list on fetched API data update</h3>
+            <form onSubmit={submitHandler}>
+                <label htmlFor="paragraphs" style={{ display: "block", marginBottom: "1rem" }}>How many paragraphs of "Bacon ipsum" do you want?</label>
+                <select id="paragraphs" name="paragraphs">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+                <input type="submit" value="Show me the bacon!" style={{ marginLeft: "1rem" }} /> {isLoading && <span>Getting paragraphs... 🐷</span>}
+            </form>
+            <BaconParagraphs chopBacon={bacon} />
+        </>
+    );
+};
+
+export default UseCaseUpdateFetch;
+Running on props change: updating fetched API data to get updated BTC price
+In this example, useEffect is used to fetch new data from an API every 3 seconds. The child component useEffect receives the time as dependency and every time that dependency changes, a new fetch() is triggered. This way, we can have an updated BTC exchange rate in our app.
+import { useState, useEffect } from "react";
+import classes from './UseCaseUpdateApi.module.css';
+
+// SECTION - Functions
+
+const getCurrentTime = () => {
+    const now = new Date();
+    const time = now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+    return time;
+};
+
+// SECTION - Components
+
+const ExchangeRate = props => {
+    const [exchangeRate, setExchangeRate] = useState(0);
+    const [isAnimated, setIsAnimated] = useState(false);
+
+    useEffect(() => {
+        const getExchangeRate = async () => {
+            // Please don't abuse my personal API key :)
+            const response = await fetch("https://api.nomics.com/v1/exchange-rates?key=86983dc29fd051ced016bca55e301e620fcc51c4");
+            const data = await response.json();
+            console.log(data.find(item => item.currency === "BTC").rate);
+            setExchangeRate(data.find(item => item.currency === "BTC").rate);
+        };
+        getExchangeRate();
+
+        // Triggering animation
+        setIsAnimated(true);
+        const classTimer = setTimeout(() => {
+            setIsAnimated(false);
+        }, 1500);
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(classTimer);
+            setExchangeRate(exchangeRate); // Preventing Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
+        };
+    }, [props.onTime]);
+
+    const priceClasses = isAnimated ? `${classes.price} ${classes.heartbeat}` : `${classes.price}`;
+
+    return <div className={priceClasses}>USD <b>{exchangeRate}</b></div>;
+};
+
+const UseCaseUpdateApi = props => {
+    const [time, setTime] = useState(getCurrentTime());
+
+    // Trigger the update interval on startup (mount)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTime(getCurrentTime());
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []); // Empty dependencies array, so it will run once at mount and keep running 'in the background'
+
+    console.log(time);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: updating fetched API data to get updated BTC price</h3>
+            <span>Last updated: {time} (polling every 3 seconds)</span><ExchangeRate onTime={time} />
+        </>
+    );
+};
+
+export default UseCaseUpdateApi;
+Finally, you can take a look at these use cases live here, and you can find the source code here.
+
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Discussion (6)
+Subscribe
+pic
+Add to the discussion
+ 
+dikamilo profile image
+dikamilo
+•
+Sep 18 '21
+
+Fetching API data in useEffect is always tricky and you should always remember to cancel you subscription here. Your component may be unmounted when promise resolves and this will try to set state that will cause memory leaks. You will also see warning in console about this.
+useEffect(() => {
+    let mounted = true;
+
+    const fetchData = async () => {
+        const response = await fetch('https://swapi.dev/api/people/1/');
+        const data = await response.json();
+
+        if(mounted) {
+            setBio(data);
+        }
+    };
+    fetchData();
+
+    return () => mounted = false;
+}, []);
+
+13
+ likes
+Reply
+ 
+digitalbrainjs profile image
+Dmitriy Mozgovoy
+•
+Sep 22 '21
+
+Or we can use a bit of magic :) (Live Demo)
+import { useAsyncEffect } from "use-async-effect2";
+import cpAxios from "cp-axios";
+
+function TestComponent({url}) {
+  const [cancel, done, result, err] = useAsyncEffect(
+    function* () {
+      return (yield cpAxios(url)).data;
+    },
+    { states: true }
+  );
+
+  return (
+    <div>
+      {done ? (err ? err.toString() : JSON.stringify(result)) : "loading..."}
+      <button className="btn btn-warning" onClick={cancel} disabled={done}>
+        Cancel async effect (abort request)
+      </button>
+    </div>
+  );
+}
+
+3
+ likes
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I definitely have to check Axios out!
+
+
+1
+ like
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I didn't know about that, so thank you very much for pointing that out! I'll take this into account in future implementations of useEffect.
+
+
+1
+ like
+Reply
+ 
+xabitrigo profile image
+xabitrigo
+•
+Jan 7
+
+IMHO the following use cases do not really need the useEffect, because those values are derived state that can be calculated on the render phase.
+
+Running on state change: validating input field
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const isValid = (input.length < 5 || /\d/.test(input))
+
+    return (/* jsx that uses isValid */ );
+};
+Running on state change: live filtering
+const array = [
+    // array data
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const filteredArray = array
+        .filter(item => item.value.includes(inputValue))
+        .filter(item => item.type.includes(inputType))
+    ;
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    // Prepare array to be rendered
+    // FIXED key
+    const listItems = filteredArray.map((item) =>
+        <Fragment key={item.key}>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </Fragment>
+    );
+
+    return (/* jsx that uses filteredArray */);
+};
+Running on props change: update paragraph list on fetched API data update
+const BaconParagraphs = props => {
+    // WRONG key
+    const baconParagraphText = props.chopBacon
+        .map(piece => <p key={Math.random()}>{piece}</p>)
+    ;
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+Also note that for every map that returns jsx, we should use the key prop in its first jsx element. And it has to be a unique value that doesn't change between renders. Using Math.random(), like you do in this last example, defeats the purpose of the key prop.
+
+
+2
+ likes
+Reply
+ 
+mrfacundo profile image
+Facundo Troitero
+•
+Apr 8 • Edited on Apr 8
+
+On the first case, "fetch API data", why not just fetchData? What's the use of useEffect?
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+fetchData will be run and data will be provided to the return part of the component. However, I tried that and it results in a loop, the component keeps fetching data. Why?
+
+On the second case, "validating input field", why not just validate inside of the inputHandler like this?
+    const inputHandler = e => {
+        setInput(e.target.value);
+        if (input.length < 5 || /\d/.test(input)) {
+          setIsValid(false);
+      } else {
+          setIsValid(true);
+      }
+    };
+this seems to work, what's the use of useEffect here?
+
+
+1
+ like
+Reply
+Code of Conduct • Report abuse
+Read next
+riskfrosh profile image
+Why Web Development
+Risk-frosh - Apr 18
+
+osam1010 profile image
+Javascript 1O1 series: Scopes and Execution Contexts.
+Osama - Apr 21
+
+ggoodman profile image
+Introducing Full-stack Plugins
+Geoff Goodman - Apr 21
+
+freebeliever profile image
+How to change your website's font with google fonts
+Blogger and Programmer - Apr 17
+
+
+Damian Demasi
+Follow
+Web Developer - I switched careers in my 40s - Writer of web development blog posts - I love to share Notion templates
+LOCATION
+Adelaide, Australia
+WORK
+Web Developer
+JOINED
+Jun 29, 2020
+More from Damian Demasi
+Problem-solving techniques to avoid yelling at your computer
+#webdev #javascript #programming #discuss
+CSS Study Progress Tracker and Roadmap Notion Template
+#webdev #beginners #css #html
+🤔 I’m curious: what was your biggest struggle in your web development learning path?
+#webdev #beginners #programming #discuss
+import { useState, useEffect } from 'react';
+import classes from './UseCaseAnimation.module.css';
+
+const products = [
+    'Death Star',
+    'CR90 corvette',
+    'Millennium Falcon',
+    'X-wing fighter',
+    'TIE fighter'
+];
+
+const UseCaseAnimation = props => {
+    const [cart, setCart] = useState([]);
+    const [triggerAnimation, setTriggerAnimation] = useState(false);
+
+    // Add item to the cart (array)
+    const clickHandler = e => {
+        e.preventDefault();
+        setCart(prevCart => {
+            const newCart = [...prevCart];
+            newCart.push(e.target.value);
+            return newCart;
+        });
+    };
+
+    // Clear the cart (array)
+    const clearHandler = e => {
+        e.preventDefault();
+        setCart([]);
+    };
+
+    // Trigger cart animation
+    useEffect(() => {
+        setTriggerAnimation(true);
+
+        const timer = setTimeout(() => {
+            setTriggerAnimation(false);
+        }, 900); // The duration of the animation defined in the CSS file
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [cart]);
+
+    const cartClasses = triggerAnimation ? `${classes['jello-horizontal']} ${classes.cart}` : classes.cart;
+
+    const itemsOnSale = products.map(itemOnSale => {
+        return <li><form><span className={classes.item}>{itemOnSale}  <button onClick={clickHandler} value={`"${itemOnSale}"`}>Add to cart</button></span></form></li >;
+    });
+
+    const cartItems = cart.map(item => {
+        return <li>{item}</li>;
+    });
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: trigger animation on new array value</h3>
+            <h4 style={{ color: 'blue' }}>Starship Marketplace</h4>
+            <ul>
+                {itemsOnSale}
+            </ul>
+            <div className={cartClasses}><span>Cart</span></div>
+            <div>
+                <p>Elements in cart:</p>
+                <ul>
+                    {cartItems}
+                </ul>
+            </div>
+            <form><button className={classes.margin} onClick={clearHandler} value="clear">Clear cart</button></form>
+        </>
+    );
+};
+
+export default UseCaseAnimation;
+
+--------------------------------------------------------------------------------------------
+
+
+- Running on props change: update paragraph list on fetched API data update.
+-------------------------------------------------------------------------------
+In this use case, we want to trigger a state update due to an updated fetch() call
+
+Skip to content
+DEV Community
+Search...
+
+Log in
+Create account
+
+99
+
+22
+
+248
+
+Cover image for 6 use cases of the useEffect ReactJS hook
+Damian Demasi
+Damian Demasi
+Posted on Sep 18, 2021
+
+6 use cases of the useEffect ReactJS hook
+#
+react
+#
+javascript
+#
+webdev
+#
+hooks
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Whenever we need to make use of side effects in our application, useEffect is the way to go. This hook doesn't present many complications, except for non-primitive data types, due to how JavaScript handles them.
+
+According to the official documentation, effects run after every completed render, but you can choose to fire them only when certain values have changed. This hook uses an array of "dependencies": variables or states that useEffect listen to for changes. When their values change, the main body of the useEffect hook is executed.
+
+The return statement of this hook is used to clean methods that are already running, such as timers. The first time this hook is called, its main body is the one that is going to be evaluated first. All other subsequent times the hook is called, the return statement will be evaluated first, and, after that, the hook's main body. This behaviour is especially useful for cleaning code that is already running before run it again, which enable us to prevent memory leaks.
+
+There is an interesting behaviour with this hook when we use non-primitive JavaScript data types as dependencies (e.g., arrays, objects, functions). With primitive values, such as numbers and strings, we can define a variable from another variable, and they will be the same:
+const a = 1
+const b = 1
+a === b
+// Output: true
+But with non-primitive values, such as objects, this behaviour is not the same:
+{} === {}
+// Output: false
+So we need to be very careful when using objects as dependencies, because even though they may look like unaltered data, they may not be so. Instead of using objects, we may want to use their properties as dependencies:
+useEffect(() => {
+        // Some code that uses the properties
+    }, [myObject.property1, myObject.property2]);
+Now, let's take a look at some use cases for this hook.
+
+useEffect use cases
+Running once on mount: fetch API data
+Running on state change: validating input field
+Running on state change: live filtering
+Running on state change: trigger animation on new array value
+Running on props change: update paragraph list on fetched API data update
+Running on props change: updating fetched API data to get BTC updated price
+Running once on mount: fetch API data
+When we want to perform an action once, especially when the app loads or mounts, we can use useEffect to do it. In this case, we are triggering a fetch() GET request when the app is mounted, using an empty array as useEffect dependency.
+import { useState, useEffect } from "react";
+
+const UseCaseFetchApi = props => {
+    // useState is needed in order to display the result on the screen
+    const [bio, setBio] = useState({});
+
+    // 'async' shouldn't be used in the useEffect callback function because these callbacks are synchronous to prevent race conditions. We need to put the async function inside.
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+    }, []);
+    // Empty dependencies array will make useEffect to run only once at startup because that array never changes
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running once on mount: fetch API data</h3>
+            <p>Luke Skywalker's bio:</p>
+            <pre>{JSON.stringify(bio, null, '\t')}</pre>
+        </>
+    );
+};
+
+export default UseCaseFetchApi;
+Running on state change: validating input field
+Validating an input while it's receiving characters is another great application for useEffect. Whilst the input is being stored in a state using useState, the validation takes place every time the input changes, giving immediate feedback to the user.
+
+We could add a setTimeout() function to check the input field after some time, to delay the checking on each user keystroke, and we would need to clear that timer by using the clearTimeout() function in the return statement of the useEffect hook. A similar example of this is implemented in the useEffect animation trigger, further ahead.
+import { useEffect, useState } from "react";
+
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const [isValid, setIsValid] = useState(false);
+
+    const inputHandler = e => {
+        setInput(e.target.value);
+    };
+
+    useEffect(() => {
+        if (input.length < 5 || /\d/.test(input)) {
+            setIsValid(false);
+        } else {
+            setIsValid(true);
+        }
+    }, [input]);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: validating input field</h3>
+            <form>
+                <label htmlFor="input">Write something (more than 5 non numerical characters is a valid input)</label><br />
+                <input type="text" id="input" autoComplete="off" onChange={inputHandler} style={{ height: '1.5rem', width: '20rem', marginTop: '1rem' }} />
+            </form>
+            <p><span style={isValid ? { backgroundColor: 'lightgreen', padding: '.5rem' } : { backgroundColor: 'lightpink', padding: '.5rem' }}>{isValid ? 'Valid input' : 'Input not valid'}</span></p>
+        </>
+    );
+};
+
+export default UseCaseInputValidation;
+Running on state change: live filtering
+We can use useEffect to filter an array "on the fly" by typing letters into an input element. To do so, we will need to use a state to save the input, and a filter implementation inside the useEffect that will be triggered when the input changes, thanks to useEffect dependencies.
+import { useEffect, useState } from "react";
+
+const array = [
+    { key: '1', type: 'planet', value: 'Tatooine' },
+    { key: '2', type: 'planet', value: 'Alderaan' },
+    { key: '3', type: 'starship', value: 'Death Star' },
+    { key: '4', type: 'starship', value: 'CR90 corvette' },
+    { key: '5', type: 'starship', value: 'Star Destroyer' },
+    { key: '6', type: 'person', value: 'Luke Skywalker' },
+    { key: '7', type: 'person', value: 'Darth Vader' },
+    { key: '8', type: 'person', value: 'Leia Organa' },
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const [filteredArray, setFilteredArray] = useState(array);
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    useEffect(() => {
+        setFilteredArray((_) => {
+            const newArray = array.filter(item => item.value.includes(inputValue)).filter(item => item.type.includes(inputType));
+            return newArray;
+        });
+    }, [inputValue, inputType]);
+
+    // Prepare array to be rendered
+    const listItems = filteredArray.map((item) =>
+        <>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </>
+    );
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: live filtering</h3>
+            <form style={{ maxWidth: '23rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <label htmlFor="input-type">Filter by <b>type</b></label><br />
+                    <input type="text" id="input-type" autoComplete="off" onChange={inputTypeHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+                <div>
+                    <label htmlFor="input-value">Filter by <b>value</b></label><br />
+                    <input type="text" id="input-value" autoComplete="off" onChange={inputValueHandler} style={{ height: '1.5rem', width: '10rem', marginTop: '1rem' }} />
+                </div>
+            </form>
+            <br />
+            <table style={{ width: '20rem', border: '1px solid gray', padding: '0 1rem' }}>
+                <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                </tr>
+                {listItems}
+            </table>
+        </>
+    );
+};
+
+export default UseCaseLiveFilter;
+Running on state change: trigger animation on new array value
+We can use the useEffect hook to trigger an animation on a shopping cart as a side effect of adding a new product to it. In this case, we'll need a state to handle the cart items, and another state to handle the animation trigger.
+
+As we are using a timer inside the useEffect, It is a good practice to clear it before it gets set again by using the return statement of the useEffect, which gets executed before the main body of the useEffect hook gets evaluated (except for the first render).
+import { useState, useEffect } from 'react';
+import classes from './UseCaseAnimation.module.css';
+
+const products = [
+    'Death Star',
+    'CR90 corvette',
+    'Millennium Falcon',
+    'X-wing fighter',
+    'TIE fighter'
+];
+
+const UseCaseAnimation = props => {
+    const [cart, setCart] = useState([]);
+    const [triggerAnimation, setTriggerAnimation] = useState(false);
+
+    // Add item to the cart (array)
+    const clickHandler = e => {
+        e.preventDefault();
+        setCart(prevCart => {
+            const newCart = [...prevCart];
+            newCart.push(e.target.value);
+            return newCart;
+        });
+    };
+
+    // Clear the cart (array)
+    const clearHandler = e => {
+        e.preventDefault();
+        setCart([]);
+    };
+
+    // Trigger cart animation
+    useEffect(() => {
+        setTriggerAnimation(true);
+
+        const timer = setTimeout(() => {
+            setTriggerAnimation(false);
+        }, 900); // The duration of the animation defined in the CSS file
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [cart]);
+
+    const cartClasses = triggerAnimation ? `${classes['jello-horizontal']} ${classes.cart}` : classes.cart;
+
+    const itemsOnSale = products.map(itemOnSale => {
+        return <li><form><span className={classes.item}>{itemOnSale}  <button onClick={clickHandler} value={`"${itemOnSale}"`}>Add to cart</button></span></form></li >;
+    });
+
+    const cartItems = cart.map(item => {
+        return <li>{item}</li>;
+    });
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on state change: trigger animation on new array value</h3>
+            <h4 style={{ color: 'blue' }}>Starship Marketplace</h4>
+            <ul>
+                {itemsOnSale}
+            </ul>
+            <div className={cartClasses}><span>Cart</span></div>
+            <div>
+                <p>Elements in cart:</p>
+                <ul>
+                    {cartItems}
+                </ul>
+            </div>
+            <form><button className={classes.margin} onClick={clearHandler} value="clear">Clear cart</button></form>
+        </>
+    );
+};
+
+export default UseCaseAnimation;
+Running on props change: update paragraph list on fetched API data update
+In this use case, we want to trigger a state update due to an updated fetch() call. We are sending the fetched data to a child component, and whenever that data is changed, the child component re-process it.
+import { useState, useEffect, useCallback } from "react";
+
+const BaconParagraphs = props => {
+    const [baconParagraphText, setBaconParagraphText] = useState([]);
+
+    useEffect(() => {
+        setBaconParagraphText(props.chopBacon.map(piece => <p key={Math.random()}>{piece}</p>));
+    }, [props.chopBacon]); // Props
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+
+const UseCaseUpdateFetch = () => {
+    const [bacon, setBacon] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const submitHandler = async e => {
+        e.preventDefault();
+
+        setIsLoading(true);
+        const response = await fetch(`https://baconipsum.com/api/?type=all-meat&paras=${e.target.paragraphs.value}&start-with-lorem=1`);
+        const data = await response.json();
+        setIsLoading(false);
+        setBacon(data);
+    };
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: update paragraph list on fetched API data update</h3>
+            <form onSubmit={submitHandler}>
+                <label htmlFor="paragraphs" style={{ display: "block", marginBottom: "1rem" }}>How many paragraphs of "Bacon ipsum" do you want?</label>
+                <select id="paragraphs" name="paragraphs">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+                <input type="submit" value="Show me the bacon!" style={{ marginLeft: "1rem" }} /> {isLoading && <span>Getting paragraphs... 🐷</span>}
+            </form>
+            <BaconParagraphs chopBacon={bacon} />
+        </>
+    );
+};
+
+export default UseCaseUpdateFetch;
+Running on props change: updating fetched API data to get updated BTC price
+In this example, useEffect is used to fetch new data from an API every 3 seconds. The child component useEffect receives the time as dependency and every time that dependency changes, a new fetch() is triggered. This way, we can have an updated BTC exchange rate in our app.
+import { useState, useEffect } from "react";
+import classes from './UseCaseUpdateApi.module.css';
+
+// SECTION - Functions
+
+const getCurrentTime = () => {
+    const now = new Date();
+    const time = now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2) + ':' + ('0' + now.getSeconds()).slice(-2);
+    return time;
+};
+
+// SECTION - Components
+
+const ExchangeRate = props => {
+    const [exchangeRate, setExchangeRate] = useState(0);
+    const [isAnimated, setIsAnimated] = useState(false);
+
+    useEffect(() => {
+        const getExchangeRate = async () => {
+            // Please don't abuse my personal API key :)
+            const response = await fetch("https://api.nomics.com/v1/exchange-rates?key=86983dc29fd051ced016bca55e301e620fcc51c4");
+            const data = await response.json();
+            console.log(data.find(item => item.currency === "BTC").rate);
+            setExchangeRate(data.find(item => item.currency === "BTC").rate);
+        };
+        getExchangeRate();
+
+        // Triggering animation
+        setIsAnimated(true);
+        const classTimer = setTimeout(() => {
+            setIsAnimated(false);
+        }, 1500);
+
+        // Clear the timer before setting a new one
+        return () => {
+            clearTimeout(classTimer);
+            setExchangeRate(exchangeRate); // Preventing Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.
+        };
+    }, [props.onTime]);
+
+    const priceClasses = isAnimated ? `${classes.price} ${classes.heartbeat}` : `${classes.price}`;
+
+    return <div className={priceClasses}>USD <b>{exchangeRate}</b></div>;
+};
+
+const UseCaseUpdateApi = props => {
+    const [time, setTime] = useState(getCurrentTime());
+
+    // Trigger the update interval on startup (mount)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTime(getCurrentTime());
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []); // Empty dependencies array, so it will run once at mount and keep running 'in the background'
+
+    console.log(time);
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: updating fetched API data to get updated BTC price</h3>
+            <span>Last updated: {time} (polling every 3 seconds)</span><ExchangeRate onTime={time} />
+        </>
+    );
+};
+
+export default UseCaseUpdateApi;
+Finally, you can take a look at these use cases live here, and you can find the source code here.
+
+ReactJS hooks use cases (3 Part Series)
+1
+5 use cases of the useState ReactJS hook
+2
+2 use cases of the useReducer ReactJS hook
+3
+6 use cases of the useEffect ReactJS hook
+Discussion (6)
+Subscribe
+pic
+Add to the discussion
+ 
+dikamilo profile image
+dikamilo
+•
+Sep 18 '21
+
+Fetching API data in useEffect is always tricky and you should always remember to cancel you subscription here. Your component may be unmounted when promise resolves and this will try to set state that will cause memory leaks. You will also see warning in console about this.
+useEffect(() => {
+    let mounted = true;
+
+    const fetchData = async () => {
+        const response = await fetch('https://swapi.dev/api/people/1/');
+        const data = await response.json();
+
+        if(mounted) {
+            setBio(data);
+        }
+    };
+    fetchData();
+
+    return () => mounted = false;
+}, []);
+
+13
+ likes
+Reply
+ 
+digitalbrainjs profile image
+Dmitriy Mozgovoy
+•
+Sep 22 '21
+
+Or we can use a bit of magic :) (Live Demo)
+import { useAsyncEffect } from "use-async-effect2";
+import cpAxios from "cp-axios";
+
+function TestComponent({url}) {
+  const [cancel, done, result, err] = useAsyncEffect(
+    function* () {
+      return (yield cpAxios(url)).data;
+    },
+    { states: true }
+  );
+
+  return (
+    <div>
+      {done ? (err ? err.toString() : JSON.stringify(result)) : "loading..."}
+      <button className="btn btn-warning" onClick={cancel} disabled={done}>
+        Cancel async effect (abort request)
+      </button>
+    </div>
+  );
+}
+
+3
+ likes
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I definitely have to check Axios out!
+
+
+1
+ like
+Reply
+ 
+colocodes profile image
+Damian Demasi 
+•
+Oct 26 '21
+
+I didn't know about that, so thank you very much for pointing that out! I'll take this into account in future implementations of useEffect.
+
+
+1
+ like
+Reply
+ 
+xabitrigo profile image
+xabitrigo
+•
+Jan 7
+
+IMHO the following use cases do not really need the useEffect, because those values are derived state that can be calculated on the render phase.
+
+Running on state change: validating input field
+const UseCaseInputValidation = props => {
+    const [input, setInput] = useState('');
+    const isValid = (input.length < 5 || /\d/.test(input))
+
+    return (/* jsx that uses isValid */ );
+};
+Running on state change: live filtering
+const array = [
+    // array data
+];
+
+const UseCaseLiveFilter = props => {
+    const [inputValue, setInputValue] = useState('');
+    const [inputType, setInputType] = useState('');
+    const filteredArray = array
+        .filter(item => item.value.includes(inputValue))
+        .filter(item => item.type.includes(inputType))
+    ;
+
+    const inputValueHandler = e => {
+        setInputValue(e.target.value);
+    };
+
+    const inputTypeHandler = e => {
+        setInputType(e.target.value);
+    };
+
+    // Prepare array to be rendered
+    // FIXED key
+    const listItems = filteredArray.map((item) =>
+        <Fragment key={item.key}>
+            <tr>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }}>{item.type}</td>
+                <td style={{ border: '1px solid lightgray', padding: '0 1rem' }} > {item.value}</td>
+            </tr >
+        </Fragment>
+    );
+
+    return (/* jsx that uses filteredArray */);
+};
+Running on props change: update paragraph list on fetched API data update
+const BaconParagraphs = props => {
+    // WRONG key
+    const baconParagraphText = props.chopBacon
+        .map(piece => <p key={Math.random()}>{piece}</p>)
+    ;
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+Also note that for every map that returns jsx, we should use the key prop in its first jsx element. And it has to be a unique value that doesn't change between renders. Using Math.random(), like you do in this last example, defeats the purpose of the key prop.
+
+
+2
+ likes
+Reply
+ 
+mrfacundo profile image
+Facundo Troitero
+•
+Apr 8 • Edited on Apr 8
+
+On the first case, "fetch API data", why not just fetchData? What's the use of useEffect?
+        const fetchData = async () => {
+            const response = await fetch('https://swapi.dev/api/people/1/');
+            const data = await response.json();
+            console.log(data);
+            setBio(data);
+        };
+        fetchData();
+fetchData will be run and data will be provided to the return part of the component. However, I tried that and it results in a loop, the component keeps fetching data. Why?
+
+On the second case, "validating input field", why not just validate inside of the inputHandler like this?
+    const inputHandler = e => {
+        setInput(e.target.value);
+        if (input.length < 5 || /\d/.test(input)) {
+          setIsValid(false);
+      } else {
+          setIsValid(true);
+      }
+    };
+this seems to work, what's the use of useEffect here?
+
+----------------------------------------------
+import { useState, useEffect, useCallback } from "react";
+
+const BaconParagraphs = props => {
+    const [baconParagraphText, setBaconParagraphText] = useState([]);
+
+    useEffect(() => {
+        setBaconParagraphText(props.chopBacon.map(piece => <p key={Math.random()}>{piece}</p>));
+    }, [props.chopBacon]); // Props
+
+    return (
+        <>
+            <p>Number of paragraphs: {baconParagraphText.length}</p>
+            {baconParagraphText}
+        </>
+    );
+};
+
+const UseCaseUpdateFetch = () => {
+    const [bacon, setBacon] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const submitHandler = async e => {
+        e.preventDefault();
+
+        setIsLoading(true);
+        const response = await fetch(`https://baconipsum.com/api/?type=all-meat&paras=${e.target.paragraphs.value}&start-with-lorem=1`);
+        const data = await response.json();
+        setIsLoading(false);
+        setBacon(data);
+    };
+
+    return (
+        <>
+            <hr />
+            <h2>useEffect use case</h2>
+            <h3>Running on props change: update paragraph list on fetched API data update</h3>
+            <form onSubmit={submitHandler}>
+                <label htmlFor="paragraphs" style={{ display: "block", marginBottom: "1rem" }}>How many paragraphs of "Bacon ipsum" do you want?</label>
+                <select id="paragraphs" name="paragraphs">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+                <input type="submit" value="Show me the bacon!" style={{ marginLeft: "1rem" }} /> {isLoading && <span>Getting paragraphs... 🐷</span>}
+            </form>
+            <BaconParagraphs chopBacon={bacon} />
+        </>
+    );
+};
+
+export default UseCaseUpdateFetch;
+
+------------------------------------------------------------------------------

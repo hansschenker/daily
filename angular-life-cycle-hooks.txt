@@ -1,0 +1,315 @@
+data binding	directive	change detect	projection	   check projection			    view + childviews				view destroy
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+@Input()	ngOnChanges	ngOnInit	ngDoCheck	ngAfterContentInit   ngAfterContentChecked   ngAfterViewInit    ngAfterViewChecked	ngOnDestroy
+------------------>
+		  ------------------>
+				    ---------------->
+		  ---------------------------------->
+					            ------------------>
+								      ------------------------>
+						    ------------------------------------------>
+
+														 ----------------------->
+ngOnChanges() 
+Data binding, does not fire when no databound properties
+
+-> ngOnInit() 
+Initialize the directive (called once)
+
+-> ngDoCheck() 
+Detect and act upon changes, run after init
+run whenever ngOnChanges
+
+-> ngAfterContentInit() 
+Angular projects external content into the component's view
+Called once after the first ngDoCheck()
+
+-> ngAfterContentChecked() 
+Angular checks the content projected 
+Called after ngAfterContentInit() and every subsequent ngDoCheck().
+
+-> ngAfterViewInit() 
+initializes the component's views and child views
+
+-> ngAfterViewChecked() 
+Angular checks the component's views and child views
+
+-> ngOnDestroy()	
+
+Hook method	Purpose	Timing
+
+ngOnChanges()	
+------------------------------------------------------------------------------------
+Data Binding -> ngOnChanges
+---------------------------
+Respond when Angular sets or resets data-bound input properties. The method receives 
+a SimpleChanges object of current and previous property values.
+
+frequently updated (changedetection, ngzone)
+--------------------------------------------
+Note that this happens very frequently, so any operation you perform here impacts performance 
+significantly. See details in Using change detection hooks in this document.
+
+Called before ngOnInit() (if the component has bound inputs) and whenever one or 
+more data-bound input properties change.
+
+Note that if your component has no inputs or you use it without providing any inputs, 
+the framework will not call ngOnChanges().
+
+ngOnInit()
+--------------------------------------------------------------------------------------	
+Initialize the directive or component after Angular first displays the data-bound 
+properties and sets the directive or component's input properties. See details in 
+Initializing a component or directive in this document.
+
+Called once, after the first ngOnChanges(). ngOnInit() is still called even when ngOnChanges()
+ is not (which is the case when there are no template-bound inputs).
+
+ngDoCheck()
+------------------------------------------------------------------------------------	
+Detect and act upon changes that Angular can't or won't detect on its own. See details and 
+example in Defining custom change detection in this document.
+
+Called immediately after ngOnChanges() on every change detection run, and immediately 
+after ngOnInit() on the first run.
+
+ngAfterContentInit()	
+------------------------------------------------------------------------------------
+Respond after Angular projects external content into the component's view, 
+or into the view that a directive is in.
+
+See details and example in Responding to changes in content in this document.
+
+Called once after the first ngDoCheck().
+
+ngAfterContentChecked()	
+------------------------------------------------------------------------------------
+Respond after Angular checks the content projected into the directive or component.
+
+See details and example in Responding to projected content changes in this document.
+
+Called after ngAfterContentInit() and every subsequent ngDoCheck().
+
+ngAfterViewInit()
+------------------------------------------------------------------------------------	
+Respond after Angular initializes the component's views and child views, 
+or the view that contains the directive.
+
+See details and example in Responding to view changes in this document.
+
+Called once after the first ngAfterContentChecked().
+
+ngAfterViewChecked()	
+------------------------------------------------------------------------------------
+Respond after Angular checks the component's views and child views, 
+or the view that contains the directive.
+
+Called after the ngAfterViewInit() and every subsequent ngAfterContentChecked().
+
+ngOnDestroy()	
+------------------------------------------------------------------------------------
+Cleanup just before Angular destroys the directive or component. Unsubscribe 
+Observables and detach event handlers to avoid memory leaks. 
+See details in Cleaning up on instance destruction in this document.
+
+Called immediately before Angular destroys the directive or component.
+
+Lifecycle example set
+------------------------------------------------------------------------------------
+The live example / download example demonstrates the use of lifecycle hooks through 
+a series of exercises presented as components under the control of the root AppComponent. 
+In each case a parent component serves as a test rig for a child component that 
+illustrates one or more of the lifecycle hook methods.
+
+The following table lists the exercises with brief descriptions. The sample code 
+is also used to illustrate specific tasks in the following sections.
+
+Component	Description
+Peek-a-boo	
+------------------------------------------------------------------------------------
+Demonstrates every lifecycle hook. Each hook method writes to the on-screen log.
+
+Spy	
+Shows how to use lifecycle hooks with a custom directive. The SpyDirective implements 
+the ngOnInit() and ngOnDestroy() hooks, and uses them to watch and report when an 
+element goes in or out of the current view.
+
+OnChanges
+------------------------------------------------------------------------------------	
+Demonstrates how Angular calls the ngOnChanges() hook every time one of the component 
+input properties changes, and shows how to interpret the changes object passed to the hook method.
+
+DoCheck	
+------------------------------------------------------------------------------------
+Implements the ngDoCheck() method with custom change detection. Watch the hook post 
+changes to a log to see how often Angular calls this hook.
+
+AfterView
+------------------------------------------------------------------------------------	
+Shows what Angular means by a view. Demonstrates the ngAfterViewInit() 
+and ngAfterViewChecked() hooks.
+
+AfterContent
+------------------------------------------------------------------------------------	
+Shows how to project external content into a component and how to distinguish projected
+ content from a component's view children. Demonstrates the ngAfterContentInit() 
+and ngAfterContentChecked() hooks.
+
+Counter	
+------------------------------------------------------------------------------------
+Demonstrates a combination of a component and a directive, each with its own hooks.
+
+Initializing a component or directive
+Use the ngOnInit() method to perform the following initialization tasks.
+
+Perform complex initializations outside of the constructor. Components should be 
+cheap and safe to construct. You should not, for example, fetch data in a component 
+constructor. You shouldn't worry that a new component will try to contact a remote server 
+when created under test or before you decide to display it.
+
+An ngOnInit() is a good place for a component to fetch its initial data. For an example, 
+see the Tour of Heroes tutorial.
+
+Set up the component after Angular sets the input properties. Constructors should
+ do no more than set the initial local variables to simple values.
+
+Keep in mind that a directive's data-bound input properties are not set until after construction. 
+If you need to initialize the directive based on those properties, set them when ngOnInit() runs.
+
+The ngOnChanges() method is your first opportunity to access those properties. Angular 
+calls ngOnChanges() before ngOnInit(), but also many times after that. It only calls ngOnInit() once.
+
+Cleaning up on instance destruction
+Put cleanup logic in ngOnDestroy(), the logic that must run before Angular destroys the directive.
+
+This is the place to free resources that won't be garbage-collected automatically. 
+You risk memory leaks if you neglect to do so.
+
+Unsubscribe from Observables and DOM events.
+Stop interval timers.
+Unregister all callbacks that the directive registered with global or application services.
+The ngOnDestroy() method is also the time to notify another part of the application 
+that the component is going away.
+
+General examples
+The following examples demonstrate the call sequence and relative frequency of the various 
+lifecycle events, and how the hooks can be used separately or together for components and directives.
+
+Sequence and frequency of all lifecycle events
+To show how Angular calls the hooks in the expected order, the PeekABooComponent 
+demonstrates all of the hooks in one component.
+
+In practice you would rarely, if ever, implement all of the interfaces the way this demo does.
+
+The following snapshot reflects the state of the log after the user clicked the 
+Create... button and then the Destroy... button.
+
+Peek-a-boo
+The sequence of log messages follows the prescribed hook calling order: OnChanges,
+ OnInit, DoCheck (3x), AfterContentInit, AfterContentChecked (3x), AfterViewInit,
+ AfterViewChecked (3x), and OnDestroy.
+
+Notice that the log confirms that input properties (the name property in this case) have no
+ assigned values at construction. The input properties are available to the onInit() 
+method for further initialization.
+
+Had the user clicked the Update Hero button, the log would show another OnChanges and 
+two more triplets of DoCheck, AfterContentChecked and AfterViewChecked. Notice that these 
+three hooks fire often, so it is important to keep their logic as lean as possible.
+
+Use directives to watch the DOM
+The Spy example demonstrates how to use the hook method for directives as well as components. 
+The SpyDirective implements two hooks, ngOnInit() and ngOnDestroy(), 
+to discover when a watched element is in the current view.
+
+This template applies the SpyDirective to a <div> in the ngFor hero repeater managed 
+by the parent SpyComponent.
+
+The example does not perform any initialization or clean-up. It just tracks the appearance 
+and disappearance of an element in the view by recording when the directive
+ itself is instantiated and destroyed.
+
+A spy directive 
+------------------------------------------------------------------------------------
+like this can provide insight into a DOM object that you cannot change directly. You can't 
+touch the implementation of a built-in <div>, or modify a third party component. 
+You can, however watch these elements with a directive.
+
+The directive defines ngOnInit() and ngOnDestroy() hooks that log messages to 
+the parent using an injected LoggerService.
+
+src/app/spy.directive.ts
+content_copy
+let nextId = 1;
+
+// Spy on any element to which it is applied.
+// Usage: <div appSpy>...</div>
+@Directive({selector: '[appSpy]'})
+export class SpyDirective implements OnInit, OnDestroy {
+  private id = nextId++;
+
+  constructor(private logger: LoggerService) { }
+
+  ngOnInit() {
+    this.logger.log(`Spy #${this.id} onInit`);
+  }
+
+  ngOnDestroy() {
+    this.logger.log(`Spy #${this.id} onDestroy`);
+  }
+}
+
+
+Apply the spy to any built-in or component element, and see that it is initialized and
+ destroyed at the same time as that element. Here it is attached to the repeated hero <div>:
+
+src/app/spy.component.html
+------------------------------------------------------------------------------------
+content_copy
+<p *ngFor="let hero of heroes" appSpy>
+  {{hero}}
+</p>
+Each spy's creation and destruction marks the appearance and disappearance of the attached hero 
+<div> with an entry in the Hook Log. 
+Adding a hero results in a new hero <div>. The spy's ngOnInit() logs that event.
+
+The Reset button clears the heroes list. Angular removes all hero <div> elements 
+from the DOM and destroys their 
+spy directives at the same time. The spy's ngOnDestroy() method reports its last moments.
+
+Use component and directive hooks together
+In this example, a CounterComponent uses the ngOnChanges() method to log a change every time the 
+parent component increments its input counter property.
+
+This example applies the SpyDirective from the previous example to the CounterComponent log, 
+to watch the creation and destruction of log entries.
+
+Using change detection hooks
+Angular calls the ngOnChanges() method of a component or directive whenever 
+it detects changes to the input properties. 
+The onChanges example demonstrates this by monitoring the OnChanges() hook.
+
+on-changes.component.ts (excerpt)
+content_copy
+ngOnChanges(changes: SimpleChanges) {
+  for (const propName in changes) {
+    const chng = changes[propName];
+    const cur  = JSON.stringify(chng.currentValue);
+    const prev = JSON.stringify(chng.previousValue);
+    this.changeLog.push(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
+  }
+}
+The ngOnChanges() method takes an object that maps each changed property name to a SimpleChange object 
+holding the current and previous property values. This hook iterates over the changed properties and logs them.
+
+The example component, OnChangesComponent, has two input properties: hero and power.
+
+src/app/on-changes.component.ts
+------------------------------------------------------------------------------------
+@Input() hero!: Hero;
+@Input() power = '';
+The host OnChangesParentComponent binds to them as follows.
+
+src/app/on-changes-parent.component.html
+content_copy
+<on-changes [hero]="hero" [power]="power"></on-changes>

@@ -1,0 +1,78 @@
+const stack: Array<Computed | Effect> = [];
+
+class State {
+  private dependents: Array<Computed | Effect> = [];
+
+  constructor(private value: any) {}
+
+  pull(): any {
+    console.log(`pulling new value from state`, this.value);
+    const dependent = stack[stack.length - 1];
+    this.dependents.push(dependent);
+    return this.value;
+  }
+
+  push(newValue: any) {
+    console.log(`pushed new value into state`, newValue);
+    this.value = newValue;
+    this.dependents.forEach((d) => d.pushDirt());
+  }
+}
+
+class Computed {
+  private isDirty = false;
+  private dependents: Array<Computed | Effect> = [];
+  private value: any;
+
+  constructor(private computation: any) {
+    stack.push(this);
+    this.value = computation();
+    stack.pop();
+  }
+
+  pull() {
+    console.log(`pulling new value from computed`, this.value);
+    const dependent = stack[stack.length - 1];
+    this.dependents.push(dependent);
+
+    if (this.isDirty) {
+      this.value = this.computation();
+    }
+
+    return this.value;
+  }
+
+  pushDirt() {
+    console.log(`pushed dirt into computed`);
+    this.isDirty = true;
+    this.dependents.forEach((d) => d.pushDirt());
+  }
+}
+
+class Effect {
+  private isDirty = false;
+
+  constructor(private effect: any) {
+    stack.push(this);
+    effect();
+    stack.pop();
+  }
+
+  pushDirt() {
+    console.log(`pushed dirt into effect`);
+    this.isDirty = true;
+    this.effect();
+  }
+}
+
+const someValue = new State(5);
+
+const someComputed = new Computed(() => {
+  return someValue.pull() + 5;
+});
+
+const someEffect = new Effect(() => {
+  console.log(someComputed.pull());
+});
+
+someValue.push(10);

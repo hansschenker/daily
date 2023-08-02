@@ -1,0 +1,190 @@
+Recursion
+-----------------
+const Node = Tuple(Object, Tuple);
+const element = R.curry(function(val, tuple) {
+ return new Node(val, tuple);
+});
+var grades = element(1, element(2, element(3, element(4, null))));
+Head Tail
+
+
+Composition
+---------------------
+const str = `We can only see a short distance 
+ahead but we can see plenty there 
+that needs to be done`;
+const explode = (str) => str.split(/\s+/);
+const count = (arr) => arr.length;
+const countWords = R.compose(count, explode); 
+countWords(str); //-> 19
+
+Because composition loosely binds type-compatible
+functions at their boundaries (inputs and outputs), it fairly satisfies the principle of
+programming to interfaces
+
+function explode ::
+String -> [String] composed with the function count :: [String] -> Number;
+
+This concept isn’t limited to functions; entire programs can be built from the combi￾nation 
+of other side effect–free, pure programs or modules. (Based on the earlier def￾inition of a function, 
+used throughout this book, I’ll use the terms function, program,
+and module loosely to refer to any executable unit with inputs and output
+
+Composition is a conjunctive operation, which means it joins elements using a logical
+AND operator
+
+Alternatively, you can augment JavaScript’s Function prototype to add compose.
+Here’s the exact same behavior in a style similar to function chaining from chapter 3:
+Function.prototype.compose = R.compose;
+const cleanInput = checkLengthSsn.compose(normalize).compose(trim);
+
+this mecha￾nism of chaining methods is prevalent in functional algebraic data types called monads
+
+const students = ['Rosser', 'Turing', 'Kleene', 'Church'];
+const grades = [80, 100, 90, 99];
+
+
+working with collections of data is one of the cornerstones of func￾tional programming
+
+hardest part is the exercise of breaking a task into smaller
+pieces; once this is finalized, composition is compelling for recombining functions.
+
+write the types to this pipeline:
+
+first :: [a] -> a
+const first = R.head;
+
+getName :: a -> [Char]
+const getName = R.pluck(0);
+
+reverse :: [Char] -> [Char]
+const reverse = R.reverse;
+
+sortByGrade :: [a] -> [a]
+const sortByGrade = R.sortBy(R.prop(1));
+
+combine: ([a],[b]) -> [a,b]
+const combine = R.zip;
+
+          [a] -> a   a -> [Char]     [Char] -> [Char] [a] -> [a]    ([a],[b]) -> [a,b]
+R.compose(first,     getName,        reverse,         sortByGrade,   combine);
+
+Point-free programming
+---------------------------
+R.pipe(
+trim,
+normalize,
+findStudent,
+csv,
+append('#student-info'));
+
+point-free coding
+
+Point-free programming brings functional JavaScript code closer to that of Haskell
+and the Unix philosophy
+
+Currying plays an important role because it gives
+you the flexibility to partially define all but the last argument of an inlined function
+reference.
+
+Combinators
+-------------------------------
+
+Identity (I-combinator)
+The identity combinator is a function that returns the same value it was provided as
+an argument:
+identity :: (a) -> a
+It’s used extensively when examining the mathematical properties of functions, but it
+has other practical applications as well:
+■ Supplying data to higher-order functions that expect it when evaluating a func￾tion argument, as you did earlier when writing point-free code (listing 4.12).
+■ Unit testing the flow of function combinators where you need a simple function
+result on which to make assertions (you’ll see this in chapter 6). For instance,
+you could write a unit test for compose that uses identity functions.
+■ Extracting data functionally from encapsulated types (more on this in the
+next chapter).
+
+Tap (K-combinator)
+tap is extremely useful to bridge void functions (such as logging or writing a file or
+an HTML page) into your composition without having to any create additional code.
+It does this by passing itself into a function and returning itself. Here’s the function
+signature:
+tap :: (a -> *) -> a -> a 
+
+const debugLog = _.partial(logger, 'console', 'basic', 'MyLogger',
+ 'DEBUG');
+and embed it within the composition of other functions. Here are some examples:
+const debug = R.tap(debugLog);
+const cleanInput = R.compose(normalize, debug, trim);
+const isValidSsn = R.compose(debug, checkLengthSsn, debug, cleanInput);
+
+You can use this combinator as part of the showStudent program to handle the case
+when the fetch operation returns unsuccessfully, so that you can create a new student:
+ const showStudent = R.compose(
+append('#student-info'), 
+csv, 
+alt(findStudent, createNewStudent));
+ showStudent('444-44-4444');
+
+Sequence (S-combinator)
+The seq combinator is used to loop over a sequence of functions. It takes two or more
+functions as parameters and returns a new function, which runs all of them in
+sequence against the same value. This is the implementation:
+const seq = function(/*funcs*/) {
+ const funcs = Array.prototype.slice.call(arguments);
+ return function (val) {
+funcs.forEach(function (fn) {
+fn(val);
+});
+ };
+};
+
+const showStudent = R.compose(
+ seq(
+ append('#student-info'), 
+ consoleLog), 
+ csv,
+ findStudent))
+
+The seq combinator doesn’t return a value; it just performs a set of actions one after
+the other. If you want to inject it into the middle of a composition, you can use R.tap
+to bridge the function with the rest.
+
+const fork = function(join, func1, func2){
+ return function(val) {
+return join(func1(val), func2(val));
+ };
+};
+Now let’s see it in action. Let’s revisit computing the average letter grade from an array
+of numbers. You can use fork to coordinate the evaluation of three utility functions:
+const computeAverageGrade = 
+R.compose(getLetterGrade, fork(R.divide, R.sum, R.length));
+computeAverageGrade([99, 80, 89]); //-> 'B'
+
+const computeAverageGrade = 
+R.compose(getLetterGrade, fork(R.divide, R.sum, R.length));
+computeAverageGrade([99, 80, 89]); //-> 'B'
+
+
+The next example checks whether the mean and median of a collection of grades
+are equal:
+const eqMedianAverage = fork(R.equals, R.median, R.mean);
+eqMedianAverage([80, 90, 100])); //-> True
+eqMedianAverage([81, 90, 100])); //-> False
+
+
+In this chapter, you learned that composing pure functions is the back￾bone of functional programming. These techniques take advantage of the abstraction
+(via currying and partial application) of pure functions with the goal of making them
+composable. S
+
+Functional chains and pipelines connect reusable and modular componen￾tized programs.
+■ Ramda.js is a functional library adapted for currying and composition, with a
+powerful arsenal of utility functions.
+■ Currying and partial evaluation can be used to reduce the arity of pure func￾tions by partially evaluating a subset of a function’s arguments and transform￾ing them into unary functions.
+■ You can break a task into simple functions and compose them together to arrive
+at the entire solution.
+■ Using function combinators allows you to orchestrate complicated program
+flows to tackle any real-world problem as well as write in a point-free manner.
+
+
+
+

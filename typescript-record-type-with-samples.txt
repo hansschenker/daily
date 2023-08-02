@@ -1,0 +1,62 @@
+
+
+The Record type in TypeScript represents strict key-value pairs. 
+
+More specifically, Record<K,V> denotes that the object accepts only type K 
+and that the values corresponding to those keys should be type V.
+
+
+he key of Record<K,V> would yield K as the type, and Record<K,V>[K] is equivalent to V. 
+The Record type is an alias for index signatures like { [ key : K] : V }.
+
+The following code segment shows equivalent index signature type 
+and Record type structures used in TypeScript.
+
+
+enum Level {
+    info = "info",
+    warning = "warning",
+    danger = "danger",
+    fatal = "fatal"
+}
+
+type LevelStrings = keyof typeof Level;
+
+var bannerMessageInfo : Record<LevelStrings, string> = {
+    info : "[INFO]",
+    warning : "[WARNING]" ,
+    danger : "[DANGER]",
+    fatal : "[FATAL]"
+};
+
+The above Record type can also be represented as an index signature.
+
+type BannerTypeMap = {
+    [level in LevelStrings] : string;
+}
+
+var bannerMessageInfo : BannerTypeMap = {
+    info : "[INFO]",
+    warning : "[WARNING]" ,
+    danger : "[DANGER]",
+    fatal : "[FATAL]"
+};
+
+The Partial keyword can override some initial default properties with some passed-on properties. 
+The following code segment demonstrates this.
+
+type PropStrings = 'height' | 'width' | 'shadow' ;
+
+type Props = Record<PropStrings , number>
+
+function CombineProps(props : Partial<Props> ){
+    var initProps : Props = {
+        height : 10,
+        width : 20,
+        shadow : 4
+    };
+    var finalProps = {...initProps , ...props};
+    console.log(finalProps);
+}
+
+CombineProps({width : 40});

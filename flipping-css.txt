@@ -1,0 +1,182 @@
+FLIP
+----------------------------------------------------------------------------------------------------------------------------
+- First: before anything happens, record the current (i.e., first) position and dimensions of the element that will transition. 
+  You can use element.getBoundingClientRect() for this, as will be shown below.
+
+- Last: execute the code that causes the transition to instantaneously happen, and record the final (i.e., last) 
+  position and dimensions of the element.*
+
+- Invert: since the element is in the last position, we want to create the illusion that it’s in the first position, 
+  by using transform to modify its position and dimensions. This takes a little math, but it’s not too difficult.
+
+- Play: with the element inverted (and pretending to be in the first position), we can move it back to its 
+  last position by setting its transform to none.
+----------------------------------------------------------------------------------------------------------------------------
+
+Below is how these steps can be implemented with the Web Animations API:
+
+const elm = document.querySelector('.some-element');
+
+// First: get the current bounds
+const first = elm.getBoundingClientRect();
+
+// execute the script that causes layout change
+doSomething();
+
+// Last: get the final bounds
+const last = elm.getBoundingClientRect();
+
+// Invert: determine the delta between the 
+// first and last bounds to invert the element
+const deltaX = first.left - last.left;
+const deltaY = first.top - last.top;
+const deltaW = first.width / last.width;
+const deltaH = first.height / last.height;
+
+// Play: animate the final element from its first bounds
+// to its last bounds (which is no transform)
+elm.animate([{
+  transformOrigin: 'top left',
+  transform: `
+    translate(${deltaX}px, ${deltaY}px)
+    scale(${deltaW}, ${deltaH})
+  `
+}, {
+  transformOrigin: 'top left',
+  transform: 'none'
+}], {
+  duration: 300,
+  easing: 'ease-in-out',
+  fill: 'both'
+});
+
+-----------------------------------------------------
+If the element’s size changed, you can transform scale in order to “resize” it with no performance penalty; 
+however, make sure to set transformOrigin to 'top left' since that’s where we based our delta calculations.
+We’re using the Web Animations API to animate the element here, but you’re free to use any other animation engine, 
+such as GSAP, Anime, Velocity, Just-Animate, Mo.js and more.
+-----------------------------------------------------
+
+One common use-case for transitioning an element between app views and states is that the final 
+element might not be the same DOM element as the initial element. In Android, this is similar 
+to a shared element transition, except that the element isn’t “recycled” from view to view in the DOM as it is on Android.
+
+Nevertheless, we can still achieve the FLIP transition with a little magic illusion:
+------------------------------------------------------
+const firstElm = document.querySelector('.first-element');
+
+// First: get the bounds and then hide the element (if necessary)
+const first = firstElm.getBoundingClientRect();
+firstElm.style.setProperty('visibility', 'hidden');
+
+// execute the script that causes view change
+doSomething();
+
+// Last: get the bounds of the element that just appeared
+const lastElm = document.querySelector('.last-element');
+const last = lastElm.getBoundingClientRect();
+
+// continue with the other steps, just as before.
+// remember: you're animating the lastElm, not the firstElm.
+------------------------------------------------------------
+
+Parent-Child Transitions
+------------------------------------------------------------------
+With the previous implementations, the element bounds are based on the window.
+ For most use cases, this is fine, but consider this scenario:
+
+An element changes position and needs to transition.
+That element contains a child element, which itself needs to transition to a different position inside the parent.
+Since the previously calculated bounds are relative to the window, our calculations for 
+the child element are going to be off. To solve this, we need to ensure that the bounds are calculated relative to the parent element instead:
+
+-------------------------------------------------------------------
+const parentElm = document.querySelector('.parent');
+const childElm = document.querySelector('.parent &gt; .child');
+
+// First: parent and child
+const parentFirst = parentElm.getBoundingClientRect();
+const childFirst = childElm.getBoundingClientRect();
+
+doSomething();
+
+// Last: parent and child
+const parentLast = parentElm.getBoundingClientRect();
+const childLast = childElm.getBoundingClientRect();
+
+// Invert: parent
+const parentDeltaX = parentFirst.left - parentLast.left;
+const parentDeltaY = parentFirst.top - parentLast.top;
+
+// Invert: child relative to parent
+const childDeltaX = (childFirst.left - parentFirst.left)
+  - (childLast.left - parentLast.left);
+const childDeltaY = (childFirst.top - parentFirst.top)
+  - (childLast.top - parentLast.top);
+  
+// Play: using the WAAPI
+parentElm.animate([
+  { transform: `translate(${parentDeltaX}px, ${parentDeltaY}px)` },
+  { transform: 'none' }
+], { duration: 300, easing: 'ease-in-out' });
+
+childElm.animate([
+  { transform: `translate(${childDeltaX}px, ${childDeltaY}px)` },
+  { transform: 'none' }
+], { duration: 300, easing: 'ease-in-out' });
+
+-------------------------------------------------------------------
+A few things to note here, as well:
+
+The timing options for the parent and child (duration, easing, etc.) do not necessarily 
+need to match with this technique. Feel free to be creative!
+Changing dimensions in parent and/or child (width, height) was purposefully omitted in this example, 
+since it is an advanced and complex topic. Let’s save that for another tutorial.
+You can combine the shared element and parent-child techniques for greater flexibility.
+
+I’ve created a small library called Flipping.js with the same idea in mind. 
+By adding a data-flip-key="..." attribute to HTML elements, it’s possible to predictably 
+and efficiently keep track of elements that might change position and dimensions from state to state.
+
+For example, consider this initial view:
+
+-----------------------------------------------------------------------------
+    <section class="gallery">
+
+<div class="photo-1" data-flip-key="photo-1">
+        <img src="/photo-1">
+</div>
+
+
+<div class="photo-2" data-flip-key="photo-2">
+        <img src="/photo-2">
+</div>
+
+
+<div class="photo-3" data-flip-key="photo-3">
+        <img src="/photo-3">
+</div>
+
+    </section>
+And this separate detail view:
+
+    <section class="details">
+
+<div class="photo" data-flip-key="photo-1">
+        <img src="/photo-1">
+</div>
+
+      
+        Lorem ipsum dolor sit amet...
+      
+    
+</section>
+
+-----------------------------------------------------------------------------
+
+Notice in the above example that there are 2 elements with the same data-flip-key="photo-1". 
+Flipping.js tracks the “active” element by choosing the first element that meet these criteria:
+
+The element exists in the DOM (i.e., it hasn’t been removed or detached)
+The element is not hidden (hint: elm.getBoundingClientRect() will have { width: 0, height: 0 } for hidden elements)
+Any custom logic specified in the selectActive option

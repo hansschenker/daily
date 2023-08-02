@@ -1,0 +1,340 @@
+Tikhon Jelvis - https://www.quora.com/What-is-continuation-passing-style-in-functional-programming
+-------------------------------------------------------------------------------------------------
+
+professional functional programmer Author has 1.8K answers and 15.1M answer views Updated 8y
+In my view, these sorts of questions need an answer in two parts: 
+- definition (what CPS is) 
+- motivation (why we care). Lets take a look at both.
+
+CPS
+--------------------------------------------------------------------------------
+Continuation-passing style is a particular way of defining and calling functions. 
+Both the definition and the use-site of a function have to cooperate to use CPS.
+
+functions
+---------------------------------------
+Normal functions take in some arguments, do some computation and return the result. The actual process of 
+returning the final value is implicit, entirely handled by the language. 
+
+CPS for control flow
+-------------------------------------------
+The idea with continuation-passing 
+style is to make "returning" an explicit action, giving us more control of the final control flow. Functions 
+written in CPS take in an extra parameter called a callback, which is a function itself; instead of returning 
+the result of their computation, they call the callback on it.
+
+Callback is called a continuation because it takes over the role of the return in a function
+---------------------------------------------
+The callback is called a continuation because it tells the program how to continue after getting the result. 
+A good way to think about it is that the callback takes on the role of the return statement—except now it's 
+a first-class value of the language.
+
+Let's take a look at a simple example to illustrate the idea. I'll use JavaScript syntax for now. Here's a 
+normal function for adding two numbers:
+
+JS
+----------------------------
+function add(a, b) { 
+  return a + b; 
+} 
+
+To rewrite the function into CPS, we would need to take a callback and use that instead of return.
+
+CPS
+-----------------------------
+function add_cps(a, b, done) { 
+  done(a + b); 
+} 
+
+The other change comes when we get around to using the function. We can just call a normal function 
+and store the result in a variable:
+
+var result = add(1, 2); 
+// use result here 
+
+
+Since the CPS version does not return anything useful, this approach does not work. Instead, we give add_cps 
+a callback that takes result as an argument:
+
+Give CPS a callback fn, because it does not return a value - callback fn will return a value
+add_cps(1, 2,  (result) => { // use result here }); 
+
+Bind result to a function (callback) not a value (var a = ...)
+------------------------------------------------------
+That's the core of CPS: functions take a callback argument and we bind their result to an argument of a function 
+rather than a normal variable.
+
+One last note: we can extend the CPS transformation to normal values rather than just functions. With functions, 
+instead of returning the result, we take a callback—and we can think of 
+- normal values as functions that just return immediately. 
+This means that if we normally have an x, in CPS we would have a function that takes a callback and passes x into it immediately:
+
+// a variable x in CPS 
+function x_cps(done) { 
+  done(x); 
+} 
+
+Why use CPS
+--------------------------------------------------------------------------------------------------------------------
+The next, and perhaps more interesting question, is: why? After all, CPS seems pretty awkward, especially with JavaScript's 
+more verbose syntax—if we use several CPS functions in a row, we will get a lot of nested functions!
+
+CPS - gives control over control flow
+--------------------------------------------------------------
+The main reason is that CPS gives us full control over control flow. 
+- Normally, control flow is handled by the language: statements are executed one after the other, 
+  and we can only jump around using built-in control flow like if-statements, 
+  loops, functions, exceptions and return statements. 
+
+- In CPS, we don't have statements one after the other: instead, each "statement" has an explicit function call for the next one. 
+  This means that we can do whatever we want with it, including storing it in a variable and using it multiple times, 
+  skipping the next statement or following a different continuation entirely.
+
+CPS is railway oriented programming - passing around an extra "error" continuation
+-------------------------------------------------------------------------------------
+For example, we can emulate exception handling in CPS by passing around an extra "error" continuation. (With the mnemonic name raise.)
+
+function couldError(raise, done) { 
+  // call raise on error 
+} 
+
+The important part is that raise can be used from arbitrarily nested callbacks, and will skip all the ones after it 
+is called—just like the language's built-in throw does for normal statements.
+
+CPS is goto programming
+-------------------------------------------------------------
+By holding onto and passing around callbacks like this, we can implement any sort of non-local control we would like.
+ Since the entire program (in CPS) is sequenced in terms of callbacks rather than statements, this is actually similar 
+in power to a goto statement.
+
+CPS for non-blocking IO - Node IO is written in CPS
+--------------------------------------------------------------------
+CPS is also useful for cooperative multithreading and non-blocking IO. The language can still be single-threaded from 
+the perspective of statements—executed one after the other—and only switch tasks between callbacks. Node.JS is a great 
+example of this style of programming most directly: code doing IO with Node is written in CPS.
+
+CPS blog article - Matthew Might
+-------------------------------------------------------------------
+If you're curious for more examples in a similar vein, take a look at By example: Continuation-passing style in JavaScript
+ on Matthew Might's blog. (This article helped me get some of the details in this post correct.) His blog has a bunch of
+ other articles about CPS and continuations—it's probably one of the best places to learn about the subject.
+
+in CPS you end up making your own stack instead of relying on the implicit call stack
+--------------------------------------------------------------------------------------
+A neat feature of CPS is that all CPS functions are in tail recursive form. This means that, in a language with proper tail
+ calls, CPS completely elides the language's stack: in essence, you end up making your own stack instead of relying on the 
+implicit call stack as you would normally.
+
+CPS as a first-class citizen
+--------------------------------------------------------------------------------------
+As the name implies, CPS is related to first-class continuations in languages like Scheme, which provide an operation called 
+"call with current continuation", often abbreviated as callCC. A good way to think about it is that the primitive callCC
+ operation in these sorts of languages exposes a callback (ie a continuation) like in CPS without having to write the
+ actual program in the style, giving you the same powerful control flow as described above. Writing our program in CPS
+ lets us express callCC without especial language support.
+
+The way callCC works is a bit convoluted: it takes in a user-supplied function, to which it passes a continuation as 
+the sole argument. The continuation represents the rest of the expression after the call to callCC, letting the 
+user-supplied function jump there whenever it wants—or do other things, like storing the continuation for future
+ use or passing it to some other function or even just returning it directly. (This last trick is a neat idiom 
+for getting access to a continuation directly in the rest of your code.)
+
+I find it easiest to think about callCC by looking at what its type would be in a functional language. Here's one 
+version: it takes a function that takes a continuation and runs that function, returning its result. The result type can be anything we want.
+
+callCC :: ((Cont → p) → p) 
+
+This is nice, but how do we really represent a continuation? Well, let's think about what the continuation would 
+look like as a callback in CPS. It would be a function that takes the result of the whole callCC expression—a p—and 
+return, well, whatever the next expression's type is. This means that Cont is a function that takes a p and gives 
+us something else, say a q:
+
+callCC :: ((p → q) → p) → p 
+
+Now let's take a look at how to express this in CPS. At first blush, we might be tempted to write something like this:
+
+function callCC(f, done) { 
+  return f(done); 
+} 
+
+However, this isn't quite right. We have to transform everything into CPS, which means that f has to take a callback too; 
+instead of returning, we would have to call done. Moreover, the procedure we pass into f should be in CPS too, wrapping 
+the actual continuation callback. Here's what the correct implementation looks like, with all the relevant callbacks:
+
+function callCC(f, done) { 
+  f(function (x, done_f) { done(x) }, done) 
+} 
+
+Since we added a bunch of callbacks, it also means that the type of the CPS-transformed callCC is different from the normal one. 
+It looks like this:
+
+callCC :: ((p → ((q → r) → r)) → ((p → r) → r)) → ((p → r) → r) 
+
+At first, this is a bit confusing. But let's take a look at what's really going on: we've taken the old callCC type and replaced 
+p and q with functions in the form ((p → r) → r) whenever they're returned. Hey, that looks familiar: what we've done is instead 
+of taking a p or q directly, we have taken a callback that expects a p or q. In other words, we've CPS transformed each value! 
+That is, instead of just returning a p, we return a function that looks something like this, a form we've seen above:
+
+function p_cps(done) { 
+  done(p); 
+} 
+
+It might be easier to think about if we replaced ((p → r) → r) with CPS p:
+
+callCC :: ((p → CPS q) → CPS p) → CPS p 
+
+Now it looks pretty similar to our non-CPS callCC above. Hopefully this helps you untangle exactly how the actual CPS 
+implementation of callCC works.
+
+Compilation
+------------------------------------------------------------------------------------
+CPS is also used as an intermediate representations in certain compilers, most notably for functional languages as an 
+alternative to single static assignment (SSA). Any program can be systematically translated to CPS, which lets us express 
+all the control flow in the program uniformly making static analysis and optimization simpler. Matthew Might's blog again 
+has a great article about this: How to compile with continuations. If you're even more curious, you could take a look at
+ Appel's Compiling with Continuations, a classical book on the subject (which, admittedly, I haven't read myself).
+
+A particularly neat, albeit somewhat non-standard, use of CPS can be found in the Chicken Scheme compiler. The entire 
+Scheme program is transformed into CPS before being translated to C function calls. The C function calls never return, 
+which lets Chicken Scheme use the C stack as the first generation of the Scheme heap, simplifying the runtime and providing 
+very fast heap allocations (just incrementing the stack pointer). You can read more about this on their website 
+(appropriately at call-cc.org): A guide to the CHICKEN compilation process.
+
+Logic
+---------------------------------------------------------------------------------------------
+CPS also interacts in an interesting way with formal logic through the Curry-Howard isomorphism. In particular, 
+it relates to the difference between classical logic and constructive logic.
+
+The distinction between the two kinds of logic comes down to the law of the excluded middle, which states that  P∨¬P
+ —every proposition is either true or its negation is true. This is an axiom in classical logic but not always true in 
+constructive logic. Additionally, it turns out that the law of the excluded middle is equivalent to Pierces Law ( ((P→Q)→P)→P
+ ), so if we have a proof of this, we have a proof of the law of the excluded middle. (Here's a nice proof of the equivalence.)
+
+Hey, that law looks familiar! It's the type of the normal (ie non-CPS) callCC we talked about earlier:
+
+callCC :: ((p → q) → p) → p 
+
+Immediately, this gives us an interesting conclusion: including a primitive callCC in your language changes the logic it 
+corresponds to from a constructive system to a classical one.
+
+However, many languages—like the standard typed λ calculi—do not include a primitive callCC, and correspond to constructive 
+rather than classical logics. However, as we saw, we can implement an equivalent for callCC if the program is first 
+transformed into CPS. Remember our typing abstraction earlier: the CPS transform turned normal types a into CPS a. 
+This means that we can embed classical logic into constructive logic by looking at propositions in the form CPS a 
+instead of directly looking for a.
+
+CPS a expands to forall r. (a → r) → r. We can replace r with any type we want, so lets replace it with ⊥—the empty 
+type which corresponds to the proposition "false". This gives us (a → ⊥) → ⊥.
+
+What does the proposition (a → ⊥) mean? It means that a is false—since we can't construct a value of type ⊥, and a → ⊥ 
+tells us we could, if we had a value of type a, a has to be empty itself. In constructive logic, a → ⊥ is the way we 
+write negation (¬a), which is not a primitive in the system. Using this translation, we get another way of writing out CPS a: ¬¬a.
+
+In other words: CPS corresponds to double negation. It's important to note that in constructive logic,  ¬¬x
+  is not the same as  x
+ —the law of double negation elimination ( ¬¬P→P
+ ) is yet another axiom equivalent to the law of the excluded middle and Pierce's law. (Here is a nice proof of this equivalence.)
+
+So, from the perspective of logic, the CPS transformation algorithm is a proof of "Double-negation translation", which 
+tells us that for every classical proof of  P
+ , we have a constructive proof of  ¬¬P
+ .
+
+For a much more thorough treatment (which differs slightly in some details), take a look at "A Formulas-as-Types Notion of Control".
+
+Monads
+------------------------------------------------------------------------------------------------
+CPS is related in interesting ways to monads and the monadic style of functional programming.
+
+As a quick intuition about why the two styles are related, take a look the bind operator for monads, which is the most 
+often used operator to sequence monadic computations:
+
+monadic bind operator
+---------------------------------------
+(>>=) :: m a → (a → m b) → m b 
+
+The way you use it is taking a value and passing it into another function... which sounds a lot like taking a value and 
+passing it into a callback. 
+- At heart, the bind operator plays a very similar role to CPS in terms of making control flow 
+  first class and therefore more flexible and expressive.
+
+In fact, we can neatly wrap up a CPS transform into a monad itself. A good way of thinking about this is in terms of ¬a, 
+which is syntactic sugar (in pseudocode) for a → ⊥:
+
+instance Monad (¬¬) where 
+  return :: a → ¬¬a 
+  (>>=)  :: ¬¬a → (a → ¬¬b) → ¬¬b 
+
+in this instance, the type of >>= is a bit hard to think about, so it's easier to look at join and fmap, which can be 
+composed to define >>=:
+
+join :: ¬¬(¬¬a) → ¬¬a 
+fmap :: (a → b) → (¬¬a → ¬¬b) 
+
+It should be easy to verify that all of these are true propositions in constructive logic. (At least I hope it's easy to 
+verify, because I don't want to check it myself :P.)
+
+For a bit more generality, lets allow ourselves to replace the ⊥ type with anything else, giving us the following CPS type:
+
+data CPS r a = CPS ((a → r) → r) 
+
+A value of CPS r a is just like the CPS-transformed values we talked about before:
+
+function x_cps(done) { 
+  done(x) 
+} 
+
+or, in Haskell syntax:
+
+x_cps = CPS (\ done → done x) 
+
+With this type in mind, let's take a look at how to implement return, fmap and join.
+
+return takes a normal value (x) and wraps it in a CPS value expecting a callback, just like x_cps above:
+
+return x = CPS (\ done → done x) 
+
+fmap takes a normal function and maps it over a value that's already in CPS form. We do this by creating a new CPS value. 
+We then call the input cps value with a callback that first applies f and then calls the new CPS value's callback.
+
+fmap f (CPS x_cps) = CPS (\ done → x_cps (\ x → done (f x))) 
+
+Finally, join flattens a nested CPS value, by creating a callback that calls both of the input callbacks:
+
+join (CPS outer) = CPS (\ done → outer (\ (CPS inner) → inner done)) 
+
+We could always implement >>= in terms of join and fmap, but I think it's also worth going through its definition as well. 
+We have a CPS value as an input, as well as a function that produces a CPS value; we need to create a single value equivalent
+ to passing the result of the input into the function:
+
+CPS input >>== f = 
+  CPS (\ done → input (\ x → let CPS res = f x in res done)) 
+
+This code is hard to understand just by reading about it; I highly suggest playing around with it in ghci to get a sense
+ of how it typechecks and works.
+
+Once we have our CPS monad, we can write code in CPS form using do-notation—which looks just like normal code! All the 
+callbacks are handled implicitly internally, giving us a more readable program with the flexibility CPS gives us. We 
+can also define callCC using this and have all the same fun that our Scheme friends do with their callCC. 
+The Haskell wikibook chapter on CPS has some examples of this in action.
+
+CPS in monad is calld Cont
+
+The CPS monad actually exists in the Haskell standard library as Cont, but I like the CPS name better.
+-------------------------------------------------------------------------------------------------------
+An interesting note is that if we only had do-notation for CPS, we could still use the notation for other monads 
+with a couple of helper functions. This is explained well in sigfpe's blog post "The Mother of all Monads".
+
+One particular choice we've taken with CPS is making the result of the continuation—r from CPS r a—part of the type. 
+This gives us some additional flexibility but also lets us do things that may not be desirable. For example, 
+if we know that r is Int, we can just return a 0 instead of using the callback that's passed in. A solution to 
+this problem is to make CPS universally quantified over all possible types r:
+
+data CPS a = CPS (forall r. (a → r) → r) 
+
+Since we don't know what r is, we can't do anything but call the callback at the end. This leads to the Codensity 
+monad, which can be used to improve the performance of computations using other monads by reassociating the bind operations. 
+Edward Kmett has a series of posts on this that are worth reading: Free Monads for Less (Part 1 of 3): Codensity.
+
+Anyhow, there's the primer on most of what I know about CPS. It's one of the most fascinating ideas in computer science and 
+well worth playing around with.

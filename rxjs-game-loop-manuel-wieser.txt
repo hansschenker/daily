@@ -1,0 +1,187 @@
+How to create a basic game loop
+------------------------------------------------------------------------------------------------
+
+
+Game clock (ticker)
+---------------------------------------
+observable for the game’s clock
+
+The clock for our game should be a stream that constantly emits values, keeping the game running
+we can’t be sure that exactly 16.667 ms have passed since the last value of our stream
+
+----------------------------------------------
+Given an interval
+When a value is emitted
+Then scan takes the value in
+-----------------------------------------------
+const clock = Rx.Observable
+  .interval(0, Rx.Scheduler.animationFrame);
+
+The scan() transformation operator is a perfect fit for our delta value. 
+It applies an accumulator function to the stream and works similar to reduce() in plain JavaScript
+
+const state = {
+  time: performance.now(),
+  delta: 0,
+}
+
+-----------------------------------------------
+Given a number value              <- int
+When scan gets the number
+Then delta time will be returned  -> {time:int, delta}
+-------------------------------------------------
+
+const clock = Rx.Observable
+  .interval(0, Rx.Scheduler.animationFrame)
+  .scan((previous) => {
+      const time = performance.now();
+      return {
+          time,
+          delta: time - previous.time,
+      };
+  }, state);
+
+The clock observable is now a stream of objects containing the previous tick’s performance.now() 
+and a delta time in milliseconds as a floating-point number. If we subscribe to our stream we can print the delta time in microseconds.
+
+clock.subscribe((state) => {
+  document.body.innerHTML = `${Math.round(state.delta * 1000)}μs`;
+});
+
+Immutable
+-------------------------------------------------------------------------------------------------------------------------------
+const state = Immutable.fromJS({
+  time: performance.now(),
+  delta: 0,                 {time:int, delta}
+});
+
+const clock = Rx.Observable
+  .interval(0, Rx.Scheduler.animationFrame)
+  .scan((previous) => {
+      const time = performance.now();
+      return state.merge({
+          time,
+          delta: time - previous.get('time'),
+      });
+  }, state);
+
+clock.subscribe((state) => {
+  document.body.innerHTML = `${Math.round(state.get('delta') * 1000)}μs`;
+});
+
+
+Player's input
+------------------------------------------------------------------------------------------------------------------------------------
+Apart from the clock our game will have one or more additional streams for player input. 
+We’ll take a thorough look on a stream representing the game’s state in the next part of this series. 
+For now we’ll create three more RxJS observables to illustrate the concept of updating a single state store via multiple observables.
+
+Each of the event streams emits values when an event happens. This can be the click of a button or the user entering text into an input field. 
+To create these streams all you have to do is call Observable.fromEvent() and pass the event target and event name.
+
+const increaseButton = document.querySelector("#increase");
+const increase = Rx.Observable
+    .fromEvent(increaseButton, "click");
+
+const decreaseButton = document.querySelector("#decrease");
+const decrease = Rx.Observable
+    .fromEvent(decreaseButton, "click");
+
+const inputElement = document.querySelector("#input");
+const input = Rx.Observable
+    .fromEvent(inputElement, "input");$$
+
+
+Update a single state store with multiple observables 
+--------------------------------------------------------------------------------------------------------------------------------------------
+We want our game to have a single state store. 
+That means we have to write reducer functions that operate on that state. 
+
+
+- mapping the three event streams to state-changing functions. 
+  - modify the state they are given and 
+  - return an updated state. 
+  - to change values in an Immutable.js collection we can use the methods set() 
+    and update() on our state object.
+
+const increase$ = Rx.Observable
+    .fromEvent(increaseButton, "click")
+    .map(() => state => state.update("count", count => count + 1));
+
+const decrease$ = Rx.Observable
+    .fromEvent(decreaseButton, "click")
+    .map(() => state => state.update("count", count => count - 1));
+
+const input$ = Rx.Observable
+    .fromEvent(inputElement, "input")
+    .map(event => state => state.set("inputValue", event.target.value));
+
+
+Merge the streams
+-----------------------------------------------------------------------------------------------------------------------------------------------
+The Observable.merge() combination operator can be used to blend the streams together. 
+It creates an observable that emits all values 
+from all given input observables.
+
+In our case the new observable is a stream of reducer functions. We can use the Observable.scan() operator to call each reducer function 
+on the game’s current state. Each time a new reducer function arrives we return an updated Immutable.js collection. 
+This happens on every click or input event. We’ll further explore this concept in the next part of this series, but you can already test it 
+in the CodePen.
+
+const state = Rx.Observable
+    .merge(increase$, decrease$, input$)
+    .scan((state, changeFn) => changeFn(state), initialState);
+
+html
+-------------------------------
+<button id="increase">+</button>
+<button id="decrease">-</button>
+<input id="input" type="text" />
+<div id="count"></div>
+
+js
+------------------------------
+const increaseButton = document.querySelector("#increase");
+const increase = Rx.Observable
+  .fromEvent(increaseButton, "click")
+  .map(() => state => state.update("count", count => count + 1));
+
+const decreaseButton = document.querySelector("#decrease");
+const decrease = Rx.Observable
+  .fromEvent(decreaseButton, "click")
+  .map(() => state => state.update("count", count => count - 1));
+
+const inputElement = document.querySelector("#input");
+const input = Rx.Observable
+  .fromEvent(inputElement, "input")
+  .map(event => state => state.set("count", event.target.value));
+
+const initialState = Immutable.fromJS({
+  count: 0
+});
+
+const state = Rx.Observable
+  .merge(increase, decrease, input)
+  .scan((state, changeFn) => changeFn(state), initialState);
+
+state.subscribe(state => {
+  document.querySelector("#count").innerHTML = state.get("count");
+});
+
+
+clock interval
+------------------------------------
+To limit the state changes to each animation frame, as we did with the scheduler for the clock, 
+you can use the Observable.withLatestFrom() combination operator. This will give you a stream of { clock, state } objects on each tick.
+
+const loop = clock.withLatestFrom(state, (clock, state) => ({ clock, state }));
+
+loop.subscribe(({ clock, state }) => {
+    document.querySelector("#count").innerHTML = state.get("count");
+    document.querySelector("#hello").innerHTML = `Hello ${state.get("inputValue")}`;
+});
+
+see on Github
+-----------------------------------
+https://github.com/Lorti/corsair
+

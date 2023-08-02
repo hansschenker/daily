@@ -1,0 +1,77 @@
+conemu ngrx commands: 
+
+ngrxalle = ngrxi + ngrxsmi + ngrxsme
+
+----------------------------------------------------------------------------------
+ngrxi:		install ngrx and set schematics collection ton @ngrx/schematics
+----------------------------------------------------------------------------------
+npm install @ngrx/schematics --save-dev && ng config cli.defaultCollection @ngrx/schematics
+
+-----------------------------------------------------------------------------------------
+ngrxsmi, 	install root store and effects in app
+-----------------------------------------------------------------------------------------
+ng g store AppState --root --module app.module.ts && ng g effect App --root --module app.module.ts
+
+ngrxsmf, 	create angular module and ngrx feature module with inputed name in singular
+ngrxsme		create angular module and ngrx entity with inputed name in singular
+
+
+------------------------------------------------
+***selectors*** create entity selectors inside module directory
+--------------------------------------------------
+todo sample:
+------------
+import { createFeatureSelector, createSelector } from "@ngrx/store";
+import * as fromTodo from "./entity/todo.reducer";
+
+export const selectTodoState = createFeatureSelector<fromTodo.State>("Todo");
+export const getSelectedTodoId = (state: fromTodo.State) =>
+  state.selectedTodoId;
+export const selectTodoIds = createSelector(
+  selectTodoState,
+  fromTodo.selectIds
+);
+export const selectTodoEntities = createSelector(
+  selectTodoState,
+  fromTodo.selectEntities
+);
+export const selectAllTodos = createSelector(
+  selectTodoState,
+  fromTodo.selectAll
+);
+export const selectTodoTotal = createSelector(
+  selectTodoState,
+  fromTodo.selectTotal
+);
+export const selectCurrentTodoId = createSelector(
+  selectTodoState,
+  fromTodo.getSelectedTodoId
+);
+export const selectCurrentTodo = createSelector(
+  selectTodoEntities,
+  selectCurrentTodoId,
+  (entities, id) => entities[id]
+); 
+
+
+generate selectors from cli in module directory
+-------------------------------------------------
+echo "import { createFeatureSelector, createSelector } from "@ngrx/store";import * as from$* from "./entity/$*.reducer";export const select$*State = createFeatureSelector<from$*.State>("$*");export const getSelected$*Id = (state: from$*.State) =>state.selected$*Id;export const select$*Ids = createSelector(select$*State,from$*.selectIds);export const select$*Entities = createSelector(select$*State,from$*.selectEntities);export const selectAll$*s = createSelector(select$*State,from$*.selectAll);export const select$*Total = createSelector(select$*State,from$*.selectTotal);export const selectCurrent$*Id = createSelector(select$*State,from$*.getSelected$*Id);export const selectCurrent$* = createSelector(select$*Entities,selectCurrent$*Id,(entities, id) => entities[id]);" >> $*.selectors.ts 
+// sample
+
+
+++++
+---------------------------------------------------------------------
+***update reducer for selectors***
+---------------------------------------------------------------------
+export const getSelectedUserId = (state: State) => state.selectedUserId;
+
+// get the selectors
+const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
+
+---------------------------------------------------------------------------
+***entities*** inside feature directory create entity directory with entities and effect
+---------------------------------------------------------------------------
+ng g entity state/entity/$* -m=../../$*s  --reducers ../../../store/index.ts && ng g effect state/entity/$* -m=$*s --reducers ../../../store/index.ts
+ng g entity state/entity/link -m=../../links  --reducers ../../../store/index.ts && ng g effect state/entity/link -m=links --reducers ../../../store/index.ts
+

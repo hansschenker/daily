@@ -1,0 +1,84 @@
+Don't run the snake into the wall, or his own tail: you die.
+Use your cursor keys: up, left, right, and down.
+Keyboard "P" may also be used for "Play" and "Pause"
+Eat the colored apples to gain points.
+Higher (and faster) play levels award more points.
+You will need to click your "Refresh" button to see new high scores.
+
+-----------------------------------------------------------------------
+Rules of the game
+The snake starts at the center of the board, moving north (upward).
+The snake moves at a constant speed.
+The snake moves only north, south, east, or west (ignore the versions of the game where the snake can move in curves).
+The snake "moves" by adding a square to its head and simultaneously deleting a square from the tip of its tail.
+"Apples" appear at random locations, and persist for a random amount of time (but usually long enough for it 
+to be possible for the snake to get to the apple).
+There is always exactly one apple visible at any given time.
+When the snake "eats" (runs into) an apple, it gets longer.
+(This is hard to describe, so play a couple of games to see what I mean.) When the snake gets longer, say by n squares, 
+it does so by not deleting squares from its tail for the next n moves.
+The game continues until the snake "dies".
+A snake dies by either (1) running into the edge of the board, or (2) by running into its own tail.
+The final score is based on the number of apples eaten by the snake.
+The snake can be controlled by the arrow keys. (You can use additional keysets if you like, but use at least these.) 
+There should also be a way to pause/resume the game (usually the "P" key).
+
+High scores
+The player's score should be based on the number of apples eaten (or equivalently, the length of the snake). 
+The exact scoring algorithm is up to you; most games award more points for each apple as the snake gets longer.
+
+Keep the ten highest scores, along with the names of the players who made those scores. The scores should 
+be kept across all runs of the game. That is, they should not be lost when the program ends.
+
+Keeping (and displaying) high scores isn't as "glamorous" as writing the game itself, but it is harder than 
+you might expect (and more generally useful).
+
+Requirements
+Name your project SnakeGame, your package snake, and your "main" class SnakeGame.
+
+Write a "model" class for the game itself. Thoroughly JUnit test this class.
+
+Provide a "hidden" extra-slow mode (but tell us how to find it) so that we can 
+test your program without having to be really good at it.
+
+Write a "model" class for keeping track of high scores. Thoroughly JUnit test this class.
+
+Keeping high scores must be automatic; the user shouldn't have to explicitly say to "Save" them.
+
+A High Scores window should be displayed whenever the player attains a score in the top ten. 
+Additionally, provide a way to see the High Scores window any time that a game isn't actually in progress.
+
+The model classes should do no input/output.
+
+One partner should do the game model, its JUnit tests, and the game GUI. The other partner should do the high scores model, 
+its JUnit tests, and the High Scores GUI. (If you have no partner, you can omit keeping track of the high scores.) 
+Be sure to use @author tags in your classes.
+-----------------------------------------------------------------------------------------------------------------------------
+
+The player controls a dot, square, or object on a bordered plane. 
+As it moves forward, it leaves a trail behind, resembling a moving snake. 
+In some games, the end of the trail is in a fixed position, so the snake continually 
+gets longer as it moves. In another common scheme, the snake has a specific length, 
+so there is a moving tail a fixed number of units away from the head. The player loses 
+when the snake runs into the screen border, a trail or other obstacle, or itself.
+
+---------------------------------------------------------------------------------------------------------------------------
+You start with a single block in the center of a grid.
+
+When the game starts it moves in a single random direction, and it is your job to keep it within 
+the grid boundaries by moving it up, down, left or right.
+
+If it hits any of the edges, it's game over for you.
+
+At any one time, there will also be another block somewhere inside the grid stationary by itself.
+
+When the moving block makes contact with that block, it gets added to your block, and it will follow along right behind it.
+
+At this point another block will appear on the grid and you will repeat the process.
+
+I'm not exactly sure how you win the game. But I'm assuming there comes a point 
+in the game where you can no longer successfully maneuver your block snake. 
+
+Or maybe when you reach 
+a certain number of blocks for that level you win. I'll get to that roadblock when I get there.
+----------------------------------------------------------------------------------------------------------

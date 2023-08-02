@@ -1,0 +1,62 @@
+Virtual Dom explained by Kevin Greene
+---------------------------------------------------------------------------------
+
+The virtual dom is just a javascript object representation of the real dom:
+
+
+
+The virtual DOM is an abstraction used in modern web development that enables 
+writing purely functional UI code, making UI code declarative and easily testable. 
+It allows for stateful updates to be abstracted away, resulting in a simpler and 
+less cumbersome process for building UIs. The concept is defined and explained 
+in detail in the Medium article "Adventures in the Virtual DOM – 
+
+Part 1: Defining the Problem," by Kevin B. Greene. (Pages 2-3)
+
+The article discusses the need for functions that can create virtual DOM objects, such as 
+- an interface for attributes and nodes, and a function that can generate virtual DOM objects 
+  with a specific tagName, attributes, and HTML children. 
+
+view function
+------------------
+In virtual DOM, the view function takes the application state as input and returns an object 
+that defines the view, including the tagName, attributes, and children of the virtual DOM node. 
+This allows for declarative and pure UI code, as the UI no longer changes directly; rather, 
+the UI is declared based on the current application state. 
+This is discussed in pages 2 and 3 of the article.
+
+render function - applying the side effects (display state changes in the updated view)
+----------------
+The render function in a virtual DOM library takes an object that defines the view and 
+generates the actual view. This is where impure actions, such as updating the actual DOM, 
+are performed. The concept of a render function is discussed in the article 
+"Adventures in the Virtual DOM — Part 1: Defining the Problem" by Kevin B. Greene on Medium, 
+specifically in the section titled "What is the Virtual DOM?" and "One piece of the puzzle is this."
+
+
+
+Abstract:
+This article discusses implementing a virtual DOM and its benefits in web development. 
+It covers the use of a 'view' function to update the view based on changes to the application state. The article also introduces the rendering of attributes and promises more discussion on finding differences between virtual DOM trees in future posts.
+
+Key Points:
+1.Introduction to the virtual DOM and its benefits
+
+2.Using a 'view' function to update the view based on changes to the application state
+
+3.Rendering attributes in the virtual DOM
+
+4.Future discussion on finding differences between virtual DOM trees
+
+Keywords:
+---------------------------------------------------------
+1.Virtual DOM
+
+2.View function: takes the model and creates new view with model state
+
+3.Application state
+
+4.Rendering attributes
+
+5.Declarative code
+

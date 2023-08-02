@@ -1,0 +1,55 @@
+public appPages = [
+    {
+      title: 'Card',
+      url: '/home',
+      icon: 'paper'
+    },
+    {
+      title: 'Category',
+      url: '/list',
+      icon: 'walk',
+      subPages: [
+      { title: 'subtest1', url: '' },
+      { title: 'subtest2', url: '' },
+      { title: 'subtest3', url: '' },
+      { title: 'subtest4', url: '' },
+      { title: 'subtest5', url: '' },
+      { title: 'subtest6', url: '' },
+      { title: 'subtest7', url: '' },
+      { title: 'subtest8', url: '' }
+     ]
+    }   
+  ];
+And use this code to load the pages dynamically:
+
+<ion-app>
+  <ion-menu contentId="content" side="start">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Categorie</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages">
+          <ion-item [routerDirection]="'root'" [routerLink]="[p.url]">
+            <ion-icon slot="start" [name]="p.icon"></ion-icon>
+            <ion-label>
+              {{p.title}}
+            </ion-label>
+          </ion-item>
+          <ion-list>
+            <ion-menu-toggle auto-hide="false" *ngFor="let s of p.subPages">
+              <ion-item [routerDirection]="'root'" [routerLink]="[s.url]">
+                <ion-label>
+                  {{s.title}}
+                </ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          </ion-list>
+        </ion-menu-toggle>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+  <ion-router-outlet id="content" main></ion-router-outlet>
+</ion-app>

@@ -1,0 +1,15 @@
+const count = useObservable(source2$, null, (err) => setErrorMsg(err.message));
+return [count, errorMsg] as const;
+
+const sourceIs = interval(500);
+
+function Counter() {
+  const [count, errorMsg] = useCounter();
+  return (
+    <div className="app">
+      {count} {errorMsg}
+    </div>
+  )
+}
+
+function App() {}

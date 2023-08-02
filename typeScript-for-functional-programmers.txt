@@ -1,0 +1,357 @@
+Typescript for Functional Programmers
+----------------------------------------------------------------------------------------------------------------------
+Built-in types
+--------------
+JavaScript defines 8 built-in types:
+
+Number - a double-precision IEEE 754 floating point.
+String - an immutable UTF-16 string.
+BigInt - integers in the arbitrary precision format.
+Boolean - true and false.
+Symbol - a unique value usually used as a key.
+Null - equivalent to the unit type.
+Undefined - also equivalent to the unit type.
+Object - similar to records.
+
+TypeScript has corresponding primitive types for the built-in types:
+-------------------------------------------------------------------
+number
+string
+bigint
+boolean
+symbol
+null
+undefined
+object
+
+Other important TypeScript types
+----------------------------------
+unknown - the top type.
+never -   the bottom type.
+object literal - eg { property: Type }
+void - a subtype of undefined intended for use as a return type.
+T[] - mutable arrays, also written Array<T>
+[T, T] - tuples, which are fixed-length but mutable
+(t: T) => U - functions
+
+--------------------------------------
+Notes:
+Function syntax includes parameter names. This is pretty hard to get used to!
+
+let fst: (a: any, d: any) => any = (a, d) => a;
+
+// or more precisely:
+let snd: <T, U>(a: T, d: U) => U = (a, d) => d;
+
+Object literal type syntax closely mirrors object literal value syntax:
+
+let o: { n: number; xs: object[] } = { n: 1, xs: [] };
+
+[T, T] is a subtype of T[]. 
+
+This is different than Haskell, where tuples are not related to lists.
+
+The following types have built-in predicates:
+--------------------------------------------------------
+string
+typeof s === "string"
+number
+typeof n === "number"
+bigint
+typeof m === "bigint"
+boolean
+typeof b === "boolean"
+symbol
+typeof g === "symbol"
+undefined
+typeof undefined === "undefined"
+function
+typeof f === "function"
+array
+Array.isArray(a)
+object
+typeof o === "object"
+
+
+
+Union Types
+------------------------------------------------------------------------
+ntroduction to TypeScript intersection types
+An intersection type creates a new type by combining multiple existing types. The new type has all features of the existing types.
+
+To combine types, you use the & operator as follows:
+
+type typeAB = typeA & typeB;
+The typeAB will have all properties from both typeA and typeB.
+
+Note that the union type uses the | operator that defines a variable which can hold a value of either typeA or typeB
+
+let varName = typeA | typeB; // union type
+Suppose that you have three interfaces: BusinessPartner, Identity, and Contact.
+
+interface BusinessPartner {
+    name: string;
+    credit: number;
+}
+
+interface Identity {
+    id: number;
+    name: string;
+}
+
+interface Contact {
+    email: string;
+    phone: string;
+}
+The following defines two intersection types:
+
+type Employee = Identity & Contact;
+type Customer = BusinessPartner & Contact;
+The Employee type contains all properties of the Identity and Contact type:
+
+type Employee = Identity & Contact;
+
+let e: Employee = {
+    id: 100,
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '(408)-897-5684'
+};
+And the Customer type contains all properties of the BusinessPartner and Contact type:
+
+type Customer = BusinessPartner & Contact;
+
+let c: Customer = {
+    name: 'ABC Inc.',
+    credit: 1000000,
+    email: 'sales@abcinc.com',
+    phone: '(408)-897-5735'
+};
+Later, if you want to implement employee sales, you can create a new intersection 
+type that contains all properties of Identity, Contact, and BusinessPartner types:
+
+type Employee = Identity & BusinessPartner & Contact;
+
+let e: Employee = {
+    id: 100,
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '(408)-897-5684',
+    credit: 1000
+};
+Notice both BusinessPartner and Identity have the property name with the same type.
+ If they do not, then you will have an error.
+
+Type Order
+When you intersect types, the order of the types doesn’t matter. For example:
+
+type typeAB = typeA & typeB;
+type typeBA = typeB & typeA;
+In this example, typeAB and typeBA have the same properties.
+
+Summary
+An intersection type combines two or more types to create a new type 
+that has all properties of the existing types.
+The type order is not important when you combine types.
+
+
+Discriminated Unions
+-------------------------------------------------------------------------
+
+
+
+Discriminated Unions
+According to the docs, the programmer needs three things 
+in order to create an algebraic data type in TypeScript:
+
+- Types that have a common, singleton type property — the _discriminant_.
+- A type alias that takes the union of those types — the _union_.
+- Type guards on the common property.
+
+Following these guidelines, let’s approximate our Haskell type Failable:
+
+interface Failure<E> {
+    tag: "failure";
+    reason: E;
+}
+
+interface Success<T> {
+    tag: "success";
+    value: T;
+}
+
+type Failable<T, E> = Failure<E> | Success<T>;
+
+// ADT and matcher-function
+
+interface ErrorMessage {
+    tag: "error",
+    timestamp: number,
+    message: string,
+    code: number
+}
+
+interface WarningMessage {
+    tag: "warning",
+    timestamp: number,
+    message: string
+}
+
+interface InfoMessage {    
+    tag: "info",
+    message: string
+}
+
+interface Unknown {
+    tag: "unknown";
+    fullLogLine: string;
+}
+
+type LogLineParseResult = ErrorMessage | WarningMessage | InfoMessage | Unknown
+
+function logLineParseResult<T>(
+    r: LogLineParseResult, 
+    f: (_: ErrorMessage) => T, 
+    g: (_: WarningMessage) => T,
+    h: (_: InfoMessage) => T,
+    i: (_: Unknown) => T
+): T {
+    switch (r.tag) {
+        case "error": return f(r);
+        case "warning": return g(r);
+        case "info": return h(r);
+        case "unknown": return i(r);
+    }
+}
+
+// usage
+
+const parseLogLine = function(logLine: string): LogLineParseResult {
+    const words = logLine.split(" ");
+    const level = words[0];
+    const timestamp = parseInt(words[1], 10);
+    const errorCode = parseInt(words[2], 10);
+
+    if (level === "E" && timestamp && errorCode) {
+        return {
+            "tag": "error",
+            "timestamp": timestamp,
+            "message": words.slice(2).join(""),
+            "code": errorCode
+        };
+    }
+    else if (level === "W" && timestamp) {
+        return {
+            "tag": "warning",
+            "timestamp": timestamp,
+            "message": words.slice(2).join("")
+        };
+    }
+    else if (level === "I") {
+        return {
+            "tag": "info",
+            "message": words.slice(1).join("")
+        };
+    }
+    else {
+        return {
+            "tag": "unknown",
+            "message": logLine
+        };
+    }
+};
+
+const errorLogLine1  = "E 1513877434 503 Service Unavailable";
+const errorLogLine2  = "E 1513878191 502 Bad Gateway";
+const warningLogLine = "W 1513878016 Running low on RAM";
+const garbageLogLine = "It's like love in an elevator";
+
+const errorCodes = [garbageLogLine, warningLogLine, errorLogLine1, errorLogLine2]
+    .map(parseLogLine)
+    .map(r => logLineParseResult(r, (e) => e.code, (w) => 0, (i) => 0, (u) => 0))
+    .filter(r => r);
+
+console.log(errorCodes); // [503, 502]
+
+-------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+Sum Types - tagged types or discriminatd union types
+-------------------------------------------------------------
+interface Cash {
+  kind: "cash";
+}
+
+interface PayPal {
+  kind: "paypal";
+  email: string;
+}
+
+interface CreditCard {
+  kind: "credit";
+  cardNumber: string;
+  securityCode: string;
+}
+
+
+type PaymentMethod = Cash | PayPal | CreditCard;
+
+Now that our types are in place, let's write a function that accepts a payment method 
+and returns a human-readable description of it:
+
+function describePaymentMethod(method: PaymentMethod) {
+  switch (method.kind) {
+    case "cash":
+      // Here, method has type Cash
+      return "Cash";
+
+    case "paypal":
+      // Here, method has type PayPal
+      return `PayPal (${method.email})`;
+
+    case "credit":
+      // Here, method has type CreditCard
+      return `Credit card (${method.cardNumber})`;
+  }
+}
+
+
+
+Product Types
+------------------------------------------------------------
+
+
+Discriminated Unions
+----------------------------------------------------------------
+The closest equivalent to data is a union of types with discriminant properties, 
+normally called discriminated unions in TypeScript:
+
+type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "square"; x: number }
+  | { kind: "triangle"; x: number; y: number };
+
+Unlike Haskell, the tag, or discriminant, is just a property in each object type. 
+Each variant has an identical property with a different unit type. 
+This is still a normal union type; the leading | is an optional part of the union type syntax. 
+You can discriminate the members of the union using normal JavaScript code:
+
+type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "square"; x: number }
+  | { kind: "triangle"; x: number; y: number };
+
+function area(s: Shape) {
+  if (s.kind === "circle") {
+    return Math.PI * s.radius * s.radius;
+  } else if (s.kind === "square") {
+    return s.x * s.x;
+  } else {
+    return (s.x * s.y) / 2;
+  }
+}

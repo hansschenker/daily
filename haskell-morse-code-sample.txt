@@ -1,0 +1,17 @@
+table = "__5__4H___3VS__F___2ÜUI__L__+_ÄR__P___1JWAE"
+     ++ "__6__=B__/_XD__C__YKN__7_Z__QG__8_Ö__9__0 OMT "
+
+data Tree a = Leaf | Branch { tag :: a, left :: Tree a, right :: Tree a }
+
+dict = head . foldl f [] $ table
+    where
+    f xs       '_' = Leaf:xs
+    f (x:x':xs) c  = Branch c x' x:xs
+
+decode = map (tag . foldl (flip step) dict) . words
+    where
+    step '.' = left
+    step '_' = right
+
+test = "__ ___ ._. ... .     _._. ___ _.. ."
+-- decode test = "MORSECODE"

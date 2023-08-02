@@ -1,0 +1,34 @@
+  public incrSubj = new Subject<number>;
+  public decrSubj = new Subject<number>;
+
+
+const Counter = () => {
+
+let vm$ : Observable<ICounterVm>;
+let incrSubj = new Subject<number>;
+let decrSubj = new Subject<number>;
+
+  const incr$ = this.incrSubj.pipe(
+    map( delta => (vm:ICounterVm) => ({...vm, counter:vm.counter+delta}) )
+  );
+  const decr$ = this.decrSubj.pipe(
+    map( delta => (vm:ICounterVm) => ({...vm, counter:vm.counter-delta}))
+  );
+  this.vm$ = merge(of({counter:0}), incr$, decr$).pipe(
+    scan( (prevVm:ICounterVm, mutationFn:(vm:ICounterVm)=>ICountVm) 
+      => mutationFn(prevVm)
+    )
+  )
+
+const CouterView = (count:number) => {
+<div>
+  Current counter : {{vm.counter}}
+  <button type="button" (click)="decrSubj.next(1)">Decrement</button>
+  <button type="button" (click)="incrSubj.next(1)">Increment</button> 
+</div>
+} // view
+
+vm$.subscribe(CounterView) 
+
+} // counter
+

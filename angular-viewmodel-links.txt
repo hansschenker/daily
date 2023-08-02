@@ -1,0 +1,271 @@
+ng:viewmodel, 			sander elias, https://github.com/SanderElias/Samples/tree/master/src/app/view-model 
+js-viewmodel,          		js-viewmodel, js-viewmodel.txt   
+angular-viewmodel,      	sander elias, https://www.youtube.com/watch?v=ku1NcxPBLtg  
+angular-viewmodel,		https://github.com/rekna1/AngularVmAsObservable
+
+angular-viewmodel,  		file:///C:/Users/Hans/OneDrive/_docs/angular-viewmodel.pdf
+
+angular-viewmodel,         	rekna, https://indepth.dev/angular-viewmodel-as-observable/ 
+
+rxjs-in-angular,   		Practical samples with good ideas to apply rxjs operators with combining Action streams with Data streams - 
+				or bind all content to observables and combine them in viewmodel - very good ideas 
+
+angular-viewmodel,            	rekna, https://stackblitz.com/edit/angular-viewmodel-rekna?file=src/app/app.component.ts  
+
+angular-viewmodel-sample.txt,   file
+  
+react-viewmodel,      		bitovi, https://www.bitovi.com/blog/introducing-react-view-model-mvvm-with-react 
+
+angular-viewmodel 		pattern,   Viewmodel in Angular with the help of RxJs is a simple but effective solution to handle state in a component. 
+				In most cases you do not need a library, good knowledge in RxJs will help you to go a long way without a library! 
+				Thank's for publishing this pattern: !!!! Angular ViewModel Pattern !!!! 
+
+
+sander elias  - @se-ng/observable-utils
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+export function modelFromLatest<T>(
+  modelBase: { [P in keyof T]: Observable<T[P]> | T[P] }
+): Observable<T> {
+  /** work in non-observable defaults into the array */
+  const sources = Object.values(modelBase).map(val =>
+    isObservable(val) ? val : of(val)
+  ) as Observable<unknown>[];
+
+  /** spread out the values into an array, and use combineLatest to "watch" for changes */
+  return combineLatest(sources).pipe(
+    map((values: any[]) =>
+      /** user reduce to reassemble the original structure, but then with the data */
+      Object.keys(modelBase).reduce(
+        (vm, key, i) => {
+          vm[key] = values[i];
+          return vm;
+        },
+        /** make sure it conforms to given types. */
+        {} as T
+      )
+    )
+  );
+}
+
+/**
+ * Sample usage:
+ *
+   const demo$ = modelFromLatest({
+     one: of(1),
+     two: of('jj'),
+     sub: modelFromLatest({
+       tree: of(false)
+     })
+   })
+ *
+ */
+
+Rekna1 - Angular Viewmodel - https://indepth.dev/angular-viewmodel-as-observable/
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+heavily on the use of observables for all actions inside a component
+
+#Goals
+-------------------------------------------------------------------------
+
+- avoid having to manually unsubscribe any subscription.
+- being able to use ChangeDetectionStrategy.onPush (for performance reasons)
+- being a solution with no dependencies.
+- it must be applicable in all cases.
+- use observables for all viewmodel mutations and interactions
+
+#Basic principle
+--------------------------------------------------------------------------
+
+- each component has a viewmodel, and all changes to the viewmodel result from a single (composed) observable.
+- the viewmodel observable is defined as an observable of viewmodel mutation functions.
+- the use of the rxjs scan operator which accumulates all viewmodel mutations.
+
+Viewmodel is an object with observable properties
+Viewmodel is typed with a Typescript interface
+
+Viewmodel:
+-----------------------------------------------------------------------------
+- each component has a typed viewmodel, ViewModel<T>
+- with combineLatest operator: all changes to the viewmodel result from a single (composed) observable
+
+Viewmodel mutation function:
+-----------------------------------------------------------------------------
+Viewmodel mutation functions allow me to map any observable to a change in the viewmodel.
+
+Scan Operator
+---------------------------------------------------------------------------
+The scan operator relies on these viewmodel mutation functions to apply the changes to the previous state of the viewmodel 
+to create the new mutated state when any of the source observables emit a value.
+
+Simple sample with Counter Component
+-----------------------------------------------------------------------------
+interface CounterVm {   
+    counter:number; 
+}
+
+public incrState = new Subject<number>;   
+public decrState = new Subject<number>;
+
+We define our viewmodel observable and in the constructor of the component, I define all interactions:
+
+public vm$ : Observable<ICounterVm>;
+public incrState = new Stateect<number>;
+public decrState = new Stateect<number>;
+constructor() {
+
+  // the Stateects are mapped to an anonymous function that 
+  // - accepts as parameter the previous state of the viewmodel (vm:ICounterVm)
+  // - and that returns the mutated viewmodel
+  // they are the viewmodel mutation functions
+-------------------------------------------------------------------------------------
+  const incrChange$ = this.incrState.pipe(
+    map( value => (vm:CounterVm) => ({...vm, counter:vm.counter+value}) )
+  );
+  const decrChange$ = this.decrState.pipe(
+    map( value => (vm:CounterVm) => ({...vm, counter:vm.counter-value}))
+  );
+--------------------------------------------------------------------------------
+
+  // the viewmodel observable is a merge of all mutation observables (incr$ and decr$) 
+  // piped into a scan function 
+  // scan has two arguments
+  // the first is the accumulator (the viewmodel) and the second the mutation function
+  // the body of the scan operator executes the mutation function : mutationFn(prevVm) passing the previous state of the viewmodel.
+  // this function returns the mutated viewmodel which is the new accumulated value of the vm$ observable
+
+mapToVm<T> = (vm<T>) => Vm<T>
+------------------------------------------------------------------------------------
+  this.vm$ = merge(of({counter:0}), incrChange$, decrChange$).pipe(
+    scan( (prevVm:CounterVm, mapToVm ) => mapToVm(prevVm))
+  )// pipe
+
+------------------------------------------------------------------------------------------------------------------------------------------
+<>
+The view is defined as follows:
+
+<!-- vm$ is subscribed by async pipe and exposes a variable named vm -->
+<div *ngIf="vm$ | async as vm">
+  Current counter : {{vm.counter}}
+  <button type="button" (click)="decrState.next(1)">Decrement</button>
+  <button type="button" (click)="incrState.next(1)">Increment</button> 
+</div>
+
+ng;viewmodel; 			sander elias; https://github.com/SanderElias/Samples/tree/master/src/app/view-model 
+js-viewmodel;          		js-viewmodel; js-viewmodel.txt   
+angular-viewmodel;      	sander elias; https://www.youtube.com/watch?v=ku1NcxPBLtg  
+angular-viewmodel;		https://github.com/rekna1/AngularVmAsObservable
+angular-viewmodel;  		file;///C;/Users/Hans/OneDrive/_docs/angular-viewmodel.pdf
+angular-viewmodel;         	rekna; https://indepth.dev/angular-viewmodel-as-observable/ 
+rxjs-in-angular;   		Practical samples with good ideas to apply rxjs operators with combining Action streams with Data streams - or bind all content to observables and combine them in viewmodel - very good ideas 
+angular-viewmodel;            	rekna; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src/app/app.component.ts  
+angular-viewmodel-sample.txt;   vile  
+react-viewmodel;      		bitovi; https://www.bitovi.com/blog/introducing-react-view-model-mvvm-with-react 
+angular-viewmodel 		pattern;   Viewmodel in Angular with the help of RxJs is a simple but effective solution to handle state in a component. In most cases you do not need a library; good knowledge in RxJs will help you to go a long way without a library! Thank's for publishing this pattern; !!!! Angular ViewModel Pattern !!!! 
+angular-viewmodel;             	hans; C;\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna 
+angular-viewmodel;         	https://github.com/rekna1/AngularVmAsObservable 
+angular-viewmodel;            	stackblitz; rekna1; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src%2Fapp%2Fapp.component.ts 
+angular-viewmodel;      	todo-vm; hans; C;\Users\Hans\web\frontend\angular\hans\ng-todos-ten 
+angular-viewmodel;      	todo-vm; hans; C;\Users\Hans\web\frontend\angular\hans\ng-todos-ten 
+angular-viewmodel;        	sander elias; C;\Users\Hans\web\frontend\angular\angular-rxjs\sander-elias\observable-viewmodel\src\app\view-model 
+angular-viewmodel;        	sander elias; "https://www.youtube.com/watch?v=cjdKanhckXU&t=2574s" 
+anguar-viewmodel;         	sander elias; helper library for vm with combineLatest; https://www.npmjs.com/package/@se-ng/observable-utils 
+angular-viewmodel;           	hans read blog; https://indepth.dev/angular-viewmodel-as-observable/ 
+angular-viewmodel;      	rekna; https://indepth.dev/angular-viewmodel-as-observable/ 
+angular-viewmodel;      	rekna; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src/app/app.component.ts 
+angular-viewmodel;      	rekna; https://github.com/rekna1/AngularVmAsObservable 
+angular-viewmodel;      	rekna; C;\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna 
+angular-viewmodel;      	rekna; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src%2Fapp%2Fapp.component.ts 
+angular-viewmodel-rekna.txt 
+angular-viewmodel-deborah.txt 
+angular-viewmodel-sanders.txt 
+angular-viewmodel;     		rekna model summary;angular-viewmodel-rekna.txt 
+angular-viewmodel;            	thomas burleson; https://gist.github.com/ThomasBurleson/500d27589d0e2977d28ecada7b7fe70f#file-blog3-aggregatedstream-js 
+angular-viewmodel;            	thomas burleson; https://medium.com/@thomasburlesonIA/push-based-architectures-with-rxjs-81b327d7c32d 
+angular-viewmodel;            	thomas burleson; "https://www.youtube.com/watch?v=HnNytR32Otk&feature=emb_logo" 
+angular-viewmodel,         	deborah kurata, observables with combineLatest, https://github.com/DeborahK/Angular-ActionStreams.git
+angular-viewmodel,         	rekna, action state subjects and state change observables, https://stackblitz.com/edit/angular-viewmodel-rekna,
+angular-viewmodel,         	hans, generic Viewmodel<T>, 
+
+rxjs: observable viewmodel, sander elias, https://github.com/SanderElias/Samples/blob/master/src/app/view-model/vm-home-vm/vm-home-vm.component.ts 
+rxjs: elias sander, observable viewmodel, https://www.youtube.com/watch?v=cjdKanhckXU
+rxjs: observable viewmodel, npm library, @se-ng/observable-utils,
+ng;viewmodel; sander elias; https://github.com/SanderElias/Samples/tree/master/src/app/view-model 
+js-viewmodel;          js-viewmodel; js-viewmodel.txt   
+angular-viewmodel;      sander elias; https://www.youtube.com/watch?v=ku1NcxPBLtg  
+angular-viewmodel;		https://github.com/rekna1/AngularVmAsObservable
+angular-viewmodel;  		file;///C;/Users/Hans/OneDrive/_docs/angular-viewmodel.pdf
+angular-viewmodel;         	rekna; https://indepth.dev/angular-viewmodel-as-observable/ 
+rxjs-in-angular;   		Practical samples with good ideas to apply rxjs operators with combining Action streams with Data streams - or bind all content to observables and combine them in viewmodel - very good ideas 
+angular-viewmodel;            	rekna; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src/app/app.component.ts  
+angular-viewmodel-sample.txt;   vile  
+react-viewmodel;      		bitovi; https://www.bitovi.com/blog/introducing-react-view-model-mvvm-with-react 
+angular-viewmodel 		pattern;   Viewmodel in Angular with the help of RxJs is a simple but effective solution to handle state in a component. In most cases you do not need a library; good knowledge in RxJs will help you to go a long way without a library! Thank's for publishing this pattern; !!!! Angular ViewModel Pattern !!!! 
+angular-viewmodel;             	hans; C;\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna 
+angular-viewmodel;         	https://github.com/rekna1/AngularVmAsObservable 
+angular-viewmodel;            	stackblitz; rekna1; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src%2Fapp%2Fapp.component.ts 
+angular-viewmodel;      	todo-vm; hans; C;\Users\Hans\web\frontend\angular\hans\ng-todos-ten 
+angular-viewmodel;      	todo-vm; hans; C;\Users\Hans\web\frontend\angular\hans\ng-todos-ten 
+angular-viewmodel;        	sander elias; C;\Users\Hans\web\frontend\angular\angular-rxjs\sander-elias\observable-viewmodel\src\app\view-model 
+angular-viewmodel;        	sander elias; "https://www.youtube.com/watch?v=cjdKanhckXU&t=2574s" 
+anguar-viewmodel;         	sander elias; helper library for vm with combineLatest; https://www.npmjs.com/package/@se-ng/observable-utils 
+angular-viewmodel;           	hans read blog; https://indepth.dev/angular-viewmodel-as-observable/ 
+angular-viewmodel;      	rekna; https://indepth.dev/angular-viewmodel-as-observable/ 
+angular-viewmodel;      	rekna; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src/app/app.component.ts 
+angular-viewmodel;      	rekna; https://github.com/rekna1/AngularVmAsObservable 
+angular-viewmodel;      	rekna; C;\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna 
+angular-viewmodel;      	rekna; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src%2Fapp%2Fapp.component.ts 
+angular-viewmodel-rekna.txt 
+angular-viewmodel-deborah.txt 
+angular-viewmodel-sanders.txt 
+angular-viewmodel;     		rekna model summary;angular-viewmodel-rekna.txt 
+angular-viewmodel;            	thomas burleson; https://gist.github.com/ThomasBurleson/500d27589d0e2977d28ecada7b7fe70f#file-blog3-aggregatedstream-js 
+angular-viewmodel;            	thomas burleson; https://medium.com/@thomasburlesonIA/push-based-architectures-with-rxjs-81b327d7c32d 
+angular-viewmodel;            	thomas burleson; "https://www.youtube.com/watch?v=HnNytR32Otk&feature=emb_logo" 
+angular-viewmodel,         	deborah kurata, observables with combineLatest, https://github.com/DeborahK/Angular-ActionStreams.git
+angular-viewmodel,         	rekna, action state subjects and state change observables, https://stackblitz.com/edit/angular-viewmodel-rekna,
+angular-viewmodel,         	hans, generic Viewmodel<T>, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+angular-viewmodel.txt,          file 
+angular-viewmodel,              sander elias, vm with combineLatest, https://github.com/SanderElias/Samples/tree/master/src/app/view-model 
+typescript-types,     	rekna2, scan function, https://indepth.dev/angular-viewmodel-as-observable/ 
+rxjs-viewmodel,              	C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna 
+angular-viewmodel,       	rekna viewmodel, angular-viewmodel-rekna.txt 
+rxjs-viewmodel,              	angular-viewmodel-rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+rxjs-viewmodel,              	4h, angular-viewmodel-rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+rxjs-viewmodel,              	4h, angular-viewmodel-rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+rxjs-viewmodel,              	4h, angular-viewmodel-rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+rxjs-viewmodel,              	4h, angular-viewmodel-rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+rxjs-viewmodel,              	4h, angular-viewmodel-rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+rxjs-viewmodel,              	4h, angular-viewmodel-rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+rxjs-viewmodel,              	4h, angular-viewmodel-rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+rxjs-viewmodel,              	angular-viewmodel-rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+rxjs-app,      			rekna, angular-viewmodel-rekna 
+rxjs-app,      			sander elias, reactive viewmodel 
+rxjs-react,             hannah howard, rxreact-core, rxreact-process  = rxjs with viewmodel
+rxjs-react,             hannah howard,viewmodel, C:\Users\HS\Web\frontend\javascript\rxjs\hannah-howard-rxreact\process 
+rxreact-viewmodel-hanna-howard.txt,          file 
+rxreact-viewmodel-hanna-howard.txt 
+angular-viewmodel, 	C:\Users\HS\Web\frontend\javascript\angular\angular-viewmodel\AngularVmAsObservable\angular-vm-rekna1 
+angular-paginator,         alex okrushko component store paginator to angular-viewmodel-rekna 
+angular-paginator,         alex okrushko component store paginator to angular-viewmodel-rekna, C:\Users\HS\Web\frontend\javascript\angular\angular-ngrx-component-store-alex-okrushko 
+hans-project,   	c:\Users\HS\Web\frontend\javascript\hans\js-viewmodel 
+angular-viewmodel,      https://guide-angular.wishtack.io/angular/composants/lapproche-mvc 
+angular-viewmodel,      https://malcoded.com/posts/angular-2-components-and-mvvm/ 
+angular-viewmodel,      https://indepth.dev/posts/1171/angular-viewmodel-as-observable 
+angular-viewmodel,      https://naveenpete.wordpress.com/2016/09/07/mvc-mvvm-and-angular/ 
+angular-viewmodel,      nevyan neyan, https://www.youtube.com/watch?v=7tK_zvMpf2c 
+rxjs-viewmodel,       	https://www.npmjs.com/package/@derxjs/view-model 
+rxjs-viewmodel,        	https://dev.to/zackderose/the-derxjsviewmodel-pattern-the-e-mc-2-of-state-management-part-1-3dka 
+hans-project,     	c:\Users\HS\Web\frontend\javascript\angular\angular-viewmodel\hans\counter-vm-app 
+rekna-count,       	c:\Users\HS\Web\frontend\javascript\rxjs\hans\rekna-viewmodel\webpack-typescript-css 
+hans-project,     	rekna-counter, local, c:\Users\HS\Web\frontend\javascript\rxjs\hans\rekna-viewmodel\rekna-counter 
+hans-project,       	vm-crud-filter-search-sort,C:\Users\HS\Web\frontend\javascript\rxjs\hans\rekna-viewmodel\rekna-counter 
+angular-viewmodel,     	tom white, https://github.com/tomwhite007/simple-reactive-viewmodel-example.git 
+angular-viewmodel,      max mumford, https://github.com/maxmumford/view-model-angular 
+angular-viewmodel,      max mumford, https://medium.com/@maxmumford/use-the-view-model-pattern-for-more-reactive-angular-programming-507751a8349e 
+angular-viewmodel,      rx-angular.io, https://rx-angular.io/web/state/howtos/manage-viewmodel 
+rxjs-viewmodel,         https://makimo.pl/blog/reactive-coordinators-pattern-proof-of-concept-with-rxjs/ 
+angular-viewmodel,      rekna github repo clone, c:\Users\HS\Web\frontend\typescript\hans\angular-viewmodel-rekna-github 
+hans-project,           rekna viewmodel, c:\Users\HS\Web\frontend\typescript\hans\rxjs-state-rekna 
+typescript-types,       rekna viewmodel, typing with typescript 
+file,           	angular-viewmodel-sander-elias.txt 
+angular-viewmodel,      sander elias, https://github.com/SanderElias/Samples/tree/master/src/app/view-model 

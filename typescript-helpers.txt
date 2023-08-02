@@ -1,0 +1,96 @@
+/**
+ * TS Helper Functions
+ */
+type ConvertTo<Type, From, To> = {
+  [Key in keyof Type]: Required<Type>[Key] extends From ? To : Type[Key];
+};
+
+type FilterByType<T, U> = {
+  [Key in keyof Required<T>]: Required<T>[Key] extends U ? Key : never;
+}[keyof T];
+
+type ExcludeByType<T, U> = Omit<T, FilterByType<T, U>>;
+
+type IncludeByType<T, U> = Pick<T, FilterByType<T, U>>;
+
+type ReadOnlyByType<T, U> = T & Readonly<IncludeByType<T, U>>;
+
+type OptionalByType<T, U> = Partial<IncludeByType<T, U>> & ExcludeByType<T, U>;
+
+type RequiredByType<T, U> = Partial<ExcludeByType<T, U>> & IncludeByType<T, U>;
+
+type OnlyMakeTypeRequired<T, U> = ExcludeByType<T, U> & Required<IncludeByType<T, U>>;
+
+// Test
+
+type User = {
+  points: number;
+  name: string;
+  active: boolean;
+};
+
+/**
+  type UserOne = {
+    points: number[];
+    name: string;
+    active: boolean;
+  }
+ */
+type UserOne = ConvertTo<User, number, number[]>;
+
+/**
+  type UserTwo = {
+    name: string;
+    active: boolean;
+  }
+ */
+type UserTwo = ExcludeByType<User, number>;
+
+/**
+  type UserThree = {
+    points: number;
+  }
+ */
+type UserThree = IncludeByType<User, number>;
+
+/**
+  type UserFour = {
+    readonly points: number;
+    name: string;
+    active: boolean;
+  };
+ */
+type UserFour = ReadOnlyByType<User, number>;
+
+/**
+  type UserFive = {
+    points?: number;
+    name: string;
+    active: boolean;
+  };
+ */
+type UserFive = OptionalByType<User, number>;
+
+/**
+  type UserSix = {
+    points: number;
+    name?: string;
+    active?: boolean;
+  };
+ */
+type UserSix = RequiredByType<User, number>;
+
+/**
+  type User = {
+    id: number;
+    name: string;
+    points: number;
+    active?: boolean;
+  }
+ */
+type RequiredByTypeOnlyUser = OnlyMakeTypeRequired<{
+  id: number;
+  points?: number;
+  name: string;
+  active?: boolean;
+}, number>;

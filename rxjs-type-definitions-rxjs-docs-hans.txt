@@ -1,0 +1,70 @@
+map
+--------------------------------------
+haskell:
+map :: (a -> b) -> [a] -> [b]
+
+ts
+
+interface UnaryFunction<T, R> {
+  (source: T): R
+}
+
+interface OperatorFunction<T, R> extends UnaryFunction<Observable<T>, Observable<R>>
+
+map<T, R>(project: (value: T, index: number) => R, thisArg?: any): OperatorFunction<T, R>
+
+ts haskellish:
+map = (value: T) => R) -> Observable<T> -> Observable<R>
+
+filter
+---------------------------------------
+haskell
+-------
+filter :: (a -> Bool) -> [a] -> [a]
+
+ts
+------
+interface MonoTypeOperatorFunction<T> extends OperatorFunction<T, T> {
+
+  // inherited from index/OperatorFunction
+
+  // inherited from index/UnaryFunction
+  (source: T): R
+}
+
+filter<T>(predicate: (value: T, index: number) => boolean, thisArg?: any): MonoTypeOperatorFunction<T>
+
+ts haskellish
+------------
+filter = (value: T) => boolean -> Observable<T> -> Observable<R>
+
+
+scan
+---------------------------------------------
+haskell
+-------
+data Fold a b
+a - accumulator
+b - extraction function
+
+Efficient representation of a left fold that preserves the fold's step function, 
+- initial accumulator, and 
+- extraction function
+
+This allows the Applicative instance to assemble derived folds that traverse the container only once
+
+A 'Fold a b' processes elements of type a and results in a value of type b.
+
+scan :: Fold a b -> [a] -> [b]
+
+
+
+ts
+---
+scan<V, A, S>(accumulator: (acc: V | A | S, value: V, index: number) => A, seed?: S): OperatorFunction<V, V | A>
+
+
+
+ts haskellish
+--------------
+scan = (value: V) => A, seed?: S) - > Observable<V> -> Observable<V>

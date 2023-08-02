@@ -1,0 +1,139 @@
+For most real-world applications, providing the table a DataSource instance 
+will be the best way to manage data. The DataSource is meant to serve a place to encapsulate any 
+- sorting, 
+- filtering, 
+- pagination, and 
+- data retrieval logic specific to the application.
+
+import { DataSource } from '@angular/cdk/collections';
+import { Observable } from 'rxjs';
+
+export interface SimpleDataSource extends DataSource {
+  connect(): Observable<T[]>;
+  disconnect(): void;
+}
+
+
+Als nächstes definieren wir ein paar wiederverwendbare Datentypen für paginierte Daten – bspw. in einer Datei names page.ts.
+
+ 
+import { Observable } from 'rxjs';
+
+export interface Sort<T> {
+  property: keyof T;
+  order: 'asc' | 'desc';
+}
+
+export interface PageRequest<T> {
+  page: number;
+  size: number;
+  sort?: Sort<T>;
+}
+
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  size: number;
+  number: number;
+}
+
+export type PaginationEndpoint<T> = (req: PageRequest<T>) => Observable<Page<T>>
+
+import { BehaviorSubject, Observable, Subject } from 'rxjs'
+import { switchMap, startWith, map, shareReplay } from 'rxjs/operators';
+import { Page, Sort, PaginationEndpoint } from './page';
+
+export class PaginationDataSource<T> implements SimpleDataSource<T> {
+  private pageNumber = new Subject<number>();
+  private sort: BehaviorSubject<Sort<T>>;
+
+  public page$: Observable<Page<T>>;
+
+  constructor(
+    endpoint: PaginationEndpoint<T>,
+    initialSort: Sort<T>,
+    size = 20) {
+      this.sort = new BehaviorSubject<Sort<T>>(initialSort)
+      this.page$ = this.sort.pipe(
+        switchMap(sort => this.pageNumber.pipe(
+          startWith(0),
+          switchMap(page => endpoint({page, sort, size}))
+        )),
+        shareReplay(1)
+      )
+  }
+
+  sortBy(sort: Partial<Sort<T>>): void {
+    const lastSort = this.sort.getValue()
+    const nextSort = {...lastSort, ...sort}
+    this.sort.next(nextSort)
+  }
+
+  fetch(page: number): void {
+    this.pageNumber.next(page);
+  }
+
+  connect(): Observable<T[]> {
+    return this.page$.pipe(map(page => page.content));
+  }
+
+  disconnect(): void {}
+
+}
+
+Gehen wir das Ganze Schritt für Schritt durch, angefangen beim Konstruktor. Dieser akzeptiert drei Parameter:
+
+einen paginierten Endpunkt welchen wir benutzen, um Seiten abzurufen
+
+eine initiale Sortierung
+
+eine optionale Seitengröße, standardmäßig auf 20 Elemente pro Seite festgelegt
+
+Die Instanzvariable pageNumber initialisieren wir mit einem RxJS-Subject – eine Senke, 
+
+durch welche nach und nach verschieden Seitenzahlen wandern, die es vom Server abzurufen gilt. 
+Über die Methode fetch(page: number) können wir der DataSource mitteilen, welche Seite als nächste angefragt werden soll.
+
+Der Instanzvariable sort weisen wir ein BehaviorSubject zu. Diese Senke erlaubt es uns, synchron 
+den letzen Wert über 
+-getValue() abzurufen. Im Gegenzug müssen wir einen initialen Wert bereitstellen – 
+unsere initiale Sortierung. Über die Methode 
+-sortBy(sort: Partial<Sort<T>>) können wir dann eine 
+partielle Repräsentation unserer Sortierung mitgeben – also bspw. nur die Eigenschaft nach der wir 
+als nächstes sortieren möchten, während die Richtung gleich bleibt. Dafür holen wir uns innerhalb 
+von sortBy den letzen Wert der gesamten Sortierung und legen ihn mit der neuen, ggf. partiellen 
+Sortierung, über den Spread-Operator zusammen.
+
+@Component(...)
+export class UsersComponent  {
+
+    initialSort: Sort<T> = {property: 'username', order: 'desc'}
+
+    dataSource = new PaginationDataSource<User>(
+      request => this.users.page(request),
+      this.initialSort
+    )
+
+    constructor(private users: UserService) {}
+}
+Der UserService ist hier dafür verantwortlich aus einem PageRequest<User> eine HTTP-Anfrage zu machen, 
+welche am Ende eine Page<User> liefert. Die Methode page(request: PageRequest<User>) könnte dazu wie folgt aussehen, 
+je nachdem in welcher Form der Server eine solche Anfrage erwartet. Ggf. muss die Antwort mittels map-Operator 
+noch so umgewandelt werden, dass sie dem Typ Page<User> entspricht. Alternativ können auch die Datentypen angepasst werden.
+
+ 
+page(request: PageRequest<User>, query: UserQuery): Observable<Page<User>> {
+    const params = {
+      pageNumber: request.page, 
+      pageSize: request.size,
+      sortOrder: request.sort.order,
+      sortProperty: request.sort.property
+    }
+    return this.http.get<Page<User>>('/users', {params})
+}
+
+Im Template kann die DataSource nun an die Material-Tabelle weitergegeben werden. Wir definieren 
+außerdem einen MatPaginator um die angezeigte Seite wechseln zu können. 
+Über die AsyncPipe liefern wir diesem die benötigten Informationen
+
+

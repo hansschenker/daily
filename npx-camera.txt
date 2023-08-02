@@ -1,0 +1,38 @@
+photo app install (matering ionic , p 220)
+----------------------------------------
+ionic start photo-app blank --type=angular
+cd photo-app
+ionic cordova platform add ios
+ionic cordova plugin add cordova-plugin-camera
+npm install --save @ionic-native/camera@beta
+ionic g service services/pictures
+
+app component
+---------------------------------------------
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { RouterModule, RouteReuseStrategy, Routes } from '@angular/router';
+import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { SplashScreen } from '@ionic-native/splash-screen/ngx';
+import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { Camera } from '@ionic-native/camera/ngx';
+import { AppComponent } from './app.component';
+import { AppRoutingModule } from './app-routing.module';
+import { PicturesService } from './services/pictures.service';
+
+
+@NgModule({
+declarations: [AppComponent],
+entryComponents: [],
+imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule],
+providers: [
+StatusBar,
+SplashScreen,
+Camera,
+PicturesService,
+{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+],
+bootstrap: [AppComponent]
+
+.............................................
+

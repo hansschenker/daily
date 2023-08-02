@@ -1,0 +1,115 @@
+solidjs composable
+------------------
+import { render } from "solid-js/web";
+import { createSignal } from "solid-js";
+
+function Counter() {
+
+  const [count, setCount] = createSignal(1);
+
+  const doubleCount = () => count() * 2;
+
+  const increment = () => setCount(count() + 1);
+
+  return (
+    <button type="button" onClick={increment}>
+      {doubleCount()}
+    </button>
+  );
+}
+
+render(Counter, document.getElementById("app")!);
+
+
+
+signal is a getter and a setter function
+--------------------------------------
+
+so you might be wondering how this works
+7:04
+and it all comes down to this idea of
+7:06
+fine-grained reactivity
+7:08
+creating a fine-grained reactive library
+7:09
+can be done in about 50 lines of code
+7:12
+i'm going to simplify it even further
+7:13
+here for demonstration purposes
+7:15
+but it all starts with signals like we
+7:17
+saw and
+7:18
+at its core you just view a signal as a
+7:20
+getter and setter function pair that
+7:21
+close over a value
+7:23
+of course there's a little bit more to
+
+subscriptions
+--------------
+o need subscriptions so let's update
+7:29
+our signals do a bit more
+7:33
+now on read what we want to do is check
+7:35
+if there's a current observer and if
+7:37
+there is we're going to add it to a new
+7:39
+subscriber set that we create when we
+7:40
+create our signal
+7:42
+on right
+7:43
+we update our values still
+7:45
+but now we actually iterate over those
+7:47
+subscribers and call them
+7:50
+to basically notify them that something
+7:51
+has changed
+and that's something
+7:56
+that needs to be notified are our
+7:58
+effects which are the other side of our
+7:59
+equation here you can see the
+8:00
+implementation for get current observer
+8:02
+what we have is a stack this context is
+8:05
+just an array in global context and we
+8:08
+just grab whatever is the top of the
+8:10
+right to see what's currently running
+8:14
+for our effect itself when it's created
+8:15
+it's executed immediately
+8:17
+and then it goes through the cycle of
+8:19
+clean up dependencies or subscriptions
+8:21
+push itself onto that stack so that when
+8:24
+we execute the provided function
+8:26
+it's there and can be and can be added
+8:29
+to the subscriptions and finally it pops
+------------------
+effects

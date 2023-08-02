@@ -1,0 +1,47 @@
+import React, { useEffect } from "react";
+import { useStateMachine } from "./use-state-machine.js";
+import { machineSpec } from "./machine-spec.js";
+
+const Disconnected = ({ onConnect }) => (
+  <div>
+    Disconnected
+    <button onClick={onConnect}>Connect</button>
+  </div>
+);
+
+const Connected = ({ onDisconnect }) => (
+  <div>
+    Connected
+    <button onClick={onDisconnect}>Disconnect</button>
+  </div>
+);
+
+const Connecting = () => {
+  return (
+    <div>
+      <button disabled>Connecting...</button>
+    </div>
+  );
+};
+
+export default () => {
+  const [currentState, sendEvent] = useStateMachine(machineSpec);
+
+  useEffect(() => {
+    // we simulate a remote success
+    if (currentState === "connecting") {
+      setTimeout(() => sendEvent("CONNECTION_SUCCESS"), 1500);
+    }
+  }, [currentState, sendEvent]);
+
+  switch (currentState) {
+    case "disconnected":
+      return <Disconnected onConnect={() => sendEvent("CONNECT")} />;
+    case "connecting":
+      return <Connecting />;
+    case "connected":
+      return <Connected onDisconnect={() => sendEvent("DISCONNECT")} />;
+    default:
+      throw new Error(`Don't know how to render state ${currentState}`);  
+  }
+};

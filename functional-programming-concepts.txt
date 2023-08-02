@@ -1,0 +1,149 @@
+Functional Programming Concepts
+------------------------------------------------------------------------------------------
+
+Functional programming is a programming paradigm that emphasizes the use of 
+- functions and 
+- immutable data to write programs. 
+
+The basic concepts of functional programming include:
+
+Immutable data: 
+----------------------------------------------------------
+In functional programming, data is not changed once it is created, making it easier to reason about the state 
+of the program and reducing the chance of unintended side effects.
+
+Pure functions: 
+-------------------------------------------------------------
+Functions are the building blocks of functional programming and are used to specify the relationship between 
+inputs and outputs. Pure functions are functions that always return the same output given the same inputs, and have no side effects.
+
+Higher-order functions: 
+---------------------------------------------------------------
+Functions can be 
+- passed as arguments to other functions or 
+- returned as values from functions. 
+This allows for functions to be used as building blocks for other functions, leading to more composable and reusable code.
+
+First-class functions: 
+--------------------------------------------------------------------
+Functions are treated as first-class citizens in functional programming, meaning they can be 
+assigned to variables, passed as arguments, and returned as values.
+
+Recursion: 
+---------------------------------------------------------------------
+Recursion is a technique for solving problems by breaking them down into smaller, similar problems. In 
+functional programming, recursion is often 
+- used instead of loops as a way to control the flow of a program.
+
+Declarative programming: 
+--------------------------------------------------------------------------
+Functional programming is often described as a declarative programming style, meaning that 
+- the programmer specifies what the program should do, 
+- rather than how it should be done.
+
+These are some of the key concepts of functional programming, and they work together to promote the creation of concise, 
+composable, and easily maintainable code.
+
+Functional Combinator
+------------------------------------------------------------------------------------------
+A combinator is a higher-order function in functional programming that has no free variables. In other words, a combinator is 
+- a function that only uses its arguments and does not reference any variables outside of its scope.
+
+Combinators are a fundamental concept in functional programming, and they play a 
+- key role in functional composition. 
+They are often used to 
+- build complex functions from simple building blocks, allowing for the creation of concise, composable, and reusable code.
+
+Combinators can be used to perform a wide range of operations, from 
+- simple data transformations to more complex operations such 
+- parsing and validating input. 
+They are especially useful in functional programming languages that support partial application, 
+which allows for the 
+- creation of new functions by partially applying arguments to existing functions.
+
+
+Examples of combinators in functional programming include the 
+- map function, which applies a given function to each element of a list, 
+- the reduce function, which aggregates the elements of a list into a single value by repeatedly applying a given function 
+  to elements of the list.
+
+What is a Monad
+------------------------------------------------------------------------------------------------
+A monad is a mathematical structure that is commonly used in functional programming to 
+- represent computations. 
+It can be thought of as 
+- a way of chaining together operations in a program, while 
+- abstracting away the details of how the operations are executed.
+
+In functional programming, a monad is 
+- a type constructor that takes a value of any type and 
+  - wraps it in a context, 
+  - creating a new value of a different type. 
+
+The type constructor is also equipped with two functions: 
+- bind (often referred to as flatMap in some languages):The bind function takes a monad and a function 
+  that transforms its underlying value, returning a new monad
+- return. . The return function takes a value and wraps it in a monad, 
+  providing a way to lift values into the context of the monad.
+
+Monads provide a way to encapsulate operations and state changes in a way that makes it easier to reason about the 
+behavior of a program. They are particularly useful for operations that have side effects, such as IO operations or 
+state updates, because they provide a way to isolate and sequence these operations in a composable and predictable manner.
+
+Examples of monads in functional programming include the 
+- Maybe monad, which can be used to represent computations that may or may not have a value, and 
+- the IO monad, which can be used to represent input/output operations. 
+Monads are a powerful concept in functional programming and are used extensively in languages such as 
+Haskell, Scala, and Swift.
+
+What is a functior
+---------------------------------------------------------------------------------------------------
+A functor is a mathematical concept that has been adapted for use in functional programming. In functional programming, 
+a functor is an 
+- abstract data type that implements a single method, map, which allows for the application of a function 
+  to the values contained within the functor.
+
+The map function takes 
+- a function as an argument and applies it to the values contained within the functor, 
+- producing a new functor with the transformed values. 
+The resulting functor has the same structure as the original functor, making 
+it possible to chain multiple map calls together to build more complex operations.
+
+Functors are a powerful concept in functional programming, as they provide a way to 
+- abstract away the details of the underlying data structure, 
+- allowing for the creation of reusable and composable operations. 
+Functors are particularly useful for working with containers, such as 
+- lists or 
+- trees, and for transforming values contained within them.
+
+Examples of functors in functional programming include arrays, lists, and trees. In many functional programming languages, 
+functors are also used to represent computations that may or may not have a value, such as the Maybe type in Haskell or 
+the Optional type in Java.
+
+What is an Applicative
+----------------------------------------------------------------------------------------------------
+An applicative is a type of functor in functional programming that adds the ability to 
+- apply functions that take multiple arguments to values contained within the functor. 
+  The apply function, also known as ap, 
+  - takes a functor that contains a function and another functor that contains a value, 
+  - and applies the function to the value, producing a new functor with the result.
+
+The main difference between applicatives and functors is that while functors allow you to 
+- transform the values contained within them, 
+- applicatives allow you to apply functions to values contained within multiple functors and combine them into a single result.
+
+Applicatives provide a way to apply functions to values in a way that is more flexible and composable than traditional 
+function application. They are particularly 
+- useful for working with contexts, 
+  - such as error handling or 
+- IO, where values 
+and functions may be wrapped in additional information or constraints.
+
+Examples of applicatives in functional programming include the Maybe type in Haskell and the Optional type in Java. In 
+many functional programming languages, applicatives are also used to represent computations that may or may not have a value, 
+such as the Either type in Haskell or the Result type in Swift.
+
+
+
+
+

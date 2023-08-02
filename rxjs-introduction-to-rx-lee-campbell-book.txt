@@ -1,0 +1,1555 @@
+Introduction to Rx (Lee Campbell - Microsoft)
+------------------------------------------------------------------------------
+
+1. Acknowledgements
+
+---------------------------------------------------------------------------------
+PART 1 - Getting started
+---------------------------------------------------------------------------------
+2. Why Rx?
+------------------------------------------------------------------------------
+ 
+When is Rx appropriate?
+Should use Rx
+Could use Rx
+Won't use Rx
+Rx in action
+
+3. Key types
+------------------------------------------------------------------------------
+ 
+IObservable<T>
+IObserver<T>
+Implementing IObserver<T> and IObservable<T>
+Subject<T>
+ReplaySubject<T>
+BehaviorSubject<T>
+AsyncSubject<T>
+Implicit contracts
+ISubject interfaces
+Subject factory
+
+4. Lifetime management
+------------------------------------------------------------------------------
+ 
+Subscribing
+Unsubscribing
+OnError and OnCompleted
+IDisposable
+Resource management vs. memory management
+
+------------------------------------------------------------------------------
+PART 2 - Sequence basics
+------------------------------------------------------------------------------
+
+5. Creating a sequence
+------------------------------------------------------------------------------
+ 
+Simple factory methods
+Observable.Return
+Observable.Empty
+Observable.Never
+Observable.Throw
+Observable.Create
+Functional unfolds
+Corecursion
+Observable.Range
+Observable.Generate
+Observable.Interval
+Observable.Timer
+Transitioning into IObservable<T>
+From delegates
+From events
+From Task
+From IEnumerable<T>
+From APM
+6. Reducing a sequence
+
+ 
+Where
+Distinct and DistinctUntilChanged
+IgnoreElements
+Skip and Take
+SkipWhile and TakeWhile
+SkipLast and TakeLast
+SkipUntil and TakeUntil
+
+7. Inspection
+------------------------------------------------------------------------------
+
+ 
+Any
+All
+Contains
+DefaultIfEmpty
+ElementAt
+SequenceEqual
+8. Aggregation
+
+ 
+Count
+Min, Max, Sum and Average
+Functional folds
+First
+Last
+Single
+Build your own aggregations
+Aggregate
+Scan
+Partitioning
+MinBy and MaxBy
+GroupBy
+Nested observables
+
+9. Transformation of sequences
+------------------------------------------------------------------------------
+ 
+Select
+Cast and OfType
+Timestamp and TimeInterval
+Materialize and Dematerialize
+SelectMany
+IEnumerable<T> vs. IObservable<T> SelectMany
+Visualizing sequences
+
+---------------------------------------------------------------------------------------------------
+PART 3 - Taming the sequence
+--------------------------------------------------------------------------------------------------
+
+10. Side effects
+------------------------------------------------------------------------------
+ 
+Issues with side effects
+Composing data in a pipeline
+Do
+Encapsulating with AsObservable
+Mutable elements cannot be protected
+
+11. Leaving the monad
+------------------------------------------------------------------------------
+ 
+What is a monad
+Why leave the monad?
+ForEach
+ToEnumerable
+To a single collection
+ToArray and ToList
+ToDictionary and ToLookup
+ToTask
+ToEvent<T>
+ToEventPattern
+
+12. Advanced error handling
+------------------------------------------------------------------------------
+ 
+Control flow constructs
+Catch
+Swallowing exceptions
+Finally
+Using
+OnErrorResumeNext
+Retry
+
+13. Combining sequences
+------------------------------------------------------------------------------
+ 
+Sequential concatenation
+Concat
+Repeat
+StartWith
+Concurrent sequences
+Amb
+Merge
+Switch
+Pairing sequences
+CombineLatest
+Zip
+And-Then-When
+
+14. Time-shifted sequences
+------------------------------------------------------------------------------
+ 
+Buffer
+Overlapping buffers
+Overlapping buffers by count
+Overlapping buffers by time
+Delay
+Sample
+Throttle
+Timeout
+
+15. Hot and Cold observables
+------------------------------------------------------------------------------
+ 
+Cold observables
+Hot observables
+Publish and Connect
+Disposal of connections and subscriptions
+RefCount
+Other connectable observables
+PublishLast
+Replay
+Multicast
+
+---------------------------------------------------------------------------------------------------
+PART 4 - Concurrency
+---------------------------------------------------------------------------------------------------
+
+16. Scheduling and threading
+------------------------------------------------------------------------------
+ 
+Rx is single-threaded by default
+SubscribeOn and ObserveOn
+Schedulers
+Concurrency pitfalls
+Lock-ups
+Advanced features of schedulers
+Passing state
+Future scheduling
+Cancelation
+Recursion
+Creating your own iterator
+Combinations of scheduler features
+Schedulers in-depth
+ImmediateScheduler
+CurrentThreadScheduler
+DispatcherScheduler
+EventLoopScheduler
+New Thread
+Thread Pool
+TaskPool
+TestScheduler
+Selecting an appropriate scheduler
+UI Applications
+Service layer
+
+17. Testing Rx
+------------------------------------------------------------------------------
+ 
+TestScheduler
+AdvanceTo
+AdvanceBy
+Start
+Stop
+Schedule collisions
+Testing Rx code
+Injecting scheduler dependencies
+Advanced features - ITestableObserver
+Start(Func<IObservable<T>>)
+CreateColdObservable
+CreateHotObservable
+CreateObserver
+
+18. Sequences of coincidence
+------------------------------------------------------------------------------
+ 
+Buffer revisited
+Window
+Flattening a Window operation
+Customizing windows
+Join
+GroupJoin
+
+19. Summary
+------------------------------------------------------------------------------
+
+Appendix
+
+20. Usage guidelines
+
+21. Dispelling event myths
+
+ 
+Event myths
+
+22. Disposables
+
+
+Rx in action
+--------------------------------------------------------------------------------------------
+Adopting and learning Rx can be an iterative approach where you can slowly apply it to your 
+infrastructure and domain. In a short time you should be able to have the skills to produce code, 
+or reduce existing code, to queries composed of simple operators. 
+
+For example this simple ViewModel is all I needed to code to integrate a search that is to 
+be executed as a user types.
+
+public class MemberSearchViewModel : INotifyPropertyChanged
+
+{
+
+//Fields removed‌.‌.‌.
+public MemberSearchViewModel(‌IMemberSearchModel memberSearchModel,
+ISchedulerProvider schedulerProvider)
+{
+_memberSearchModel = memberSearchModel;
+//Run search when SearchText property changes
+this‌.PropertyChanges(‌vm => vm‌.SearchText)
+‌.Subscribe(‌Search);
+}
+//Assume INotifyPropertyChanged implementations of properties‌.‌.‌.
+public string SearchText { get; set; }
+public bool IsSearching { get; set; }
+public string Error { get; set; }
+public ObservableCollection<string> Results { get; }
+//Search on background thread and return result on dispatcher‌.
+private void Search(‌string searchText)
+{
+using (‌_currentSearch) { }
+IsSearching = true;
+Results‌.Clear(‌);
+Error = null;
+_currentSearch = _memberSearchModel‌.SearchMembers(‌searchText)
+‌.Timeout(‌TimeSpan‌.FromSeconds(‌2))
+‌.SubscribeOn(‌_schedulerProvider‌.TaskPool)
+‌.ObserveOn(‌_schedulerProvider‌.Dispatcher)
+‌.Subscribe(‌
+Results‌.Add,
+ex =>
+{
+IsSearching = false;
+Error = ex‌.Message;
+},
+(‌) => { IsSearching = false; });
+}
+‌.‌.‌.
+}
+
+While this code snippet is fairly small it supports the following requirements:
+
+ 
+Maintains a responsive UI
+Supports timeouts
+Knows when the search is complete
+Allows results to come back one at a time
+Handles errors
+Is unit testable, even with the concurrency concerns
+------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
+Hans
+---------------------------------------------------------------------------------------------------
+- Data related operators
+  - aggregate
+  - reduce
+  - scan
+  - group
+
+- Time related operators
+  - sample
+  - buffer
+
+- higher order operators
+  - mergeMap (mergeAll + map)
+  - concatMap (concatAll + map)
+  - switchMap (switchAll, + map)
+  - exhaustMap (exhaustAll + map)
+
+- backpressure operators
+  - fast producer - slow consumer
+
+- notification: takeUntil, takeWhen, withLatestFrom
+
+- recursion: expand
+
+
+Category: creational operators - Create a sequence
+--------------------------------------------------------------------------------------------
+The door to the Monad world (anamorphism )
+---------------------------
+This could also be referred to as "entering the monad IObservable<T>. 
+
+source node is the start of an observable pipeline (composition of operators)
+
+Creating an observable sequence is our first step to practical application of Rx: 
+create the sequence and then expose it for consumption
+
+Factory Methods
+Observable.Return
+Observable.Empty
+Observable.Never
+Observable.Throw
+Observable.Create
+Unfold methods
+Observable.Range
+Observable.Interval
+Observable.Timer
+Observable.Generate
+Paradigm Transition
+Observable.Start
+Observable.FromEventPattern
+Task.ToObservable
+Task<T>.ToObservable
+IEnumerable<T>.ToObservable
+Observable.FromAsyncPattern
+
+
+------------------------------------------------------------
+
+
+2 Reducing a sequence ( composition of operators)
+-------------------------------------------------------------------------------------
+catamorphism or a fold. Other popular names for fold are 'reduce', 'accumulate' and 'inject'.
+ 
+We can categorize operators that reduce a sequence to the following:
+
+- Filter and partition operators
+--------------------------------
+Reduce the source sequence to a sequence with at most the same number of elements
+
+- Aggregation operators
+------------------------------
+Reduce the source sequence to a sequence with a single element
+
+
+Fold operators (where, distinct, skip, take)
+-------------------------------
+
+Reduce the source sequence to a single element as a scalar value
+
+reduction operators, inspection and aggregation.
+--------------------------------------------------
+
+
+Next : 
+- reduction operators, 
+- inspection and 
+- aggregation
+
+Inspection: any, all, contains, defaultIsEmpty, elementAt (skip, take)
+-------------------------------------------------------------------
+Sometimes we need to pluck out data that is relevant or validate that a sequence even meets our expectations
+
+Aggregation: count, min, max, sum, average
+--------------------------------------------------------------------
+Sometimes we need to consolidate, collate, combine or condense the mountains of data we receive 
+into more consumable bite sized chunks
+Consider fast moving data from domains like instrumentation, finance, signal processing and operational intelligence
+This kind of data can change at a rate of over ten values per second.
+
+Functional folds: first, take, last, single
+---------------------------------------------------------------------------
+Finally we arrive at the set of methods in Rx that meet the functional description of catamorphism/fold. 
+These methods will take an IObservable<T> and produce a T.
+
+Build your own aggregations
+-----------------------------------------------------------------------------
+If the provided aggregations do not meet your needs, you can build your own. 
+Rx provides two different ways to do this.
+
+Aggregate - apply an accumulator function to the sequence
+
+The Aggregate method allows you to apply an accumulator function to the sequence. 
+For the basic overload, you need to provide a function that 
+- takes the current state of the accumulated value and 
+- the value that the sequence is pushing. 
+
+The result of the function is the new accumulated value. This overload signature is as follows:
+
+IObservable<TSource> Aggregate<TSource>(‌
+
+IObservable<TSource> source, Func<TSource, TSource, TSource> accumulator)
+
+Aggregator: custom sum 
+--------------------------
+If you wanted to produce your own version of Sum for int values, you could do so by providing a 
+function that just adds to the current state of the accumulator.
+
+scan - the running total (previous value/state, current value/state)
+-------------------------
+
+While Aggregate allows us to get a final value for sequences that will complete, 
+sometimes this is not what we need. If we consider a use case that requires that we get a running total 
+as we receive values, then Aggregate is not a good fit. Aggregate is also not a good fit for 
+infinite sequences. The Scan extension method however meets this requirement perfectly. 
+The signatures for both Scan and Aggregate are the same; the difference is that 
+
+- Scan will push the result from every call to the accumulator function. 
+reduce
+-------
+So instead of being an aggregator that reduces a sequence to a single value sequence, 
+scan
+-------
+it is an accumulator that we return an accumulated value for each value of the source sequence
+
+Partitioning
+------------------------------
+Rx also gives you the ability to partition your sequence with features like the standard LINQ operator 
+GroupBy. This can be useful for taking a single sequence and fanning out to many subscribers or 
+perhaps taking aggregates on partitions.
+
+MinBy and MaxBy
+
+The MinBy and MaxBy operators allow you to partition your sequence based on a key selector function. 
+Key selector functions are common in other LINQ operators like the IEnumerable<T>ToDictionary or 
+GroupBy and the Distinct method. Each method will return you the values from the key that was the 
+minimum or maximum respectively.
+
+Transformation of sequences
+-------------------------------------------------------------------------------------------------------
+The values from the sequences we consume are not always in the format we need. 
+
+Sometimes there is too much noise in the data so we strip the values down. 
+Sometimes each value needs to be expanded either into a richer object or into more values. 
+
+By composing operators, Rx allows you to control the quality as well as the quantity of values 
+in the observable sequences you consume.
+
+Up until now, we have looked at creation of sequences, transition into sequences, and, the 
+reduction of sequences by filtering, aggregating or folding. 
+
+In this chapter we will look at transforming sequences. 
+This allows us to introduce our third category of functional methods, bind. 
+A bind function in Rx will take a sequence and apply some set of transformations on each element 
+to produce a new sequence. To review:
+
+Functional concept rules
+--------------------------------------------------------------
+Ana(morphism) T --> IObservable<T>
+
+Cata(morphism) IObservable<T> --> T      (Google reduce)
+
+Bind IObservable<T1> --> IObservable<T2> ( Google map, Microsoft selectMany)
+----------------------------------------------------------------
+
+Now that we have been introduced to all three of our higher order functions, you may find that 
+you already know them. Bind and Cata(morphism) were made famous by MapReduce framework from Google. 
+Here Google refer to Bind and Cata by their perhaps more common aliases; Map and Reduce.
+
+It may help to remember our terms as the ABCs of higher order functions.
+--------------------------------------------------------------------------
+Ana enters the sequence. T --> IObservable<T>
+
+Bind modifies the sequence. IObservable<T1> --> IObservable<T2>
+
+Cata leaves the sequence. IObservable<T> --> T
+---------------------------------------------------------------------------
+
+
+SelectMany
+----------------------------------------------------------------------------
+Select
+-----------
+Of the transformation operators above, we can see that Select is the most useful. 
+It allows very broad flexibility in its transformation output and can even be used to reproduce some 
+of the other transformation operators. 
+
+SelectMany
+-------------------
+The SelectMany operator however is even more powerful. 
+In LINQ and therefore Rx, the bind method is SelectMany. Most other transformation operators 
+can be built with SelectMany. Considering this, it is a shame to think that SelectMany may be one 
+of the most misunderstood methods in LINQ.
+
+This brings us to a close on Part 2. The key takeaways from this were to allow you the reader 
+to understand a key principal to Rx: functional composition. As we move through Part 2, 
+examples became progressively more complex. We were leveraging the power of LINQ to chain 
+extension methods together to compose complex queries.
+
+We didn't try to tackle all of the operators at once, we approached them in groups.
+
+ 
+Creation
+Reduction
+Inspection
+Aggregation
+Transformation
+On deeper analysis of the operators we find that most of the operators are actually 
+specialization of the higher order functional concepts. 
+
+We named them the ABC's of functional programming:
+
+ 
+Anamorphism, aka:
+Ana
+Unfold
+Generate
+Bind, aka:
+Map
+SelectMany
+Projection
+Transform
+Catamorphism, aka:
+Cata
+Fold
+Reduce
+Accumulate
+Inject
+
+PART 3 - Taming the sequence
+--------------------------------------------------------------------------------------------------------
+In this chapter we will discuss the consequences of introducing side effects when working with 
+an observable sequence. A function is considered to have a side effect if, in addition to 
+any return value, it has some other observable effect. Generally the 'observable effect' 
+is a modification of state. This observable effect could be
+
+ 
+- modification of a variable with a wider scope than the function (i.e. global, static or perhaps an argument)
+- I/O such as a read/write from a file or network
+- updating a display
+
+Composing data in a pipeline: composing pure functions (immutable data)
+---------------------------------------------------------------------------------
+The preferred way of capturing state is to introduce it to the pipeline. Ideally, 
+we want each part of the pipeline to be independent and deterministic. 
+
+That is, each function that makes up the pipeline should have 
+- its inputs and 
+- output as its only state. 
+
+To correct our example we could enrich the data in the pipeline so that there is no shared state. 
+This would be a great example where we could use the Select overload that exposes the index.
+
+Encapsulating with AsObservable
+-----------------------------------------------------------------------------------------
+Poor encapsulation is a way developers can leave the door open for unintended side effects. 
+Here is a handful of scenarios where carelessness leads to leaky abstractions. 
+
+Our first example may seem harmless at a glance, but has numerous problems.
+
+public class UltraLeakyLetterRepo
+
+{
+
+public ReplaySubject<string> Letters { get; set; }
+public UltraLeakyLetterRepo(‌)
+{
+Letters = new ReplaySubject<string>(‌);
+Letters‌.OnNext(‌"A");
+Letters‌.OnNext(‌"B");
+Letters‌.OnNext(‌"C");
+}
+}
+
+In this example we expose our observable sequence as a property. The first problem here is that 
+it is a settable property. 
+Consumers could change the entire subject out if they wanted. 
+This would be a very poor experience for other consumers of this class. If we make some simple 
+changes we can make a class that seems safe enough.
+
+p understanding of CPU architectures and how they work with the locking and optimization features 
+of the language you use. The simple and preferred approach is to avoid shared state, 
+favor immutable data types and utilize query composition and transformation. 
+Hiding side effects into Where or Select clauses can make for very confusing code. 
+If a side effect is required, then the Do method expresses intent that you are creating a side effect
+ by being explicit.
+
+Leaving the monad
+----------------------------------------------------------------------------------------------------
+An observable sequence is a useful construct, especially when we have the power of LINQ to compose 
+complex queries over it. Even though we recognize the benefits of the observable sequence, 
+sometimes it is required to leave the IObservable<T> paradigm for another paradigm, maybe to enable 
+you to integrate with an existing API (i.e. use events or Task<T>). You might leave the 
+observable paradigm if you find it easier for testing, or it may simply be easier for you to 
+learn Rx by moving between an observable paradigm and a more familiar one.
+
+What is a monad
+------------------------------------------------------------------------------------------------------------
+We have casually referred to the term monad earlier in the book, but to most it will be a very foreign 
+I am going to try to avoid overcomplicating what a monad is, but give enough of an explanation to help 
+us out with our next category of methods. The full definition of a monad is quite abstract. Many others 
+have tried to provide their definition of a monad using all sorts of metaphors from astronauts to 
+Alice in Wonderland. Many of the tutorials for monadic programming use Haskell for the code examples 
+which can add to the confusion. For us, a monad is effectively a programming structure that 
+represents computations. Compare this to other programming structures:
+
+Data structure
+-------------------
+Purely state e.g. a List, a Tree or a Tuple
+
+Contract
+------------------
+Contract definition or abstract functionality e.g. an interface or abstract class
+
+Object-Orientated structure
+------------------
+State and behavior together
+Generally a monadic structure allows you to chain together operators to produce a pipeline, 
+just as we do with our extension methods.
+
+Monads are an abstract data type constructor that encapsulate program logic
+--------------------------------------------------------------------------
+Monads are a kind of abstract data type constructor that encapsulate program logic instead of data 
+in the domain model.    
+
+This neat definition of a monad lifted from Wikipedia allows us to start viewing sequences as monads; 
+
+IObservable<T> - the abstract data type
+----------------------------------------
+the abstract data type in this case is the IObservable<T> type. When we use an observable sequence, 
+- we compose functions onto the abstract data type (the IObservable<T>) to create a query (pipeline). 
+This query becomes our encapsulated programming logic.
+
+Monads define control flows
+---------------------------------------------
+The use of monads to define control flows is particularly useful when dealing with typically 
+troublesome areas of programming such as IO, concurrency and exceptions. 
+This just happens to be some of Rx's strong points!
+
+Why leave the monad?
+-------------------------------------------------
+There is a variety of reasons you may want to consume an observable sequence in a different paradigm. 
+Libraries that need to expose functionality externally may be required to present it as events or 
+as Task instances. In demonstration and sample code you may prefer to use blocking methods to limit 
+the number of asynchronous moving parts. This may help make the learning curve to Rx a little less steep!
+
+In production code, it is rarely advised to 'break the monad'
+-------------------------------------------------------------
+In production code, it is rarely advised to 'break the monad', especially moving from an observable 
+sequence to blocking methods. Switching between asynchronous and synchronous paradigms should be done 
+with caution, as this is a common root cause for concurrency problems such as deadlock and scalability issues.
+
+In this chapter, we will look at the methods in Rx which allow you to leave the IObservable<T> monad.
+
+
+There is a variety of reasons you may want to consume an observable sequence in a different paradigm. Libraries that need to expose functionality externally may be required to present it as events or as Task instances. In demonstration and sample code you may prefer to use blocking methods to limit the number of asynchronous moving parts. This may help make the learning curve to Rx a little less steep!
+
+In production code, it is rarely advised to 'break the monad', especially moving from an observable sequence to blocking methods. Switching between asynchronous and synchronous paradigms should be done with caution, as this is a common root cause for concurrency problems such as deadlock and scalability issues.
+
+In this chapter, we will look at the methods in Rx which allow you to leave the IObservable<T> monad.
+
+ForEach (sync) vs Subscribe (async)
+-------------------------------------------------------------------
+The ForEach method provides a way to process elements as they are received. 
+The key difference between ForEach and Subscribe is that ForEach will block the current thread 
+until the sequence completes.
+
+toArray
+----------------------------------------
+Collects all source emissions and emits them as an array when the source completes.
+
+toArray<T>(): OperatorFunction<T, T[]>
+
+ToArray and ToList
+
+Both ToArray and ToList take an observable sequence and package it into an array or an instance 
+of List<T> respectively. Once the observable sequence completes, the array or list will be pushed 
+as the single value of the result sequence.
+
+The set of methods we have looked at in this chapter complete the circle started in the 
+Creating a Sequence chapter. We now have the means to enter and leave the observable sequence monad. 
+Take care when opting in and out of the IObservable<T> monad. Doing so excessively can quickly make 
+a mess of your code base, and may indicate a design flaw.
+
+
+Combining Sequences
+------------------------------------------------------------------------------------------------
+We have uncovered the benefits of operator composition; now we turn our focus to sequence composition. 
+Earlier on, we briefly looked at operators that work with multiple sequences such as SelectMany, 
+TakeUntil/SkipUntil, Catch and OnErrorResumeNext. These give us a hint at the potential that 
+sequence composition can deliver. By uncovering the features of sequence composition with Rx, 
+we find yet another layer of game changing functionality. Sequence composition enables you to 
+create complex queries across multiple data sources. This unlocks the possibility to write 
+some very powerful and succinct code.
+
+Sequential concatenation
+
+The first methods we will look at are those that concatenate sequences sequentially. They are very similar to the methods we have seen before for dealing with faulted sequences.
+
+Concat
+------------------------------------------------
+The Concat extension method is probably the most simple composition method. 
+It simply concatenates two sequences. Once the first sequence completes, the second sequence is 
+subscribed to and its values are passed on through to the result sequence. It behaves just like 
+the Catch extension method, but will concatenate operational sequences when they complete, 
+instead of faulted sequences when they OnError. The simple signature for Concat is as follows.
+
+Repeat
+-------------------------------------------------
+Another simple extension method is Repeat. It allows you to simply repeat a sequence, 
+either a specified or an infinite number of times.
+
+// Repeats the observable sequence indefinitely and sequentially‌.
+
+public static IObservable<TSource> Repeat<TSource>(‌
+
+this IObservable<TSource> source)
+{‌.‌.‌.}
+
+//Repeats the observable sequence a specified number of times‌.
+
+public static IObservable<TSource> Repeat<TSource>(‌
+
+this IObservable<TSource> source, 
+int repeatCount)
+{‌.‌.‌.}
+
+If you use the overload that loops indefinitely, then the only way the sequence will stop is if there 
+is an error or the subscription is
+
+StartWith
+-----------------------------------
+Another simple concatenation method is the StartWith extension method. It allows you to prefix 
+values to a sequence. The method signature takes a params array of values so it is easy to pass 
+in as many or as few values as you need.
+
+// prefixes a sequence of values to an observable sequence‌.
+
+public static IObservable<TSource> StartWith<TSource>(‌
+
+this IObservable<TSource> source, 
+params TSource[] values)
+{
+
+‌.‌.‌.
+}
+
+Using StartWith can give a similar effect to a BehaviorSubject<T> by ensuring a value is 
+provided as soon as a consumer subscribes. It is not the same as a BehaviorSubject however, 
+as it will not cache the last value
+
+Concurrent sequences
+-----------------------------------------------------------------------------------------------------
+The next set of methods aims to combine observable sequences that are producing values concurrently. 
+This is an important step in our journey to understanding Rx. For the sake of simplicity, 
+we have avoided introducing concepts related to concurrency until we had a broad understanding of the 
+simple concepts.
+
+Amb
+-------------------
+The Amb method was a new concept to me when I started using Rx. It is a non-deterministic function, 
+first introduced by John McCarthy and is an abbreviation of the word Ambiguous. The Rx implementation 
+will return values from the sequence that is first to produce values, and will completely ignore the 
+other sequences. In the examples below I have three sequences that all produce values. The sequences 
+can be represented as the marble diagram below.
+
+Merge
+--------------------------
+The Merge extension method does a primitive combination of multiple concurrent sequences. 
+As values from any sequence are produced, those values become part of the result sequence. 
+All sequences need to be of the same type, as per the previous methods. In this diagram, 
+we can see s1 and s2 producing values concurrently and the values falling through to the result 
+sequence as they occur.
+
+Switch
+----------------------------
+Receiving all values from a nested observable sequence is not always what you need. 
+
+In some scenarios, instead of receiving everything, you may 
+- only want the values from the most recent inner sequence. 
+
+Live search (suggestions, fast list click, autocomplete)
+------------------------------------------------------------
+A great example of this is live searches. As you type, the text is sent to a search service and the 
+results are returned to you as an observable sequence. Most implementations have a slight delay 
+before sending the request so that unnecessary work does not happen. Imagine I want to search for 
+"Intro to Rx". I quickly type in "Into to" and realize I have missed the letter 'r'. I stop briefly 
+and change the text to "Intro ". By now, two searches have been sent to the server. The first search 
+will return results that I do not want. Furthermore, if I were to receive data for the first search 
+merged together with results for the second search, it would be a very odd experience for the user. 
+This scenario fits perfectly with the Switch method.
+
+Pairing sequences
+--------------------------------------------------------------------------------------------
+The previous methods allowed us to flatten multiple sequences sharing a common type into a result sequence 
+of the same type. 
+These next sets of methods still take multiple sequences as an input, but attempt 
+- to pair values from each sequence to produce a single value for the output sequence. 
+
+In some cases, they also allow you to provide sequences of different types.
+
+CombineLatest
+------------------------------
+The CombineLatest extension method allows you to take the most recent value from two sequences, 
+and with a given function transform those into a value for the result sequence. Each input sequence 
+has the last value cached like Replay(1). Once both sequences have produced at least one value, the 
+latest output from each sequence is passed to the resultSelector function every time either sequence 
+produces a value. The signature is as follows.
+
+Zip
+------------------------------------
+The Zip extension method is another interesting merge feature. Just like a zipper on clothing or a bag, 
+the Zip method brings together two sequences of values as pairs; two by two. Things to note about 
+the Zip function is that the result sequence will complete when the first of the sequences complete, 
+it will error if either of the sequences error and it will only publish once it has a pair of fresh 
+values from each source sequence. So if one of the source sequences publishes values faster than the
+other sequence, the rate of publishing will be dictated by the slower of the two sequences
+
+And/Then/When
+------------------------------------------
+If 
+- Zip only taking two sequences as an input is a problem, 
+- then you can use a combination of the three And/Then/When methods. 
+These methods are used slightly differently from most of the other Rx methods. 
+Out of these three, 
+- And is the only extension method to IObservable<T>.  it returns the mysterious type Pattern<T1, T2>.
+The Pattern<T1, T2> type is public (obviously), but all of its properties are internal. 
+The only two (useful) things you can do with a Pattern<T1, T2> are invoking its And or Then methods.
+- The And method called on the Pattern<T1, T2> returns a Pattern<T1, T2, T3>. 
+  On that type, you will also find the And and Then methods. 
+
+The generic Pattern types are there to allow you to chain multiple And methods together, 
+each one extending the generic type parameter list by one. You then bring them all together 
+with the Then method overloads. 
+- The Then methods return you a Plan type. Finally, you pass this Plan to the Observable.
+  When method in order to create your sequence.
+
+------------------------------------------
+The And/Then/When trio has more overloads that enable you to 
+- group an even greater number of sequences. 
+They also allow you to provide more than one 'plan' (the output of the Then method). This gives you 
+the Merge feature but on the collection of 'plans'. I would suggest playing around with them if this 
+functionality is of interest to you. The verbosity of enumerating all of the combinations of these 
+methods would be of low value. You will get far more value out of using them and discovering for yourself.
+
+Composing sequences with Rx allows us to easily make sense 
+of the multiple data sources a problem domain is exposed to. We can concatenate values or sequences 
+together sequentially with 
+- StartWith, 
+- Concat and 
+- Repeat. 
+
+We can process multiple sequences concurrently 
+- with Merge, or process a single sequence at a time 
+- with Amb and Switch. 
+
+Pairing values 
+- with CombineLatest, 
+- Zip and the 
+- And/Then/When operators can simplify otherwise 
+  fiddly operations like our drag-and-drop examples and monitoring system status
+
+Time-shifted sequences
+----------------------------------------------------------------------------------------------------
+When working with observable sequences, the time axis is an unknown quantity: when will the 
+next notification arrive? When consuming an IEnumerable sequence, asynchrony is not a concern; 
+when we call MoveNext(), we are blocked until the sequence yields. This chapter looks at the 
+various methods we can apply to an observable sequence when its relationship with time is a concern.
+
+Buffer
+----------------------------------------
+Our first subject will be the Buffer method. In some situations, you may not want a deluge of 
+individual notifications to process. Instead, you might prefer to work with batches of data. 
+It may be the case that processing one item at a time is just too expensive, and the trade-off 
+is to deal with messages in batches, at the cost of accepting a delay.
+
+The Buffer operator allows you to store away a range of values and then re-publish them as a 
+list once the buffer is full. You can temporarily withhold a specified number of elements, 
+stash away all the values for a given time span, or use a combination of both count and time. 
+Buffer also offers more advanced overloads that we will look at in a future chapter.
+
+Delay
+-------------------------------------------------
+The Delay extension method is a purely a way to time-shift an entire sequence. 
+You can provide either a relative time the sequence should be delayed by using a TimeSpan, 
+or an absolute point in time that the sequence should wait for using a DateTimeOffset. 
+The relative time intervals between the values are preserved.
+
+Sample
+--------------------------------------------------------
+The Sample method simply takes the last value for every specified TimeSpan. 
+This is great for getting timely data from a sequence that produces too much information 
+for your requirements. This example shows sample in action.
+
+Throttle
+-----------------------------------------------------
+The Throttle extension method provides a sort of protection against sequences that produce values 
+at variable rates and sometimes too quickly. Like the Sample method, Throttle will return the last 
+sampled value for a period of time. Unlike Sample though, Throttle's period is a sliding window. 
+Each time Throttle receives a value, the window is reset. Only once the period of time has elapsed 
+will the last value be propagated. This means that the Throttle method is only useful for sequences 
+that produce values at a variable rate. Sequences that produce values at a constant rate 
+(like Interval or Timer) either would have all of their values suppressed if they produced values 
+faster than the throttle period, or all of their values would be propagated if they produced values 
+slower than the throttle period.
+
+Timeout
+-------------------------------------------------
+We have considered handling timeout exceptions previously in the chapter on Flow control. 
+The Timeout extension method allows us terminate the sequence with an error if we do not 
+receive any notifications for a given period. We can either specify the period as a sliding 
+window with a TimeSpan, or as an absolute time that the sequence must complete by providing 
+a DateTimeOffset.
+
+Hot and Cold observables
+-------------------------------------------------------------------------------------------------------
+Sequences that are passive and start producing notifications on request (when subscribed to), and
+Sequences that are active and produce notifications regardless of subscriptions.
+In this sense, passive sequences are Cold and active are described as being Hot. You can draw some 
+similarities between implementations of the IObservable<T> interface and implementations of the 
+IEnumerable<T> interface with regards to hot and cold. With IEnumerable<T>, you could have an on-demand 
+collection via the yield return syntax, or you could have an eagerly-evaluated collection by returning a 
+populated List<T>. We can compare the two styles by attempting to read just the first value from a sequence. 
+We can do this with a method like this:
+
+The lazily-evaluated sequence did not have to yield any more values than required. Lazy evaluation 
+is good for on-demand queries whereas eager evaluation is good for sharing sequences so as to avoid 
+re-evaluating multiple times. Implementations of IObservable<T> can exhibit similar variations in style.
+
+Examples of hot observables that could publish regardless of whether there are any subscribers would be:
+
+ 
+mouse movements
+timer events
+broadcasts like ESB channels or UDP network packets.
+price ticks from a trading exchange
+Some examples of cold observables would be:
+
+ 
+asynchronous request (e.g. when using Observable.FromAsyncPattern)
+whenever Observable.Create is used
+subscriptions to queues
+on-demand sequences
+
+Cold observables
+--------------------------
+In this example, we fetch a list of products from a database. In our implementation, we choose to 
+return an IObservable<string> and, as we get the results, we publish them until we have the full list, 
+then complete the sequence.
+
+Hot observables
+--------------------------
+In our example above, the database was not accessed until the consumer of the GetProducts() method 
+subscribed to the return value. Subsequent or even parallel calls to GetProducts() would return 
+independent observable sequences and would each make their own independent calls to the database. 
+By contrast, a hot observable is an observable sequence that is producing notifications even if there 
+are no subscribers. The classic cases of hot observables are UI Events and Subjects. For example, if 
+the mouse moves then the MouseMove event will be raised. If there are no event handlers registered for 
+the event, then nothing happens. If, on the other hand, we create a Subject<int>, we can inject values 
+into it using OnNext, regardless of whether there are observers subscribed to the subject or not.
+
+Some observable sequences can appear to be hot when they are in fact cold. A couple of examples that 
+surprise many is Observable.Interval and Observable.Timer (though it should not come as a shock to 
+attentive readers of the Creating observable sequences chapter). In the example below, we subscribe 
+twice to the same instance, created via the Interval factory method. The delay between the two 
+subscriptions should demonstrate that while they are subscribed to the same observable instance, 
+the values each subscription receives are independent, i.e. Interval is cold.
+
+Publish and Connect
+--------------------------
+If we want to be able to share the actual data values and not just the observable instance, we can use 
+the Publish() extension method. This will return an IConnectableObservable<T>, which extends 
+IObservable<T> by adding a single Connect() method. By using the Publish() then Connect() method, 
+we can get this sharing functionality.
+
+A few things to note here:
+
+ 
+I use the Do extension method to create side effects on the sequence (i.e. write to the console). 
+This allows us to see when the sequence is actually connected.
+We connect first and then subscribe, which means that we can publish without any live subscriptions 
+i.e. make the sequence hot.
+We dispose of our subscription but do not dispose of the connection, which means the sequence will 
+still be running.
+
+RefCount
+------------------------------
+Let us modify that last example by replacing uses of Connnect() by the extension method RefCount. 
+This will "magically" implement our requirements for automatic disposal and lazy connection. 
+RefCount will take an IConnectableObservable<T> and turn it back into an IObservable<T> while 
+automatically implementing the "connect" and "disconnect" behavior we are looking for.
+
+Other connectable observables
+--------------------------
+The Connect method is not the only method that returns IConnectableObservable<T> instances. The 
+ability to connect or defer an operator's functionality is useful in other areas too.
+
+PublishLast
+----------------------
+The PublishLast() method is effectively a non-blocking Last() call. You can consider it similar to 
+an AsyncSubject<T> wrapping your target sequence. You get equivalent semantics to AsyncSubject<T> 
+where only the last value is published, and only once the sequence complete
+s
+
+Replay
+-----------------------
+The Replay extension method allows you take an existing observable sequence and give it 'replay' 
+semantics as per ReplaySubject<T>. As a reminder, the ReplaySubject<T> will cache all values so that 
+any late subscribers will also get all of the values. In this example, two subscriptions are made on 
+time, and then a third subscription can be made after the sequence completes. Even though the third 
+subscription is made after the underlying sequence has completed, we can still get all of the values.
+
+Multicast
+-------------------------
+The PublishLast and Replay methods effectively apply AsyncSubject<T> and ReplaySubject<T> functionality 
+to the underlying observable sequence. We could attempt to build a crude implementation ourselves.
+
+Summary
+--------------------------
+Hot and cold observables are two different styles of sharing an observable sequence. Both have equally
+ valid applications but behave in different ways. Cold observables allow you to lazily evaluate an 
+observable sequence independently for each subscriber. Hot observables allow you to share notifications 
+by multicasting your sequence, even if there are no subscribers. The use of RefCount allows you to have 
+lazily-evaluated, multicast observable sequences, coupled with eager disposal semantics once the last 
+subscription is disposed.
+
+----------------------------------------------------------------------------------------------------------------
+PART 4 - Concurrency
+---------------------------------------------------------------------------------------------------------------
+Rx is primarily a system for querying data in motion asynchronously. To effectively provide the level 
+of asynchrony that developers require, some level of concurrency control is required. We need the 
+ability to generate sequence data concurrently to the consumption of the sequence data.
+
+In this fourth and final part of the book, we will look at the various concurrency considerations one 
+must undertake when querying data in motion. We will look how to avoid concurrency when possible and 
+use it correctly when justifiable. We will look at the excellent abstractions Rx provides, that enable 
+concurrency to become declarative and also unit testable. In my opinion, theses two features are enough
+ reason alone to adopt Rx into your code base. We will also look at the complex issue of querying 
+concurrent sequences and analyzing data in sliding windows of time.
+
+Scheduling and threading
+------------------------------
+So far, we have managed to avoid any explicit usage of threading or concurrency. There are some methods 
+that we have covered that implicitly introduce some level of concurrency to perform their jobs 
+(e.g. Buffer, Delay, Sample each require a separate thread/scheduler/timer to work their magic).
+ Most of this however, has been kindly abstracted away from us. This chapter will look at the elegant 
+beauty of the Rx API and its ability to effectively remove the need for WaitHandle types, and any 
+explicit calls to Threads, the ThreadPool or Tasks.
+
+Rx is single-threaded by default
+----------------------------------
+A popular misconception is that Rx is multithreaded by default. It is perhaps more an idle assumption 
+than a strong belief, much in the same way some assume that standard .NET events are multithreaded until 
+they challenge that notion. We debunk this myth and assert that events are most certainly single threaded 
+and synchronous in the Appendix.
+
+Like events, Rx is just a way of chaining callbacks together for a given notification. While Rx is a 
+free-threaded model, this does not mean that subscribing or calling OnNext will introduce 
+multi-threading to your sequence. Being free-threaded means that you are not restricted to which 
+thread you choose to do your work. For example, you can choose to do your work such as invoking a 
+subscription, observing or producing notifications, on any thread you like. The alternative to a 
+free-threaded model is a Single Threaded Apartment (STA) model where you must interact with the system 
+on a given thread. It is common to use the STA model when working with User Interfaces and some COM interop. 
+So, just as a recap: if you do not introduce any scheduling, your callbacks will be invoked on the same 
+thread that the OnNext/OnError/OnCompleted methods are invoked from.
+
+
+Schedulers
+------------------------------------
+The SubscribeOn and ObserveOn methods required us to pass in an IScheduler. Here we will dig a little 
+deeper and see what schedulers are, and what implementations are available to us.
+
+There are two main types we use when working with schedulers:
+
+The IScheduler interface
+
+A common interface for all schedulers
+--------------------------------------
+The static Scheduler class
+
+Exposes both implementations of IScheduler and helpful extension methods to the IScheduler interface
+The IScheduler interface is of less importance right now than the types that implement the interface. 
+The key concept to understand is that an IScheduler in Rx is used to schedule some action to be performed,
+either as soon as possible or at a given point in the future. The implementation of the IScheduler defines
+ how that action will be invoked i.e. asynchronously via a thread pool, a new thread or a message pump, 
+or synchronously on the current thread. Depending on your platform 
+(Silverlight 4, Silverlight 5, .NET 3.5, .NET 4.0), you will be exposed most of the implementations
+ you will need via a static class Scheduler.
+
+Concurrency pitfalls
+
+Introducing concurrency to your application will increase its complexity. If your application is not 
+noticeably improved by adding a layer of concurrency, then you should avoid doing so. Concurrent 
+applications can exhibit maintenance problems with symptoms surfacing in the areas of debugging,
+ testing and refactoring.
+
+The common problem that concurrency introduces is unpredictable timing. Unpredictable timing can be 
+caused by variable load on a system, as well as variations in system configurations (e.g. varying core 
+clock speed and availability of processors). These can ultimately can result in race conditions. 
+Symptoms of race conditions include out-of-order execution, deadlocks, livelocks and corrupted state.
+
+In my opinion, the biggest danger when introducing concurrency haphazardly to an application, is that 
+you can silently introduce bugs. These defects may slip past Development, QA and UAT and only manifest 
+themselves in Production environments.
+
+Rx, however, does such a good job of simplifying the concurrent processing of observable sequences that 
+many of these concerns can be mitigated. You can still create problems, but if you follow the guidelines 
+then you can feel a lot safer in the knowledge that you have heavily reduced the capacity for unwanted 
+race conditions.
+
+TestScheduler
+-----------------------------------------
+It is worth noting that there is also a TestScheduler accompanied by its base classes VirtualTimeScheduler 
+and VirtualTimeSchedulerBase. The latter two are not really in the scope of an introduction to Rx, but the 
+former is. We will cover all things testing including the TestScheduler in the next chapter, Testing Rx.
+
+Selecting an appropriate scheduler
+----------------------------------------
+With all of these options to choose from, it can be hard to know which scheduler to use and when. Here is 
+a simple check list to help you in this daunting task:
+
+UI Applications
+-------------------------------------
+ 
+The final subscriber is normally the presentation layer and should control the scheduling.
+Observe on the DispatcherScheduler to allow updating of ViewModels
+Subscribe on a background thread to prevent the UI from becoming unresponsive
+If the subscription will not block for more than 50ms then
+Use the TaskPoolScheduler if available, or
+Use the ThreadPoolScheduler
+If any part of the subscription could block for longer than 50ms, then you should use the NewThreadScheduler.
+Service layer
+
+ 
+If your service is reading data from a queue of some sort, consider using a dedicated EventLoopScheduler. T
+his way, you can preserve order of events
+If processing an item is expensive (>50ms or requires I/O), then consider using a NewThreadScheduler
+If you just need the scheduler for a timer, e.g. for Observable.Interval or Observable.Timer, then favor 
+the TaskPool. Use the ThreadPool if the TaskPool is not available for your platform.
+
+
+Testing Rx
+------------------------------------------
+Testing software has its roots in debugging and demonstrating code. Having largely matured past manual 
+tests that try to "break the application", modern quality assurance standards demand a level of automation
+ that can help evaluate and prevent bugs. While teams of testing specialists are common, more and more 
+coders are expected to provide quality guarantees via automated test suites.
+
+Up to this point, we have covered a broad scope of Rx, and we have almost enough knowledge to start using 
+Rx in anger! Still, many developers would not dream of coding without first being able to write tests. 
+Tests can be used to prove that code is in fact satisfying requirements, provide a safety net against 
+regression and can even help document the code. This chapter makes the assumption that you are familiar 
+with the concepts of dependency injection and unit testing with test-doubles, such as mocks or stubs.
+
+Rx poses some interesting problems to our Test-Driven community:
+
+ 
+Scheduling, and therefore threading, is generally avoided in test scenarios as it can introduce race 
+conditions which may lead to non-deterministic tests
+Tests should run as fast as possible
+For many, Rx is a new technology/library. Naturally, as we progress on our journey to mastering Rx, we 
+may want to refactor some of our previous Rx code. We want to use tests to ensure that our refactoring 
+has not altered the internal behavior of our code base
+Likewise, tests will ensure nothing breaks when we upgrade versions of Rx.
+While we do want to test our code, we don't want to introduce slow or non-deterministic tests; indeed, 
+the later would introduce false-negatives or false-positives. If we look at the Rx library, there are 
+plenty of methods that involve scheduling (implicitly or explicitly), so using Rx effectively makes it 
+hard to avoid scheduling. This LINQ query shows us that there are at least 26 extension methods that 
+accept an IScheduler as a parameter.
+
+TestScheduler
+---------------------------------------
+To our rescue comes the TestScheduler; it introduces the concept of a virtual scheduler to allow us to 
+emulate and control time.
+
+A virtual scheduler can be conceptualized as a queue of actions to be executed. Each are assigned a point
+in time when they should be executed. We use the TestScheduler as a substitute, or test double, for the 
+production IScheduler types. Using this virtual scheduler, we can either execute all queued actions, or 
+only those up to a specified point in time.
+
+In this example, we schedule a task onto the queue to be run immediately by using the simple overload 
+(Schedule(Action)). We then advance the virtual clock forward by one tick. By doing so, we execute 
+everything scheduled up to that point in time. Note that even though we schedule an action to be 
+executed immediately, it will not actually be executed until the clock is manually advanced.
+
+
+var scheduler = new TestScheduler(‌);
+
+var wasExecuted = false;
+
+scheduler‌.Schedule(‌(‌) => wasExecuted = true);
+
+Assert‌.IsFalse(‌wasExecuted);
+
+scheduler‌.AdvanceBy(‌1); //execute 1 tick of queued actions
+
+Assert‌.IsTrue(‌wasExecuted);
+
+Running and debugging this example may help you to better understand the basics of the TestScheduler.
+The TestScheduler implements the IScheduler interface (naturally) and also extends it to allow us to 
+control and monitor virtual time. We are already familiar with the IScheduler.Schedule methods, however 
+the AdvanceBy(long), AdvanceTo(long) and Start() methods unique to the TestScheduler are of most interest. 
+Likewise, the Clock property will also be of interest, as it can help us understand what is 
+happening internally.
+
+Testing Rx code
+------------------
+Now that we have learnt a little bit about the TestScheduler, let's look at how we could use it to 
+test our two initial code snippets that use Interval and Timeout. We want to execute tests as fast as
+ possible but still maintain the semantics of time. In this example we generate our five values one 
+second apart but pass in our TestScheduler to the Interval method to use instead of the default scheduler.
+
+[TestMethod]
+
+public void Testing_with_test_scheduler(‌)
+
+{
+
+var expectedValues = new long[] {0, 1, 2, 3, 4};
+var actualValues = new List<long>(‌);
+var scheduler = new TestScheduler(‌);
+var interval = Observable
+‌.Interval(‌TimeSpan‌.FromSeconds(‌1), scheduler)
+‌.Take(‌5);
+interval‌.Subscribe(‌actualValues‌.Add);
+scheduler‌.Start(‌);
+CollectionAssert‌.AreEqual(‌expectedValues, actualValues);
+//Executes in less than 0‌.01s "on my machine"
+}
+
+While this is mildly interesting, what I think is more important is how we would test a real piece of code. 
+Imagine, if you will, a ViewModel that subscribes to a stream of prices. As prices are published, it adds 
+them to a collection. Assuming this is a WPF or Silverlight implementation, we take the liberty of 
+enforcing that the subscription be done on the ThreadPool and the observing is executed on the Dispatcher.
+
+
+Sequences of coincidence
+------------------------------------------
+
+We can conceptualize events that have duration as windows. For example;
+
+ 
+a server is up
+a person is in a room
+a button is pressed (and not yet released).
+The first example could be re-worded as "for this window of time, the server was up". An event from one
+ source may have a greater value if it coincides with an event from another source. For example, while at 
+a music festival, you may only be interested in tweets (event) about an artist while they are playing
+ (window). In finance, you may only be interested in trades (event) for a certain instrument while the 
+New York market is open (window). In operations, you may be interested in the user sessions (window) 
+that remained active during an upgrade of a system (window). In that example, we would be querying for 
+coinciding windows.
+
+Rx provides the power to query sequences of coincidence, sometimes called 'sliding windows'. We already
+ recognize the benefit that Rx delivers when querying data in motion. By additionally providing the power 
+to query sequences of coincidence, Rx exposes yet another dimension of possibilities.
+
+Buffer revisited
+---------------------------------------
+Buffer revisited
+
+Buffer is not a new operator to us; however, it can now be conceptually grouped with the window operators. 
+Each of these windowing operators act on a sequence and a window of time. Each operator will open a window 
+when the source sequence produces a value. The way the window is closed, and which values are exposed, are 
+the main differences between each of the operators. Let us just quickly recap the internal working of the 
+Buffer operator and see how this maps to the concept of "windows of time".
+
+Buffer will create a window when the first value is produced. It will then put that value into an internal 
+cache. The window will stay open until the count of values has been reached; each of these values will have 
+been cached. When the count has been reached, the window will close and the cache will be published to the 
+result sequence as an IList<T>. When the next value is produced from the source, the cache is cleared and 
+we start again. This means that Buffer will take an IObservable<T> and return an IObservable<IList<T>>.
+
+Example Buffer with count of 3
+
+Window
+----------------------------------------
+The Window operators are very similar to the Buffer operators; they only really differ by their return type. 
+Where Buffer would take an IObservable<T> and return an IObservable<IList<T>>, the Window operators return
+an IObservable<IObservable<T>>. It is also worth noting that the Buffer operators will not yield their 
+buffers until the window closes.
+
+Here we can see the simple overloads to Window. There is a surprising symmetry with the Window and Buffer 
+overloads.
+
+Flattening a Window operation
+------------------------------------------
+I think it is worth noting, at least from an academic standpoint, that the Window operators produce 
+IObservable<IObservable<T>>. We have explored the concept of nested observables in the earlier chapter 
+on Aggregation. Concat, Merge and Switch each have an overload that takes an IObservable<IObservable<T>> 
+and returns an IObservable<T>.
+
+
+Join
+----------------------------------------------
+The Join operator allows you to logically join two sequences. Whereas the Zip operator would pair values 
+from the two sequences together by index, the Join operator allows you join sequences by intersecting windows. 
+Like the Window overload we just looked at, you can specify when a window should close via an observable 
+sequence; this sequence is returned from a function that takes an opening value. The Join operator has two
+such functions, one for the first source sequence and one for the second source sequence. 
+Like the Zip operator, we also need to provide a selector function to produce the result item from 
+the pair of values.
+
+public static IObservable<TResult> Join
+
+<TLeft, TRight, TLeftDuration, TRightDuration, TResult>
+(‌
+
+this IObservable<TLeft> left,
+IObservable<TRight> right,
+Func<TLeft, IObservable<TLeftDuration>> leftDurationSelector,
+Func<TRight, IObservable<TRightDuration>> rightDurationSelector,
+Func<TLeft, TRight, TResult> resultSelector
+)
+
+This is a complex signature to try and understand in one go, so let's take it one parameter at a time.
+
+IObservable<TLeft> left is the source sequence that defines when a window starts. This is just like the 
+Buffer and Window operators, except that every value published from this source opens a new window. In 
+Buffer and Window, by contrast, some values just fell into an existing window.
+
+I like to think of IObservable<TRight> right as the window value sequence. While the left sequence controls 
+opening the windows, the right sequence will try to pair up with a value from the left sequence.
+
+Let us imagine that our left sequence produces a value, which creates a new window. If the right sequence 
+produces a value while the window is open, then the resultSelector function is called with the two values. 
+This is the crux of join, pairing two values from a sequence that occur within the same window. This then 
+leads us to our next question; when does the window close? The answer illustrates both the power and the 
+complexity of the Join operator.
+
+When left produces a value, a window is opened. That value is also passed, at that time, to the 
+leftDurationSelector function, which returns an IObservable<TLeftDuration>. When that sequence produces 
+a value or completes, the window for that value is closed. Note that it is irrelevant what the type of 
+TLeftDuration is. This initially left me with the feeling that IObservable<TLeftDuration> was a bit 
+excessive as you effectively just need some sort of event to say 'Closed'. However, by being allowed to 
+use IObservable<T>, you can do some clever manipulation as we will see later.
+
+Let us now imagine a scenario where the left sequence produces values twice as fast as the right sequence.
+ Imagine that in addition we never close the windows; we could do this by always returning 
+Observable.Never<Unit>() from the leftDurationSelector function. This would result in the following 
+pairs being produced.
+
+Left Sequence
+
+L 0-1-2-3-4-5-
+
+Right Sequence
+
+R --A---B---C-
+
+0, A
+
+1, A
+
+0, B
+
+1, B
+
+2, B
+
+3, B
+
+0, C
+
+1, C
+
+2, C
+
+3, C
+
+4, C
+
+5, C
+
+As you can see, the left values are cached and replayed each time the right produces a value.
+
+Now it seems fairly obvious that, if I immediately closed the window by returning Observable.Empty<Unit>, 
+or perhaps Observable.Return(0), windows would never be opened thus no pairs would ever get produced. 
+However, what could I do to make sure that these windows did not overlap- so that, once a second value 
+was produced I would no longer see the first value? Well, if we returned the left sequence from the 
+leftDurationSelector, that could do the trick. But wait, when we return the sequence left from the 
+leftDurationSelector, it would try to create another subscription and that may introduce side effects. 
+The quick answer to that is to Publish and RefCount the left sequence. If we do that, the results 
+look more like this.
+
+left  |-0-1-2-3-4-5|
+
+right |---A---B---C|
+
+result|---1---3---5
+
+          A   B   C
+
+The last example is very similar to CombineLatest, except that it is only producing a pair when the 
+right sequence changes. We could use Join to produce our own version of CombineLatest. If the values 
+from the left sequence expire when the next value from left was notified, then I would be well on my 
+way to implementing my version of CombineLatest. However I need the same thing to happen for the right. 
+Luckily the Join operator provides a rightDurationSelector that works just like the 
+
+GroupJoin
+----------------------------------------
+When the Join operator pairs up values that coincide within a window, it will pass the scalar values 
+left and right to the resultSelector. The GroupJoin operator takes this one step further by passing 
+the left (scalar) value immediately to the resultSelector with the right (sequence) value. The right 
+parameter represents all of the values from the right sequences that occur within the window. 
+Its signature is very similar to Join, but note the difference in the resultSelector parameter.
+
+public static IObservable<TResult> GroupJoin
+
+<TLeft, TRight, TLeftDuration, TRightDuration, TResult>
+(‌
+
+this IObservable<TLeft> left,
+IObservable<TRight> right,
+Func<TLeft, IObservable<TLeftDuration>> leftDurationSelector,
+Func<TRight, IObservable<TRightDuration>> rightDurationSelector,
+Func<TLeft, IObservable<TRight>, TResult> resultSelector
+)
+
+If we went back to our first Join example where we had
+
+ 
+the left producing values twice as fast as the right,
+the left never expiring
+the right immediately expiring
+
+Summary
+----------------------------------------------
+GroupJoin and other window operators reduce the need for low-level plumbing of state and concurrency. 
+By exposing a high-level API, code that would be otherwise difficult to write, becomes a cinch to put 
+together. For example, those in the finance industry could use GroupJoin to easily produce real-time 
+
+Rx delivers yet another way to query data in motion by allowing you to interrogate sequences of coincidence. 
+his enables you to solve the intrinsically complex problem of managing state and concurrency while performing 
+matching from multiple sources. By encapsulating these low level operations, you are able to leverage Rx to 
+design your software in an expressive and testable fashion. Using the Rx operators as building blocks, your 
+code effectively becomes a composition of many simple operators. This allows the complexity of the domain 
+code to be the focus, not the otherwise incidental supporting code.
+
+Event myths
+-----------------------------------------
+Often in my career, I have found myself involved in the process of interviewing new candidates for developer 
+roles. I have often been surprised about the lack of understanding developers had surrounding .NET events. 
+Carrying these misconceptions into a world of concurrency will make things seem magic and mysterious. This 
+normally leads to problematic code. Here is a short list of verifiable facts about events.
+
+Events are just a syntactic implementation of the observer pattern
+
+The += and -= syntax in c# may lead you to think that there is something clever going on here, but it is 
+just the observer pattern; you are providing a delegate to get called back on. Most events pass you data 
+in the form of the sender and the EventArgs.
+Events are multicast
+
+Many consumers can register for the same event. Each delegate (handler) will be internally added to a 
+callback list.
+Events are single threaded.
+
+There is nothing multithreaded about an event. Each of the callback handlers are each just called in the 
+order that they registered, and they are called sequentially.
+Event handlers that throw exceptions stop other handlers being called
+
+Since handlers are called sequentially, they are also called on the same thread that raised the event. 
+This means that, if one handler throws an exception, there cannot be a chance for any user code to 
+intercept the exception. This means that the remaining handlers will not be called.
+Common myths about events that I have heard (or even believed at some point) include:
+
+ 
+Handlers are called all at the same time on the thread pool, in parallel
+All handlers will get called. Throwing an exception from a handler will not affect other handlers
+You don't need to unregister an event handler, .NET is managed so it will garbage collect everything 
+for you.
+The silly thing about these myths is that it only takes fifteen minutes to prove them all wrong; you 
+just open up Visual Studio or LINQPad and test them out. In my opinion, there is something satisfying 
+about proving something you only believed in good faith to be true.
+
+pdf summary
+-----------------
+Abstract:
+Rx (Reactive Extensions) is a powerful tool for working with streams of data in a functional 
+and reactive way, allowing operations such as reducing, scanning, partitioning, and combining multiple streams. It also provides methods for customizing and controlling observable sequences, and features such as publishing and connecting for sharing data. By understanding these concepts, developers can create efficient and flexible applications that can handle real-time data with ease.
+
+Key Points:
+------------------------------------
+1. Rx performs operations such as 
+- reducing, 
+- scanning, 
+- partitioning, and 
+- combining multiple streams.
+
+2. Rx provides methods for customizing and controlling observable sequences.
+
+3. Rx features publishing and connecting for sharing data between sequences.
+
+Keywords:
+--------------------------------------
+1. Rx
+2. Reactive Extensions
+3. Streams
+4. Reducing
+5. Scanning
+6. Partitioning
+7. Combining
+8. Observables
+9. Publishing
+10. Connecting
+11. Real-time

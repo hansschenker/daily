@@ -1,0 +1,83 @@
+Generates and/or modifies files based on a schematic.
+
+usage: ng generate feature <name> [options]
+
+arguments:
+  schematic
+    The schematic or collection:schematic to generate.
+  name
+    The name of the feature.
+
+generate angular feature module and angular container component
+-------------------------------------------------------------
+> ng g m links --routing
+module
+------------------------------------------------
+CREATE src/app/links/links-routing.module.ts (249 bytes)
+CREATE src/app/links/links.module.ts (276 bytes)
+
+container
+-------------------------------------------------------
+> ng g c links -m links
+CREATE src/app/links/links.component.html (20 bytes)
+CREATE src/app/links/links.component.spec.ts (621 bytes)
+CREATE src/app/links/links.component.ts (266 bytes)
+CREATE src/app/links/links.component.scss (0 bytes)
+UPDATE src/app/links/links.module.ts (342 bytes)
+
+generate ngrx feature with api and create functions
+----------------------------------------------------------------------------
+ng g feature links/state/links -a -c -m links -r=../../app-store/index.ts
+
+options:
+  --api (-a)
+    Specifies if api success and failure actions, reducer, and effects should be generated as part of this feature.
+
+  --creators (-c)
+    Specifies if the actions, reducers, and effects should be created using creator functions
+  --defaults
+    When true, disables interactive input prompts for options with a default.
+  --dry-run (-d)
+    When true, runs through and reports activity without writing out results.
+  --flat
+    Flag to indicate if a dir is created.
+  --force (-f)
+    When true, forces overwriting of existing files.
+  --group (-g)
+    Group actions, reducers and effects within relative subfolders
+  --help
+    Shows a help message for this command in the console.
+  --interactive
+    When false, disables interactive input prompts.
+  --module (-m)
+    Specifies the declaring module.
+  --project (-p)
+    The name of the project.
+  --reducers (-r)
+    Specifies the reducers file.
+  --spec
+    Specifies if a spec file is generated.
+
+Help for schematic feature
+
+arguments:
+  name
+    The name of the feature.
+
+options:
+  --api (-a)
+    Specifies if api success and failure actions, reducer, and effects should be generated as part of this feature.
+  --creators (-c)
+    Specifies if the actions, reducers, and effects should be created using creator functions
+  --flat
+    Flag to indicate if a dir is created.
+  --group (-g)
+    Group actions, reducers and effects within relative subfolders
+  --module (-m)
+    Specifies the declaring module.
+  --project (-p)
+    The name of the project.
+  --reducers (-r)
+    Specifies the reducers file.
+  --spec
+    Specifies if a spec file is generated.

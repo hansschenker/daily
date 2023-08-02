@@ -1,0 +1,43 @@
+Snake game entities:
+
+board
+ props		has a certain number of horizontal and vertical cells
+		each cell has the same width and height
+apples
+  actions	are randomly placed on a cell
+
+player
+  actions	press arrow keys, opposite arrow key is not allowed
+		as long as the same arrow key snake moves in one direction
+  score         when he manages to direct the snake over a food, the score goes up
+
+snake		has head and an initial body length with 3 cells
+		snake initial position is random and initial direction is random too
+  actions
+             	moves in one direction (one cell after the other)
+		changes direction when player presses arrow key
+		snake grows when eaten an apple
+  rules
+		snake is not allowed moving in opposite direction
+		snake eats apple when over an apple (snake head position = apple position)
+		when the snake head collides with its own body the game is lost
+
+game		on every frame the state state is recalculated
+		and the new state is rendered
+  rules		when snake head collides with its own body or the walls
+		the game is lost
+
+elm
+  program	--model (initial model)
+		--update
+		--subscriptions
+		--view
+  types
+		type Game
+		  direction:Direction
+		  dimensions: Window.Size
+		  snake: Snake
+		  isDead: Bool
+		  apple: Maybe Block
+		  ateApple: Bool
+

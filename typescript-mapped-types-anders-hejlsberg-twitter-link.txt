@@ -1,0 +1,185 @@
+Anders Hejlsberg on Mapped Types
+---------------------------------
+ It takes an object type T, enumerates its properties (P in keyof T), 
+ and adds the readonly modifier to each property. 
+ You can think of mapped types as an equivalent of the for..of loop in the world of types
+
+
+Mapped Types, a new kind of object type that maps a type representing property names 
+over a property declaration template.
+ 
+In combination with index types and indexed access types (#11929), 
+mapped types enable a number of interesting and useful type transformations
+
+A mapped type takes one of the forms
+----------------------------------------
+{ [ P in K ] : T }
+
+{ [ P in K ] ? : T }
+
+{ readonly [ P in K ] : T }
+
+{ readonly [ P in K ] ? : T }
+
+where 
+- P is an identifier, 
+- K is a type that must be assignable to string, 
+
+- and T is some type that can use P as a type parameter. 
+
+A mapped type resolves to an object type with a set of properties constructed by introducing a type parameter P 
+and iterating it over the constituent types in K, 
+
+for each such P declaring a property or index signature with the type given by T 
+(which possibly references P as a type parameter). 
+
+When P is a string literal type, a property with that name is introduced. 
+Otherwise, when P is type string, an index signature is introduced.
+
+type Item = { a: string, b: number, c: boolean };
+
+type T1 = { [P in "x" | "y"]: number };  // { x: number, y: number }
+type T2 = { [P in "x" | "y"]: P };  // { x: "x", y: "y" }
+
+type T3 = { [P in "a" | "b"]: Item[P] };  // { a: string, b: number }
+type T4 = { [P in keyof Item]: Date };  // { a: Date, b: Date, c: Date }
+
+type T5 = { [P in keyof Item]: Item[P] };  // { a: string, b: number, c: boolean }
+type T6 = { readonly [P in keyof Item]: Item[P] };  // { readonly a: string, readonly b: number, readonly c: boolean }
+
+type T7 = { [P in keyof Item]: Array<Item[P]> };  // { a: string[], b: number[], c: boolean[] }
+
+
+Mapped Types, a new kind of object type that 
+-------------------------------------------------
+- maps a type representing property names 
+- over a property declaration template. 
+
+In combination with index types and indexed access types ,mapped types 
+- enable a number of interesting and useful type transformations. 
+
+In particular, mapped types enable more accurate typing of intrinsic functions such as 
+- more accurate typeing for Object.assign and Object.freeze 
+as well as 
+- APIs that map or transform shapes of objects.
+
+A mapped type takes one of the forms
+
+{ [ P in K ] : T }
+{ [ P in K ] ? : T }
+{ readonly [ P in K ] : T }
+{ readonly [ P in K ] ? : T }
+
+where 
+- P is an identifier, 
+- K is a type that must be assignable to string, and 
+- T is some type that can use P as a type parameter. 
+
+A mapped type resolves to an object type with a set of properties constructed by 
+- introducing a type parameter P and 
+- iterating it over the constituent types in K, 
+- for each such P declaring a property or index signature with the type given by T 
+  (which possibly references P as a type parameter). 
+  When P is a string literal type, a property with that name is introduced. 
+  Otherwise, when P is type string, an index signature is introduced.
+
+type Item = { a: string, b: number, c: boolean };
+
+type T1 = { [P in "x" | "y"]: number };  // { x: number, y: number }
+type T2 = { [P in "x" | "y"]: P };  // { x: "x", y: "y" }
+type T3 = { [P in "a" | "b"]: Item[P] };  // { a: string, b: number }
+type T4 = { [P in keyof Item]: Date };  // { a: Date, b: Date, c: Date }
+type T5 = { [P in keyof Item]: Item[P] };  // { a: string, b: number, c: boolean }
+type T6 = { readonly [P in keyof Item]: Item[P] };  // { readonly a: string, readonly b: number, readonly c: boolean }
+type T7 = { [P in keyof Item]: Array<Item[P]> };  // { a: string[], b: number[], c: boolean[] }
+
+Type relationships involving mapped types are described in #12351. 
+For information on type inference involving mapped types, see #12528 and #12589. 
+For information on preservation of property modifiers with mapped types, see #12563.
+
+The following four mapped types are predefined in lib.d.ts as of #12276:
+
+// Make all properties in T optional
+type Partial<T> = {
+    [P in keyof T]?: T[P];
+};
+
+// Make all properties in T readonly
+type Readonly<T> = {
+    readonly [P in keyof T]: T[P];
+};
+
+// From T pick a set of properties K
+type Pick<T, K extends keyof T> = {
+    [P in K]: T[P];
+}
+
+// Construct a type with a set of properties K of type T
+type Record<K extends string, T> = {
+    [P in K]: T;
+}
+
+Some functions that use the above types:
+------------------------------------------------------------------------------------------
+function assign<T>(obj: T, props: Partial<T>): void;
+function freeze<T>(obj: T): Readonly<T>;
+function pick<T, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K>;
+function mapObject<K extends string, T, U>(obj: Record<K, T>, f: (x: T) => U): Record<K, U>;
+
+And some code that uses the functions:
+---------------------------------------------------------------------------------
+interface Shape {
+    name: string;
+    width: number;
+    height: number;
+    visible: boolean;
+}
+
+function f1(s1: Shape, s2: Shape) {
+    assign(s1, { name: "circle" });
+    assign(s2, { width: 10, height: 20 });
+}
+
+function f2(shape: Shape) {
+    const frozen = freeze(shape);
+    frozen.name = "circle";  // Error, name is read-only
+}
+
+function f3(shape: Shape) {
+    const x = pick(shape, "name", "visible");  // { name: string, visible: boolean }
+}
+
+function f4() {
+    const rec = { foo: "hello", bar: "world", baz: "bye" };
+    const lengths = mapObject(rec, s => s.length);  // { foo: number, bar: number, baz: number }
+}
+The mapObject example above shows how type inference can be used for mapped types. 
+
+When inferring from an object type S to a mapped type { [P in K]: T }, 
+keyof S is inferred for K and S[keyof S] is inferred for T. 
+
+In other words, a literal union type of all property names in S is 
+inferred for K and a union of all property types in S is inferred for T.
+
+Another common pattern:
+----------------------------------------------------------------------------
+// A proxy for a given type
+type Proxy<T> = {
+    get(): T;
+    set(value: T): void;
+}
+
+// Proxify all properties in T
+type Proxify<T> = {
+    [P in keyof T]: Proxy<T[P]>;
+}
+
+function proxify<T>(obj: T): Proxify<T> {
+    // Wrap proxies around properties of obj
+}
+
+function f5(shape: Shape) {
+    const p = proxify(shape);
+    let name = p.name.get();
+    p.visible.set(false);
+}

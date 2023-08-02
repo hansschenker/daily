@@ -1,0 +1,323 @@
+Algebraic Data Structure
+------------------------
+
+What is an Algebra
+-----------------
+Die Algebra ist eines der grundlegenden Teilgebiete der Mathematik; 
+
+es befasst sich mit den Eigenschaften von Rechenoperationen. 
+Im Volksmund wird Algebra häufig als das Rechnen mit Unbekannten in Gleichungen bezeichnet; 
+die Unbekannte wird mit Buchstaben dargestellt.
+
+
+In mathematics, and more specifically in abstract algebra, an algebraic structure on a set 
+A
+ (called carrier set or underlying set) is a collection of finitary operations on 
+A
+; the set 
+A
+ with this structure is also called an algebra. 1
+
+Two common classes of algebraic types are 
+------------------------------------------
+
+- product types (i.e., tuples and records) and 
+- sum types (i.e., tagged or disjoint unions, coproduct types or variant types). 
+
+The values of a product type typically contain several values, called fields. 
+All values of that type have the same combination of field types.
+
+Composed Data Type
+------------------
+In der Informatik, besonders in der funktionalen Programmierung und hier insbesondere in Haskell 
+und der Typentheorie bezeichnet ein algebraischer Datentyp einen zusammengesetzten Datentypen.
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+Algebraic structures - a mathematical conept
+-------------------------------------------------------------------------------------------------------------------------------------------
+Maybe, Either, and Effect all have a 
+- .map() method. Each one also has 
+- .ap() and 
+- .of() methods. And all three have 
+- .chain() too.
+
+And these patterns are algebraic structures.
+
+They are also Design Patterns (Templates for solving a problem)
+-----------------------------------------------------------------
+Like design patterns, algebraic structures also represent templates for solving a problem
+
+algebraic structures have their basis in mathematics
+this means that they tend to be more formally defined and more general
+
+The Functor algebraic structure
+---------------------------------
+‘Functor’ is an algebraic structure—often the first one people learn. 
+The functor structure must have a 
+- .map() method with the following type signature:
+
+map :: Functor f => f a ~> (a -> b) -> f b
+
+In TypeScript, it might look like this:
+--------------------------------------
+interface Functor<A> {
+    map<B>(f: (a: A) => B): Functor<B>;
+}
+
+The .map() method takes a function as an argument.
+----------------------------------------------------
+That function must take something of type a and transforms it into something of type b. 
+The types a and b can be anything—even the same type.
+And when you call .map() on a functor of a, you’ll get back a functor of b.
+
+This .map() method takes an ordinary function and makes it work with functors.
+
+Functor has two laws
+-------------------
+- Identity law: 	If u is a functor, then calling u.map(x => x) must be equivalent to u. This is the ‘identity law.’
+
+- Composition law:	If u is a functor, and f and g are functions, then calling u.map(x => f(g(x))) 
+			is equivalent to calling u.map(g).map(f). This is the ‘composition law.’
+
+			composition law. It says that mapping twice is the same as mapping a function composed of two other functions. That is:
+			// Here, ≣ is an operator I’ve made up to signify ‘is equivalent to’
+			a.map(g).map(f) ≣ a.map(x => f(g(x)))
+
+function ap(m) {
+    return m.flatMap(f => this.map(f));
+}
+
+------------------------------------------------------------------------------------------------------------------------------------
+Type Classes - a language feature, a way of doing with parametric polymorphism (generics)
+-------------------------------------------------------------------------------------------------------------------------------------
+Type classes are not the same thing as algebraic structures. But you’ll find many people use the terms interchangeably
+type classes are a way of doing polymorphism
+And they happen to be most convenient for building algebraic structures
+
+Implementations of algebraic structures 
+-------------------------------------------
+type classes are used to implement algebraic structures
+They’re a language feature, rather than a mathematical concept
+
+custom map function for javascript array
+-------------------------------------------
+Array.prototype.map = function map(f) {
+    const out = [];
+    for (let x of this) {
+        out.push(f(x));
+    }
+    return out;
+};
+
+custom map for Maybe
+-------------------------
+Not too hard, was it? And now, let’s look at another functor. Here’s a .map() method for Maybe:
+
+Maybe.prototype.map = function(f) {
+    if (this.isNothing()) {
+        return Maybe.of(null);
+    }
+    return Maybe.of(f(this.__value));
+};
+
+methods with no this
+--------------------
+// Map for arrays.
+function map(f, xs) {
+    const out = [];
+    for (let x of xs) {
+        out.push(f(x));
+    }
+    return out;
+};
+
+// Map for Maybe.
+function map(f, x) {
+    if (x.isNothing()) {
+        return x;
+    }
+    return Maybe.of(f(x.__value));
+};
+
+-- Type signature of map for arrays/lists.
+map :: (a -> b) -> [a] -> [b]
+
+-- Type signature of map for Maybe
+map :: (a -> b) -> Maybe a -> Maybe b
+
+instance Functor List where
+    map :: (a -> b) -> [a] -> [b]
+    map f xs = foldl (\x arr -> arr ++ [f x]) [] xs
+And we could declare Maybe a functor too:
+
+instance Functor Maybe where
+    map :: (a -> b) -> Maybe a -> Maybe b
+    map f (Just a) = Just f a
+    map _ Nothing  = Nothing
+
+What’s an Algebraic Data Type? - a structure composed of other types - a type made up of other types
+-----------------------------------------------------------------------------------------------------
+An algebraic data type is a structured type that’s formed by composing other types
+
+Sum Types
+----------------------------------------------------------------------------------------------------
+In functional programming we use sum types to model the business domain. That’s where algebraic data types really shine.”
+
+Product Types
+------------------------------------------------------------------------------------------------------
+
+Product types allow you to 
+--------------------------
+- have more than one value in a single structure, at the same time. 
+  We already discussed how this includes things like arrays, objects, maps, and sets
+
+class BoolTuple2 {
+    constructor(a, b) {
+        if ((typeof a !== 'boolean' ) || (typeof b !== 'boolean')) {
+            throw new Error('Bool2Tuple must have exactly two boolean values');
+        }
+        this.a = a;
+        this.b = b;
+        Object.freeze(this);
+    }
+}
+
+
+We’ve created a new product type. Now, how many ways do we have to create a valid BoolTuple2 object?
+
+The answer is four (the cartesian product). 
+We can write them out:
+
+const tt = new BoolTuple2(true, true);   // 1
+const tf = new BoolTuple2(true, false);  // 2
+const ft = new BoolTuple2(false, true);  // 3
+const ff = new BoolTuple2(false, false); // 4
+
+class Digit {
+    constructor (c) {
+        const validDigits = '1234567890';
+        if ((c.toString().length > 1) || (!validDigits.includes(c.toString()))) {
+            throw new Error('Digit can only contain single digits');
+        }
+        this.value = parseInt(c, 10);
+        Object.freeze(this);
+    }
+}
+
+There’s precisely ten valid integers we can store in Digit.
+ We have one value slot, and 10 valid characters. 1 ⨉ 10 = 10.
+
+Perhaps you can see where this is going already. But one more example to drive it home. 
+Let’s create a composite type stores two booleans and a digit.
+
+class Composite {
+    constructor(boolTuple, digit) {
+        if (!(boolTuple instanceof BoolTuple2) || !(digit instanceof Digit)) {
+            throw new Error('Composite must be created with a BoolTuple2 instance and a Digit instance');
+        }
+        this.a = boolTuple.a;
+        this.b = boolTuple.b;
+        this.c = digit.value;
+        Object.freeze(this);
+    }
+}
+
+The first two, a and b, can only have two values each. And the third value, c, can only have 10 possible values. 
+So we can calculate: 2 ⨉ 2 ⨉ 10 = 40. Our Composite type can have 40 possible values
+
+Sum Types
+----------------------------------------------------------------------------------------------------------------
+
+Sum types are types where your value must be one of a fixed set of options. 
+You may have seen enum types in languages like C# or Java. 
+Sum types are similar, but more flexible. 
+
+a classical sum type: Either. Just or None (but not both)
+----------------------------
+The Either type can hold a Left or Right value, but never both at the same time.
+
+import React, {useState, useEffect} from 'react';
+import Spinner from '@atlaskit/spinner';
+import {ProfileCard} from '@atlaskit/profilecard';
+
+import { CardState, Loading, LoadingError, Display } from "./states";
+
+// Simple function to build a URL.
+function apiURL(email) {
+  return `/data.json?email=${encodeURIComponent(email)}`;
+}
+
+// Load the data.
+function loadData(email, setState) {
+  fetch(apiURL(email))
+    .then(response => response.json())
+    .then(data => setState(new Display(data)))
+    .catch(err => setState(new LoadingError(err)));
+}
+
+// A component to display if we have an error.
+const ErrorCard = () => (
+  <ProfileCard errorType={{ reason: "default" }} hasError />
+);
+
+// Our display logic. We expect the state argument to be
+// a CardState instance
+function renderComponent(state) {
+  // Here we check the type of state. If it's not an instance
+  // of CardState, something is wrong.
+  if (!(state instanceof CardState)) {
+    throw new Error('State must be an instance of CardState');
+  };
+
+  // Create a mapping between  states and React elements to display.
+  const stateMap = {
+    Loading: () => <Spinner />,
+    LoadError: () => <ErrorCard />,
+    Display: s => <ProfileCard {...s.data} />,
+  };
+
+  // Select which element to render, based on current state
+  // or fall back to an error card.
+  const component = stateMap[state.constructor.name] || (() => <ErrorCard />);
+  return component(state);
+
+}
+
+// Our component with everything tied together.
+export function UserCard({ email }) {
+
+  // Initialise our hooks.
+  const [state, setState] = useState(new Loading());
+  useEffect(() => loadData(email, setState), [email]);
+
+  return renderComponent(state);
+}
+
+Learning functional programming is hard. 
+--------------------------------------------------------------------------
+Some of the difficulty is inherent to the subject. A lot of it isn’t. 
+Functional programming is different to the way most people are taught to code. 
+And switching to a new way of thinking can be difficult. 
+But I think we can do a better job of explaining how things fit together.
+
+Algebraic Structures are a bit like code design patterns. 
+---------------------------------------------------------------------------
+Unlike design patterns though, they have a mathematical basis and are inter-related. 
+Hence why they’re called ‘algebraic’. Also, unlike design patterns, 
+they have confusing names made up by mathematicians.
+
+Type classes are a way of implementing polymorphism. 
+---------------------------------------------------------------------------
+They’re used in statically typed languages like Haskell or PureScript. 
+They let you define functions with the same name but different type signatures. 
+They’re often used to implement algebraic structures. 
+So sometimes people use the terms interchangeably.
+
+Algebraic data types are not the same as algebraic structures. 
+-----------------------------------------------------------------------------
+What are they? They’re composite data types made out of other types. 
+There’s two main kinds of algebraic data types: Sum types and Product types. 
+Together, they’re like a dynamic duo for encoding business logic. 
+They help us make good things possible, and bad things impossible
+
+

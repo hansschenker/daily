@@ -1,0 +1,45 @@
+// image picker
+
+ionic cordova plugin add cordova-plugin-telerik-imagepicker
+npm install @ionic-native/image-picker
+
+import { ImagePicker } from '@ionic-native/image-picker/ngx';
+
+
+constructor(private imagePicker: ImagePicker) { }
+
+
+this.imagePicker.getPictures(options).then((results) => {
+  for (var i = 0; i < results.length; i++) {
+      console.log('Image URI: ' + results[i]);
+  }
+}, (err) => { });
+
+
+// image crop
+
+import { Crop } from '@ionic-native/crop/ngx';
+
+constructor(private crop: Crop) { }
+
+...
+
+this.crop.crop('path/to/image.jpg', {quality: 75})
+  .then(
+    newImage => console.log('new image path is: ' + newImage),
+    error => console.error('Error cropping image', error)
+  );
+
+// installation
+onic ImagePicker plugin:
+------------------------------------------
+ionic cordova plugin add cordova-plugin-telerik-imagepicker --variable PHOTO_LIBRARY_USAGE_DESCRIPTION="your usage message"
+
+npm install --save @ionic-native/image-picker
+
+Ionic Crop plugin:
+----------------------------------------------
+ionic cordova plugin add cordova-plugin-crop
+
+npm install --save @ionic-native/crop
+

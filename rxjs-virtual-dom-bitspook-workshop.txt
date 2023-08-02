@@ -1,0 +1,3027 @@
+---------------------------------------- 0
+Setup
+
+Clone this repo for reference and setup tutorial
+We will use this repository as a reference. The complete tutorial is divided into 10 
+steps (11 including this one if you’re that guy). We’ll create a new directory, 
+clone this repo in a separate dir (this is just for reference), and we’ll copy some 
+basic setup from 0-setup step
+
+Clone this repo
+
+git clone https://github.com/channikhabra/yarr.git ./yarr-reference
+Create an empty dir where we’ll write the code
+
+mkdir ./yarr
+Now we’ll copy over some setup (boilerplate?) over to this dir from 0-setup step.
+
+Checkout to step 0
+Now that we have the repo cloned, let’s checkout to step 0 so we can start with the tutorial.
+
+cd yarr-reference
+git checkout 0-setup
+cd ../yarr
+cp -R ../yarr-reference/* ./
+This will be our clean slate, the start of the tutorial. From here on we will begin our tutorial. 
+The project directories should look like this:
+
+.
+├── package.json
+├── readme.org
+├── server.js
+├── webpack.config.production.js
+└── webpack.config.js
+Install npm modules
+npm i
+Take a sneek-peek at package.json.
+
+devDependencies have mostly webpack stuff, and babel. We are using babel to transpile ES6 to ES5.
+dependencies contain the modules we’ll use in the tutorial.
+babel-runtime
+It’s required for using a number of ES6 features, and generally helps if our app is split across 
+multiple files.
+
+html2hscript
+We’re building a RSS reader, right? So eventually we’ll take HTML strings (blog posts’ content) 
+from RSS Feed that we want to show in our HTML, but we are using virtual-dom, so instead of just 
+dropping them in our document directly, we need to parse the HTML strings to virtual-dom hyperscript, 
+and tell virtual-dom to do the rendering. This is what this module do. It parse html to 
+virtual-dom hyperscript.
+
+dexie
+Dexie is a wrapper for indexedDB which we’ll use for offline storage of the RSS feeds.
+
+jquery
+We don’t really use most of the JQuery library. We could do it without. But we’ll use it 
+in few places just to see how RxJS can interoperate with other libs like the mighty JQuery.
+
+rx
+That’s our chief guest.
+
+virtual-dom
+Deputy chief guest? Chief guest’s assistant perhaps.
+
+Mic testing
+Let’s quickly write some boilerplate to check if our setup is working as it should.
+
+Create /dist and /src
+If you look in the webpack.config.production.js, you’ll see following config:
+
+entry: './src/index',
+output: {
+  path: path.join(__dirname, 'dist'),
+  filename: 'app.js',
+  publicPath: '/'
+},
+    
+This means that webpack will enter our app from ./src/index.js file, and will output the js 
+after all pre-processing it need to do to ./dist/app.js file. Let’s quickly create dist and 
+src directories.
+
+mkdir src dist
+echo "console.log('hello world');" >> src/index.js
+    
+Check webpack is working
+Running following command should create dist/app.js file. If it does, our setup is working 
+and we’re good to go.
+
+npm run build
+    
+We’re using npm to run our scripts
+
+Create index.html
+This is the only html file we’ll write in this whole tutorial. It’s only used as an entry 
+point for including our `dist/app.js` which will take the wheel.
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Yarr : Yet Another RSS Reader</title>
+  </head>
+
+  <body class="home-template">
+    <script src="dist/app.js"></script>
+  </body>
+</html>
+
+    
+Check webpack-dev-server
+We’ll use webpack-dev-server for live-reloading. It can do more fancy tasks, but we’ll not use 
+‘em. Runnng following command should start the webpack server and we’ll be able to see 
+`hello world` logged to javascript console at http://localhost:8080
+
+npm start
+    
+Again we are using Webpack to run our server and if you want to see the setup files look in `server.js`.
+
+If all is working well. We can move on to next step. Let’s move our reference to next step 
+(we’ll code our way to this step).
+
+Checkout to next step
+cd ../yarr-reference
+git checkout 1-hello-rx
+cd -
+    
+------------------------------------------------ 1
+
+Yarr : Hello RX
+We’ll proceed assuming you have the project at a stage equivalent to `step 0`. If not, 
+clone this repo and checkout to `0-setup` git tag.
+
+Rx or Reactive Extensions is a javascript library for writing asynchronous/event-based code 
+in terms of composable asynchronous-streams. An asynchronous stream/collection is represented 
+by an Observable.
+
+Observable
+Observables are central to Rx. We can think of an Observable as an array spanned over time. It’s 
+a collection which gets its values over time. Or, we can think of them as a promise which can 
+resolve more than once.
+
+An Observable is to Promise what an Array is to a single value.
+
+|   Imperative | Temporal   |
+|--------------+------------|
+|   Value      | Promise    |
+|              |            |
+|   Iterable   | Observable |
+Let’s not talk much and play with Observables to get a feel. Open `index.js` file in your 
+favourite editor and
+
+Start webpack-dev-server
+Let’s start webpack-dev-server first so it will watch for changes in our project and reload the 
+browser on changes.
+
+npm start
+    
+Import Observable
+We’re using ES2015, so we’ll use the new module system to import `Observable` object from `rx` 
+library we’ve installed as a node module. Let’s remove everything from `index.js` 
+and import Observable first.
+
+import {Observable} from 'rx';
+    
+Above code is roughly equivalent to `var Observable = require(‘rx’).Observable;` in regular node.js code. 
+We are now ready to play with Observable.
+
+Arrays to Observables
+We can convert JS arrays to Observables using `Observable.from` method.
+
+let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+let nums_ = Observable.from(nums);
+    
+`nums_` is my personal preference of naming Ovservables (and functions which return Observables), 
+you don’t need to follow if you don’t like it. I think it help to use an underscore at the end 
+to tell that this is a stream.
+
+Observables provide an interface similar to Array extras, i.e we can use map/filter/reduce on 
+Observables to chain operations. This flow based programming is one of the killer features of RxJS.
+
+Let’s filter out odd numbers from `nums_` and find evens_.
+
+let evens_ = nums_
+              .filter(n => n % 2 === 0);
+
+console.log(evens_);
+    
+It’ll log something like this to console:
+
+Filt.......v.ble {source: FromObservable}
+    
+Now that’s not what we were expecting, is it? Do we expect to see a value when we log a promise? 
+No, right?
+
+To get a values out of an Observable, we have to subscribe to the Observable. Observable don’t 
+execute any code in the chain until and unless there is at least one active subscription 
+to the Observable.
+
+Let’s subscribe to our Observable to get our even numbers.
+
+evens_.subscribe(x => console.log('Even: ', x))
+    
+This callback is executed Observable gets a value. `Observable.subscribe` can take upto 3 methods:
+
+onNext - executed on every value Observable gets
+onError - executed if any error happens anywhere in the chain of operators
+onCompleted - executed when Observable is completed
+Ajax requests with Observable
+Observable play well with promises, and allow composition with other Observable and promises. 
+For an example, let’s make multiple ajax requests, and log their status to console.
+
+import {get} from 'jQuery';
+
+let urls = [
+  'http://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=test'
+];
+
+Observable
+  .from(urls)
+  .flatMap(url => ajax({url, dataType: 'jsonp'}))
+  .subscribe(
+    res => console.log('Response: ', res),
+    err => console.error('Error while fetching:', err),
+    () => console.log('Done with all requests')
+  );
+    
+Let’s discuss some of Rx operators we’ll be using often in our tutorial.
+
+Observable.prototype.flatMap
+flatMap is like combination of two operators: `map` and `flatten`. It maps a function over 
+the source Observable, and flatten the result, i.e it assume an Observable to be returned from 
+the function, and it returns the value of that observable. It can also resolve Promise and 
+generators to values, like in the above example.
+
+----val----val----val----val---------|
+
+-----------------map-----------------
+
+----Obs----Obs----Obs----Obs---------|
+
+----------------flat-----------------
+
+--newVal--newVal--newVal--newVal-----|
+    
+Observable.prototype.merge
+It merges two Observable, and produce a new one which emits the value when either one of the 
+participant Observable emits a value.
+
+Observable
+.interval(1000)
+.merge(
+  Observable.interval(2000)
+)
+.subscribe(x => console.log('Merged: ', x));
+    
+`Observable.interval` produces an Observable which emits an integer every N milliseconds. 
+Above code produce output like this:
+
+Merged:  0
+Merged:  0
+Merged:  1
+Merged:  2
+Merged:  1
+Merged:  3
+    
+The merge operation looks somewhat like this:
+
+------A-------A------A--------|
+---B------B------B------B-----|
+        -----merge-----
+---B--A---B---A------A--B-----|
+    
+Observable.prototype.zip
+let evens_ = Observable.from([0, 2, 4, 6, 8, 10]);
+let odds_ = Observable.from([1, 3, 5, 7, 9]);
+
+evens_
+  .zip(
+    odds_,
+    (even, odd) => even + odd
+  )
+  .subscribe(x => console.log('Even+Odd: ', x));
+    
+zip takes one or more Observables, and a callback function which it executes with values 
+from each of the participant Observable as argument. It then creates a new Observable which 
+emits the resulting values. Note that zip wait for each of its Observable to emit a value, 
+and then match it. Oddly matched Observable can keep hanging forever. PS all operators are 
+asynchronous, so there’s no blocking.
+
+Observable.combineLatest
+combineLatest takes N Observables as argument, and a callback function which accepts N arguments, 
+and create a new Observable. It executes the callback with latest value from each of the argument 
+Observable, and emit the resulting value. It waits until the each of the argument Observable has 
+emitted at least one value.
+
+Observable
+.combineLatest(
+  resize_,
+  click_,
+  (rE, cE) => {
+    return 'Lol!';
+  }
+)
+.subscribe(
+  x => console.log('Window resized or clicked', x)
+);
+    
+Yup we can convert events to Observable! We can do that with a lot many things: promises, events, 
+callbacks, generators, you name it. Good thing about converting events to Observable is that it 
+make you think of events in terms of data sources. Think of the clicks as a data source, which 
+emits data whenever user clicks. It makes composing them so much simpler.
+
+In the above example, we combineLatest resize and click events on window. If we reload and click 
+on the page, we won’t see anything in console. That’s because Observable.combineLatest is waiting 
+for the second Observable to start. Now if we resize the window just once, the click events will 
+start getting logged on the console.
+
+Observable.prototype.startWith
+Observable
+.combineLatest(
+  resize_.startWith(null),
+  click_.startWith(null),
+  (rE, cE) => {
+    return 'Lol!';
+  }
+)
+.subscribe(
+  x => console.log('Window resized or clicked', x)
+);
+    
+So combineLatest waits for all the Observables to participate at least once. That’s not what we always want. 
+Sometime we want can start with a default value, and we want our resulting Observable to be working 
+right away. For that we have startWith; it make the Observable start with the value we provide it.
+
+That’s it for Observable examples. Let’s move on with the tutorial, we’ll discuss more operators as 
+we use them.
+
+git checkout 2-hello-vdom
+
+----------------------------------------2
+Yarr : Hello vDOM
+Let’s play with vitual DOM for a minute before we start with building our RSS reader. Rendering 
+HTML to page is almost important you know!
+
+First let’s remove everything from index.js from our previous step, and start with a clean slate.
+
+Import Virtual-DOM
+import {h} from 'virtual-dom';
+import createElement from 'virtual-dom/create-element';
+    
+Hello world
+`h` is a function provided by virtual-dom for creating hyperscript. The hyperscript created using 
+`h` is then passed to `createElement` to create a virtual-node or vNode, which is then put into 
+the HTML page. Let’s quickly create a ‘hello vDOM’.
+
+let hw = h('h1', {className: 'hello'}, ["Hello World"]);
+let hwNode = createElement(hw);
+
+document.body.appendChild(hwNode);
+    
+`h` takes these arguments:
+
+tag name : {string}
+attributes : {object}
+children : {array}
+Virtual-dom Loader for HTMLish syntax
+It can be quite sweet writing HTML this way, but let’s not do it today. We’ve included virtual-dom 
+loader in our webpack config, which allow us to write HTMLish code in our JS, and give us what `h` 
+would. So we can now write hello-vdom like this:
+
+let hw = <h1 className='hello-world'>Hello World</h1>
+let hwNode = createElement(hw);
+
+document.body.appendChild(hwNode);
+    
+But it requires `h` to be present in scope to use this.
+
+Updating DOM
+The current setup is for rendering once. The reason we’re using virtual-dom is to make optimal 
+DOM updates. To do the updates on the DOM, we need to import `diff` and `patch` from virtual-dom.
+
+import diff from 'virtual-dom/diff';
+import patch from 'virtual-dom/patch';
+    
+Virtual-dom always keep one copy of the DOM it has rendered in memory. When we want to make some 
+update on the DOM, we just recreate the whole view, and tell virtual-dom to render a new one. 
+At this point, it diffs the new DOM with the old copy it has, and patches the previous view with the diff.
+ An example of a counter built using `setInterval` and virtual DOM would look like this:
+
+let render = (count) => <h1 className='hello-world'>Hello World {count + ''}</h1>;
+//we've made the `count + ''` above because `h` can't handle integers in this case, it needs to be strings
+//PS: 5 + '' === '5'
+
+let count = 0;
+
+//render gives us our whole view, only one h1 in our case
+let view = render(count);
+//in virtual DOM, there has to be a single ultimate parent to hold all vNodes. Let's call it rootNode
+let rootNode = createElement(view)
+
+document.body.appendChild(rootNode);
+
+setInterval(function() {
+  count ++;
+
+  //we create new view with a new state
+  let newView = render(count);
+  //now let's diff the old with the new view and create patches
+  let patches = diff(view, newView);
+  //let's create new rootNode by patching the old rootNode with the patches we've got from diffing
+  rootNode = patch(rootNode, patches);
+  //and change our saved view for diffing next time we need to update DOM
+  view = newView;
+
+}, 1000);
+    
+Tada!
+
+So this is how we will use virtual-dom.
+
+vDOM with RxJS
+But hey! We are using Rx to be able to use the shinny asynchronous data streams, right? setTimeout 
+looks like a good place to try our hands on. It is asynchronous, and emits events more than once; 
+in other words, perfect canditate to be replaced with an Rx Observable. Let’s do that.
+
+import {Observable} from 'rx';
+
+let render = (count) => <h1 className='hello-world'>Hello World {count + ''}</h1>;
+
+let view = render(0);
+let rootNode = createElement(view);
+document.body.appendChild(rootNode);
+
+Observable
+  .interval(1000) //replace the steTimeout and `count` state variable. Interval will give us an 
+incrementing number every 1000 milliseconds
+  .map(n => render(n + 1)) //n+1 because we already started with 0
+  .subscribe(
+    newView => {
+      let patches = diff(view, newView);
+      rootNode = patch(rootNode, patches);
+      view = newView;
+    }
+  );
+    
+Sweet! Isn’t it? Go eat some candy if you said no.
+
+Now that we know how to combine the powers of Rx and virtual-dom, let’s start building our app: 
+Yet Another RSS Reader (Yarr).
+
+git checkout 3-renderer
+--------------------------------------------------------------------------------
+It’s about time we start building our RSS reader.
+
+Now we’re not going to use any JS frameworks for writing our app, but that doesn’t mean we can’t 
+take “inspiration” from frameworks. Other than using virtual-dom, one awesome idea React has made 
+obvious is writing UI in terms of components. Isolation is the key to reuseability, scalability, 
+maintainability, and god-knows-what-bilities. We’ll try to build our UI in terms of isolated components.
+
+Using virtual DOM makes it pretty natural actually. Virtual-DOM has these requirements:
+
+It needs a complete view every time we have to make any update in DOM
+The whole of our virtual-dom must have a single parent, one `rootNode`. It must have a container 
+element on top of the markup tree. If you know React this will be recognisable.
+Now let’s forget all the component bullshit for a moment and try to make our counter from the last 
+step more elegant. Here’s the code from last step:
+
+import {Observable} from 'rx';
+
+import {h} from 'virtual-dom';
+import createElement from 'virtual-dom/create-element';
+import diff from 'virtual-dom/diff';
+import patch from 'virtual-dom/patch';
+
+
+let render = (count) => <h1 className='hello-world'>Hello World {count + ''}</h1>;
+
+let view = render(0);
+let rootNode = createElement(view);
+document.body.appendChild(rootNode);
+
+Observable
+  .interval(1000)
+  .map(n => render(n + 1))
+  .subscribe(
+    newView => {
+      let patches = diff(view, newView);
+      rootNode = patch(rootNode, patches);
+      view = newView;
+    }
+  );
+Be more classy
+We are rendering our vDOM under `document.body`. Let’s be little more classy and create a 
+dedicated dumping ground in our html. Make <body> in `index.html` look like this:
+
+<body class="home-template">
+  <span id="app"></span> <!-- new code -->
+
+  <script src="dist/app.js"></script>
+</body>
+Now we can use span#app for rendering the output. It’s not really a hard requirement to do it 
+this way and we can get away with putting our vDOM output in document.body too.
+
+.
+.
+.
+let rootNode = createElement(view);
+
+let baseDOMNode = document.getElementById('app');
+baseDOMNode.appendChild(rootNode);
+
+Observable
+.
+.
+.
+Divide views in Components
+If we look at our code now, render method provide us our complete view as hyperscript, and count 
+is our state. I think that’s a dead give-away for how we can approach having isolated components.
+
+Let’s divide our view into two components: greeting and counter. Create /src/components directory, 
+and create two files components/greeting.js and components/counter.js.
+
+//components/greeting.js
+import h from 'virtual-dom/h';
+
+let render = () => <h1>Hello World</h1>
+
+export default render;
+//components/counter.js
+import h from 'virtual-dom/h';
+
+let render = (count) => <h1>{count}</h1>;
+
+export default render;
+export default XXX is an ES6 construct which gives the XXX value to the importer of the module 
+with whatever name importer want it to be. So we can do import greeting from "./components/greeting"; 
+and get the `render` method from `components/greeting` module as `greeting`.
+
+Let’s change our `index.js` file to use our new components:
+
+//index.js
+
+import {Observable} from 'rx';
+
+import {h} from 'virtual-dom';
+import createElement from 'virtual-dom/create-element';
+import diff from 'virtual-dom/diff';
+import patch from 'virtual-dom/patch';
+
+import greeting from './components/greeting';
+import counter from './components/counter';
+
+let render = (count) => {
+  count += '';
+  return <div className="container">
+    {greeting()}
+    {counter(count)}
+  </div>;
+}
+
+let view = render(0);
+let rootNode = createElement(view);
+
+let baseDOMNode = document.getElementById('app');
+baseDOMNode.appendChild(rootNode);
+
+Observable
+  .interval(1000) //replace the steTimeout and `count` state variable. Interval will give us an 
+incrementing number every 1000 milliseconds
+  .map(n => render(n + 1))
+  .subscribe(
+    newView => {
+      let patches = diff(view, newView);
+      rootNode = patch(rootNode, patches);
+      view = newView;
+    }
+  );
+Mother of all Components
+We had to change our render method to have a container HTML tag (requirement #2 of vDOM, remember?). 
+So we need to have a container, hmmm. Why not create something like a root or main component, 
+which imports all components and provide a single markup tree? Let’s just do it. 
+Create components/main.js:
+
+//components/main.js
+
+import h from 'virtual-dom/h';
+
+import greeting from './greeting';
+import counter from './counter';
+
+let render = (count) => {
+  count += '';
+  return <div className="container">
+    {greeting()}
+    {counter(count)}
+  </div>;
+}
+
+export default render;
+Our index.js looks somewhat like this now:
+
+import {Observable} from 'rx';
+
+import {h} from 'virtual-dom';
+import createElement from 'virtual-dom/create-element';
+import diff from 'virtual-dom/diff';
+import patch from 'virtual-dom/patch';
+
+import mainView from './components/main';
+
+let view = mainView(0);
+let rootNode = createElement(view);
+
+let baseDOMNode = document.getElementById('app');
+baseDOMNode.appendChild(rootNode);
+
+Observable
+  .interval(1000) //replace the steTimeout and `count` state variable. Interval will 
+give us an incrementing number every 1000 milliseconds
+  .map(n => mainView(n + 1))
+  .subscribe(
+    newView => {
+      let patches = diff(view, newView);
+      rootNode = patch(rootNode, patches);
+      view = newView;
+    }
+  );
+Separation of concerns and Propagation of change
+Now this is called separation of concerns. Or is it? We are passing count to newView, `count` 
+however, is something which should be internal to `counter` component, outer views don’t need 
+to know about it. But if we move `count` inside the `counter` component, how will it tell the 
+main view that it needs to be updated? And how will the main view tell our index.js that it 
+should be re-rendered? This propagation of change can be major pain in the ass cough 
+$digest loop cough
+
+What are we using RxJS for? Among many things, Observable are reactive. They can push data to 
+their user/owner/whatever. We can make a `counter` component return an Observable of 
+hyperscript (the HTMLish syntax) instead of just returning a single hyperscript value. 
+Let’s change the `counter` component and make it take care of its internal state.
+
+//components/counter.js
+import {Observable} from 'rx';
+import h from 'virtual-dom/h';
+
+let render_ = () => Observable
+      .interval(1000)
+      .map(count => count.toString())
+      .map(count => <span>{count}</span>);
+
+export default render_;
+We need to change our components/main.js to use `counter_` as an Observable. Now to get a 
+value out of an Observable, we have to subscribe to it (or operate on it). We don’t want to 
+subscribe to our counter_ observable right now (because that will end the chain, remember? 
+Observable.prototype.subscribe is where it all ends). We want to pass this along to our 
+index.js file which will finally subscribe to it and render it to our page. So we need to 
+convert our main view to an Observable too, which will use the `counter_` Observable, and 
+return an Observable of the complete view.
+
+//components/main.js
+import h from 'virtual-dom/h';
+
+import greeting from './greeting';
+import counter_ from './counter';
+
+let view = (counterView) => {
+  return <div className="container">
+    {greeting()}
+    {counterView}
+  </div>;
+}
+
+let render_ = () => counter_()
+      .map(view);
+
+export default render_;
+And finally, we need to change our index.js to make use of our mainView_.
+
+import {Observable} from 'rx';
+
+import {h} from 'virtual-dom';
+import createElement from 'virtual-dom/create-element';
+import diff from 'virtual-dom/diff';
+import patch from 'virtual-dom/patch';
+
+import mainView_ from './components/main';
+
+let view = null;
+let rootNode = null;
+
+mainView_()
+  .subscribe(
+    newView => {
+      if (!view) {
+        view = newView;
+        rootNode = createElement(view);
+        let baseDOMNode = document.getElementById('app');
+        return baseDOMNode.appendChild(rootNode);
+      }
+
+      let patches = diff(view, newView);
+      rootNode = patch(rootNode, patches);
+      view = newView;
+    }
+  );
+Observable.prototype.startWith?
+If we look at our app now you will think it isn’t working as it starts blank and then it 
+renders everything and counter starts. Why’s that? It should render immediately. Is it a 
+performance problem?
+
+Hell no. Let’s find the issue. Take look at our chain of Observable, where do it start? 
+In the `counter` component, remember? `counter` uses Observable.interval as its source, 
+so may be that’s what holds the rendering for that one initial second. Let’s experiment, 
+and change the interval to `5000` and see if that increases the rendering delay. It does!
+
+Pheww, we caught the issue at least. We want our Observable to start immediately, with a default. 
+Remember the Rx operator for this? startWith. Let’s change our `counter` component to use `startWith`:
+
+import {Observable} from 'rx';
+import h from 'virtual-dom/h';
+
+let render_ = () => Observable
+      .interval(1000)
+      .map(n => n+1)
+      .startWith(0)
+      .map(count => count.toString())
+      .map(count => <span>{count}</span>);
+
+export default render_;
+That solved our initial delay in rendering. Yay! Notice we added map(n => n+1), that’s because 
+we already provided `0` manually.
+
+The takeaway from this issue is that if we ever see nothing rendering on the screen, or the whole 
+view rendering a little late, it’s very likely an Observable is in need of a `startWith` default value.
+
+Consistent System = Maintainable System
+Notice each of our components return a function. Why’s that? It’s so we can pass the initial state 
+to our component if it needs any. But even though our components don’t need initial state, they’re 
+still returning a function. Well, that’s to keep our system consistent. Consistency is key to maintainability.
+
+Consistency reminds us, what a bunch of hypocrites we are! Our components return a function which 
+returns an Observable of views (hyperscript), but look at the `greeting` component. It doesn’t!! 
+Ok We shall respect the moral code and make it consistent. Let’s convert it to return an Observable instead.
+
+//components/greeting.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+let render_ = () => Observable.return(<h1>Hello World</h1>);
+
+export default render_;
+    
+Observable.return creates an Observable which only returns one value that we pass it. Now we need 
+to modify `components/main.js` too.
+
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import greeting_ from './greeting';
+import counter_ from './counter';
+
+let view = (counterView, greetingView) => {
+  return
+  <div className="container">
+    {greetingView}
+    {counterView}
+  </div>;
+}
+
+let render_ = () => Observable
+      .combineLatest(
+        counter_(),
+        greeting_(),
+        view
+      );
+
+export default render_;
+    
+Remember the Observable.combineLatest? I hope you do.
+
+We need to recreate the whole view on every change, so we need to combine all the parts (i.e components) 
+every time we need to update something in the DOM. That’s what the `view` method in `main.js` 
+does (combines the components). Observable.combineLatest will run the view function every time 
+any of the participant Observable (counter_ and greeting_) emit a new value.
+
+combineLatest will make sure it combines the latest emitted value from Observable. So we get 
+caching (or memoizing) for free! The only condition is that each of the participant Observable must 
+emit at least once (for that we’ll use `Observable.startWith` whenever required).
+
+So, we have a way to make isolated, consistent components! I think it’s not bad for a system with 
+such little amount of layers of abstraction.
+
+Clean up index.js
+Let’s clean up the index.js to turn our vDOM rendering to be more re-useable. Turn the Renderer to 
+a class perhaps? Or a closure maybe?
+
+//index.js
+import {Observable} from 'rx';
+
+import {h} from 'virtual-dom';
+import createElement from 'virtual-dom/create-element';
+import diff from 'virtual-dom/diff';
+import patch from 'virtual-dom/patch';
+
+import mainView_ from './components/main';
+
+let baseDOMNode = document.getElementById('app');
+
+let render = (mainView_, baseDOMNode) => {
+  let view = null;
+  let rootNode = null;
+
+  let initialize = (newView) => {
+    view = newView;
+    rootNode = createElement(view);
+    baseDOMNode.appendChild(rootNode);
+  };
+
+  let update = (newView) => {
+    let patches = diff(view, newView);
+    rootNode = patch(rootNode, patches);
+    view = newView;
+  };
+
+  return mainView_
+    .subscribe(
+      newView => view
+        ? update(newView)
+        : initialize(newView),
+      error => console.warn('Error occured somewhere along Observable chain', error)
+    );
+};
+
+let view_ = mainView_();
+render(view_, baseDOMNode);
+    
+Let’s separate the concerns even further and move vDOM renderer to its own file. We wanna keep 
+our index.js file as clean as we can. Create a file src/renderer.js:
+
+//renderer.js
+import {h} from 'virtual-dom';
+import createElement from 'virtual-dom/create-element';
+import diff from 'virtual-dom/diff';
+import patch from 'virtual-dom/patch';
+
+
+let render = (mainView_, baseDOMNode) => {
+  let view = null;
+  let rootNode = null;
+
+  let initialize = (newView) => {
+    view = newView;
+    rootNode = createElement(view);
+    baseDOMNode.appendChild(rootNode);
+  };
+
+  let update = (newView) => {
+    let patches = diff(view, newView);
+    rootNode = patch(rootNode, patches);
+    view = newView;
+  };
+
+  return mainView_
+    .subscribe(
+      newView => view
+        ? update(newView)
+        : initialize(newView),
+      error => console.warn('Error occured somewhere along Observable chain', error)
+    );
+};
+
+export default render;
+    
+And then we can change our `index.js` to this:
+
+//index.js
+import mainView_ from './components/main';
+import render from './renderer';
+
+let view_ = mainView_();
+
+render(view_, document.getElementById('app'));
+    
+Now that’s what we call a clean main file ^_^
+
+I hope you’ve not gotten to lost an confused! If you’ve got this far give yourself on the back, 
+you made it through the toughest part of this tutorial. Everything will be a breeze from here on, 
+I promise.
+
+Now that we have a somewhat saner way to write good (consistent, isolated components), we can move 
+onto another important aspect of a web-app: Events.
+
+git checkout 4-delegated-events
+-------------------------------------------------------------------------
+
+Yarr : Delegated Events
+We have our pretty components system set up, but what about events? Users will be interacting with 
+our app, right? Since we’re taking so much “inspiration” from React, how does React handle events? 
+Really? You want to get into those “onClick” stuff? I mean they are pretty, I’ve nothing against 
+them, but given a choice I won’t really vouch for them either. That said, I don’t want to get into
+ “when a component is ready and when it’s re-rendered” events either.
+
+Another hint, Observable are good at chaining operations (dead give away, filter). What if we use 
+delegated events? Like put an event listener on document.body, and filter it to the target we want? 
+Let’s try this. Let’s create a counting button component (and remove other components from our
+ previous step).
+
+Our project shall look like this atm:
+
+.
+├── index.html
+├── package.json
+├── src
+│   ├── components
+│   │   └── main.js
+│   ├── index.js
+│   └── renderer.js
+├── server.js
+├── webpack.config.js
+└── webpack.config.production.js
+Also clean-up the `components/main.js`.
+
+Count clicks Component
+Let’s create a new component which will count the clicks that are made to a button.
+
+//components/count-clicks.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+let view = (count) =>
+  <div className="count-clicks">
+    <button className="count-clicks-btn">Click me!</button>
+    <span style="font-size: 20px;">{count}</span>
+  </div>
+
+let render_ = () => {
+  let count = 0;
+
+  return Observable.
+    return(view(count + ''));
+}
+
+export default render_;
+And our components/main.js will be:
+
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import countClicks_ from './count-clicks';
+
+let view = (countClicks) => {
+  return <div className="container">
+    {countClicks}
+  </div>;
+}
+
+let render_ = () => Observable
+      .combineLatest(
+        countClicks_(),
+        view
+      );
+
+export default render_;
+Great! Now we want to listen to the click events on our .count-clicks-btn. Virtual-DOM/React 
+way of doing that is to provide an `onClick` handler in properties, but we don’t want to do that way. 
+We want to use delegated events instead. So let’s do that.
+
+Create ./src/events.js file. We’ll put our source events code there, and make the events pass through 
+a chain of Observable operators so we get only the events we need.
+
+//src/events.js
+import {Observable} from 'rx';
+
+let body = document.body;
+
+let clicks_ = Observable.fromEvent(body, 'click');
+
+let toArray = (arrayLike) => Array.prototype.slice.call(arrayLike, 0);
+
+let countBtnClicks_ = clicks_
+      .filter(e => {
+        let classes = toArray(e.target.classList);
+
+        return classes.indexOf('count-clicks-btn') >= 0;
+      });
+
+
+export {countBtnClicks_};
+We’ve put a `click` event listener on body, and then we’re filtering it by ‘class name’ so we only 
+get the clicks for our button. Let’s import these events to our `countClicks` component and check 
+by subscribing to it.
+
+//components/count-clicks.js
+.
+.
+.
+import {countBtnClicks_} from '../events';
+countBtnClicks_
+  .subscribe(x => console.log(x));
+Voila! it’s working. We’ll use this system of delegated events in our app. Let’s make the `events.js` 
+code more re-useable.
+
+//events.js
+import {Observable} from 'rx';
+import {toArray} from './utils';
+
+
+let body = document.body;
+
+let clicks_ = Observable.fromEvent(body, 'click');
+
+
+let clicksByClass_ = (className) => clicks_
+      .filter(e => {
+        let classes = toArray(e.target.classList);
+
+        return classes.indexOf(className) >= 0;
+      });
+
+
+export {clicksByClass_};
+//components/count-clicks.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import {clicksByClass_} from '../events';
+
+let view = (count) =>
+    <div className="count-clicks">
+      <button className="count-clicks-btn">Click me!</button>
+      <span> {count}</span>
+    </div>;
+
+let render_ = () => {
+  let count = 0;
+
+  return Observable.
+    return(view(count + ''));
+}
+
+clicksByClass_('count-clicks-btn')
+  .subscribe(x => console.log(x));
+
+export default render_;
+And create a `src/utils.js` to keep small utility methods:
+
+//src/utils.js
+export default {
+  toArray: (arrayLike) => Array.prototype.slice.call(arrayLike, 0)
+}
+Now that we have clicks as an Observable, we can use them to produce our `countClicks` 
+component’s view:
+
+//components/count-clicks.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import {clicksByClass_} from '../events';
+
+let view = (count) =>
+    <div className="count-clicks">
+      <button className="count-clicks-btn">Click me!</button>
+      <span> {count}</span>
+    </div>;
+
+let render_ = () => {
+  let count = 0;
+  let countBtnClicks_ = clicksByClass_('count-clicks-btn');
+
+
+  return countBtnClicks_
+    .map(e => ++count)
+    .startWith(0) //nothing will get rendered if we take this away
+    .map(n => n.toString())
+    .map(view);
+}
+
+export default render_;
+Our app is working! What kind of sorcery is this?
+
+Honestly, if you were paying attention this won’t look like sorcery at all. countBtnCicks_ 
+gives us a notification (in form of an event) every time the user clicks our button, we convert 
+that to an incrementing count. Next is startWith(0), remember why we need it? Without startWith, 
+our renderer will keep waiting for countBtnClicks_ to emit at least once (because we use `combineLatest` 
+to combine all views), and countBtnClicks_ will emit only if user clicks on the button. 
+But there is no button rendered yet! To get out of this loop, we start it with an initial value.
+
+Great! With that out of the way, we have our component system and events system in place, we can 
+finally start building our app. Lol, I lied to you like 2 steps back that we’re building 
+Yarr back then. Can’t believe you fell for that you dumb fuck.
+
+Just kidding, I don’t really think you are a dumb fuck. Dumb fucks are cool.
+
+Let’s move to next step then.
+
+git checkout 5-fetch-feeds-and-styles
+------------------------------------------------------------------------------------
+
+Yarr : Fetching Feeds and Styles
+Now that we know how we are going to render our views, let’s do some work on the data that 
+we are going to render. An RSS feed reader will render: RSS Feeds. Create a file src/feeds.js:
+
+import {Observable} from 'rx';
+import {ajax} from 'jQuery';
+
+let feedUrls = [
+  'https://hacks.mozilla.org/category/es6-in-depth/feed/',
+  'http://feeds.feedburner.com/JohnResig',
+  'http://unisonweb.org/feed.xml'
+];
+
+let fetchFeed = (url) => {
+  return ajax({
+    url: `http://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=30&q=${url}`,
+    dataType: 'jsonp'
+  }).promise();
+};
+
+let feeds_ = Observable
+      .from(feedUrls)
+      .flatMap(fetchFeed);
+
+export {feeds_};
+That should not be a lot to take in one bite. We imported ajax from jquery, and created a 
+helper method to make a request and return it as a promise. Now why are we making a request 
+to http://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=30&q=${url} ? Turns out, not 
+all RSS feed generators put proper Allow-Origin header on RSS feed responses, so browser rubs 
+a Cross Origin Error in our face. Google provide this nice API which can parse the RSS feed 
+and provide us response as JSONP. Awesome!
+
+Next we wanna create an Observable of RSS feeds. We are starting with an array of feed URLs too, 
+so we convert it to an Observable with Observable.from, and flatMap each url with fetchFeed. 
+Hmmm…what could that do?
+
+Let’s quickly create a postsList component, and import our feeds into it. Follow me real quick.
+
+Delete `components/count-clicks.js` we created in our previous step. And create 
+components/posts-list.js.
+
+//components/posts-list.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import {feeds_} from '../feeds';
+
+let postView = (post) => {
+  return
+    <li>{post.title}</li>;
+}
+
+let view = (postsView) => {
+  return <ul className="posts-list">
+    {postsView}
+    </ul>
+    ;
+}
+
+let render_ = () => {
+  return Observable
+    .return(view());
+}
+
+export default render_;
+And our components/main.js will then be:
+
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import postsList_ from './posts-list';
+
+let view = (postsList) => {
+  return <div className="container">
+    {postsList}
+  </div>;
+}
+
+let render_ = () => Observable
+      .combineLatest(
+        postsList_(),
+        view
+      );
+
+export default render_;
+Our plan is to somehow use feeds_ to get (blog) posts, and pass those posts to postView, 
+and generate a view for each post. Let’s now play around with feeds_ in posts-list.js.
+
+//components/posts-list.js
+.
+.
+.
+feeds_
+  .subscribe(
+    feed => {
+      console.log(feed);
+    },
+    err =>
+      console.warn('Error while getting feeds: ', err)
+  );
+
+export default render_;
+In console we can see jQuery response objects logged. In src/feeds.js, we can see we made 
+requests for each feed-url with a function fetchFeed which returns a promise. And we do so 
+in flatMap. Remember what flatMap does? It flattens the Observable, and give us its value(s). 
+RxJS support promises and implicitly convert them to Observable for us. So we can do 
+flatMap(fetchFeeds), and get an Observable of responses. That’s great! But we want 
+Observable of blog-posts, so let’s process the responses and return blog posts instead.
+
+//feeds.js
+.
+.
+.
+let feeds_ = Observable
+      .from(feedUrls)
+      .flatMap(fetchFeed)
+      .map(res => res.responseData.feed.entries);
+
+export {feeds_};
+There we go. It’ll log arrays of blog-posts in the console. We can use this Observable to 
+create our views I guess. Let’s get back in components/posts-list.js:
+
+//components/posts-list.js
+.
+.
+.
+let render_ = () => {
+  return feeds_
+    .map(posts => posts.map(postView))
+    .map(view);
+}
+We can now see the list of post titles on our page. But, the posts for one feed gets rendered, 
+and then gets replaced by the next feed, eventually only one feed’s posts appear. Can you guess why? 
+Well of course you can, you’re smart, ain’t you?
+
+We need to collect all the feeds in one big array, otherwise every time `map` runs on a feed, it’ll 
+replace the previous view. How do we convert an array to a single value? reduce you said!
+
+//components/posts-list.js
+.
+.
+.
+let render_ = () => {
+  return feeds_
+    .map(posts => posts.map(postView))
+    .reduce((acc, posts) => acc.concat(posts))
+    .map(view);
+}
+Doing it this way looks like it will solve our problem at hand, but it will actually cause 
+trouble in the future. But we will not tackle it right now. We are building an RSS reader, an 
+RSS reader without offline useability is simply stupid imo. We will have offline storage, which 
+will change the way we approach modeling our data. So let’s leave the feeds like this for the moment.
+
+Proper Looks
+Since now we have our data, let’s put it in proper views. Copy the src/styles from this commit to 
+your src folder, and add this line to your src/index.js:
+
+import mainView_ from './components/main';
+import render from './renderer';
+
+require('./styles/style.scss');  //new code
+
+let view_ = mainView_();
+
+render(view_, document.getElementById('app'));
+Don’t worry, I copied a lot of them from ghostium anyway.
+
+This will create /style.css file, which we shall include in /index.html
+
+<head>
+  <meta charset="UTF-8"/>
+  <title>Yarr : Yet Another RSS Reader</title>
+
+  <link href="styles.css" rel="stylesheet"/>
+</head>
+Now that we have all the styles, let’s add the proper markup too:
+
+//components/main.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import postsList_ from './posts-list';
+
+let view = (postsList) => {
+return <div id='container' className='container'>
+        <div className="surface">
+          <div className="surface-container">
+            <div className="content">
+              <div className="wrapper">
+                <div className="wrapper-container">{postsList}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+}
+
+let render_ = () => Observable.combineLatest(
+    postsList_(),
+    view
+);
+
+
+export default render_;
+And posts-list.js
+
+//components/posts-list.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import {feeds_} from '../feeds';
+import {formatDate} from '../utils';
+
+let postView = (post) =>
+    <article className="post-item post">
+      <header className="post-item-header">
+        <h2 className="post-item-title">
+          <a className='post-title' href={post.link}>{post.title}</a>
+          </h2>
+      </header>
+      <section className="post-item-excerpt">
+        {post.contentSnippet}
+      </section>
+
+      <footer className="post-item-footer">
+        <ul className="post-item-meta-list">
+          <li className="post-item-meta-item">
+            <p><a href={post.link}>{post.author}</a>
+            </p>
+          </li>
+
+          <li className="post-item-meta-item">
+            <p>
+              {formatDate(post.publishedDate)}
+            </p>
+          </li>
+
+          <li className="post-item-meta-item">
+            <p itemprop="articleSection">{post.categories.join(', ')}</p>
+          </li>
+        </ul>
+      </footer>
+    </article>
+  ;
+
+
+let view = (postViews) =>
+  <section className="post-list">
+    {postViews}
+  </section>;
+
+let render_ = () => {
+  return feeds_
+    .map(posts => posts.map(postView))
+    .reduce((acc, posts) => acc.concat(posts))
+    .map(view);
+}
+
+export default render_;
+Note that we’re importing formatDate from utils.js. Let’s add that too.
+
+//src/utils.js
+export default {
+  toArray: (arrayLike) => Array.prototype.slice.call(arrayLike, 0),
+  formatDate: (date) => {
+    if(!date) return '';
+
+    if(typeof date === 'string')
+      date = new Date(date);
+
+    let monthNames = [
+      'January', 'February', 'March',
+      'April', 'May', 'June', 'July',
+      'August', 'September', 'October',
+      'November', 'December'
+    ];
+
+    let day = date.getDate(),
+        monthIndex = date.getMonth(),
+        year = date.getFullYear();
+
+    return `${day}, ${monthNames[monthIndex]}, ${year}`;
+  },
+}
+The view is much better now, isn’t it? Go eat some candies if you said no.
+
+You would’ve noticed there’s room for a sidebar there. Let’s add the sidebar real quick. 
+Create components/sidebar.js
+
+import {Observable} from 'rx';
+import h from 'virtual-dom/h';
+
+let view = () =>
+  <div className='sidebar-container'>
+    <div className="sidebar-brand">
+      <h2 className="sidebar-brand">Yarr</h2>
+    </div>
+  </div>
+
+let render_ = () =>
+      Observable
+        .return(view());
+
+export default render_;
+Of course we need to change our components/main.js to accomodate for the new
+
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import postsList_ from './posts-list';
+import sidebar_ from './sidebar';
+
+let view = (postsList, sidebar) =>
+      <div id='container' className='container'>
+         <div className="surface">
+           <div className="surface-container">
+             <div className="content">
+               <aside className="cover">{sidebar}</aside>
+               <div className="wrapper">
+                 <div className="wrapper-container">{postsList}</div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+  ;
+
+let render_ = () => Observable.combineLatest(
+  postsList_(),
+  sidebar_(),
+  view
+);
+
+export default render_;
+If you have a view like this: http://i.imgur.com/ooeGuyX.png
+
+then we are good to go. Let’s move on to the next step, and add some controls to our sidebar. 
+It’s looking too empty.
+
+git checkout 6-sidebar-controls-and-models
+-------------------------------------------------------------------
+Yarr : Sidebar Controls and Models
+Our sidebar is way too empty, let’s add some controls to it.
+
+Sidebar Widgets
+Post Filtering widget
+Most RSS readers have ability to filter posts by “Read” and “Unread” (and “All”). Let’s add 
+that widget to our sidebar.
+
+Create a file: components/sidebar-filter-widget.js
+
+//components/sidebar-filter-widget.js
+
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+let view = () =>
+  <ul className="sidebar-controls">
+    <li className="sidebar-control filter-posts data-filter-all">All</li>
+    <li className="sidebar-control filter-posts active data-filter-unread">Unread</li>
+    <li className="sidebar-control filter-posts data-filter-read">Read</li>
+  </ul>
+  ;
+
+let render_ = () =>
+      Observable.return(view())
+
+export default render_;
+    
+We need to update our components/sidebar.js too:
+
+//components/sidebar.js
+import {Observable} from 'rx';
+import h from 'virtual-dom/h';
+
+import filterWidget_ from './sidebar-feed-filter';
+
+let view = (filterWidget) =>
+  <div className='sidebar-container'>
+    <div className="sidebar-brand">
+      <h2 className="sidebar-brand">Yarr</h2>
+    </div>
+
+    {filterWidget}
+  </div>
+;
+
+let render_ = () =>
+  Observable
+  .combineLatest(
+    filterWidget_(),
+    view
+  );
+
+export default render_;
+    
+Interactivity in feed filter widget
+
+Let’s add some interactivity to our widget. We wanna switch the active class to the appropriate 
+button on click.
+
+//components/sidebar-filter-widget.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import {clicksByClass_} from '../events';
+
+let view = () =>
+  <ul className="sidebar-controls">
+    <li className="sidebar-control filter-posts data-filter-all">All</li>
+    <li className="sidebar-control filter-posts active data-filter-unread">Unread</li>
+    <li className="sidebar-control filter-posts data-filter-read">Read</li>
+  </ul>
+  ;
+
+let render_ = () => {
+  let widgetClicks_ = clicksByClass_('filter-posts');
+
+  widgetClicks_
+    .map(e => e.target)
+    .do(el => {
+      document.querySelector('.filter-posts.active').classList.remove('active');
+      el.classList.add('active');
+    })
+    .subscribe(e => console.log(e));
+
+  return Observable.return(view());
+}
+
+
+export default render_;
+    
+We get the clicks Observable with ridiculously simple eventing system we setup earlier, and 
+switch classes on the target element. Not we’re not using jQuery for switching classes, because 
+of which our code may not work on some older browsers. But you know what? Fuck it. We don’t want 
+to support older browsers, not in our play time at least.
+
+Fetch Feeds and Add Feed widget
+Let’s add another widget, we might want to fetch our feeds at later time right? And we of course 
+want to add new feeds.
+
+Create a file: components/sidebar-fetch-n-add-widget.js
+
+//components/sidebar-fetch-n-add-widget.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+let view = () =>
+  <ul className="sidebar-controls">
+    <li className="sidebar-control fetch-all-btn">Fetch All Feeds</li>
+    <li className="sidebar-control new-feed-btn">Add New Feed
+      <input className="new-feed-input" type="url" required />
+    </li>
+  </ul>
+  ;
+
+let render_ = () =>
+      Observable
+      .return(view());
+
+export default render_;
+    
+We also need to update components/sidebar.js:
+
+//components/sidebar.js
+import {Observable} from 'rx';
+import h from 'virtual-dom/h';
+
+import filterWidget_ from './sidebar-feed-filter';
+import fetchNAddWidget_ from './sidebar-fetch-n-add-widget';
+
+let view = (filterWidget, fetchNAddWidget) =>
+  <div className='sidebar-container'>
+    <div className="sidebar-brand">
+      <h2 className="sidebar-brand">Yarr</h2>
+    </div>
+
+    {filterWidget}
+    {fetchNAddWidget}
+
+  </div>
+
+let render_ = () =>
+  Observable
+  .combineLatest(
+    filterWidget_(),
+    fetchNAddWidget_(),
+    view
+  );
+
+export default render_;
+    
+Interactivity
+
+Notice that we have an <input> field for adding a feed, but it has display: hidden. 
+We want to toggle it when we click Add New Feed button.
+
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import {clicksByClass_} from '../events';
+
+let view = (addFeedInputStyles) =>
+  <ul className="sidebar-controls">
+    <li className="sidebar-control fetch-all-btn">Fetch All Feeds</li>
+
+    <li className="sidebar-control new-feed-btn">Add New Feed
+      <input className="new-feed-input" style={addFeedInputStyles} type="url" required />
+    </li>
+  </ul>
+  ;
+
+let render_ = () => {
+  let addFeedBtnClicks_ = clicksByClass_('new-feed-btn');
+
+  let addFeedInputStyles_ = addFeedBtnClicks_
+        .startWith(false)
+        .scan(acc => !acc)
+        .map(show => show
+             ? {display: 'inline-block'}
+             : {display: 'none' });
+
+  return Observable
+    .combineLatest(
+      addFeedInputStyles_,
+      view
+    );
+}
+
+export default render_;
+    
+We could have simply toggled a class on our <input> field, but this is another way I wanted 
+to demonstrate. Instead of toggeling classes in side-effect code, we can do it in more pure 
+way like this. We create an Observable for inline-styles of the input block, and create an 
+Observable which emits {display: 'none'} or {display: 'inline-block'} alternatively when 
+user clicks the `Add New Feed` button. scan is similar to reduce, Google it.
+
+List of Subscribed Feeds
+Now our sidebar don’t feel empty. Are we missing something from UX perspective? A list of 
+subsribed feeds would be a nice to have I guess? Or is it a must have? Must have it is.
+
+Create components/sidebar-feed-list.js file:
+
+//components/sidebar-feed-list.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+let nodeView = (feed, extraClasses) =>
+  <li className="sidebar-feedlist-item">
+    <a className={extraClasses + ' sidebar-feed'} href={feed.url}>{feed.name}</a>
+  </li>;
+
+
+let view = (feedViews) =>
+  <ul className="sidebar-feedlist">
+    {nodeView({url: 'all-feeds', name: 'All'}, 'active')}
+    {feedViews}
+  </ul>;
+
+let render_ = () => {
+  let feeds_ = Observable
+        .return([
+          {name: 'Fake feed 1', url: '#'},
+          {name: 'Fake feed 2', url: '#'},
+          {name: 'Fake feed 3', url: '#'}
+        ]);
+
+  return feeds_
+    .startWith([])
+    .map(feeds => feeds.map(nodeView))
+    .map(view);
+}
+
+export default render_;
+    
+Notice we used fake feeds to quickly get done with the widget first. Let’s also add some 
+interactivity (change `active` class on feed change).
+
+.
+.
+let selectFeedClicks_ = clicksByClass_('sidebar-feed');
+selectFeedClicks_
+  .do(e => e.preventDefault())
+  .do(e => {
+      let activeEl = document.querySelector('.sidebar-feed.active');
+      if(activeEl) activeEl.classList.remove('active');
+
+      e.target.classList.add('active');
+  })
+  .subscribe();
+
+return feeds_
+.
+.
+.
+    
+Models
+We are trying our best to keep the components isolated, but it won’t always be 
+possible/feasible to do so. Applications have state, that’s their job. But we can keep 
+our state properly so it won’t create a mess around. Let’s create Models to provide sane 
+interface for our global state (/data).
+
+What kind of data do an RSS reader have? RSS feeds, and posts that come along with them. 
+Now we can keep both of them in same model (as we’re doing till now), or we can separate them. 
+We will separate them.
+
+Create a directory: src/models and files src/models/feeds.js and src/models/posts.js. 
+Delete src/feeds.js (or move it to models, your choice).
+
+We will implement offline storage in next step. In this step, we’re just marking our 
+models into two files.
+
+//models/feeds.js
+import {Observable} from 'rx';
+import {ajax} from 'jQuery';
+
+let feedUrls = [
+  'https://hacks.mozilla.org/category/es6-in-depth/feed/',
+  'http://feeds.feedburner.com/JohnResig',
+  'http://unisonweb.org/feed.xml'
+];
+
+let fetchFeed = (url) => {
+  return ajax({
+    url: `http://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=30&q=${url}`,
+    dataType: 'jsonp'
+  }).promise();
+};
+
+
+let feeds_ = Observable
+      .from(feedUrls)
+      .flatMap(fetchFeed)
+      .map(res => res.responseData.feed);
+
+export default {feeds_};
+//models/posts.js
+import {feeds_} from './feeds';
+
+let posts_ = feeds_
+      .map(feed => feed.entries);
+
+export default {posts_};
+We didn’t change much, just created posts_ as a separate thing than feeds_. We also need 
+to update our components/posts-list.js to use posts_.
+
+//components/posts-list.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import {posts_} from '../models/posts';
+import {formatDate} from '../utils';
+
+let postView = (post) =>
+.
+.
+.
+let render_ = () => {
+  return posts_
+    .map(posts => posts.map(postView))
+    .reduce((acc, posts) => acc.concat(posts))
+    .map(view);
+}
+
+export default render_;
+We can also change the feeds-list sidebar component to use actual feeds. Let’s just do it.
+
+//components/sidebar-feed-list.js
+import {feeds_} from '../models/feeds';
+.
+.
+.
+let render_ = () => {
+return feeds_
+    .map(feed => {
+      return {url: feed.feedUrl, name: feed.title}
+    })
+    .toArray()
+    .startWith([])
+    .do(x => console.log(x))
+    .map(feeds => feeds.map(nodeView))
+    .map(view);
+}
+
+export default render_;
+Observable.prototype.toArray waits for the Observable to complete and return it as an array. 
+We’re not going to do it this way. We’ll change all this later when we implement reactive offline storage.
+
+At this point, the app shall be looking like this:
+
+If it is not, you can always just put your code in trash and copy-over the code from whatever 
+step from this repo :P
+
+Time to move on to next step!
+
+git checkout 7-offline-storage-with-dexiejs
+-------------------------------------------------------------------------
+
+Yarr : Offline Storage with Dexie.js
+It’s time we implement offline storage. We’re going to use IndexedDB for storage, but not directly.
+ We’ll use an abstraction over IndexedDB called dexie.js. We’ll put all our database related code in
+ /src/db.js, so create that file.
+
+Hello Dexie
+Dexie’s interface is somewhat similar to that of a SQL database. If you’ve used one before, you’ll 
+feel almost at home.
+
+Create a Store
+First we need to create a store in dexie. It’s like creating a database in which we’ll then create
+ tables for feeds and posts.
+
+//db.js
+import Dexie from 'dexie';
+
+let db = new Dexie('yarr');
+    
+Create Tables
+Next step, to create tables:
+
+//The object store will allow any properties on your stored objects but you can only query them 
+by indexed properties
+db.version(1).stores({
+  feeds: 'url, name',
+  posts: 'link, title, author, publishedDate, categories, read, feedUrl'
+});
+    
+db.version(1) is useful when we later need to migrate our data or something like that 
+(we won’t do it today). We created two stores as we discussed, but notice posts has no column
+ for `content`. We actually don’t need to mention all the fields we wanna store. We only need 
+to mention the fields which we wanna index, so we can query with them later.
+
+Open db and start working peasants!
+That’s all it needs to setup the db. We can now call db.open() and start working with dexie
+ right away.
+
+//db.js
+db.open();
+    
+Our src/db.js looks like this at the moment:
+
+import Dexie from 'dexie';
+
+let db = new Dexie('yarr');
+
+//The object store will allow any properties on your stored objects but you can only query 
+them by indexed properties
+db.version(1).stores({
+  feeds: 'url, name',
+  posts: 'link, title, author, publishedDate, categories, read, feedUrl'
+});
+
+db.open();
+
+window.Posts = db.posts;
+window.Feeds = db.feeds;
+
+export default {db, Posts: db.posts, Feeds: db.feeds};
+    
+To access our posts and feeds stores, we need to use db.<storeName> sytanx. So we are 
+exporting them as Posts and Feeds. We’ve also put them on `window` so we can play around 
+with them in console.
+
+Webpack dexie fix/hack
+If you just import dexie, you’ll see there’s an error in the console and nothing is rendered.
+ Well, that’s because dexie supports AMD and webpack don’t like it. So we’ll do a quick hackish 
+fix for the time being (until webpack fix it themselves).
+
+
+Open /node_modules/dexie/dist/latest/Dexie.js, go the end, and comment out AMD support code:
+
+// /node_modules/dexie/dist/latest/Dexie.js
+.
+.
+.
+}).apply(null,
+
+    // AMD:
+    // typeof define === 'function' && define.amd ?
+    // [self || window, function (name, value) { define(name, function () { return value; }); }] :
+
+    // CommonJS:
+    typeof global !== 'undefined' && typeof module !== 'undefined' && module.exports ?
+.
+.
+.
+Make Models Offline First
+So how do we actually use offline storage in our app? We’ll go for `offline-first`. i.e We’ll
+ fetch the feeds, store them in IndexedDB (or let’s call it dexie db), and feed our app from 
+the dexie db. So whenever we need to update our data (feeds/posts), we first update the dexie db. 
+Spoiler: To make the interaction b/w dexieDb and our UI smoother, we’ll actually make our db reactive,
+ so that any change in our db will automatically change the UI.
+
+Offline first Feeds
+Let’s open src/models/feeds.js and import Feeds table from db.js
+
+#+bebgin_src javascript //models/feeds.js import {Feeds} from ‘../db’; . . .
+
+Since we’re going offline-first, let’s first add feeds to db:
+
+//models/feeds.js
+.
+.
+.
+let addFeed_ = (feedUrl) => Observable
+      .of(feedUrl)
+      .flatMap(fetchFeed)
+      .flatMap(data => {
+        let feed = data.responseData.feed;
+
+        return Feeds.add({
+          url: feed.feedUrl,
+          name: feed.title,
+          source: feed.link,
+          description: feed.description
+        });
+      });
+
+//add default feeds
+Observable
+  .from(feedUrls)
+  .flatMap(addFeed_)
+  .subscribe(
+    x => console.log('Successfully added', x),
+    e => console.warn('Error while adding feed: ', e)
+  );
+.
+.
+.
+    
+Cool! But we are still returning the feeds by fetching them, we shall return the feeds_ by 
+fetching them from dexie-db since we’re saving our feeds in it anyway.
+
+For fetching data, dexie.js provides db.<table>.toArray() to give all the documents in the 
+dexie table as a promise of array. And how do we get value from a promise? flatMap ftw!
+
+.
+.
+.
+let feeds_ = Observable
+      .fromPromise(Feeds.toArray())
+      .do(x => console.log(x));
+
+export default {feeds_};
+    
+An error along Observable chain
+
+Oops! That broke almost everything. We used Observable.prototype.do above to log what our `feeds_` 
+is returning. do is and should be used for debugging like side-effects only.
+
+Our posts-list view broke because our feeds don’t have posts any more, but why did sidebar-feeds-list 
+broke? Take a look at src/components/sidebar-feed-list.js, we are returning an array of feeds now, 
+not a stream of one feed at a time. We can easily convert this array to an Observable of 
+single feeds (guess how), but we won’t. Returning an array of feeds make our job of re-rendering 
+the sidebar-feed-list much more easier whenever a new feed is added or removed. Let’s
+ change src/components/sidebar-feed-list.js to accommodate new changes:
+
+// components/sidebar-feed-list.js
+.
+.
+.
+let render_ = () => {
+  let selectFeedClicks_ = clicksByClass_('sidebar-feed');
+  selectFeedClicks_
+    .do(e => e.preventDefault())
+    .do(e => {
+        let activeEl = document.querySelector('.sidebar-feed.active');
+        if(activeEl) activeEl.classList.remove('active');
+
+        e.target.classList.add('active');
+    })
+    .subscribe();
+
+  return feeds_
+    .startWith([])
+    .map(feeds => feeds.map(nodeView))
+    .map(view);
+}
+
+export default render_;
+    
+This should work, right? But it doesn’t! Why not? If we look in the console, there’s an error saying:
+
+Error occured somewhere along Observable chain TypeError: posts.map is not a function
+    at http://localhost.com:8080/dist/app.js:11638:19
+    
+This line is from console.debug we have put in our src/renderer.js. This is expected behavior 
+from Observable. Whenever any error occurs along the Observable chain, the chain stops unless 
+we ask it not to. That’s what is happening here. Let’s change src/models/posts.js to stop this 
+error temporarily.
+
+// models/posts.js
+import {feeds_} from './feeds';
+import {Observable} from 'rx';
+
+let posts_ = Observable.return([]);
+
+export default {posts_};
+    
+Awesome! Sidebar has the feeds list (as expected) now. But there’s another error in the console 
+which occurs when we add those default feeds to dexie.db. It’s not affecting our app because it’s 
+not part of the main Observable change that end up being rendered. But we should get rid of it. 
+This error occurs when we try to add items with same primary_key to dexie-db. We try to add feeds 
+to the `Feeds` table every time we refresh the page. We should check if there are any feeds in the
+ `Feeds` and add feeds only if there are none. Let’s do this:
+
+.
+.
+.
+//add default feeds
+Observable
+  .fromPromise(Feeds.count())
+  .flatMap(count => {
+    let urls = count === 0 ? feedUrls : [];
+    return Observable.from(urls);
+  })
+  .flatMap(addFeed_)
+  .subscribe(
+    x => console.log('Successfully added', x),
+    e => console.warn('Error while adding feed: ', e)
+  );
+.
+.
+.
+    
+Feeds.count() give us a promise of number of items in our `Feeds` dexie table. If the number 
+of feeds in our dexie-db is 0, we return an Observable of feed urls, otherwise an empty one 
+(from empty array) which is like a no-op. This got us rid from that error in console. Cool!
+
+Offline first Posts
+Noticed we aren’t adding posts anywhere? We should add posts to our Posts dexie table whenever
+ we add a feed. Let’s rework that addFeed_ function in src/models/feeds.js:
+
+//models/feeds.js
+.
+.
+.
+let addPostToDb = (post, feedUrl) => {
+  post.read = 'false';
+  post.publishedDate = new Date(post.publishedDate);
+  post.feedUrl = feedUrl;
+  return Posts.add(post);
+};
+
+let addFeed_ = (feedUrl) => Observable
+      .of(feedUrl)
+      .flatMap(fetchFeed)
+      .flatMap(data => {
+        let feed = data.responseData.feed;
+        let entries = feed.entries;
+
+        let addFeedP = Feeds.add({
+          url: feed.feedUrl,
+          name: feed.title,
+          source: feed.link,
+          description: feed.description
+        });
+
+        return Observable
+          .fromPromise(addFeedP)
+          .flatMap(() => Observable.from(entries))
+          .flatMap(p => addPostToDb(p, feed.feedUrl));
+      });
+.
+.
+.
+    
+We created a helper method addPostToDb to add post to dexie table `Posts` and give us an array
+of status of operation. And now when we fetch a feed, we add it to Feeds table, and then create 
+another Observable from the feed.entries array, add each post to Posts, and return that Observable.
+ Why are we doing it this way? Remember what happen when any error happen on an Observable chain?
+ It goes straight to subscribe method, and stop the chain. Error handling is one of killer features of Rx.
+ To reliably add the posts and feeds, we put them on the Observable chain (and not just make some
+ random addPostToDb operations). So if any post fails to be added to the dexie db, we could catch
+ the error (although we will not :P).
+
+To check if your code is working, open console in your browser, and do Feeds.clear() (to empty 
+Feeds table), and then refresh the page. Then enter Posts.count(function(c) {console.log(c); })
+ to check the Posts count.
+
+No Feeds on first refresh
+
+Notice when we clear the Feeds db, and refresh the Page, it shows in console many messages of
+XXX successfully added, and Feeds.count() and Posts.count() shows >0, but there are no Feeds or Posts.
+ Refresh the page again and they’ll show up. Why’s that?
+
+Well, when our app loads and there are no Feeds in db, we add Feeds to db, and get them from db 
+for UI on next step. Now all these operations are asynchronous. The operation of adding feeds to 
+db finisher after the operation of fetching feeds from db, so we see nothing. On second refresh, 
+feeds are already present in the db. Let this be for now, we’ll make our db reactive in next step, 
+so whenever a feed/post is added to the db, our UI will show it right away.
+
+Now that we have our posts added to the db, let’s serve them to our posts-list component. Open up 
+src/models/posts.js:
+
+import {Posts} from '../db';
+import {Observable} from 'rx';
+
+let posts_ = Observable
+      .fromPromise(Posts.orderBy('publishedDate').reverse().toArray());
+
+export default {posts_};
+    
+And it just worked! That’s like super cool, isn’t it? Go eat some candy if you said no.
+
+Now that we are getting all our posts in a single array, we can do a little change in 
+src/components/posts-list.js:
+
+// src/components/posts-list.js
+.
+.
+.
+let render_ = () => posts_
+      .map(posts => posts.map(postView))
+      .map(view)
+      .startWith(view());
+export default render_;
+    
+Awesome! With that done, we can move on to next step and try to make our database reactive. 
+We’ll aim for a functionality that whenever we add/remove/change anything in our offline database
+ (IndexedDB that is), anything using that data (in UI or otherwise) shall respond too. I love this feature in Meteor (although Meteor’s client side db is not persistent by default).
+
+git checkout 8-reactive-dexie
+---------------------------------------------------------------------------------------
+
+Yarr : Reactive Dexie
+In this step we’ll make our data sources (`feeds_` and `posts_`) reactive, and we’ll see how easy
+ it is to make your own Observable.
+
+Take a look at src/models/feeds.js. We are exporting:
+
+let feeds_ = Observable
+      .fromPromise(Feeds.toArray()).share();
+which we then use as our source for feeds across our app. Basically just returning data straight 
+from the dexie database. Now let’s formulate what our requirements are for a reactive data source:
+
+> Reactive data source should give us new data whenever the data is added, removed or changed
+
+Dexie js provide us hooks for receiving events for exactly above 3 situations:
+ https://github.com/dfahlander/Dexie.js/wiki/Table It even has a hook for reading, 
+but we’re not interested in that.
+
+Now if we can convert these hooks to Observable, and merge them such that when any of the above 3 
+hooks fire, we re-fetch the data and make feeds_ emit it again, our whole UI will update. That’s
+ what Observable are, right? Asynchronous push based collections.
+
+Dexie hooks -> Observable
+Let’s start with making a helper function that will convert a hook into an Observable. 
+Open up src/db.js:
+
+// db.js
+import {Observable} from 'rx';
+.
+.
+.
+let reactiveDexieTable_ = (table, hookName) => {
+  return Observable.create((obs) => {
+    let dbListener = table.hook(hookName, (pk, obj, txn, update) => {
+      //Can't use `arguments` because webpack.
+      //there are 4 arguments for 'updating' op, otherwise there are 3.
+      //in case of 'updating' first arg is 'modifications', and other three are same
+      obs.onNext(pk, obj, txn, update);
+    });
+
+    return () => {
+      table.hook(hookName).unsubscribe(dbListener);
+    };
+  });
+
+};
+
+export default {
+  db,
+  Posts: db.posts,
+  Feeds: db.feeds,
+  reactiveDexieTable_
+};
+    
+reactiveDexieTable_ shall give us an Observable for listening to one of creating, 
+updating, deleting hooks on a dexie table.
+
+Creating an Observable is really simple. There’s a helper method Observable.create which 
+makes the job easier. Observable.create takes a function (call it `cb`) as argument. `cb` is 
+given an Observer (call it `obs`) as argument. It’s `cb`’s duty to call `obs`’s onNext, onError, 
+onComplete, when it does, that’s when our resulting Observable will emit values/errors/onCompleted. 
+`cb` shall return a function which will be called when it’s time to dispose the Observable. Ideally,
+ `cb`’s return function clears whatever resources our Observable used (it should remove event 
+listeners it added for example).
+
+In our case, we don’t want the resulting Observable to ever complete, so we don’t have an obs.
+onCompleted call. And we don’t have an obs.onError call, because bad developers don’t handle errors. 
+What? You really thought I am a good developer? Lol! Can’t believe you fell for that. Actually I do 
+believe that, I anticipated that; you’re too predictable you know. Honestly, I didn’t anticipated shit, 
+I just had to be a smartass. You know what! I actually did anticipate that, but I had to be humble. 
+Really honestly though, I <smack>…okay let’s proceed. You didn’t need to hit me. You prick!
+
+Test reactive dexie table
+Let’s do a quick test run. We’ll create an Observable for listening to `creating` hook, clear all the 
+feeds, refresh the browser and see if this Observable emits. Put this anywhere in src/db.js:
+
+reactiveDexieTable_(db.feeds, 'creating')
+  .do(x => console.log('WHOA! Hook is working!', x))
+  .subscribe();
+    
+Open console in your browser, do a Feeds.clear() and Posts.clear(), and refresh. If you see that Whoa! message, our new Observable is working. Awesome! Remove code added above.
+
+Cascading delete for Posts
+Let’s do something little more useful. Noticed we had to clear both Feeds and Posts above (so re-adding 
+Posts won’t show an error). Keeping Posts in db don’t make any sense when we’ve removed the `Feed` they
+ belong to. Let’s use our awesome new reactive table Observable and delete all the Posts that belong to 
+the feed whenever we delete the feed.
+
+.
+.
+.
+//delete all posts whenever a feed is deleted from dexie db
+reactiveDexieTable_(db.feeds, 'deleting')
+  .flatMap(feedUrl => {
+    return db.posts.where('feedUrl').equals(feedUrl).delete();
+  })
+  .subscribe(
+    x => console.log(`${x} posts deleted successfully in cascading delete operation.`),
+    e => console.error('Error while cascading Posts delete', e)
+  );
+.
+.
+.
+    
+Now go to browser’s console and do a Feeds.clear() again. You’ll see N posts deleted messages, 
+and if you refresh the page, you’ll see Posts are all gone.
+
+Reactive Feeds
+That’s all great, let’s use this in our UI. We’ll start with feeds. Open src/models/feeds.js:
+
+import {Feeds, reactiveDexieTable_} from '../db';
+.
+.
+.
+let feeds_ = Observable
+      .merge(
+        reactiveDexieTable_(Feeds, 'creating'),
+        reactiveDexieTable_(Feeds, 'updating'),
+        reactiveDexieTable_(Feeds, 'deleting')
+      )
+      .startWith('')
+      .flatMap(() => Feeds.toArray()).share();
+
+export default {feeds_};
+    
+We create 3 Observable to inform us whenever Feeds are updated, deleted or added, and we 
+Observable.merge them so that we get a notification when either one of these events happen. 
+Can you guess why we did .startWith('') here? Without startWith, the Observable will keep waiting 
+for one of the 3 events to happen. We don’t want that, we want to send feeds to our UI on initial 
+refresh too, so we start with an empty notification, and send feeds every time page refreshes, and 
+then we send them every time something happens in our Feeds table.
+
+Let’s try it real quick. Open up the console in browser and do Feeds.clear(). You’ll see all the 
+feeds from our feeds list in sidebar vanish. Is it awesome or what! If you refresh the page, 
+feeds will get added back again on first refresh, however posts will not. That’s expected, 
+let’s make Posts reactive too.
+
+Reactive Posts
+How do we make Posts reactive now? Exactly how we made Feeds reactive, dumbass!
+
+// models/posts.js
+import {Posts, reactiveDexieTable_} from '../db';
+import {Observable} from 'rx';
+
+let posts_ = Observable
+      .merge(
+        reactiveDexieTable_(Posts, 'creating'),
+        reactiveDexieTable_(Posts, 'updating'),
+        reactiveDexieTable_(Posts, 'deleting')
+      )
+      .startWith('')
+      .flatMap(() => Posts.orderBy('publishedDate').reverse().toArray());
+
+export default {posts_};
+    
+Now if you do Feeds.clear() in console, you’ll see posts-list get all cleared too, and you 
+might also see posts getting added dynamically when you refresh the page later.
+
+To delete a single post or feed from console, right click it in UI and Copy Link Address. Then 
+in console you can do Posts.delete(link)
+
+Now that our offline database is reactive, bring our UI to life. In next step we’ll add 
+functionality to the control widgets in sidebar.
+
+git checkout 9-bring-ui-to-life
+-----------------------------------------------------------------------------------------------
+
+Yarr : Bring UI to Life
+We’ll now add functionality to all those control widgets in the Sidebar. It’ll be a breeze.
+
+Inter-component communication
+Filters widget
+First we’ll take that `All | Unread | Read` widget. It’s purpose is to filter the posts in our 
+posts-list component by their read status. Have you noticed we have a {read: 'true|false'} field 
+in the posts that we put in our db. Also notice it’s value is a string. For some reason 
+keeping and checking booleans didn’t really work out.
+
+We want our ‘filter-widget’ component to communicate with our `posts-list` component. 
+But we want them isolated and modular, remember? If we import something from one widget in 
+other (for communication) it’ll break the isolation. We don’t want them to intersect. 
+Now that we have the work “intersect” in our vocabulary, can you think of an intersection 
+point for these two components? The `main` component, their parent, it has to know about both 
+`sidebar` (filter-widget’s parent) and posts-list. So if we don’t want to create an intersection
+ b/w two of our modules, we shall reuse the unavoidable intersection point we already have.
+
+Let’s draft a plan about how we’re gonna filter the posts. PS: You are really dumb if my overuse
+ of word “filter” hasn’t rang any bells yet. All we have to use filter operator on the feeds_, 
+and we know what to filer for, our only problem is the communication b/w two components. We will:
+
+create an Observable of “what to filter” from our filters-widget
+import it in `main` component (the common intersection point)
+pass it to our `posts-list` component as an argument (remember we export all our components 
+as functions)
+since it’s an Observable, we can consume it directly in our posts-list component chain (hence 
+in the main chain of our app. Our app itself is a chain in case you haven’t noticed yet ;)
+Open up src/components/sidebar-feed-list.js
+
+// components/sidebar-feed-filter.js
+import {dataAttrAsClass} from '../utils';
+.
+.
+.
+let feedFilters_ = () => {
+let widgetClicks_ = clicksByClass_('filter-posts');
+
+let filters_ = widgetClicks_
+.map(e => e.target)
+.map(el => dataAttrAsClass('filter', el))
+.do(x => console.log(x));
+
+return filters_;
+};
+.
+.
+.
+export {feedFilters_};
+    
+That’s straight forward I think. You might be wondering what that `dataAttrAsClass` is. 
+This is what it is:
+
+//utils.js
+.
+.
+.
+dataAttrAsClass: (attr, el) => {
+let dataAttrs = toArray(el.classList)
+.filter(c => c.indexOf('data-') >= 0)
+.map(attr => {
+let [_, key, val] = attr.split('-');
+let res = {};
+res[key] = val;
+return res;
+})[0];
+
+return dataAttrs[attr];
+}
+.
+.
+.
+    
+I couldn’t figure out how to put `data-custom=something` with our HTMLish syntax, so 
+I added the `data-filter=all` etc like this in the markup:
+
+<li className="sidebar-control filter-posts data-filter-all">All</li>
+<li className="sidebar-control filter-posts active data-filter-unread">Unread</li>
+<li className="sidebar-control filter-posts data-filter-read">Read</li>
+    
+Notice data-filter-all class. That’s how we get to know which filter user has clicked on. 
+Yea it’s hackish, suggest me a better way to do this. I’ll appreciate it (what? you want a trophy?).
+
+Let’s import this `feedFilters_` Observable in `components/main.js` and see what it provide us:
+
+//components/main.js
+import {feedFilters_} from './sidebar-feed-filter';
+.
+.
+feedFilters_()
+.subscribe(x => console.log(x));
+.
+.
+    
+We get “read”, “all” and “unread” in console on clicking the filter buttons. Interesting, 
+let’s convert it to what we want to filter:
+
+But wait, why are we directly using `sidebar-feed-filter` in our main? main view don’t need 
+to know about it, and it should not. Besides, feed-filter’s parent is sidebar, and sidebar is 
+answerable to main, not feed-filter. So we’ll import the feedFilters_ in `sidebar` first, 
+which will export it again for main.
+
+// components/sidebar.js
+import {feedFilters_ as filterWidgetFilters_} from './sidebar-feed-filter';
+.
+.
+.
+let feedFilters_ = () =>
+filterWidgetFilters_().startWith('')
+.map(check => {
+let filter = {};
+
+switch(check) {
+case 'read':
+filter.read = 'true'; break;
+case 'unread':
+filter.read = 'false'; break;
+}
+
+return filter;
+});
+
+
+export default render_;
+export {feedFilters_};
+    
+We also did some post-processing on our filters to produce what should be most easily 
+filterable by posts-list view. We’ll now import it in main from `sidebar`,
+
+//components/main.js
+import sidebar_, {feedFilters_} from './sidebar';
+.
+.
+.
+feedFilters_() //these two lines are for testing only. Remove them before moving ahead
+.subscribe(x => console.log(x));
+.
+.
+    
+Now our feedFilters_ Observable give us {read: 'true|false'}|{}, the end product that we want 
+to filter. According to our plan, we have to pass it to `posts-list` view for consumption.
+
+//components/main.js
+.
+.
+.
+let render_ = () => Observable.combineLatest(
+postsList_(feedFilter_),
+sidebar_(),
+view
+);
+.
+.
+    
+And we consume them in `components/posts-list.js`:
+
+//components/posts-list.js
+.
+.
+.
+let render_ = (feedFilters_) =>
+Observable
+.combineLatest(
+posts_,
+feedFilters_(),
+(posts, filters) => posts.filter(post => {
+let result = true;
+let checks = Object.keys(filters);
+for(let key of checks) {
+if(post[key] !== filters[key])
+result = false;
+}
+
+return result;
+})
+)
+.map(posts => posts.map(postView))
+.map(view)
+.startWith(view());
+
+export default render_;
+    
+If that looks like a mess to you, well then it’s sad; because it’s your homework to figure 
+out how we are doing the filtering. You better figure it out before moving ahead ‘cause we are 
+going to make it even more messier. (Hint: It’s not a mess)
+
+You know what? Ideally we should be passing `posts_` as an argument to our posts-list component 
+(and not import it). But I’ll let it slip, because I want to.
+
+Feeds List widget
+Next we’ll make feeds-list in sidebar work, because it will work very similar to the feed-filter 
+
+What we are going to do now is that we’ll generate a similar Observable (as from filter-feed) from 
+feed-list, and we’ll somehow combine it with feed-filter Observable. It’ll give us advantage that 
+we could keep both filters active at a time without any extra work.
+
+// components/sidebar-feed-list.js
+.
+.
+.
+let selectedFeedUrl_ = () =>
+      clicksByClass_('sidebar-feed')
+      .do(e => e.preventDefault())
+      .map(e => e.target.href.split('/').reverse()[0] === 'all-feeds'
+           ? null
+           : e.target.href);
+
+
+export default render_;
+export {selectedFeedUrl_};
+    
+We have a special entry in feed-list called “All”, which is to remove the selected-feed filters 
+and show posts from all feeds.
+
+Notice we only export Observable returning functions from our components.
+
+Now let’s import this Observable in our sidebar.js and combine it with `feedFilters_`
+
+// components/sidebar.js
+import {selectedFeedUrl_} from './sidebar-feed-list';
+.
+.
+.
+let feedFilters_ = () =>
+      Observable
+      .combineLatest(
+        filterWidgetFilters_().startWith(''),
+        selectedFeedUrl_().startWith(''),
+        (filter, feedUrl) => {
+          return {filter, feedUrl}
+        }
+      )
+      .map(check => {
+        let filter = {};
+
+        switch(check.filter) {
+        case 'read':
+          filter.read = 'true'; break;
+        case 'unread':
+          filter.read = 'false'; break;
+        }
+
+        if(check.feedUrl) filter.feedUrl = check.feedUrl;
+
+        return filter;
+      })
+
+
+export default render_;
+export {feedFilters_};
+    
+Try it out. This will give us two of our widgets working!
+
+Fetch All ‘n Add Feed widget
+For the `Fetch All Feeds` button, we need some way to re-fetch all feeds present in our db. 
+For that we’ll need to create a function in `models/feeds.js`, because it’s the one responsible 
+for this task. We’ll then import this method in our component, and call it when clicks happen on 
+our button.
+
+// models/feeds.js
+let fetchAllFeeds_ = () => {
+  let newPosts_ = Observable
+        .fromPromise(Feeds.toArray())             //take all the feeds as array
+        .flatMap(feeds => Observable.from(feeds)) //convert the array to an Observable to get 1 
+feed at a time
+        .flatMap(feed => fetchFeed(feed.url))
+        .flatMap(data => {
+          let feed = data.responseData.feed;
+          let entries = feed.entries.map(e => {
+            e.feedUrl = feed.url;
+            return e;
+          });
+
+          return Observable.from(entries);          //return the new Posts as an Observable
+        });                                         //which give 1 post at a time
+
+  let addNewPosts_ = newPosts_                      //we don't want to add already present posts
+        .flatMap(entry => Posts.get(entry.link))    //(dexie gives an error for that)
+        .zip(
+          newPosts_,                                //I am sure there's a better way of doing this
+          (existing, newEntry) => {                 //if you know, do tell me
+            return {existing, newEntry};
+          }
+        )
+        .flatMap(entry => {
+          if(entry.existing)
+            return Observable.empty();
+
+          return addPostToDb(entry.newEntry, entry.newEntry.feedUrl);
+        });
+
+  return addNewPosts_;
+};
+.
+.
+.
+export default {feeds_, fetchAllFeeds_};
+Well, I hope the code is self explanatory, and I’ve added comments with it, so read ‘em honey.
+ Next we need to call this method when someone clicks on `Fetch All Feeds` button. Easy!
+
+// components/sidebar-fetch-n-add-widget.js
+import {fetchAllFeeds_} from '../models/feeds';
+.
+.
+let render_ = () => {
+  let addFeedBtnClicks_ = clicksByClass_('new-feed-btn');
+  let addFeedInputStyles_ = addFeedBtnClicks_
+        .startWith(false)
+        .scan(acc => !acc)
+        .map(show => show
+             ? {display: 'inline-block'}
+             : {display: 'none' });
+
+  let fetchAllBtnClicks_ = clicksByClass_('fetch-all-btn');
+  fetchAllBtnClicks_
+    .flatMap(fetchAllFeeds_)
+    .subscribe();
+
+  return Observable
+    .combineLatest(
+      addFeedInputStyles_,
+      view
+    );
+}
+.
+.
+.
+And we have our `Fetch All Feeds` button working.
+
+For `Add New Feed`, we want to add a new feed when user press enter in the input box that appears
+when user clicks the `Add New feed` button. I am going to write down code for making this button 
+work, but I’ll not explain that code. Call it your homework. It’s quite easy anyway.
+
+We need keyup events, so upen `src/events.js`:
+
+// events.js
+import {Observable} from 'rx';
+
+import {toArray} from './utils';
+
+
+let body = document.body;
+
+let clicks_ = Observable.fromEvent(body, 'click').share();
+
+let filterClassName = (className, e) => {
+  let classes = toArray(e.target.classList);
+  return classes.indexOf(className) >= 0;
+};
+
+let clicksByClass_ = (className) => clicks_
+      .filter(e => filterClassName(className, e));
+
+let keyups_ = Observable.fromEvent(body, 'keyup').share();
+
+let keyupsByClass_ = (className) =>
+      keyups_
+      .filter(e => filterClassName(className, e));
+
+export {clicksByClass_, keyupsByClass_};
+And in src/components/sidebar-fetch-n-add-widget.js:
+
+// components/sidebar-fetch-n-add-widget.js
+import {clicksByClass_, keyupsByClass_} from '../events';
+import {fetchAllFeeds_, addFeed_} from '../models/feeds';
+.
+.
+let render_ = () => {
+  let addFeedBtnClicks_ = clicksByClass_('new-feed-btn');
+  let addFeedInputStyles_ = addFeedBtnClicks_
+        .startWith(false)
+        .scan(acc => !acc)
+        .map(show => show
+             ? {display: 'inline-block'}
+             : {display: 'none' });
+
+  let fetchAllBtnClicks_ = clicksByClass_('fetch-all-btn');
+  fetchAllBtnClicks_
+    .flatMap(fetchAllFeeds_)
+    .subscribe();
+
+  let addInputKeyups_ = keyupsByClass_('new-feed-input');
+  let addNewFeed_ = addInputKeyups_
+        .do(e => {
+          e.target.classList.remove('error');
+          e.target.classList.remove('progress');
+        })
+        .filter(e => e.keyCode === 13)
+        .map(e => e.target.value)
+        .flatMap(feedUrl => addFeed_(feedUrl))
+        .catch(e => {
+          let el = document.querySelector('.new-feed-input');
+          el.classList.add('error');
+
+          console.debug('Error while adding feed: ', e);
+
+          return addNewFeed_.retry();
+        });
+
+  addNewFeed_.subscribe(
+    x => console.log(x)
+  );
+
+
+  return Observable
+    .combineLatest(
+      addFeedInputStyles_,
+      view
+    );
+}
+
+export default render_;
+And we need to export `addFeed_` from src/models/feeds.js
+
+// models/feeds.js
+.
+.
+.
+export default {feeds_, fetchAllFeeds_, addFeed_};
+Noticed all the `Observable…..subscribe` chains we have where we don’t handle errors responsibly? 
+If you are feeling adventurous, feel free to create a `notifications` component and show a 
+notification on error/progress etc. Don’t forget to create a pull request.
+
+Phewww…we are ready to move to final step.
+
+git checkout 10-reader-view
+-------------------------------------------------------------------------------------
+Yarr : The Reader
+In this final part, we’ll finally add the ability to read the posts. Guess where to start with it?
+ With the click handler on the ‘Title’ in the posts-list.
+
+// components/posts-list.js
+import {clicksByClass_} from '../events';
+import {markPostAsRead_} from '../models/posts';
+.
+.
+.
+let readPost_ = () => {
+  let readPostClicks_ = clicksByClass_('post-title');
+  return readPostClicks_
+      .do(e => e.preventDefault())
+      .map(e => e.target.href)
+      .flatMap(link => Posts.get(link))
+      .do(markPostAsRead_)
+      .startWith('');
+}
+
+export default render_;
+export {readPost_};
+Can you guess what we are upto? We have created an Observable which will give us the url of 
+the post to read whenever user clicks on a post’s title. Remember we save posts with url as 
+primary_key in IndexedDB, so we can fetch the post by it’s url. We’ll use this Observable in 
+our reader view which we’re going to create next.
+
+But, have you noticed we have functionality to filter posts by read/unread, but no mechanism 
+to mark a post as read? We’ll mark the post as read when she open the reader for a post. 
+For that we already have put `markPostAsRead_` in above code. Now ideally we should keep 
+this in Observable chain and handle the error when it happens, but we won’t because it’ 4 
+in the morning, I am tired and sleepy, and I heard you wanted to learn. No learning without 
+doing pall. Don’t forget to create a pull request.
+
+Let’s create it in src/models/posts.js
+
+let markPostAsRead_ = (post) => Posts.update(post, {read: 'true'});
+.
+.
+export default {posts_, markPostAsRead_};
+Create a new file src/components/reader.js
+
+// components/reader.js
+import {Observable} from 'rx';
+
+let view = (post) => {
+  if(!post) return '';
+
+  return <section className="post-container post-reader">
+  <span className="close-reader-btn">&#10094;</span>
+  <header className="post-header">
+    <ul className="post-meta-list">
+      <li className="post-meta-item">
+        <p>{formatDate(post.publishedDate)}</p>
+      </li>
+
+      <li className="post-meta-item">
+        <p itemprop="articleSection">{post.categories.join(', ')}</p>
+      </li>
+    </ul>
+
+    <h1 itemprop="name headline" className="post-title">
+    <a href={post.link} title="post.title">{post.title}</a>
+    </h1>
+  </header>
+
+  <div className="post-body">
+    {post.content}
+  </div>
+</section>
+}
+
+let render () => Observable.return(view());
+That’s the basic view for our reader, let’s import it in `components/main.js` 
+and put it in main view. We’re going to show the reader as a popup reader which’ll 
+take over the entire page. Then we’ll have a button to close the reader.
+
+// components/main.js
+import h from 'virtual-dom/h';
+import {Observable} from 'rx';
+
+import postsList_, {readPost_} from './posts-list';
+import sidebar_, {feedFilters_} from './sidebar';
+import reader_ from './reader';
+
+let view = (postsList, sidebar, reader) =>
+      <div id='container' className='container'>
+         <div className="surface">
+           <div className="surface-container">
+             <div className="content">
+               <aside className="cover">{sidebar}</aside>
+               <div className="reader">{reader}</div>
+               <div className="wrapper">
+                 <div className="wrapper-container">{postsList}</div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+  ;
+
+let render_ = () => Observable.combineLatest(
+  postsList_(feedFilters_),
+  sidebar_(),
+  reader_(readPost_),
+  view
+);
+
+export default render_;
+Notice we also imported `readPost_` from posts-list component and we pass it to reader. 
+Let’s move back to src/components/reader.js and use it to render a reader view.
+
+import {Observable} from 'rx';
+import h from 'virtual-dom/h';
+import {formatDate} from '../utils';
+
+let view = (post) => {
+  if(!post) return '';
+
+  return <section className="post-container post-reader">
+  <span className="close-reader-btn">&#10094;</span>
+  <header className="post-header">
+    <ul className="post-meta-list">
+      <li className="post-meta-item">
+        <p>{formatDate(post.publishedDate)}</p>
+      </li>
+
+      <li className="post-meta-item">
+        <p itemprop="articleSection">{post.categories.join(', ')}</p>
+      </li>
+    </ul>
+
+    <h1 itemprop="name headline" className="post-title">
+    <a href={post.link} title="post.title">{post.title}</a>
+    </h1>
+  </header>
+
+  <div className="post-body">
+    {post.content}
+  </div>
+</section>
+}
+
+let render_ = (readPost_) =>
+      readPost_()
+      .startWith(false)
+      .map(view);
+
+export default render_;
+Now if you click on a post’s title, you’ll see the reader view shows up, but the post is 
+actually an HTML string, i.e there’re all HTML tags etc with all those angle brackets. 
+We need to convert this HTML string to something which virtual-dom can render as 
+HTML (hyperscript). Also, the back button isn’t really working, so we have to refresh the page 
+to get rid of the reader. Let’s make that button work first.
+
+// components/reader.js
+import {clicksByClass_} from '../events';
+.
+.
+let render_ = (readPost_) => {
+  let closeBtnClicks_ = clicksByClass_('close-reader-btn');
+  return readPost_()
+    .startWith(false)
+    .merge(closeBtnClicks_)
+    .map(postOrClick => {
+      if(postOrClick.type === 'click') return false;
+      return postOrClick;
+    })
+    .map(view);
+}
+
+export default render_;
+This is a bit hackish, again, tell me if you have a better solution for this. Basically what we 
+do is that we create a new view (the whole view, complete view which we give to virtual-dom for
+ re-rendering) every time user clicks on the post title to read it, or click the close button 
+in reader. When user click on the post title, the reader has a post to render and reader view 
+shows up on the screen, but when user clicks on the close button, same stream (Observable) 
+returns false, which makes the reader view an empty string (hint: the view function in
+ components/reader.js).
+
+I missed a small thing here. html2hscript uses json files internally, for which we need to 
+use json-loader in webpack. Although I have json-loader configured in webpack.config.js, we 
+still need to install it:
+
+npm install json-loader --save-dev
+Finally lets parse that html string we get from RSS feed to hyperscript. For this we’ve 
+installed html2hscript node module.
+
+// components/reader.js
+import htmlParser from 'html2hscript';
+.
+.
+htmlParser here is a node callback. We need to convert it to an Observable (yea we can do that, 
+I told you in the start I think. FYI you’re annoying me now) so we can use it in our chain.
+
+// components/reader.js
+.
+.
+.
+let render_ = (readPost_) => {
+  let closeBtnClicks_ = clicksByClass_('close-reader-btn');
+  let htmlParser_ = Observable.fromNodeCallback(htmlParser);
+  let posts_ = readPost_().share();
+.
+.
+.
+htmlParser_ will now take an HTML string and will give us an Observable that return the result.
+ And how do we get a value out of an Observable in the chain? Yup, flatMap.
+
+// components/reader.js
+
+let render_ = (readPost_) => {
+  let closeBtnClicks_ = clicksByClass_('close-reader-btn');
+  let htmlParser_ = Observable.fromNodeCallback(htmlParser);
+  let posts_ = readPost_().share();
+
+  return posts_
+    .flatMap(post => {
+      if(!post) return Observable.return('');
+      post.content = `<div class="reader-post-wrapper">${post.content}</div>`;
+      return htmlParser_(post.content)
+    })
+.
+.
+.
+But we don’t want the content only, we want to complete post object. Let’s zip the content 
+back in the post. Other than that, htmlParser don’t really give us hyperscript as javascript objects, 
+it give use hyperscript as string. We need to eval it. Yea I said `zip` ‘em. I think there must be 
+a better way of doing this, please let me know if you know the better way.
+
+// components/reader.js
+let render_ = (readPost_) => {
+  let closeBtnClicks_ = clicksByClass_('close-reader-btn');
+  let htmlParser_ = Observable.fromNodeCallback(htmlParser);
+  let posts_ = readPost_().share();
+
+  return posts_
+    .flatMap(post => {
+      if(!post) return Observable.return('');
+      post.content = `<div class="reader-post-wrapper">${post.content}</div>`;
+      return htmlParser_(post.content)
+    })
+    .zip(
+      posts_,
+      (vContent, post) => {
+        if(!post) return post;
+
+        //this is a hack. the htmlParser produces a string, when needs to be `eval`ed with 
+`h` in scope. So.
+        window.h = h;
+        let newContent = eval(vContent)
+        post.content = newContent;
+        return post;
+      }
+    )
+.
+.
+.
+The complete render_ looks like this:
+
+.
+.
+.
+let render_ = (readPost_) => {
+  let closeBtnClicks_ = clicksByClass_('close-reader-btn');
+  let htmlParser_ = Observable.fromNodeCallback(htmlParser);
+  let posts_ = readPost_().share();
+
+  return posts_
+    .flatMap(post => {
+      if(!post) return Observable.return('');
+      post.content = `<div class="reader-post-wrapper">${post.content}</div>`;
+      return htmlParser_(post.content)
+    })
+    .zip(
+      posts_,
+      (vContent, post) => {
+        if(!post) return post;
+
+        //this is a hack. the htmlParser produces a string, when needs to be `eval`ed with
+ `h` in scope. So.
+        window.h = h;
+        let newContent = eval(vContent)
+        post.content = newContent;
+        return post;
+      }
+    )
+    .merge(closeBtnClicks_)
+    .map(postOrClick => {
+      if(postOrClick.type === 'click') return false;
+      return postOrClick;
+    })
+    .startWith(false)
+    .map(view);
+}
+
+export default render_;
+This might not be too straightforward to understand (or perhaps it is), but I am certain
+ there is cleaner way of doing this.
+
+This is the end of our tutorial. We now have a fully functional RSS reader with few features 
+missing.
+
+Missing Features
+
+Ability to remove a Feed
+Showing error/progress notifications
+There might be more I’ve forgotten. Best way of learning is to do something. This is the reason 
+I built this app. I don’t know if anyone is going to read this tutorial, but I’m being optimistic
+ and leaving these two features un-done in hope of seeing some pull requests.
+
+Hope you enjoyed the ride.
+--------------------------------------------------------------------------------------------

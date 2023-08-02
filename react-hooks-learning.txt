@@ -1,0 +1,676 @@
+React
+-----------------------------------------------------------------------------------
+ React is conceptually a function that converts a state to a user interface (UI). 
+ React component is literally a JavaScript function, and its arguments are called props
+
+React JSX Element
+-----------------
+JSX is a syntax with angle brackets to produce React elements. 
+A React element is a data structure to represent a part of the UI. 
+We may refer to React elements as JSX elements, especially when React elements are in JSX syntax
+
+Global State = Application State = Single Source of Truth
+-----------------------------------------------------------
+A global variable is useful to control a JavaScript function's behavior from outside the function. 
+Likewise, a global state is useful to control React component behavior from outside the component
+
+One Global State vs Multiple Global State Containers
+------------------------------------------------------
+If a global state is a singleton, we have only one value in memory. 
+If a global state is non-singleton, we may have multiple values for different parts (subtrees) of a component tree.
+
+Sharing Component State with Context
+------------------------------------
+mechanism for passing data from component to component instead of using props
+It's a means to pass a value from a parent component to its children under the tree, without using props
+it's a mechanism for avoiding the singleton pattern and providing different values for different subtrees
+
+React 16.8 introduced the useContext hook. By using useContext and useState (or useReducer), 
+we can create custom hooks for a global state.
+
+Context causes rerendering of all children
+-----------------------------------------
+known limitations is that all Context consumers re-render upon updates, which can lead to extra re-renders. 
+It's a general recommendation to split a global state into pieces.
+
+Context for Global State
+-----------------------
+By combining useState and useContext, we can create a simple global state
+
+const App = () => {
+  const [count, setCount] = useState(0);
+  return <Parent count={count} setCount={setCount} />;
+
+const Parent = ({ count, setCount }) => (
+  <>
+    <Component1 count={count} setCount={setCount} />
+    <Component2 count={count} setCount={setCount} />
+  </>
+);
+
+const ColorContext = createContext('black');
+
+const Component = () => {
+			  const color = useContext(ColorContext);
+			  return <div style={{ color }}>Hello {color}</div>;
+			};
+
+
+Component sets the Provider value (value prop of Provider)
+----------------------------------------------------------------
+const App = () => (
+			  <>
+			    <Component />
+			    <ColorContext.Provider value="red">
+			      <Component />
+			    </ColorContext.Provider>
+			    <ColorContext.Provider value="green">
+			      <Component />
+
+
+Context combined with useState and useContext
+----------------------------------------------
+Now, let's learn how the combination of useState and useContext structure our code. 
+We can pass the state value and update function in Context instead of props
+
+const CountStateContext = createContext({
+			  count: 0,
+			  setCount: () => {},
+			});
+
+
+The App component has a state with useState, and passes count and setCount to the created Context provider component, 
+as illustrated in the following code snippet:
+
+			const App = () => {
+			  const [count, setCount] = useState(0);
+			  return (
+			    <CountStateContext.Provider 
+			      value={{ count, setCount }}
+			    >
+			      <Parent />
+			    </CountStateContext.Provider>
+			  );
+			};
+
+
+React Context behavior - triggers rerender of all consumers
+-----------------------------------------------------------
+When a Context provider has a new Context value, all Context consumers receive the new value and re-render
+
+
+How Context propagation works
+------------------------------
+ a child component re-renders for two reasons—one 
+- because of the parent, and the other 
+- because of the Context. 
+
+
+Context Factory Pattern
+-------------------------------------------------------------
+const createStateContext = (useValue: (init) => State) => {
+
+			  const StateContext = createContext(null);
+
+			  const StateProvider = ({initialValue,children}) => (
+
+			    <StateContext.Provider value={useValue(initialValue)}>
+			      {children}
+  			    </StateContext.Provider>
+			  );
+
+			  const useContextState = () => {
+
+			    const value = useContext(StateContext);
+
+			    if (value === null) throw new Error("Provider
+			      missing");
+			    return value;
+			  };
+
+			  return [StateProvider, useContextState] as const;
+			};
+
+
+Context Factory Pattern typed with Typescript
+-------------------------------------------------------------------------
+
+const createStateContext = <Value, State>(
+			  useValue: (init?: Value) => State
+			) => {
+			  const StateContext = createContext<State | null>(null);
+			  const StateProvider = ({
+			    initialValue,
+			    children,
+			  }: {
+			    initialValue?: Value;
+			    children?: ReactNode;
+			  }) => (
+			    <StateContext.Provider value={useValue(initialValue)}>
+			      {children}
+			    </StateContext.Provider>
+			  );
+			  const useContextState = () => {
+			    const value = useContext(StateContext);
+			    if (value === null){ 
+			     throw new Error("Provider missing");
+			    }
+			    return value;
+			  };
+  return [StateProvider, useContextState] as const;
+			};
+
+
+const useNumberState = (init?: number) => useState(init || 0);
+
+The App component can be refactored, as shown in the following example:
+			const App = () => {
+			  const providers = [
+			    [Count1Provider, { initialValue: 10 }],
+			    [Count2Provider, { initialValue: 20 }],
+			    [Count3Provider, { initialValue: 30 }],
+			    [Count4Provider, { initialValue: 40 }],
+			    [Count5Provider, { initialValue: 50 }],
+			  ] as const;
+			  return providers.reduceRight(
+			    (children, [Component, props]) =>
+			      createElement(Component, props, children),
+			    <Parent />,
+			  );
+			};
+
+Create a Provider Tree with reduceRight
+------------------------------------------
+the key point is using reduceRight to construct a provider tree.
+This technique is not only for a global state with Context but also for any components
+
+Context Provider Best Practices
+-------------------------------
+Basically, we should create a Context for each state piece to avoid extra re-renders. 
+Context, particularly the concrete implementation of createStateContext, which will help when organizing your app code
+
+
+					end of Global State
+-------------------------------------------------------------------------------------------------------------
+
+
+Module State - some global constants or global variables defined in ECMAScript (ES) module scopes
+----------------------------------------------------------------------------------------------------------------
+For a singleton-like a global state, using a module state makes more sense because it's a singleton value in memory
+A strict definition of a module state would be some constants or variables defined in ECMAScript (ES) module scopes. 
+In this book, we aren't following the strict definition. 
+You can simply assume that a module state is a variable defined globally or within the scope of a file
+
+use Module State with subscription (useSubscription and working with a selector)
+------------------------------------
+In order to use a module state in React components, we use a subscription mechanism.
+
+let state = {count: 0};
+
+			export const getState = () => state;
+			export const setState = (nextState) => {
+			  state = nextState;
+		       }
+
+
+export const setState = (nextState) => {
+			  state = typeof nextState === 'function'
+			    ? nextState(state) : nextState;
+			};
+			You can use a function update as follows:
+			setState((prevState) => ({
+			  ...prevState,
+			  count: prevState.count + 1
+			}));
+
+export const createContainer = (initialState) => {
+			  let state = initialState;
+			  const getState = () => state;
+			  const setState = (nextState) => {
+			    state = typeof nextState === 'function'
+			      ? nextState(state) : nextState;
+			  };
+			  return { getState, setState };
+
+You can use this as follows:
+-----------------------------------------------------------
+import { createContainer } from '...';
+const { getState, setState } = createContainer({
+  count: 0
+});
+
+
+type Store<T> = {
+			  getState: () => T;
+ setState: (action: T | ((prev: T) => T)) => void;
+			  subscribe: (callback: () => void) => () => void;
+			};
+			 
+			const createStore = <T extends unknown>(
+			  initialState: T
+			): Store<T> => {
+			  let state = initialState;
+			  const callbacks = new Set<() => void>();
+			  const getState = () => state;
+			  const setState = (nextState: T | ((prev: T) => T)) => {
+			    state =
+			      typeof nextState === "function"
+			        ? (nextState as (prev: T) => T)(state)
+			        : nextState;
+			    callbacks.forEach((callback) => callback());
+			  };
+			  const subscribe = (callback: () => void) => {
+			    callbacks.add(callback);
+			    return () => {
+			      callbacks.delete(callback);
+			    };
+			  };
+			  return { getState, setState, subscribe };
+			}; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Local State = Component State
+----------------------------
+If a state conceptually belongs to a single component and is encapsulated by the component, it is a local state
+patterns you should know to be able to use a local state effectively
+how to lift states up, which means defining a state higher in the component tree, and lifting content up, 
+which means defining a content higher in the component tree
+
+Share State with Parent Component
+------------------------------
+make it work for a single shared counter, we can create a parent component and lift the state up.
+
+Parent triggers rerender of subtree:
+----------------------------------
+If we lift up the state, Parent will render as well as the entire subtree, including all its child components. 
+This may be a performance issue in some use cases
+
+const Parent = () => {
+			  const [count, setCount] = useState(0);
+			  return (
+			    <>
+			      <Component1 count={count} setCount={setCount} />
+			      <Component2 count={count} setCount={setCount} />
+			    </>
+			  );
+
+react hooks are pure functions
+------------------------------
+- useState
+- useReducer
+- useContext
+- useEffect
+- useMemo
+- useRef
+- useCallback
+
+React Hooks allow you to create stateful logic in functional React components.
+
+returns an array of 2 values (tuple)
+array[0] is state
+array[1] is callback
+
+since react 16.8
+
+- are just functions
+- encapsulate logic
+- by convention start with "use"
+- import from { useState } from "react"
+- can not be used inside if -> must be on top level of function
+- custom hook - can be composed form hooks must return result
+
+useState - manage component state (internal state) in the form of a single value state 
+---------------------------------------------
+
+useState use cases
+-----------------
+- State management
+- Conditional rendering
+- Toggle flags (true/false)
+- Counter
+- Get API data and store it in state
+
+
+- used for internal component state, state change will trigger an rerender of component and all children
+- preferred setting in function format: updateState( (count) => count + 1 )
+- you can handle state of an object, but you must spread the previous state and add new state
+ 
+
+
+
+			// counter logic as cusstom hook
+			----------------------------------------------
+			const useCount = () => {
+			  const [count, setCount] = useState(0);
+			  return [count, setCount];
+			};
+
+			// Counter Component for display
+			------------------------------------------------
+			const Counter = () => {
+			  const [count, setCount] = useCount();
+			  return (
+			    <div>
+			      {count}
+			      <button onClick={() => setCount((c) => c + 1)}>
+			        +1
+			      </button>
+			    </div>
+			  );
+			};
+
+			-----------------------------------------------------
+
+			// count with console log - extend logic without affecting display of component
+			  const useCount = () => {
+			  const [count, setCount] = useState(0);
+			  // add console log
+			  ---------------------------------------------
+			  useEffect(() => {
+			    console.log('count is changed to', count);
+			  }, [count]);
+			  ----------------------------------------------
+			  return [count, setCount];
+			};
+
+                        const useCount = () => {
+			  const [count, setCount] = useState(0);
+			  const inc = () => setCount((c) => c + 1);
+			  return [count, inc];
+			};
+
+
+- We now have a clearer name—useCount.
+  As useCount is extracted from Component, we can add functionality without breaking the component (console log).
+  This opens up the entire ecosystem to provide custom hooks for various purposes. 
+  They can be a wrapper to add a tiny functionality or a huge hook that has a larger job.
+
+- Component is independent of the implementation of useCount.				
+
+
+This opens up the entire ecosystem to provide custom hooks for various purposes. 
+They can be a wrapper to add a tiny functionality or a huge hook that has a larger job.
+
+useEffect - manage component state (external state: server request, animation) in the form of a single value state 
+---------------------------------------------
+
+useEffect use cases:
+-------------------
+Running once on mount: 		fetch API data.
+Running on state change: 	validating input field.
+Running on state change: 	live filtering.
+Running on state change: 	trigger animation on new array value.
+Running on props change: 	update paragraph list on fetched API data update.
+
+
+- runs on first render ,       component mount
+- runs on external update      component update
+- runs on component unmount    component unmount
+
+call format:  useEffect (() => {} , )
+---------------------------------------------
+- call : (() => {}  ) // runs on every render
+- call: (() => {} , []) // runs on component mount
+- (() => {} , [dep1, dep2]) // runs when any of the dependencies changes
+
+
+useReducer
+-----------
+useReducer use cases
+--------------------
+- Manage multiple states: modify an array
+- Modify complex states, such as arrays or objects: login form
+
+useContext:
+--------------
+
+use cases:
+
+
+
+useRef:
+--------
+
+use cases:
+----------
+useRef:
+Syntax: const refObject = useRef(initialValue);
+
+It simply returns a plain JavaScript object. 
+Its value can be accessed and modified without triggering a rerender (mutability) 
+
+Its value will persist (won't be reset to the initialValue unlike an ordinary* object defined in your function component; 
+- it persists because useRef gives you the same object instead of creating a new one on subsequent renders) for the component lifetime.
+
+If you write const refObject = useRef(0) and print refObject on console, you would see the log an object - { current: 0 }.
+
+*ordinary object vs refObject, example:
+
+function App() {
+  const ordinaryObject = { current: 0 } // It will reset to {current:0} at each render
+  const refObject = useRef(0) // It will persist (won't reset to the initial value) for the component lifetime
+  return <>...</>
+}
+
+Few common uses, examples:
+-----------------------------
+To access the DOM: <div ref={myRef} />
+Store mutable value like instance variable (in class)
+A render counter
+
+Explanation
+With function components, every render is a function call, creating a new function closure for that specific call. 
+The function component is closing over the setTimeout callback function, so that everything in the setTimeout callback 
+is accessing only the specific render where it was called.
+
+Reusable solution:
+Using a Ref and accessing it only within the setTimeout callback will give you a value that is persistent across renders.
+
+However, it isn't that convenient to use a React Ref with a value that is always updating, like a counter. 
+You are in charge of both updating the value, and causing a rerender yourself. Updating a Ref doesn't entail a component render.
+
+My solution, for easy use, is to combine both useState and useRef hooks into a single "useStateAndRef" hook. This way, 
+you get a setter that gets both the value, and a ref for use in async situations such as setTimeout and setInterval:
+
+import { useState, useRef } from "react";
+
+function useStateAndRef(initial) {
+  const [value, setValue] = useState(initial);
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  return [value, setValue, valueRef];
+}
+
+export default function App() {
+  const [count, setCount, countRef] = useStateAndRef(0);
+  function logCountAsync() {
+    setTimeout(() => {
+      const currentCount = countRef.current;
+      console.log(`count: ${count}, currentCount: ${currentCount}`);
+    }, 2000);
+  }
+  return (
+    <div className="App">
+      <h1>useState with updated value</h1>
+      <h2>count: {count}</h2>
+      <button onClick={() => setCount(prev => prev + 1)}>+</button>
+      <button onClick={logCountAsync}>log count async</button>
+    </div>
+  );
+}
+
+useMemo
+-----------------------------------
+useMemo:
+Syntax: const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+
+It returns a memoized value. The primary purpose of this hook is "performance optimization". 
+Use it sparingly to optimize the performance when needed.
+
+It accepts two arguments - "create" function (which should return a value to be memoized) and "dependency" array. 
+It will recompute the memoized value only when one of the dependencies has changed.
+
+I want to add, for useMemo i usually use it when i want to combine useState and useEffect at the same time. For example:
+
+...
+const [data, setData] = useState(...);
+const [name, setName] = useState("Mario");
+
+// like the example by ajeet, for complex calculations
+const formattedData = useMemo(() => data.map(...), [data])
+
+// or for simple state that you're sure you would never modify it directly
+const prefixedName = useMemo(() => NAME_PREFIX + name, [name]);
+
+I do not know if there will be performance issues because the docs stated that useMemo should be used for expensive calculation. 
+But i believe this is way cleaner than using useState
+
+
+Few common uses, examples:
+------------------------
+Optimize expensive calculations (e.g. operations on data like sort, filter, changing format etc.) while rendering
+
+Unmemoized example:
+-----------------
+function App() {
+  const [data, setData] = useState([.....])
+
+  function format() {
+    console.log('formatting ...') // this will print at every render
+    const formattedData = []
+    data.forEach(item => {
+      const newItem = // ... do somthing here, formatting, sorting, filtering (by date, by text,..) etc
+      if (newItem) {
+        formattedData.push(newItem)
+      }
+    })
+    return formattedData
+  }
+
+  const formattedData = format()
+
+  return <>
+    {formattedData.map(item => <div key={item.id}>
+      {item.title}
+    </div>)}
+  </>
+}
+
+Memoized example:
+-----------------
+function App() {
+  const [data, setData] = useState([.....])
+
+  function format() {
+    console.log('formatting ...') // this will print only when data has changed
+    const formattedData = []
+    data.forEach(item => {
+      const newItem = // ... do somthing here, formatting, sorting, filtering (by date, by text,..) etc
+      if (newItem) {
+        formattedData.push(newItem)
+      }
+    })
+    return formattedData
+  }
+
+  const formattedData = useMemo(format, [data])
+
+  return <>
+    {formattedData.map(item => <div key={item.id}>
+      {item.title}
+    </div>)}
+  <>
+}
+
+useCallback:
+-----------------------------
+Syntax: const memoizedCallback = useCallback(() => { //.. do something with a & b }, [a, b])
+
+It returns a memoized function (or callback).
+
+It accepts two arguments - "function" and "dependency" array. It will return new i.e. re-created function 
+only when one of the dependencies has changed, or else it will return the old i.e. memoized one.
+
+Few common uses, examples:
+
+Passing memoized functions to child components 
+(that are optimized with React.memo or shouldComponentUpdate using shallow equal - Object.is) 
+to avoid unnecessary rerender of child component due to functions passed as props.
+
+Example 1, without useCallback:
+-------------------------------
+const Child = React.memo(function Child({foo}) {
+  console.log('child rendering ...') // Child will rerender (because foo will be new) whenever MyApp rerenders
+  return <>Child<>
+})
+
+function MyApp() {
+  function foo() {
+    // do something
+  }
+  return <Child foo={foo}/>
+}
+Example 1, with useCallback:
+
+const Child = React.memo(function Child({foo}) {
+  console.log('child rendering ...') // Child will NOT rerender whenever MyApp rerenders
+  // But will rerender only when memoizedFoo is new (and that will happen only when useCallback's dependency would change)
+  return <>Child<>
+})
+
+function MyApp() {
+  function foo() {
+    // do something
+  }
+  const memoizedFoo = useCallback(foo, [])
+  return <Child foo={memoizedFoo}/>
+}
+Passing memoized functions to as dependencies in other hooks.
+Example 2, without useCallback, Bad (But eslint-plugin-react-hook would give you warning to correct it):
+
+function MyApp() {
+  function foo() {
+    // do something with state or props data
+  }
+  useEffect(() => {
+    // do something with foo
+    // maybe fetch from API and then pass data to foo
+    foo()
+  }, [foo])
+  return <>...<>
+}
+
+
+Example 2, with useCallback, Good:
+-------------------------------------
+
+function MyApp() {
+  const memoizedFoo = useCallback(function foo() {
+    // do something with state or props data
+  }, [ /* related state / props */])
+
+  useEffect(() => {
+    // do something with memoizedFoo
+    // maybe fetch from API and then pass data to memoizedFoo
+    memoizedFoo()
+  }, [memoizedFoo])
+  return <>...<>
+}
+
+These hooks rules or implementations may change in the future. 
+
+So, please make sure to check hooks reference in docs. Also, it is important to pay attention to 
+eslint-plugin-react-hook warnings about dependencies. It will guide you if omit any dependency of these hooks.
+
+

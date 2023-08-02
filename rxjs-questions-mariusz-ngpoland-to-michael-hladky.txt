@@ -1,0 +1,216 @@
+Ben Lesh on Observables
+------------------------
+Observable is just a function that takes an observer and returns a function
+- a specific type of function with a specific purpose
+- accepts observer (object with `next`, `error` and `complete` methods on it)
+- And returns a cancellation function
+
+Observer
+ The observer is really a registry of handlers that can be pushed values over time
+ is actually the workhorse of this type of reactive programming
+ it stays active and listen for events from your producers.
+
+Observables are functions that tie an observer to a producer
+
+Operators operate inside the RxJs pipeline
+------------------------------------------
+
+ Operators: Also Just Functions
+ a function that 
+ - takes a source observable, 
+ - and returns a new observable 
+   - that will subscribe to that source observable when you subscribe to it
+     (creates a chain of observables and a chain of subscriptions)
+
+RxJs pipeline:
+-------------
+When you’re building your operator chains, what you’re really doing is 
+- composing a function that sets up a chain of observers  
+  that are linked together and pass values through to your observer.
+
+
+Hans Schenker
+​Every function is lazy - you only get the result when you call it . 
+Laziness the precondition for composition!
+
+Hans Schenker
+​Functional Thinking: Devide and Conquer
+
+Hans Schenker
+​Observable are the the 
+intersection of the Iterable and Subscriber Pattern (Gang of Four Patterns)
+
+Hans Schenker
+​Havily dynamic UI profits the most from Reactive Programming!
+-----------------------------------------------------------------------------------------------------------------
+Ben Lesh: on Cold and Hot
+------------------------
+COLD is when your observable creates the producer: 1 Producer - 1 Consumer
+producer is created and activated during subscription
+- creates the producer
+- activates the producer
+- starts listening to the producer
+- unicast: 1 producer - 1 consumer(subscriber)
+----------------------------------------------------
+sample: cold websocket
+
+const source = new Observable((observer) => {
+  const socket = new WebSocket('ws://someurl');
+  socket.addEventListener('message', (e) => observer.next(e));
+  return () => socket.close();
+});
+
+
+-------------------------------------------------------
+- Observables are functions that tie an observer (consumer) to a producer (inside or outside the observable)
+- and return a teardown mechanism to remove the consumer which is not anymore
+  interested in listening to the producer
+- subscription is the act of “calling” the observable like a function, and passing it an observer
+- producer: is the source of values for your observable. 
+  - a web socket,
+  - DOM events, 
+  - an iterator, or 
+  - something looping over an array
+  - anything that can pass values to `observer.next(value)`
+
+// COLD
+var cold = new Observable((observer) => {
+  var producer = new Producer();
+  // have observer listen to producer here
+});
+
+HOT is when your observable closes over the producer: 1 Producer - N Consumers
+----------------------------------------------------
+An observable is “hot” if its underlying producer is either created or activated outside of subscription.¹)
+- shares a reference to a producer ( the reference to the producer is shared)
+- starts listening to the producer
+- multicast (usually²)
+
+1) Usually “hot” observables have their producers both created and activated outside of the subscription
+2) Hot observables are usually multicast, but they could be listening to a producer that only supports one listener at a time
+......................................................
+// HOT
+var producer = new Producer();
+var hot = new Observable((observer) => {
+  // have observer listen to producer here
+});
+-----------------------------------------------------------------------------------------------------------------
+Hans Schenker
+​Hot: 1 Producer - N Consumers
+
+Hans Schenker
+Cold: 1 Producer - 1 Consumer (1 subscription)
+
+Hans Schenker
+​you can not separate Hot/Cold from Multicast/Unicast
+ben lesh:
+Hot observables are usually multicast
+
+Hans Schenker
+​Hot is always Multicast
+
+Hans Schenker
+​Cold is always is Unicast
+
+Hans Schenker
+​Subject can hold state
+
+Hans Schenker
+​Subject has an incoming interface (next, error, complete) and a outgoing interface (next, error, complete)
+
+
+​publish 
+  publishReplay
+  
+return connectableObservable
+
+rxjs 7 connectable - you can start observable with connect method
+
+publish use case multicast
+-------------------------
+execute server data which is neede later beforehand
+(fire request as soon as possible and later on you can access data)
+
+
+Hans Schenker
+​Subject has an incoming interface (next, error, complete) and a outgoing interface (next, error, complete)
+
+Hans Schenker
+​RxJs 7: share will be the main Multicast operator
+
+Hans Schenker
+​Use case for share operator: caching data
+
+Hans Schenker
+​Caching is the most useful use case for share operator (multicast operator)
+
+
+Hans Schenker
+​unhandled errors in RxJs will kill source observables
+
+Hans Schenker
+​you should catchError in every inner observable
+
+Error handling
+------------------------
+catchError
+throwError
+
+EMPTY
+
+retry
+retryWhen
+retryWhile
+repeat
+
+Hans Schenker
+​when catching an error in RxJs you have to return an observable 
+to not let die the source observable
+
+When an rxjs operator calls another rxjs operator you get a observable of observable as a result. 
+
+To get the values out of the nested observable you have to flatten it with: 
+- mergeMap, 
+- connectMap, 
+- switchMap or 
+- exhaustMap
+
+
+Hans Schenker
+​When you have a master detail form with combining clicks on the list and request ot server 
+will create observable of observables and you flatten it with switchMap
+
+​rxjs is for havily dynamic ui!
+
+higher order observable is a an observable that takes an observable as an input
+
+Hans Schenker
+​every rxjs pipe is a composition of observables
+
+Hans Schenker
+​pipe is like a higher order observable it takes observables as input
+
+
+Hans Schenker
+​Custom operator: observable in observable out
+
+Hans Schenker
+​Custom observable: when you want the change the inner behaviour of an observable
+
+Hans Schenker
+​RxJs Testing: use the RxJs TestScheduler
+
+Marble Testing is ideal for RxJs Operators but not for real use cases!
+
+
+Hans Schenker
+​RxJs Spy (tool nicholas jamieson) or observer-spy (shai reznik) could also help when debugging or testing
+
+RxJs v7 (ngPoland 2020)
+-----------------------------------------------------
+- bundle size
+- share operator
+- connectable observable
+- typescript typing
+
+

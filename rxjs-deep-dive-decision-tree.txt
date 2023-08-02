@@ -1,0 +1,276 @@
+One Observable
+------------------
+- I want to change each emitted value
+	to be a constant value
+		use mapTo.
+
+	to be a value calculated through a formula
+		use map
+
+- I want to pick a property off each emitted value
+	use pluck.
+
+- I want to spy the values being emitted without affecting them
+	use tap.
+
+- I want to allow some values to pass
+	based on custom logic
+		use filter.
+
+	if they are at the start of the Observable
+		and only the first value
+			use first.
+
+		based on a given amount
+			use take.
+
+		based on custom logic
+			use takeWhile.
+
+	if they are exactly the n-th emission
+		use elementAt.
+
+	if they are at the end of the Observable
+		and only the last value
+			use last.
+
+		based on a given amount
+			use takeLast.
+
+	until another Observable emits a value
+			use takeUntil.
+
+- I want to ignore values
+	altogether
+		use ignoreElements.
+		
+	from the start of the Observable
+		based on a given amount
+			use skip.
+
+		based on custom logic
+			use skipWhile.
+
+	from the end of the Observable
+		use skipLast.
+
+	until another Observable emits a value
+		use skipUntil.
+
+	that match some previous value
+		according to value equality
+			emitted just before the current value
+				use distinctUntilChanged.
+
+			emitted some time in the past
+				use distinct.
+
+		according to a key or object property
+			emitted just before the current value
+				use distinctUntilKeyChanged.
+
+	that occur too frequently
+		by emitting the first value in each time window
+			where time windows are determined by another Observable's emissions
+				use throttle.
+
+			where time windows are determined by a time duration
+				use throttleTime.
+
+		by emitting the last value in each time window
+			where time windows are determined by another Observable's emissions
+				use audit.
+
+			where time windows are determined by a time duration
+				use auditTime.
+
+		by emitting the last value as soon as enough silence has occurred
+			where the silence duration threshold is determined by another Observable
+				use debounce.
+			where the silence duration threshold is determined by a time duration
+				use debounceTime.
+
+
+
+
+
+A --> V[I want to compute a formula using all values emitted]
+------------------------------------------------------
+	and only output the - final computed value
+		use reduce.
+
+	and output the - intermediant values when the source emits a value
+		use scan.
+
+	and output the - intermediant values as a nested Observable when the source emits a value
+		use mergeScan.
+
+	and output the computed values as a nested Observable when the source emits a value 
+        while unsubscribing from the previous nested Observable
+		use switchScan.
+
+A --> W[I want to wrap its messages with metadata]
+------------------------------------------------------
+	that describes each notification (next, error, or complete)
+		use materialize.
+
+	that includes the time past since the last emitted value
+		use timeInterval.
+
+
+
+A --> X[after a period of inactivity]
+--------------------------------------------------------
+	I want to throw an error
+		use timeout.
+
+A --> Y[I want to switch to another Observable]
+		use timeoutWith.		
+
+
+A --> Z[I want to ensure there is only one value]
+------------------------------------------------------
+	use single.
+
+
+A --> B100[I want to know how many values it emits]
+------------------------------------------------------
+	use count.
+
+
+A --> B200[I want to prepend one value]
+------------------------------------------------------
+	use startWith.
+
+A --> B300[I want to delay the emissions]
+------------------------------------------------------
+	based on a given amount of time
+		use delay.
+
+	based on the emissions of another Observable
+		use delayWhen.
+
+A --> B400[I want to group the values]
+------------------------------------------------------
+	B400 --> B401[until the Observable completes]
+		 B401 --> B402[and convert to an Array]
+        		  B402 --> B403[use toArray]
+
+		 B401 -->B404[and convert to a Promise]
+			 B404 --> B405[use toPromise]
+
+	B400 --> B406[consecutively in pairs, as arrays]
+		 B406 --> B407[use pairwise]	
+
+	B400 --> B408[match criteria or do not]
+		 B408 --> B409[use partition]
+		
+	B400 --> B410[in batches and group as an array]
+		 B410 --> B411[use bufferCount]
+
+		 B410 --> B413[group as a nested Observable]
+			  B413 --> B414[use windowCount]
+
+	B400 --> B415[based on time]
+		 B415 --> B416[and emit the group as an array]
+			  B416 --> B417[use bufferTime]
+
+		 B415 --> B419[group as a nested Observable]
+			  B419 --> B420[use windowTime]
+
+	B400 --> B421[until another Observable emits]
+			B421 --> B422[and emit the group as an array]
+				 B422 --> B423[use buffer]
+
+		 B421 --> B424[group as a nested Observable]
+		          B424 --> B425[use window]
+
+	B400 --> B426[Observable created on-demand]
+			B426 --> B427[emit group as an array]
+				 B427 --> B428[use bufferWhen]
+
+			B426 --> B429[as a nested Observable]
+				 B429 --> B430[use windowWhen]
+
+	B400 --> B431[Observable for group start and for group end]
+			B431 --> 432[and emit the group as an array]
+				 432 --> 433[use bufferToggle]
+
+			B431 --> 434[group as a nested Observable]
+				 434 --> 435[use windowToggle]
+
+	B400 --> 436[key calculated]
+				436 --> 437[use groupBy]
+
+
+
+A --> B500[I want to start a new Observable for each value]
+----------------------------------------------------------
+
+
+
+
+A --> B600[I want to perform custom operations]
+------------------------------------------------------
+
+
+
+
+A --> B700[I want to share a subscription between multiple subscribers]
+------------------------------------------------------
+
+
+
+
+A --> B800[when an error occurs]
+------------------------------------------------------
+
+
+
+
+A --> B900[when it completes
+------------------------------------------------------
+
+
+
+
+A --> C100[when it completes, errors or unsubscribesI want to execute a function]
+------------------------------------------------------
+
+
+
+A --> C200[I want to change the scheduler]
+------------------------------------------------------
+
+
+
+A --> C300[I want to combine this Observable with others]
+------------------------------------------------------
+
+
+
+flowchart LR
+A[one Observable] --> B[change emitted values]
+B --> B1[be a constant value] --> B4[mapTo]
+B --> B2[be a calculated value]  --> B5[map]
+A --> C[pick prop from value] --> C1[pluck]
+A --> D[spy values] --> D1[tap value]
+A --> E[filter values] --> E1[based on predicate] --> E2[filter with predicate]
+A --> F[start values only] --> F1[only first]   
+A --> G[n first values] --> G1[take n values]
+A --> H[first values based on predicate] --> H1[takeWhile predicate]
+A --> I[nth value] --> I1[elementAt nth]
+A --> K[last value] --> K1[last]
+A --> L[n last values] --> L1[takeLast n]
+A --> M[until other Observable] --> M1[takeUntil other]
+A --> N[ignore values] --> N1[all values] --> N2[ignoreElements]
+A --> O[ignore from start n] --> O1[skip n]
+A --> P[based on predicate] --> P1[takeWhile predicate]
+A --> Q[ignore last n] --> Q1[skipLast n]
+A --> R[ignore until other Observable] --> R1[skipUntil other]
+A --> S[ignore match previous values] --> S1[previous tobe equal] --> S2[with previous value] --> S3[distinctUntilChanged]
+A --> T[ignore match values] --> T1[any equal value] --> T2[distinct]
+A --> U[ignore match previous key or object] --> U1[distinctUntilKeyChanged]
+
+
+

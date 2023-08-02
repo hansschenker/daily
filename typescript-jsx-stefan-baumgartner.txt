@@ -1,0 +1,147 @@
+
+/// <reference lib="DOM" />
+
+Let’s try! These are the features we want to implement:
+
+Parse JSX to DOM nodes, including attributes
+------------------------------------------------------------------------------
+Have simple, functional components for more composability and flexibility.
+Step 1: TypeScript needs to know how to compile JSX for us. 
+
+Setting two properties in tsconfig.json is all we need.
+
+{
+  "compilerOptions": {
+    ...
+    "jsx": "react",
+    "jsxFactory": "DOMcreateElement",
+  }
+}
+
+We leave it to the React JSX pattern (the method signature we were talking earlier), 
+but tell TypeScript to use our soon to be created function DOMcreateElement for that.
+
+Next, we implement our factory function. 
+--------------------------------------------------------------------------------------
+This is just a couple lines of code, so I’ll leave everything here and have detailed comments below:
+
+/**
+ * A helper function that ensures we won't work with null values
+ */
+function nonNull(val, fallback) { return Boolean(val) ? val : fallback };
+
+/**
+ * How do we handle children. Children can either be:
+ * 1. Calls to DOMcreateElement, returns a Node
+ * 2. Text content, returns a Text
+ * 
+ * Both can be appended to other nodes.
+ */
+function DOMparseChildren(children) {
+  return children.map(child => {
+    if(typeof child === 'string') {
+      return document.createTextNode(child);
+    }
+    return child;
+  })
+}
+
+/**
+ * How do we handle regular nodes.
+ * 1. We create an element
+ * 2. We apply all properties from JSX to this DOM node
+ * 3. If available, we append all children.
+ */
+function DOMparseNode(element, properties, children) {
+  const el = document.createElement(element);
+  Object.keys(nonNull(properties, {})).forEach(key => {
+      el[key] = properties[key];
+  })
+  DOMparseChildren(children).forEach(child => {
+    el.appendChild(child);
+  });
+  return el;
+}
+
+/**
+ * Our entry function.
+ * 1. Is the element a function, than it's a functional component.
+ *    We call this function (pass props and children of course)
+ *    and return the result. We expect a return value of type Node
+ * 2. If the element is a string, we parse a regular node
+ */
+function DOMcreateElement(element, properties, ...children) {
+  if(typeof element === 'function') {
+    return element({
+      ...nonNull(properties, {}),
+      children
+    });
+  }
+  return DOMparseNode(element, properties, children);
+}
+
+
+To sum it up:
+
+The factory function takes elements. 
+---------------------------------------------------------------------------
+Elements can be of type string or a function.
+
+Element is a function
+----------------------------------------------------------------------------
+A function element is a component. We call the function, because we expect to get a DOM Node out of it. 
+If the function component has also more function components inside, 
+they will eventually resolve to a DOM Node at some point
+
+Element is a string
+----------------------------------------------------------------------------
+If the element is a string, we create a regular DOM Node. For that we call document.createElement
+All properties are passed to the newly created Node. 
+
+Now you might understand why React has something like className instead of class. 
+This is because the DOM API underneath is also className. onClick is camel-case, though, which I find a little odd.
+
+Our implementation only allows DOM Node properties in our JSX, because of that simple property passing
+If our component has children (pushed together in an array), we parse children as well and append them.
+
+Children can be either a call to DOMcreateElement, resolving in a DOM Node eventually. Or a simple string.
+If it’s a string, we create a Text. Texts can also be appended to a DOM Node.
+
+That’s all there is! Look at the following code example:
+
+-------------------------------------------------------------------------------------------------------
+const Button = ({ msg }) => {
+  return <button onclick={() => alert(msg)}>
+    <strong>Click me</strong>
+  </button>
+}
+
+const el = <div>
+  <h1 className="what">Hello world</h1>
+  <p>
+    Lorem ipsum dolor sit, amet consectetur 
+    adipisicing elit. Quae sed consectetur 
+    placeat veritatis 
+    illo vitae quos aut unde doloribus, minima eveniet et 
+    eius voluptatibus minus aperiam 
+    sequi asperiores, odio ad?
+  </p>
+  <Button msg='Yay' />
+  <Button msg='Nay' />
+</div>
+
+document.body.appendChild(el);
+
+------------------------------------------------------------------------------------------------------
+
+Our JSX implementation returns a DOM Node with all its children. 
+We can even use function components for it. Instead of templates, we work with the DOM directly. 
+But the API is a lot nicer!
+
+JSX is syntactic sugar for function calls. This allows us to work with the DOM or virtual DOM directly, 
+without any detours. This is also what makes JSX so powerful, even if it’s so simple: All around and inside is JavaScript.
+
+ You can be as expresssive as you can be with JavaScript, you are not limited to any templating language.
+
+
+

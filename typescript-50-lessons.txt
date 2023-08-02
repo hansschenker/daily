@@ -1,0 +1,52 @@
+------------------------------------------------------------------------------------------------------------------
+Type narrowing
+-----------------------------------------------------------------------------------------------------------------
+
+1. 	Type guards. Type guards perform run-time checks on types, 
+	just like the typeof operator makes sure we’re dealing with a number at this point.
+	
+	Type guard:
+	----------
+	A type guard is some expression that performs a runtime check that guarantees the type in some scope.
+
+	Using type predicates: is -> as
+	----------------------------------
+	To define a type guard, we simply need to define a function whose return type is a type predicate:
+
+	function isFish(pet: Fish | Bird): pet is Fish {
+  		return (pet as Fish).swim !== undefined;
+	}
+
+2. 	Control flow analysis. Type guards are used to trigger control flow analysis in TypeScript. 
+	TypeScript can analyze the flow of your program to provide the right types for the next steps.
+
+
+
+3. 	Narrowing down. From the all-encompassing any type, we narrow down to the type number.
+
+	Using the in operator:
+	---------------------
+	The in operator also acts as a narrowing expression for types.
+
+	For a n in x expression, where n is a string literal or string literal type and x is a union type, 
+	- the “true” branch narrows to types which have an optional or required property n, and 
+	- the “false” branch narrows to types which have an optional or missing property n.
+
+	function move(pet: Fish | Bird) {
+  		if ("swim" in pet) {
+    			return pet.swim();
+  		}	
+  	return pet.fly();
+}
+
+	All three concepts are connected and are crucial to everything you are going to do with TypeScript from this point on.
+
+
+
+Discriminated Unions
+....................................................................................................................................
+
+	You can combine singleton types, union types, type guards, and type aliases to build an advanced pattern called 
+	- discriminated unions, also known as 
+	- tagged unions or 
+	- algebraic data types.

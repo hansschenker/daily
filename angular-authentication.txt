@@ -1,0 +1,95 @@
+export class AuthService {
+    private _candidateProfile$: BehaviorSubject<CandidateProfile> = new BehaviorSubject(null);
+
+    getProfile(id, token): void {
+        const httpOptions = {
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            })
+        };
+
+        this.http.get(`users/${id}`, httpOptions).subscribe(data => {
+                this._candidateProfile$.next(data);
+            },
+            (error) => { console.log(error) },
+            () => {
+                console.log('got profile', data);
+            })
+    }
+
+    get candidateProfile$(): Observable<CandidateProfile> {
+      return this._candidateProfile$.asObservable();
+    }
+}
+
+modify your auth service like following
+
+export class AuthService {
+    private _candidateProfile$: BehaviorSubject<CandidateProfile> = new BehaviorSubject(null);
+
+    getProfile(id, token): void {
+        const httpOptions = {
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            })
+        };
+
+        this.http.get(`users/${id}`, httpOptions).subscribe(data => {
+                this._candidateProfile$.next(data);
+            },
+            (error) => { console.log(error) },
+            () => {
+                console.log('got profile', data);
+            })
+    }
+
+    get candidateProfile$(): Observable<CandidateProfile> {
+      return this._candidateProfile$.asObservable();
+    }
+}
+then you can use as following :
+
+this.auth.candidateProfile$.subscribe( data => {
+console.log(data)
+})
+Explication
+
+Goal is to have internal observable on this service which will broadcast your current candidate profile.
+
+Anywhere on your application you can subscribe to it and get latest fetched profil without trigger again 
+the getProfile method (and ajax request under the hood).
+
+to make it more easy to consume out of AuthService i have create magic getter to abstract it.
+
+get candidateProfile$(): Observable<CandidateProfile> {
+  return this._candidateProfile$.asObservable();
+}
+it take your BehaviorSubject and turn it to simple Observable. Otherwise you allow AuthService 
+consumer to next on your Observable, and it not what is expected.
+
+the only one way to broadcast new CandidateProfile should be here :
+
+ this.http.get(`users/${id}`, httpOptions).subscribe(data => {
+      this._candidateProfile$.next(data);
+ });
+I also recommand you to change your getProfile like following
+
+getProfile(id, token): Observable<CandidateProfile> {
+    // [...]
+    this.http.get(`users/${id}`, httpOptions).subscribe(data => {
+           this._candidateProfile$.next(data);
+        },
+        // [...]
+    );
+
+    return this.candidateProfile$;
+}
+Like this you can consume your class as following :
+
+// Fetch new profile.
+this.auth.getProfile(id, token).subscribe();
+// Fetch last requested profile.
+this.auth.candidateProfile$.subscribe();
+

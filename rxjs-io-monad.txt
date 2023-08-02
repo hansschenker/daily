@@ -1,0 +1,38 @@
+const rotate = function(document, id) {
+   return function(deg) { 
+      let elem = document.querySelector(`${id}`);
+      elem.style[‘transform’] = `rotate(${deg}deg)`;
+   };
+};
+
+// use lodash.js or ramda.js
+
+const rotateDom = _.partial(rotate, document);
+
+IO.of(rotateDom('#name')).map(doNIntervals(12, 100)).run()
+
+The rotateDom() function that causes the “effect” is mapped over a function 
+that shows the animation rotating 12 times (30° at a time) every 1 second for a full 360° turn:
+
+function doNIntervals(n, interval) { 
+   return function times(fn) {
+      setTimeout(() => {
+         fn(n * -30);
+         if( — n >= 0) {
+            times(fn); 
+         }
+      }, interval); 
+   };
+}
+
+// same code with observable
+
+Rx.Observable.interval(100)
+ .map(val => val * 30 + 30)
+ .take(12)
+ .subscribe(rotateDom('#name2'));
+
+ the unit function (also called static factory operator) is interval(), 
+which lifts a sequence of integers separated by 100 milliseconds
+
+RxJS also has a flatMap() operation (called mergeMap() in RxJS 5).

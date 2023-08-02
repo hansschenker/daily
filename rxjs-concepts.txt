@@ -1,0 +1,494 @@
+
+An algebraic data type is a data type defined out of 
+- a combination of two constructions: products and sums.
+
+Products
+------------------------------------
+A product is a way to combine multiple values of different types into one. They’re present in pretty much all languages, 
+often called “structs”, “records” or “tuples”. I
+
+Sums
+------------------------------------
+A sum type is another way of building larger types out of smaller ones. Instead of combining two values into one, 
+a sum type is a value that is either one type or another. It’s the “or” to the product type’s “and”.
+
+Sum types are a bit rarer than products. Many languages with product types have no native version of sum types. 
+In languages that have them, they are called “sum types”, “variants”, “tagged unions” or “enums”.
+
+Hans Schenker
+-----------------------------------
+​It would be more helpful for the Angular Community to see how to apply the reactive style of programming in vanilla Angular just with RxJs.
+
+Hans Schenker
+​Rx-Angular introduces features which can be applied with vanilla RxJs!
+
+Hans Schenker
+​RxJs is a functional style of programming which is not dealing with OOP Patterns!
+
+every observer gets the next value the error value and complete value you can use 
+these messages in the template you do not need a special directive for that
+
+lazy load component
+
+​a real custom operator changes the values which are nexted forward
+
+The operator pipeline is a tree of subscriptions
+each operator subscribes to the incoming data
+and modify the data and forward it with next callback
+
+Hans Schenker
+​Observable is a intersection of Iterator and Subscriber Pattern (Gang of ç)
+
+Observable is also a functional concept (a monad) which has a 
+map function and a flatMap function (mergeMap, concatMap, switchMap, exhaustMap)
+
+All the operators are applicative functors ( every operator takes an observable in and outputs an observable
+
+observable input bindings
+
+n object-oriented programming, a class made up of public fields acts as a product type.
+
+Here are a few examples from different languages:
+
+data Foo = Foo Int String 
+type Foo = (Int, String) 
+type Foo = { bar : string; baz : int } 
+struct Foo { 
+  char* bar; 
+  int baz; 
+} 
+It’s hard to imagine a typed language without some notion of product. It’s probably the simplest and most fundamental 
+way to build bigger abstractions out of smaller ones—just put them together!
+
+
+Here are a couple of examples from Haskell and Swift respectively:
+
+data Foo = Bar Int 
+         | Baz String 
+ 
+enum Foo { 
+  case bar(Int) 
+  case baz(String) 
+} 
+Note how we have multiple tags (bar and baz) that each have an associated value of, potentially, 
+a different type (Int and String in this example).
+
+A number of features many languages have built-in can be expressed with sum types as a library, like booleans:
+
+data Bool = False | True 
+Nullable types:
+
+data Nullable a = Null | Just a 
+Error-handling:
+
+data Error err a = Error err | Result a 
+Algebraic Data Types
+
+An algebraic data type, then, is a type built out of products and sums along with any primitive types
+ exposed by the language (like functions and machine-level values like Int).
+
+A classic but somewhat contrived example is a Shape type for working with circles, triangles and rectangles:
+
+type Point = (Double, Double) 
+ 
+data Shape = Circle Point Double 
+           | Triangle Point Point Point 
+           | Rectangle Point Point 
+The sum construct is used to provide three possible kinds of shapes: Circle, Triangle and Rectangle. Each of 
+these possibilities is, in turn, a product of multiple types; for example, Circle is a product of a Point 
+(its center) and a Double (its radius). Point itself is also a product, a pair of Double.
+
+Using Algebraic Data Types
+
+Each case of the sum type is identified with a name like Circle or Triangle, called the constructor. 
+For example, we can use the Circle constructor to build a Shape (a circle with a given center and radius):
+
+unitCircle :: Shape 
+unitCircle = Circle (0, 0) 1 
+To use an algebraic data type, we need to account for each possible case. We do this with pattern matching:
+
+area :: Shape -> Double 
+area (Circle _ r)                  = pi * r ^ 2 
+area (Triangle a b c)              = {- ... -} 
+area (Rectangle (x₁, y₁) (x₂, y₂)) = {- ... -} 
+Algebraic data types can also be recursive, letting us encode data structures like lists and trees. For example, 
+the type for a binary tree with values at its leaves looks like this:
+
+data BinaryTree a = Branch (BinaryTree a) (BinaryTree a) 
+                  | Leaf a 
+Pattern matching makes writing recursive functions over types like this very elegant. For example, 
+here is the function for calculating the depth of a binary tree:
+
+depth :: BinaryTree a -> Int 
+depth (Leaf _)            = 1 
+depth (Branch left right) = 1 + max (depth left) (depth right) 
+One important consequence of having all the cases explicitly defined in the type is that the compiler can 
+ensure you did not forget any case when writing your function. This prevents a common kind of error—missing edge cases—without any additional work on your part.
+
+I always like getting things for free.
+
+Grammars
+
+One thing you may have noticed from the syntax for defining algebraic data types is that it looks a lot like 
+the notation we use for expressing grammars for languages. This is a useful way to think of any algebraic data type: 
+it’s a grammar for producing values of that type, with each case being a production.
+
+This also means algebraic data types are a very natural and compact way of expressing and working with syntax trees 
+in our programs. Here is a type that defines the JSON grammar, letting us work with any valid JSON value—compare it to 
+what the type has to look like in a language without algebraic data types, like Java:
+
+data JSON = Null 
+          | True 
+          | False 
+          | Number Double 
+          | String Text 
+          | Array [JSON] 
+          | Object (Map Text JSON) 
+Just looking at this type, you can immediately understand what a valid JSON value can be. Recursive functions
+
+A Digression on Sum Types
+
+Other languages often have features that are similar but not identical to sum types. A few languages like Java and C 
+have enum constructs that look similar to Swift’s enums, but are fundamentally more limited. Here’s an example from Java:
+
+public enum Foo { 
+  BAR, 
+  BAZ, 
+  QUX 
+} 
+A Java enum lets us define multiple tags just like Swift’s construct but you cannot associate any values with the tags. 
+Modern languages like Swift and Rust use enum syntax to express sum types in a way that is more familiar to programmers 
+familiar with C-like languages, but sum types are fundamentally more general.
+
+Another feature similar to sum types are union types present in C and Typescript, among other languages. Here are two examples, one in each language:
+
+union Number { 
+  int i; 
+  float f; 
+} 
+type Foo = string | number; 
+Union types are similar to sum types in that they let us define a type that can be one of several options. However, unlike sum types, 
+union types do not have a built-in way to determine which case is which. The simplest way to summarize the difference is this: 
+a sum type of Int and Int gives us a new type with two possibilities, each of which carries a number; a union of Int and Int is exactly the same as just Int.
+
+
+Rxjs map
+-----------------------------------------------------------------------------------------
+A functor is an immutable container that exposes a map method that takes pure functions to transform the contained value. 
+And lo and behold, an Array is a functor. jQuery is a functor. We can create our own functor too.
+
+Observable is a Functor and a Monad
+----------------------------------------------------------------
+class Functor {
+  constructor(value) {
+    this.__value = value;
+  }
+  ----- put value into container ---------------------------------
+  static of(value) {
+    return new Functor(value);
+  }
+  ----- apply provided function to the container value and return the container
+  map(fn) {
+    return Functor.of(fn(this.__value));
+  }
+}
+
+----------------------------------------------------------------------------------------------------------------------------
+Observable is a Monad
+---------------------------------------------------------------------------------------------------------------------------
+
+In functional programming, “monad” is just an interface with two functions. 
+If your type can implement those functions 
+in a “reasonable” way (ie following a handful of simple rules), it forms a monad.
+
+Here are the two functions you need to implement, described with TypeScript-like types:
+
+ - unit :: unit<A>(value: A): Observable<A>
+   -----------------------------------------
+   which wraps a normal value in your monad. For Observable, the type would be unit<A>(value: A): Observable<A>. 
+   We take a value of any type and get a corresponding Observable—presumably one that contains a constant value.
+
+  - bind :: bind<A>(source: Observable<A>, f: (x: A): Observable<B>): Observable<B>)
+    ----------------------------------------
+    which lets us sequence operations on observables. We take an Observable of some sort and apply a function 
+    to it which returns another Observable, plumbing them together to get a composite Observable out. 
+    Here’s the type: bind<A>(input: Observable<A>, f: (x: A): Observable<B>): Observable<B>).
+
+It’s a bit of a mouthful, to be sure. You can think of it like then in JavaScript promises—it plays the same role, 
+but the semantics differ slightly¹.
+To be a valid monad, a type has to implement these functions with a couple of invariants. I won’t go into the exact laws², 
+but they come down to two high-level properties: unit can’t do anything except wrap a value, and bind has to be associative 
+(that is, if you have a few binds in a row, it shouldn’t matter which ones are performed first).
+
+Looking through the Observable API (which has surprisingly dense API documentation), I see both functions I mentioned but with different names:
+
+unit is implemented as the static method Observable.of, when given a single argument. 
+It takes a value and returns an Observable that emits that value and terminates.
+
+bind - concatMap - “maps each value to an Observable, then flattens all of these inner Observables using concatAll
+-------------------------------------------------------------------------------------
+bind is implemented as concatMap. This is a method on an Observable object that takes a function, 
+applies it to every value in the Observable (giving you an Observable with Observable values in it) 
+and then merges all of them into a single Observable.
+
+The function’s documentation does a good job of describing this operation: concatMap “maps each value 
+to an Observable, then flattens all of these inner Observables using concatAll.”
+They have a diagram too, which might help. (Or just make things more confusing.
+
+
+
+
+--------------------------------------------------------------------------
+RxJs
+
+What are operators?
+--------------------
+Operators are methods on the Observable type, such as .map(...), .filter(...), .merge(...), etc. 
+When called, they do not change the existing Observable instance. Instead, 
+they return a new Observable, whose subscription logic is based on the first Observable.
+
+An Operator is a function which creates a new Observable based on the current Observable. T
+his is a pure operation: the previous Observable stays unmodified.
+
+An Operator is essentially a pure function which takes one Observable as input and generates 
+another Observable as output. Subscribing to the output Observable will also subscribe to the input Observable. 
+
+custom operator sample:multiplyByTen
+-----------------------
+import {Observable, from} from 'rxjs';
+
+function multiplyByTen(input) {
+  const output = Observable.create(function subscribe(observer) {
+    input.subscribe({
+      next: (v) => observer.next(10 * v),
+      error: (err) => observer.error(err),
+      complete: () => observer.complete()
+    });
+  });
+  return output;
+}
+
+const input = from([1, 2, 3, 4]);
+const output = multiplyByTen(input);
+output.subscribe(x => console.log(x));
+
+
+static operators (usually creation operators: from, fromEvents, of, empty, interval, timer
+------------------------------------------------------------------------------------------s
+Static operators are pure functions attached to the Observable class, 
+and usually are used to create Observables from scratch. 
+The most common type of static operators are the so-called Creation Operators.
+
+What is a static operator? 
+Besides instance operators, static operators are functions attached to the Observable class directly. 
+A static operator uses no this keyword internally, but instead relies entirely on its arguments.
+
+Static operators are pure functions attached to the Observable class, and usually are used to create Observables from scratch.
+
+The most common type of static operators are the so-called Creation Operators. 
+Instead of transforming an input Observable to an output Observable, 
+they simply take a non-Observable argument, like a number, and create a new Observable.
+
+
+instance operators (pipeable operators)
+-------------------
+Instance operators are functions that use the this keyword to infer what is the input Observable.
+
+
+
+
+
+
+
+
+Instance operators versus static operators
+-----------------------------------------
+What is an instance operator? Typically when referring to operators, we assume instance operators, 
+which are methods on Observable instances. For instance, if the operator multiplyByTen would be 
+an official instance operator, it would look roughly like this:
+
+import {Observable} from 'rxjs';
+
+Observable.prototype.multiplyByTen = function multiplyByTen() {
+  const input = this;
+  return Observable.create(function subscribe(observer) {
+    input.subscribe({
+      next: (v) => observer.next(10 * v),
+      error: (err) => observer.error(err),
+      complete: () => observer.complete()
+    });
+  });
+}
+Instance operators are functions that use the this keyword to infer what is the input Observable.
+
+Notice how the input Observable is not a function argument anymore, it is assumed to be the this object.
+
+Creation Operators
+-----------------
+ajax
+create
+defer
+empty
+
+from
+fromEvent
+fromEventPattern
+fromPromise
+
+interval
+never
+of
+range
+repeat
+repeatWhen
+throw
+timer
+
+bindCallback
+bindNodeCallback
+
+generate
+
+Transformation Operators
+-----------------------
+buffer
+bufferCount
+bufferTime
+bufferToggle
+bufferWhen
+
+concatMap
+concatMapTo
+
+exhaustMap
+expand
+groupBy
+
+map
+mapTo
+
+mergeMap
+mergeMapTo
+mergeScan
+
+pairwise
+partition
+pluck
+scan
+
+switchMap
+switchMapTo
+
+window
+windowCount
+windowTime
+windowToggle
+windowWhen
+
+Filtering Operators
+------------------
+audit
+auditTime
+
+debounce
+debounceTime
+
+distinct
+distinctKey
+distinctUntilChanged
+distinctUntilKeyChanged
+
+elementAt
+filter
+first
+ignoreElements
+
+last
+
+sample
+sampleTime
+
+single
+
+skip
+skipLast
+skipUntil
+skipWhile
+
+take
+takeLast
+takeUntil
+takeWhile
+
+throttle
+throttleTime
+
+Combination Operators
+------------------
+combineAll		When source observable completes use combineLatest with collected observables.
+combineLatest		When any observable emits a value, emit the last emitted value from each
+
+concat
+concatAll
+
+exhaust
+
+forkJoin
+
+merge
+mergeAll
+
+race
+startWith
+switch
+
+withLatestFrom
+
+zip
+zipAll
+
+Multicasting Operators
+-----------------------
+multicast
+publish
+publishBehavior
+publishLast
+publishReplay
+share
+
+Error Handling Operators
+------------------------
+catch
+retry
+retryWhen
+Utility Operators
+do
+delay
+delayWhen
+dematerialize
+finally
+let
+materialize
+observeOn
+subscribeOn
+timeInterval
+timestamp
+timeout
+timeoutWith
+toArray
+toPromise
+
+Conditional and Boolean Operators
+----------------------------------
+defaultIfEmpty
+every
+find
+findIndex
+isEmpty
+
+Mathematical and Aggregate Operators
+------------------------------------
+count
+max
+min
+reduce

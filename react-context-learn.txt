@@ -1,0 +1,276 @@
+context
+---------
+React context allows several components in a tree to share some data
+
+const defaultTheme = "white";
+const ThemeContext = React.createContext(defaultTheme);
+
+provider
+-----------
+The context is provided at a point in the component tree, and then all the children of the provider can access the context if they wish
+
+type Props = {
+  children: React.ReactNode
+};
+export const ThemeProvider = ({ children }: Props) => {
+    const [theme, setTheme] = React.useState(defaultTheme);
+
+    React.useEffect(() => {
+        // We'd get the theme from a web API / local storage in a real app
+        // We've hardcoded the theme in our example
+        const currentTheme = "lightblue";
+        setTheme(currentTheme);
+    }, []);
+
+  return (
+    <ThemeContext.Provider value={ theme }>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+const useTheme = () => React.useContext(ThemeContext);
+
+
+const App = () => (
+    <ThemeProvider>
+        <Header />
+    </ThemeProvider>
+);
+
+const Header = () => {
+    const theme = useTheme();
+    return (
+        <div style={{backgroundColor: theme}}>Hello!</div>
+    );
+}
+
+explicit type for context
+---------------
+type ThemeContextType = {
+  theme: string;
+  setTheme: (value: string) => void;
+};
+
+when no defaultValue -> undefined
+-------------------
+onst ThemeContext = React.createContext(undefined);
+
+createContext is a generic function. So, we can pass in the type for the Context value as a generic parameter:
+
+const context = React.createContext<ContextType>(...)
+Therefore, we can type our context as follows:
+
+const ThemeContext = React.createContext<ThemeContextType | undefined>(
+  undefined
+);
+
+export const ThemeProvider = ({
+  children
+}: Props) => {
+  ...
+
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+const Header = () => {
+  const { theme, setTheme } = useTheme()!;
+  return (
+    <div style={{ backgroundColor: theme }}>
+      <select value={theme} onChange={e => setTheme(e.currentTarget.value)}>
+        <option value="white">White</option>
+        <option value="lightblue">Blue</option>
+        <option value="lightgreen">Green</option>
+      </select>
+      <span>Hello!</span>
+    </div>
+  );
+};
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Global State with useReducer and useContext hooks
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Discover what is needed to build the global state solution using useReducer and useContext:
+
+- Initial State
+- A reducer function
+- Global state object and the dispatch function
+- A Store Context with Provider
+
+Initial State#
+----------------
+The initial state can simply be defined as a JavaScript object. An example is shown below. 
+A global state with the profile object, a greeting string, and a content array is provided.
+
+const initialState = {
+  profile: null,
+  greeting: '',
+  content: []
+};
+
+Reducer Function#
+---------------------
+A skeleton is shown below for a reducer that supports two action types: R
+
+- EFRESH_GREETING and 
+- REFRESH_PROFILE. 
+
+Use this reducer with the useReducer hook.
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'REFRESH_GREETING':
+      // return updated state
+    case 'REFRESH_PROFILE':
+      return {
+        // return updated state
+      };
+    default:
+      return state;
+  }
+};
+
+Global State object and Dispatch function#
+------------------------------------------------
+Using global state object and the dispatch function is as simple as calling useReducer with reducer and initialState.
+
+const [globalState, dispatch] = useReducer(reducer, initialState);
+
+
+A Store Context with Provider#
+------------------------------------
+Finally, you will need a Store. Define it as a context object so it can be accessed from any component.
+
+An implementation that combines previous blocks using StoreContext is shown below. 
+Create StoreContext by using the React.createContext. As seen earlier, you can use the useContext hook 
+to access the value of the StoreContext object. In this case, the value will be set to an array containing globalState and dispatch.
+
+export const StoreContext = React.createContext([]);
+
+const App = () => {
+  const [globalState, dispatch] = useReducer(reducer, initialState);
+  return (
+    <StoreContext.Provider value={[globalState, dispatch]}>
+      {/* JSX to follow */}
+    </StoreContext.Provider>
+  );
+};
+
+import React, { useReducer } from 'react';
+import { Header } from './components/Header';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { User } from './components/User';
+import { Dashboard } from './components/Dashboard';
+import lodashGet from 'lodash.get';
+
+const initialState = {
+  userType: 'consultant',
+  profile: null,
+  greeting: '',
+  content: []
+};
+
+export const StoreContext = React.createContext([]);
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'REFRESH_GREETING':
+      return {
+        ...state,
+        greeting: action.greeting
+      };
+    case 'REFRESH_PROFILE':
+      return {
+        ...state,
+        profile: action.profile
+      };
+    default:
+      return state;
+  }
+};
+
+sample global state
+------------------------
+import React, { useReducer } from 'react';
+import { Header } from './components/Header';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { User } from './components/User';
+import { Dashboard } from './components/Dashboard';
+import lodashGet from 'lodash.get';
+
+const initialState = {
+  userType: 'consultant',
+  profile: null,
+  greeting: '',
+  content: []
+};
+
+export const StoreContext = React.createContext([]);
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'REFRESH_GREETING':
+      return {
+        ...state,
+        greeting: action.greeting
+      };
+    case 'REFRESH_PROFILE':
+      return {
+        ...state,
+        profile: action.profile
+      };
+    default:
+      return state;
+  }
+};
+
+const App = () => {
+  const [globalState, dispatch] = useReducer(reducer, initialState);
+  const userType = lodashGet(globalState, 'userType');
+
+  return (
+    <div className="App">
+      <StoreContext.Provider value={[globalState, dispatch]}>
+        <Router>
+          <Header />
+          <div className="content">
+            <User userType={userType} />
+            <Switch>
+              <Route path="/dashboard" component={Dashboard} />
+            </Switch>
+          </div>
+        </Router>
+      </StoreContext.Provider>
+    </div>
+  );
+};
+
+export default App;
+const App = () => {
+  const [globalState, dispatch] = useReducer(reducer, initialState);
+  const userType = lodashGet(globalState, 'userType');
+
+  return (
+    <div className="App">
+      <StoreContext.Provider value={[globalState, dispatch]}>
+        <Router>
+          <Header />
+          <div className="content">
+            <User userType={userType} />
+            <Switch>
+              <Route path="/dashboard" component={Dashboard} />
+            </Switch>
+          </div>
+        </Router>
+      </StoreContext.Provider>
+    </div>
+  );
+};
+
+export default App;
+

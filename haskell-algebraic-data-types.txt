@@ -1,0 +1,169 @@
+https://stackoverflow.com/questions/9190352/abusing-the-algebra-of-algebraic-data-types-why-does-this-work
+---------------------------------------------------------------------------------------------------------
+
+question:
+---------
+The 'algebraic' expression for algebraic data types looks very suggestive to someone with a background in mathematics. Let me try to explain what I mean.
+
+Having defined the basic types
+
+Product •
+Union +
+Singleton X
+Unit 1
+and using the shorthand X² for X•X and 2X for X+X et cetera, we can then define algebraic expressions for e.g. linked lists
+
+data List a = Nil | Cons a (List a) ↔ L = 1 + X • L
+
+and binary trees:
+
+data Tree a = Nil | Branch a (Tree a) (Tree a) ↔ T = 1 + X • T²
+
+Now, my first instinct as a mathematician is to go nuts with these expressions, and try to solve for L and T. I could do this through repeated substitution, but it seems much easier to abuse the notation horrifically and pretend I can rearrange it at will. For example, for a linked list:
+
+L = 1 + X • L
+
+(1 - X) • L = 1
+
+L = 1 / (1 - X) = 1 + X + X² + X³ + ...
+
+where I've used the power series expansion of 1 / (1 - X) in a totally unjustified way to derive an interesting result, namely that an L type is either Nil, or it contains 1 element, or it contains 2 elements, or 3, etc.
+
+It gets more interesting if we do it for binary trees:
+
+T = 1 + X • T²
+
+X • T² - T + 1 = 0
+
+T = (1 - √(1 - 4 • X)) / (2 • X)
+
+T = 1 + X + 2 • X² + 5 • X³ + 14 • X⁴ + ...
+
+again, using the power series expansion (done with Wolfram Alpha). This expresses the non-obvious (to me) fact that there is only one binary tree with 1 element, 2 binary trees with two elements (the second element can be on the left or the right branch), 5 binary trees with three elements etc.
+
+So my question is - what am I doing here? These operations seem unjustified (what exactly is the square root of an algebraic data type anyway?) but they lead to sensible results. does the quotient of two algebraic data types have any meaning in computer science, or is it just notational trickery?
+
+And, perhaps more interestingly, is it possible to extend these ideas? Is there a theory of the algebra of types that allows, for example, arbitrary functions on types, or do types require a power series representation? If you can define a class of functions, then does composition of functions have any meaning?
+
+------
+Disclaimer: A lot of this doesn't really work quite right when you account for ⊥, so I'm going to blatantly disregard that for the sake of simplicity.
+
+A few initial points:
+
+Note that "union" is probably not the best term for A+B here--that's specifically a disjoint union of the two types, because the two sides are distinguished even if their types are the same. For what it's worth, the more common term is simply "sum type".
+
+Singleton types are, effectively, all unit types. They behave identically under algebraic manipulations and, more importantly, the amount of information present is still preserved.
+
+You probably want a zero type as well. Haskell provides that as Void. There are no values whose type is zero, just as there is one value whose type is one.
+
+There's still one major operation missing here but I'll get back to that in a moment.
+
+As you've probably noticed, Haskell tends to borrow concepts from Category Theory, and all of the above has a very straightforward interpretation as such:
+
+Given objects A and B in Hask, their product A×B is the unique (up to isomorphism) type that allows two projections fst : A×B → A and snd : A×B → B, where given any type C and functions f : C → A, g : C → B you can define the pairing f &&& g : C → A×B such that fst ∘ (f &&& g) = f and likewise for g. Parametricity guarantees the universal properties automatically and my less-than-subtle choice of names should give you the idea. The (&&&) operator is defined in Control.Arrow, by the way.
+
+The dual of the above is the coproduct A+B with injections inl : A → A+B and inr : B → A+B, where given any type C and functions f : A → C, g : B → C, you can define the copairing f ||| g : A+B → C such that the obvious equivalences hold. Again, parametricity guarantees most of the tricky parts automatically. In this case, the standard injections are simply Left and Right and the copairing is the function either.
+
+Many of the properties of product and sum types can be derived from the above. Note that any singleton type is a terminal object of Hask and any empty type is an initial object.
+
+Returning to the aforementioned missing operation, in a cartesian closed category you have exponential objects that correspond to arrows of the category. Our arrows are functions, our objects are types with kind *, and the type A -> B indeed behaves as BA in the context of algebraic manipulation of types. If it's not obvious why this should hold, consider the type Bool -> A. With only two possible inputs, a function of that type is isomorphic to two values of type A, i.e. (A, A). For Maybe Bool -> A we have three possible inputs, and so on. Also, observe that if we rephrase the copairing definition above to use algebraic notation, we get the identity CA × CB = CA+B.
+
+As for why this all makes sense--and in particular why your use of the power series expansion is justified--note that much of the above refers to the "inhabitants" of a type (i.e., distinct values having that type) in order to demonstrate the algebraic behavior. To make that perspective explicit:
+
+The product type (A, B) represents a value each from A and B, taken independently. So for any fixed value a :: A, there is one value of type (A, B) for each inhabitant of B. This is of course the cartesian product, and the number of inhabitants of the product type is the product of the number of inhabitants of the factors.
+
+The sum type Either A B represents a value from either A or B, with the left and right branches distinguished. As mentioned earlier, this is a disjoint union, and the number of inhabitants of the sum type is the sum of the number of inhabitants of the summands.
+
+The exponential type B -> A represents a mapping from values of type B to values of type A. For any fixed argument b :: B, any value of A can be assigned to it; a value of type B -> A picks one such mapping for each input, which is equivalent to a product of as many copies of A as B has inhabitants, hence the exponentiation.
+
+While it's tempting at first to treat types as sets, that doesn't actually work very well in this context--we have disjoint union rather than the standard union of sets, there's no obvious interpretation of intersection or many other set operations, and we don't usually care about set membership (leaving that to the type checker).
+
+On the other hand, the constructions above spend a lot of time talking about counting inhabitants, and enumerating the possible values of a type is a useful concept here. That quickly leads us to enumerative combinatorics, and if you consult the linked Wikipedia article you'll find that one of the first things it does is define "pairs" and "unions" in exactly the same sense as product and sum types by way of generating functions, then does the same for "sequences" that are identical to Haskell's lists using exactly the same technique you did.
+
+Edit: Oh, and here's a quick bonus that I think demonstrates the point strikingly. You mentioned in a comment that for a tree type T = 1 + T^2 you can derive the identity T^6 = 1, which is clearly wrong. However, T^7 = T does hold, and a bijection between trees and seven-tuples of trees can be constructed directly, cf. Andreas Blass's "Seven Trees in One".
+
+Edit×2: On the subject of the "derivative of a type" construction mentioned in other answers, you might also enjoy this paper from the same author which builds on the idea further, including notions of division and other interesting whatnot.
+--------
+
+-------------------------------------------------
+Haskell's algebraic data types are named such since they correspond to an initial algebra in category theory
+giving us 
+- some laws,
+- some operations,
+- some symbols to manipulate - don stewart
+
+Algebra:
+-------------
+symbols		: 0, 1, 2, ...
+operations	: +, - , : , ... // give numbers , receive number
+laws		: 0 + x = x, 0 x x = 0, ...
+
+Haskell Type Algebra
+---------------------
+symbols		: Types ( () , Int, Bool, ...)		// () = 1, Bool = 2 values and 2 type constructors, Int = 0 , 1, 2, ...
+                                                        // Computation with Types
+operations	: Type constructors (Maybe, Either, ...)
+laws		: ?
+
+Algebra
+--------
+symbols		: Things
+operations	: Ways  to make new new things from simpler things
+laws		: rules the things follow
+
+
+One		: data Unit = Unit // just a name, constructor with no argument, constant value 1
+		: data () = ()
+
+Addition	: data a :+ b = AddL a | AddR b // a, b two Type arguments // a or b
+of either a or b
+(Sum Type)	: data Either a b = Left a | Right b
+
+Multiplication	: data a :* b = Mul a b // a and b
+(Product Type)	: data (a,b) = (a,b)    // (a,b) is a pair (corresponds to multiplication)
+
+Zero		: In general, an algebraic type specifies a sum of one or more alternatives
+		  where each alternative is a product of zero or more fields
+		  It might have useful to permit a sum of zero alternatives, which would be a
+                  completley empty type, but at the time the value of such a type was not appreciated
+		  // Hudak, Hughes, Peyton Jones, Wadler
+		  data Void // zero, 0
+
+Two	  	: type Two = Unit :+ Unit // alias for 1 + 1
+
+Notation
+		Void -> 0
+		Unit -> 1
+		Bool -> 2
+		Addition -> a + b // a or b  // sum type
+		Multiplication -> a * b // a and b // product type, written as pair (a,b)
+                               
+Functions	data a -> b = ahochb // function is a mapping of a domain to the range
+
+Domain		True False // set of all inputs
+Range		True False // set of all outputs, 2sqr2
+
+Domain 		A 	B 	C
+Range		   True     False      // 2 hoch 3
+		a -> b <-> b hoch a
+		a -> () ~ ()
+		a hoch 1 = a, () -> a  ~ a
+		(a * c)hoch a = b hoch a * c hoch a
+		a -> (b,c) ~ (a -> b, a -> c) // data lenses uses this rules ; lenses: getters and setters
+      		
+		c hoch ba = (c hoch b) hoch a
+                (b,a) -> c ~ a -> b -> c // currying and uncurrying
+
+Recursive Types
+----------------
+
+Lists		data List x = Nil | Cons x (List x)
+		L(x) = 1 + x * L(x)
+		L = 1 + x L
+
+Trees		data Tree x = Tip | Node (Tree x) X (Tree x)
+
+Zippers		Navigate and modify a data structure efficiently (e.g. a list)
+		let x = [1, 2, 3, 4, 5, 6]
+solution	data Zip a = Zip [a] a [a]
+

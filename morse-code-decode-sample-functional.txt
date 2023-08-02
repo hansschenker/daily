@@ -1,0 +1,170 @@
+https://gist.github.com/louislatreille?page=2
+---------------------------------------------------------------------------------------------------
+Software programming is incredibly fun and rewarding. I absolutely crave on solving hard problems. 
+
+Putting all the pieces together for an algorithm that meets requirements and passes all my tests is 
+definitely satisfying. But having to get out of that zone every 5 minutes to understand some obscure
+code that you need to interface with makes it much less satisfying.
+
+This is why you should aim to forget how your codes works. Although, it’s not about actively trying
+to erase every line of code that you worked on from your brain. You should adopt the mindset that
+you will forget everything about your task, and that you will need that information in the future. 
+If you are in that mindset, you will take the necessary steps to allow you (or anybody else) to get
+up to speed as quickly as possible on what you created.
+
+In this short article, I will show you a few different things that you can do to make that happen. 
+All the code examples are written in JavaScript, but you should be able to follow without any 
+specific knowledge in the language.
+
+Write clean, simple, and readable code
+--------------------------------------------------
+Being clever is the enemy of good code
+--------------------------------------------------
+Refactoring a function to fit on one line instead of 5 can feel good on the moment, but the extra 
+15 minutes it might have taken to make it happen could very well leave future you and your teammates
+with less hair after trying to decipher what is happening out of context.
+
+Let’s take an example from Codewars to illustrate a few different ways to write clean, simple,
+and readable code.
+
+In this exercise, we have to write a Morse code decoder.
+
+Here’s the code that I’ve written:
+
+---------------------------------------------
+const decodeMorse = (morseCode) => {
+  // Morse words are separated by 3 spaces
+  const morseWords = morseCode.trim().split('   ');
+  return morseWords.map(morseWordToEnglishWord).join(' ');
+}
+
+const morseWordToEnglishWord = (morseWord) => {
+  // Morse letters are separated by 1 space
+  const morseLetters = morseWord.split(' ');
+  return morseLetters.map(morseLetterToEnglishLetter).join('');
+}
+
+const morseLetterToEnglishLetter = (morseLetter) => {
+  return MORSE_CODE[morseLetter];
+}
+
+
+----------------------------------
+const decodeMorse = (morseCode) => {
+  return morseCode
+    .trim()
+    .split(/  | /)
+    .map( (code) => MORSE_CODE[code] || ' ')
+    .join('');
+}
+
+-----------------------------------
+
+
+describe("GIVEN a call to decodeMorse", () => {
+  [... additional tests to cover non-edge cases ...]
+  it('THEN it decodes the special SOS code', () => {
+    Test.assertEquals(decodeMorse('...---...'), 'SOS');
+  });
+  
+  it('THEN it decodes the special = code', () => {
+    Test.assertEquals(decodeMorse('-...-'), '=');
+  });
+  
+  describe("AND the input contains trailing spaces", () => {
+    it('THEN the trailing spaces are removed and ignored in the output', () => {
+      Test.assertEquals(decodeMorse(' .... . .-.. .-.. ---   -- . -.. .. ..- -- '), 'HELLO MEDIUM');
+    });
+  });
+});
+I also like the GIVEN an event AND some condition THEN this is what is expected syntax for naming your tests. This allows to simply read the test titles to know the standard prepare-act-assert that is used in the tests. Most of the JavaScript test runners should also give you test results in a nice, human-readable, output.
+
+
+
+-----------------------------------
+Here’s the most clever implementation voted from the solutions:
+---------------------------------------------------------------------------------------------------
+
+Without even knowing Morse code’s syntax and dictionary, you should be able to figure out a few things 
+by reading my code:
+
+Morse words are separated by 3 spaces
+Morse letters are separated by 1 space
+There is a direct translation from Morse letters to English letters
+You should also be able to figure out how I’ve decoded the input’s Morse code:
+
+Split the full sentence into words;
+Split each word into letters;
+Translate each letter to English
+The 6 items above can be discovered only by reading the code, with very minimal effort. Can you say the 
+same about the clever solution? I cannot. In fact, I am re-reading that code after pasting it a day ago, a
+nd I totally forgot how it works… (Edit: If you are interested in how it actually works, I tried to explain 
+it in one of the comments)
+
+So what is actually helping us gather information in the first code snippet?
+
+The code has meaningful names. Variables say what they hold, and functions say what they accomplish. This allows 
+us to almost read code like plain English:
+-------------------------------------------------------------------------------------------------------------
+Thanks for your comment Rud!
+
+The clever version contains no error, and it does work properly, but it is incredibly hard to understand in my opinion. 
+And the split are different between the clever version and my version because in the former, it is a clever split ;).
+
+Let me try to explain how it works, and I think that will make my point. I don’t think adding comments to it would 
+make it much better.
+
+We’ll ignore the trim() and join('') functions, as those should be straightforward to understand.
+
+I’ll use the following Morse code as an example:
+
+-----------------------------------------------------------------
+..-. --- ---   -... .- .-.
+FOO BAR
+---------------------------------------------------------------
+Let’s start with the split function:
+
+split(/  | /)
+You’ll notice that we split on two different character sequence at the same time, two spaces 
+(not three) and one space. T
+his is the first, very clever, and very confusing, thing. Morse code words are separated 
+by three spaces, so why 
+aren’t we splitting by 3 spaces? Because we need to know where the word delimitations are for 
+the next operation.
+
+If we use the split from the clever version on our example Morse code, we get
+
+['..-.', '---', '---', '', '-...', '.-', '.-.']
+
+Each words are split, and we have an empty string where the English space should appear. 
+This is because of how 
+the split works when using two different character sequence. I won’t get in the details, 
+but basically, after splitting on the three spaces with the two space sequence, we have one 
+sub-string that still has a space, which is then split again on the one space sequence, 
+resulting in an empty string and the reminder.
+
+Ok, very clever. Let’s move to the map:
+
+map((code) => MORSE_CODE[code] || ' ')
+This now uses JavaScript intricacies to produce the desired output. JavaScript has the concept of 
+truthy/falsy evaluations. Taking back the array of words that we got from split, we have real Morse 
+code words, and empty strings. When we use a real word to access the MORSE_CODE dictionary, it 
+returns an English letter, which also evaluates to true . Since we use an OR operator next, the 
+right side of the condition is not evaluated (we already have a true , no need to check the other 
+condition) and the English letter is returned. When we use the empty string to access the
+ MORSE_CODE dictionary, this character doesn’t exist, and thus undefined is returned. undefined evaluates 
+to false, thus the second condition is checked, and also returned. We get a space.
+---------------------------------------------------------------------------------------------------
+Very clever, once again ;).
+
+After going through the map , we get the following array of English characters:
+
+['F', 'O', 'O', ' ', 'B', 'A', 'R']
+This is expected. But Oh My was it hard to understand why.
+
+I don’t know what you think about it, but if I added comments to the clever version to explain how it works, 
+they would be big blocks of comments, which even then, would probably confuse the reader.
+
+As a last note, this code was probably super fun to write for the author, and it was in fact really fun to 
+decipher for me too. But if I was doing a totally different task, stumbled on that piece of code, 
+and needed to understand it, I probably wouldn’t be so happy to get side-tracked for 45 minutes…

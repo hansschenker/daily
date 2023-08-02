@@ -1,0 +1,61 @@
+map generic
+---------------------------------------------------------------
+function map<T,R>(items: T[], mapFn: (item: T) => R): R[] {
+  /* ... */
+}
+
+reduce - functional loop with loop callback
+--------------------------------------------------------------
+const sum = [1, 2, 3, 4, 5].reduce((sum, el) => sum + el, 0);
+console.log(sum); // 15
+
+interface Person {
+    name: string;
+    age: number;
+}
+
+const persons: Person[] = [
+    { name: 'John', age: 30 },
+    { name: 'Alice', age: 45 },
+];
+
+const ageByPerson = persons.reduce((result, person) => ({
+    ...result,
+    [person.name]: person.age
+}), {});
+
+console.log(ageByPerson); // { John: 30, Alice: 45 }
+
+Our reduce will be a function that accepts three arguments:
+--------------------------------------------------------------
+- array - the array to be reduced
+- reducer - a function that accepts an element of the array and a accumulator (intermediate result).
+- initialState - a value that will be passed to the reducer before any array elements have been processed
+
+reducer - 
+- takes a result (R) and an array element (T) 
+- returns an updated accumulator (R); 
+  it’s type is (accumulator: R, el: T) => R
+
+const ageByName = reduce<Person, Record<string, number>>(
+    persons, 
+    (result, person) => ({
+        ...result,
+        [person.name]: person.age
+    }),
+    {}
+);
+
+zip generic
+---------------------------------------------------------------------
+function zip<T,R>(array1: T[], array2: R[]): ([T,R])[] {
+
+    const result : ([T,R])[] = [];
+
+    const length = Math.min(array1.length, array2.length);
+    for (let i = 0; i < length; i++) {
+        result.push([array1[i], array2[i]]);
+    }
+    return result;
+}
+

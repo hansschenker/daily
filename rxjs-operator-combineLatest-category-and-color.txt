@@ -1,0 +1,50 @@
+// products.component.html: text filters
+<input type="text" id="category-filter" (input)="onCategoryFilterChange($event.target.value)">
+<input type="text" id="country-filter" (input)="onCountryFilterChange($event.target.value)">
+
+// products.component.ts
+export class ProductsComponent implements OnInit {
+  // behaivor subjects are observables that return the last values of the filters
+  private categoryFilterChangedSubject$ = new BehaviorSubject<string>(null);
+  private countryFilterChangedSubject$ = new BehaviorSubject<string>(null);
+
+  constructor(private producutSevice: ProductService) { }
+
+  ngOnInit(): void {
+    combineLatest([
+      this.producutSevice.getProducts(),
+      this.categoryFilterChangedSubject$,
+      this.countryFilterChangedSubject$
+    ]).subscribe(([products, selectedCategory, selectedCountry]) => {
+      products.filter(product =>
+        product.category === selectedCategory && product.country === selectedCountry);
+    });
+  }
+
+  // bind to the category-filter text input
+  onCategoryFilterChange(category: string) {
+    this.categoryFilterChangedSubject$.next(category);
+  }
+
+  // bind to the country-filter text input
+  onCountryFilterChange(country: string) {
+    this.countryFilterChangedSubject$.next(country);
+  }
+}
+
+// product.service.ts
+@Injectable()
+export class ProductService {
+  constructor(private httpClient: HttpClient) { }
+  public getProducts(): Observable<IProductModel[]> {
+    return this.httpClient.get<IProductModel[]>('your_get_products_url');
+  }
+}
+    
+// ProductModel.ts
+export interface IProductModel {
+    id: number;
+    label: number;
+    category: string;
+    country: string;
+}

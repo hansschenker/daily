@@ -1,0 +1,10 @@
+merge(
+  start$.pipe(mapTo(1)),
+  pause$.pipe(mapTo(0))
+).pipe(
+switchMap(it => it == 1
+   ? timer(0, 1000)
+  : EMPTY),
+scan((timeLeft, _) => timeLeft - 1, 1500),
+takeWhile(it => it > 0)
+);

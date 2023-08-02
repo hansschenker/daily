@@ -1,0 +1,181 @@
+Xstate
+------------------------------------------------------------------------
+XState is a library for 
+- creating, 		(define state machine), machine with states and state transitions triggered by events
+- interpreting, 	(build the state machine), interpreting machine blueprint, 
+- executing             (run the state machine)        finite state machines and statecharts.
+
+
+
+A finite state machine is a mathematical model of computation
+
+- describes the behavior of a system that can be in only one state at any given time
+  system has parts (elements of the system)
+
+Reactive System
+-------------------------------------------------------
+A reactive system is characterized by being, to a large extent, 
+- event-driven, 
+- react to external and internal stimuli. 
+
+Examples:
+-----------------------
+telephones, automobiles, communication networks, computer operating systems, 
+missile and avionics systems, and the man-machine interface of many kinds of 
+ordinary software. 
+
+Behavior - computed response to a internal or external stimuli.
+------------------------------------------------------------------------
+The kind and number of actions a system can perform
+
+Behavior is the actions and mannerisms made by individuals, organisms, systems or artificial entities 
+in conjunction with themselves or their environment, 
+which includes the other systems or organisms around as well as the (inanimate) physical environment. 
+
+It is the computed response of the system or organism to various stimuli or inputs, 
+whether internal or external, conscious or subconscious, overt or covert, and voluntary or involuntary.[1]
+
+Action
+---------------------------------------------------------------------
+Action systems [1] combine a definition of system state with an explicit description 
+of how and when state-modifying events may occur. ... 
+Action systems describe both the succession of events in a system and the way in which system state changes.
+
+System Behavior - describe the what (interface) not the how (implementation)
+--------------------------------------------------------
+System behavior is a description of what a system does, without explaining how it does it
+Code against an interface not an implementation, this allows for swapping the implementation when needed.
+
+System Life Cycle
+--------------------------------------------------------
+  system life cycle: A life cycle for a system generally consists of a series of stages regulated 
+                     by a set of management decisions which confirm that 
+                     sthe system is mature enough to leave one stage and enter
+
+- system (a system can be in different state, stopped, running, paused, reset, started, ...)
+
+- behavior (when state change occurs, state change: the value of a property changes due to an event trigger)
+
+
+System Use Case
+-------------------------------------------------------------
+A use case is a list of actions or event steps typically defining the interactions 
+between a role and a system to achieve a goal.
+
+
+State - Properties
+----------------------------------------------------------------------------------------------------
+- state (a property with a value that changes over time, represents a state or a mode of a system,)
+
+A State object instance is JSON-serializable and has the following properties:
+
+value 		- the current state value (e.g., {red: 'walk'})
+
+context 	- the current context of this state
+
+event 		- the event object that triggered the transition to this state
+
+actions 	- an array of actions to be executed, actions are side effects, they have no return value
+
+activities 	- a mapping of activities to true if the activity started, or false if stopped.
+                  an activity is not instant, it has a certain runtime, start time and stop time
+
+history 	- the State instance which we left last time
+meta 		- any static meta data defined on the meta property of the state node
+done 		- whether the state indicates a final state 4.7.1
+
+State - Methods
+--------------------------------------------------------------------------------------------------------
+State Methods and Properties
+There are some helpful methods and properties that you can use for a better development experience:
+
+#state.matches(parentStateValue)
+-------------------------------
+This method determines whether the current state.value is a subset of the given parentStateValue; 
+that is, if it "matches" the state value. For example, assuming the current state.value is { red: 'stop' }:
+
+console.log(state.value);
+// => { red: 'stop' }
+
+console.log(state.matches('red'));
+// => true
+
+console.log(state.matches('red.stop'));
+
+
+Formally, finite state machines have five parts:
+--------------------------------------------------
+- initial state
+---------------------
+- finite number of states
+- next state: current state + event = transition function
+- finite number of events
+-----------------------
+- final states (can also be empty)
+
+a system can be in different states:
+
+water system:
+
+- ice 	+ heat -> water
+- water + heat -> steam
+- steam + heat -> plasma
+
+Actor Model
+----------------------------------------------------------
+The actor model is another very old mathematical model of computation that goes well with state machines. 
+It states that everything is an "actor" that can do three things:
+
+Receive messages
+Send messages to other actors
+Do something with the messages it received (its behavior), such as:
+change its local state
+send messages to other actors
+spawn new actors
+An actor's behavior can be described by a state machine (or a statechart).
+
+Statecharts
+-------------------------------------------------------------------
+Statecharts are a formalism for modeling 
+
+- stateful system, state changes over time 
+- reactive systems, state change due to external event
+
+Computer scientist David Harel presented this formalism as an extension 
+to state machines in his 1987 paper Statecharts: 
+
+A Visual Formalism for Complex Systems. Some of the extensions include:
+
+Transitions
+------------------------------------------------------------
+A state transition defines what the next state is, given the current state and event. 
+State transitions are defined on state nodes, in the on property:
+
+
+Guarded transitions
+----------------------
+
+
+
+Actions (entry A, exit A, transition A)
+---------------------------------
+
+
+
+Extended state (context)
+-------------------------------
+
+
+
+
+Orthogonal (parallel) states
+----------------------------
+
+
+Hierarchical (nested) states
+--------------------------------
+
+
+
+History
+--------------------------------

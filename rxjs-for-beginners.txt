@@ -1,0 +1,34 @@
+https://www.youtube.com/watch?v=U8o19VR0Tkw
+
+Ich mache diesen Kommentar, weil ich RxJs sehr schätze und selber daran bin einen RxJs Kurs für Einsteiger zu erstellen.
+Nicht als Kritik gedacht , sondern als Übung für mich und als Gedankenanstoss für dich.
+
+
+RxJs: Ist eine Kombination aus dem Iterator Pattern kombiniert mit dem Observer Pattern,
+
+- Iterator Pattern: macht es möglich jede erdenkliche Datenaquelle in einem Observable (Data Producer) zu kapseln
+- Observer Pattern: macht es möglich sich an einen Observable zu hängen (subscribe) und Daten zu konsumieren (Consumer)
+
+Observable are lazy, the communication starts when an Observer subscribes
+
+Lazyiness the precondition for composition
+You can build a pipeline which only starts when there is a subscription
+
+Observable kommunizieren über 3 Kanäle: .next liefert den nächsten Wert, .error gibt Fehlermeldung und .complete (komplet)
+Observer der Daten-konsument hört ebenfalls auf den 3 Kanälen: .next, .error, .complete (alle Daten geliefert)
+Die Kommunikation zwischen Observable und Observer kommt erst zustande wenn der Observer sich am Observable subscribt.
+
+Heiss oder Kalt
+- man sollte besser die Bezeichnung Unicast (1-1 - Video on Demand - Videostart für jeden Subscriber) für Kalt verwenden und
+- Multicast für (1 - n - Video streaming - Video von dem Zeitpunkt an wo sich der Subscriber mit dem Stream verbindet
+
+Pipeline:
+- Rxjs basiert auf den Konzepten der funktionalen Programmierung (FP). Im Zentrum der FP steht die Komposition von  Funktionen
+- Die Operatoren in RxJs stellen Funktionen dar die mit dem pipe Operator in eine Daten-pipeline verbunden werden können.
+  Observable source liefert Input  -> ( Operator 1 - Output - Input - Operator 2 ) - Output -> Subscriber. Klammer gleich Pipeline
+
+- Higher Order Observables: mergeMap, switchMap, concatMap, exhaustMap und andere
+  In FP gibt es auch das das Konzept der Higher Order Function: Eine Funktion die eine Funktion als Parameter annimmt u. evtl    eine Funktion zurückgibt.
+
+- Higher Order Observables nehmen einen oder mehrere Operator als input und geben einen Operator zurück.
+   Ein Operator ist quasi eine Funktion die einen Operator als Input annimt und einen Operator als Output zurückgib

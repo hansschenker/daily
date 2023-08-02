@@ -1,0 +1,135 @@
+to code a rxjs snake game: I first have create all my input observables:
+To code an RxJS snake game, you first need to create all the necessary input observables.
+
+These input observables will allow you to handle user input, such as arrow key presses, 
+and use it to control the movement of the snake in the game.
+
+For example, you might create an observable for the "keydown" event on the document object, 
+which will emit events whenever a key is pressed. You can then use operators like "filter" and "map" 
+to transform these events into the appropriate direction for the snake to move in.
+
+You may also need to create observables for other user input, such as mouse clicks or touch events, 
+depending on the requirements of your game.
+
+Once you have these input observables set up, you can use them to control the movement of the snake 
+and implement the rest of the game logic using RxJS operators and patterns.
+
+
+
+
+Given I have setup board of 30 by 30 cells and placed an initial snake with 3 cells in width in 
+the middle of the board and also place a food with 1 cell width on a random cell on the board, 
+When the user presses a key arrow and a timer is running I can move the snake in the direction 
+of the last keypress and check wheter the snake collides with the food, the board border or itself. 
+In a collison case with the food, a new  food gets randomly placed and the snake grows 1 cell longer, 
+in a collision with itself the player looses the game
+Sure, here's an example of how you could implement the game logic you described in RxJS:
+
+import { fromEvent, interval } from 'rxjs';
+import { map, filter, takeWhile, scan } from 'rxjs/operators';
+
+// Define the initial state of the game
+const initialState = {
+  boardSize: 30,
+  snake: {
+    direction: 'right',
+    body: [
+      { x: 14, y: 15 },
+      { x: 13, y: 15 },
+      { x: 12, y: 15 }
+    ]
+  },
+  food: { x: 3, y: 3 }
+};
+
+// Define observables for user input and timer
+const arrowKeys$ = fromEvent(document, 'keydown').pipe(
+  map((event: KeyboardEvent) => event.key),
+  filter(key => ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key))
+);
+
+const timer$ = interval(100);
+
+// Combine the arrowKeys$ and timer$ observables to create a stream of game ticks
+const game$ = arrowKeys$.pipe(
+  map(key => {
+    // Update the direction of the snake based on the arrow key pressed
+    switch (key) {
+      case 'ArrowUp':
+        return 'up';
+      case 'ArrowDown':
+        return 'down';
+      case 'ArrowLeft':
+        return 'left';
+      case 'ArrowRight':
+        return 'right';
+    }
+  }),
+  filter(direction => {
+    // Ignore input that would cause the snake to reverse direction
+    const currentDirection = state.snake.direction;
+    return !(direction === 'up' && currentDirection === 'down' ||
+             direction === 'down' && currentDirection === 'up' ||
+             direction === 'left' && currentDirection === 'right' ||
+             direction === 'right' && currentDirection === 'left');
+  }),
+  scan((state, direction) => {
+    // Move the snake in the given direction, checking for collisions with food, border, or itself
+    const head = state.snake.body[0];
+    let newHead;
+    switch (direction) {
+      case 'up':
+        newHead = { x: head.x, y: head.y - 1 };
+        break;
+      case 'down':
+        newHead = { x: head.x, y: head.y + 1 };
+        break;
+      case 'left':
+        newHead = { x: head.x - 1, y: head.y };
+        break;
+      case 'right':
+        newHead = { x: head.x + 1, y: head.y };
+        break;
+    }
+    const newSnake = { direction, body: [newHead, ...state.snake.body.slice(0, -1)] };
+    let newFood = state.food;
+    let gameOver = false;
+    if (newHead.x < 0 || newHead.x >= state.boardSize || newHead.y < 0 || newHead.y >= state.boardSize) {
+      // Collision with border
+      gameOver = true;
+    } else if (newHead.x === state.food.x && newHead.y === state.food.y) {
+      // Collision with food
+      newSnake.body.push(state.snake.body[state.snake.body.length - 1]);
+      newFood = { x: Math.floor(Math.random() * state.boardSize), y: Math.floor(Math.random() * state.boardSize) };
+    } else if (newSnake.body.slice(1).some(cell => cell.x === newHead.x && cell.y === newHead.y)) {
+      // Collision with self
+      gameOver = true;
+    }
+    return {
+      boardSize: state
+    }
+
+Based on the scenario you described, it sounds like you have already set up the initial game board 
+with a snake and food. To move the snake based on user input, you will need to subscribe to the 
+"keydown" event on the document object and use an RxJS operator to map the event to the 
+appropriate direction for the snake to move.
+
+Once you have the direction, you can update the position of the snake on the game board with 
+each tick of the timer. You can use RxJS operators to handle collisions with the food, board border, 
+and the snake itself.
+
+If the snake collides with the food, you can generate a new random location for the food and add a 
+new cell to the snake to make it longer. If the snake collides with the board border or itself, 
+you can end the game and display a message to the user.
+
+To implement the logic for checking collisions, you will need to use conditional statements and 
+compare the current position of the snake with the position of the food, board border, and other 
+cells in the snake. You can use RxJS operators like "filter" to handle collisions and "tap" to 
+perform actions like generating a new random location for the food or ending the game.
+
+Overall, implementing a snake game with RxJS will require combining several different operators 
+and patterns to 
+- handle user input, 
+- game logic (loop) , and 
+- collisions.
+

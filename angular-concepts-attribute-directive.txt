@@ -1,0 +1,97 @@
+Change the appearance or behavior of DOM elements and Angular components with attribute directives
+
+Building an attribute directive
+------------------------------------
+
+
+- ng generate directive highlight
+
+  src/app/highlight.directive.ts
+  and declares the directive class in the AppModule.
+
+
+- @Directive() decorator's configuration CSS attribute selector, [appHighlight].
+- Import ElementRef from @angular/core. 
+- ElementRef grants direct access to the host DOM element through its nativeElement property.
+  Add ElementRef in the directive's constructor() to inject 
+  a reference to the host DOM element, the element to which you apply appHighlight.
+
+- Add logic to the HighlightDirective class that sets the background to yellow.
+
+
+
+Applying an attribute directive
+---------------------------------
+
+- add a <p> element to the HTML template with the directive as an attribute.
+  - Angular creates an instance of the HighlightDirective class and 
+  - injects a reference to the <p> element into the directive's constructor, 
+    which sets the <p> element's background style to yellow.
+
+
+Handling user events
+-----------------------------------
+- setting or 
+- clearing the highlight color.
+
+- Import HostListener from '@angular/core'.
+§
+- Add two event handlers with the @HostListener() decorator that respond 
+  - when the mouse enters or 
+  - leaves, 
+
+- Subscribe to events of the DOM element that hosts an attribute directive, 
+
+- The handlers delegate to a helper method, 
+  - highlight(), that sets the color on the host DOM element, el.
+
+- The background color appears 
+ - when the pointer hovers over the paragraph element and 
+ - disappears as the pointer moves out.
+
+
+
+Passing values into an attribute directive
+-------------------------------------------
+
+In highlight.directive.ts, import Input from @angular/core.
+
+- Add an appHighlight @Input() property.
+
+- The @Input() decorator adds metadata to the class that 
+  - makes the directive's appHighlight property available for binding.
+
+App component uses Highlight Directive
+-----------------------------------------
+- In app.component.ts, add a color property to the AppComponent.
+
+- apply the directive and the color, 
+  use property binding with the appHighlight directive selector, setting it equal to color.
+  [appHighlight] attribute binding performs two tasks:
+  Applies the highlighting directive to the <p> element
+  Sets the directive's highlight color with a property binding
+  Setting the value with user input
+
+
+
+
+Binding to a second property
+------------------------------
+- so that the developer can set the default color.
+  Add a second Input() property to HighlightDirective 
+  - called defaultColor.
+
+- Revise the directive's onMouseEnter so that it first tries to highlight with the appHighlight, 
+  then with the defaultColor, and falls back to red if both properties are undefined.
+
+To bind to the AppComponent.color and fall back to "violet" as the default color, 
+- add the following HTML. 
+  In this case, the defaultColor binding doesn't use square brackets, [], because it is static.
+
+As with components, you can add multiple directive property bindings to a host element.
+
+The default color is red if there is no default color binding. When the user chooses a color
+ the selected color becomes the active highlight color.
+
+
+

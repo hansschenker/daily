@@ -1,0 +1,106 @@
+Elm Architecture - Elm TEA - ELM MVU - Elmish Architecture
+-----------------------------------------------------------------------------------------------
+
+
+					View
+			-------------------------------------------
+
+			up: Model		down: Message
+		    	    initialModel
+
+
+			                Elm
+			---------------------------------------------
+
+			up: new Model		down: Message
+		    	    Side Effects	      Current Model
+
+					Update
+			---------------------------------------------
+
+
+
+----------------------------------------------------------------------s
+Concept			Elm			Redux
+-----------------       ------------            ---------------
+Application state	Model			State
+Application events	Message			Action
+Transforms the state	Update			Reducer
+----------------------------------------------------------------------
+
+This is the Elm architecture:
+
+  Model, initialModel
+➊ When our application first starts, we have an initial model that is passed to our program’s view function.
+
+  render Model with view function
+➋ The view function renders the current model to produce our program’s user interface (typically as HTML).
+
+  on user action (event) a message is sent to Elm
+➌ When the user interacts with the rendered view, a message is sent to the Elm Runtime (➍) e.g. ExpandDetails.
+
+  Elm calls update function with message and model
+➎ The Elm Runtime calls our program’s update function, passing in the message and the current model.
+
+  update function returns updated model and possible side effects (cmd)
+➏ The update function returns an updated model, and optionally a list of side effects to run (➐).
+
+  Elm calls view function with updated model
+➑ The Elm Runtime calls our view function again to render our interface with the updated model. 
+  It also performs any side effects requested by our program.
+
+
+
+The fundamental principle of writing Elm code is to 
+
+- separate effects from 
+- computation, 
+
+and to use different techniques for each.
+
+Computation - pure functions
+---------------------------
+All computation is “pure”, meaning what a function returns depends only on its arguments. 
+It’s predictable and easy to understand.
+
+Effects are impure and handled separatley
+
+- The “something” is converted to a message (Msg) and 
+- sent to the update function (the controller) together with the Model. 
+- The model contains the entire state of the application (the “single source of true”). 
+- The update function, based solely on the model and the message, can change the model and generate one or more commands (Cmd). 
+- Commands are then executed by the Elm Runtime while the new model is used to update the application interface, 
+- after being processed by the view function. 
+
+Steps
+--------------------------------
+- Something happen (example: user click on a button) 		- Given the Screen with a button on it
+
+- A message (Msg) is generated                       		- When the User clicks the button a message is generated
+
+- Msg + Model are sent to update				- Msg + Model are sent is sent to update function
+
+- update return a new Model and an optional command (Cmd)	- Then the update function returns a new model and optional a command (cmd)
+	- 
+- Cmd is sent to the effects engine and executed (ex:http req)	- And the cmd is sent to the effects engine and executed (maybe: http request)
+
+- The new Model is sent to the view				- And the new Model is sent to the view
+
+- view return new html						- And the View returns the new html
+
+
+ELM MVU
+-----------------------------
+
+Model - M
+--------
+
+
+View - V
+------------
+view : model -> Html msg
+
+
+Update - U
+-----------
+update : msg -> model -> ( model, Cmd msg )

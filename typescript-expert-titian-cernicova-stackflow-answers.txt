@@ -1,0 +1,113 @@
+Typescript unknown vs any
+-------------------------------------------
+[..] unknown which is the type-safe counterpart of any. Anything is assignable to unknown, 
+but unknown isn't assignable to anything but itself and any without a type assertion or a 
+control flow based narrowing. Likewise, no operations are permitted on an unknown without 
+first asserting or narrowing to a more specific type.
+
+A few examples:
+
+let vAny: any = 10;          // We can assign anything to any
+let vUnknown: unknown =  10; // We can assign anything to unknown just like any 
+
+
+let s1: string = vAny;     // Any is assignable to anything 
+let s2: string = vUnknown; // Invalid; we can't assign vUnknown to any other type (without an 
+explicit assertion)
+
+vAny.method();     // Ok; anything goes with any
+vUnknown.method(); // Not ok; we don't know anything about this variable
+The suggested usage is:
+
+There are often times where we want to describe the least-capable type in TypeScript. This is 
+useful for APIs that want to signal “this can be any value, so you must perform some type of 
+checking before you use it”. This forces users to safely introspect returned values.
+
+FB not available on Window
+-----------------------------
+445
+
+Why does declare const window: any; work?
+
+Because you declare a local variable of type any. Having something of type any essentially turns 
+off type checking for window so you can do anything with it. I really do not recommend this solution, 
+it is a really bad one.
+
+Why doesn't type Window = { FB: any } work? You define a type Window. This type if defined in a module 
+has nothing to do with the type of the global window object, it is just a type that happens to be 
+called Window inside your module.
+
+The good solution To extend window you must extend the global Window interface. You can do this like this:
+
+declare global {
+    interface Window {
+        FB:any;
+    }
+}
+
+let FB = window.FB; // ok now
+Note that this extension is going to be available in your whole project not just the file you define 
+it in. Also if FB has definitions you might consider 
+typing it a bit better (FB: typeof import('FBOrWhateverModuleNameThisHas'))
+
+
+------------------------------------------------------------------------------------------
+type 'add' not assignable to to type "add" or "multiply"
+
+type Action = { type: 'add'; n: number } | { type: 'multiply'; n: number };
+
+const callback = fn<Action>();
+callback({ type: 'add', n: 1 });
+However Typescript (3.4.1) is giving me this error message:
+
+Type '"add"' is not assignable to type '"add" & "multiply"'. Type '"add"' is not assignable to 
+type '"multiply"'.ts(2322)
+
+The expected type comes from property 'type' which is declared here on type '{ type: "add"; n: number; } 
+& { type: "multiply"; n: number; }'
+
+I don't understand why this is - it seems the the sum (union) type is being interpreted as a 'product' type.
+
+If I change the type definition to:
+
+type VoidableCallback<EventValue> = (val: EventValue) => void;
+... Typescript doesn't complain. So it's something to do with the conditional type and union types.
+
+If could understand what's going on here, then maybe I could make a PR to the library (rxjs-hooks).
+
+typescript
+Share
+Improve this question
+Follow
+asked Apr 5, 2019 at 19:38
+Wayne Maurer's user avatar
+Wayne Maurer
+12.2k44 gold badges3333 silver badges4343 bronze badges
+Add a comment
+1 Answer
+Sorted by:
+
+Highest score (default)
+5
+
+This is caused by the distributive behavior of conditional types. Conditional types distribute over 
+naked type parameters. This means if the type parameter contains a union, the conditional type will 
+be applied to each member of the union and the result will be the union of all applications. So in 
+your case we would get VoidableCallback<{ type: 'add'; n: number } | { type: 'multiply'; n: number }> = 
+VoidableCallback<{ type: 'add'; n: number }> | VoidableCallback<{ type: 'multiply'; n: number }> = 
+((val: { type: 'add'; n: number }) => void) |  ((val: { type: 'multiply'; n: number }) => void) 
+You can read about this behavior here
+
+The reason you get an error about the intersection is the way typescript deals with unions of 
+function signatures, it basically requires that the parameters be compatible will all signatures in the union, 
+so the parameter must be an intersection of all possible parameter types. You can read about this here
+
+The simple solution is to disable the distribution for the conditional type. This is easily done by 
+placing the type parameter in a tuple:
+
+type VoidableCallback<EventValue> = [EventValue] extends [void] ? () => void : (val: EventValue) => void;
+type Action = { type: 'add'; n: number } | { type: 'multiply'; n: number };
+declare function fn<T>(): VoidableCallback<T>;
+const callback = fn<Action>();
+callback({ type: 'add', n: 1 }); //ok now
+

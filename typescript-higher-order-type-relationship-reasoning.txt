@@ -1,0 +1,298 @@
+Higher order type equivalences
+--------------------------------------------------------
+
+T | never  is equivalent T
+
+T & never is equivalent never
+
+(A|B) & (C|D)  is equivalent A & C | A & D | B & C |B & D
+
+keyof (A & B) is equivalent keyof A | keyof B
+
+keyof (A | B) is equivalent keyof A & keyof B
+
+S[X] <: T[Y] is equivalent S <:T or X :> Y
+
+keyof A <: keyof B is equivalent B :> A
+
+Model: GPT-4
+
+User
+Typescript higher order type relationship reasoning:  
+
+T | never  is equivalent T
+------------------------------------------
+Yes, in TypeScript, the type T | never is indeed equivalent to T.
+T is any type in TypeScript.
+never is a special type in TypeScript that represents a type that should never occur.
+In the context of type unions (T | never), never is effectively ignored because 
+it cannot possibly occur. The union of any type T with never simply results in T itself. 
+
+It's similar to the concept in set theory 
+where the union of a set with an empty set results in the original set.
+
+type T = string;
+type Never = never;
+type Union = T | Never;
+
+let example: Union;
+
+example = "hello"; // Works fine because 'T' is 'string'.
+example = 123; // Error because 'number' is not assignable to 'string'.
+Union effectively becomes string due to T | Never being equivalent to T.
+
+T & never is equivalent never
+--------------------------------
+This is because never is a type that represents a value that never occurs. 
+If one of the types is never, then the result of the intersection is never, 
+regardless of what T is.
+T is any type in TypeScript.
+The intersection of any type T with never results in never itself. 
+
+This is similar to the concept in set theory where 
+the intersection of a set with an empty set results in an empty set.
+
+Here's a quick TypeScript example to illustrate:
+
+
+type T = string;
+type Never = never;
+type Intersection = T & Never;
+
+let example: Intersection;
+
+example = "hello"; // Error because 'string' is not assignable to 'never'.
+example = 123; // Error because 'number' is not assignable to 'never'.
+In this example, Intersection effectively becomes never due to T & Never being equivalent to never. 
+No value can be assigned to a never type.
+
+
+
+
+
+User
+(A|B) & (C|D)  is equivalent A & C | A & D | B & C |B & D
+----------------------------------------------------------- 
+This is the distributive law of sets applied to TypeScript types.
+A|B is a type that can be either A or B.
+C|D is a type that can be either C or D.
+(A|B) & (C|D) represents a type that is either A or B and either C or D at the same time.
+This can be rewritten as A & C | A & D | B & C | B & D, 
+A and C at the same time
+A and D at the same time
+B and C at the same time
+B and D at the same time
+
+This relationship holds due to distributive law in TypeScript's type system, and these 
+two representations are equivalent.
+
+Here is a TypeScript example to illustrate this:
+
+typescript
+Copy code
+type A = { a: number };
+type B = { b: number };
+type C = { c: number };
+type D = { d: number };
+
+// This will allow objects that has a and c, or a and d, or b and c, or b and d
+type CombinedType1 = (A | B) & (C | D);
+
+// This is equivalent to CombinedType1
+type CombinedType2 = A & C | A & D | B & C | B & D;
+CombinedType1 and CombinedType2 would accept the same set of objects.
+
+
+
+
+
+User
+keyof (A & B) is equivalent keyof A | keyof B
+-----------------------------------------------------
+ChatGPT
+Yes, that's correct.
+
+In TypeScript, keyof (A & B) is indeed equivalent to keyof A | keyof B.
+
+Here's why:
+
+keyof T is a type operator in TypeScript that produces a string or 
+numeric literal union of its own keys.
+
+A & B is an intersection type that includes all properties from both A and B.
+
+keyof (A & B) therefore produces a union of the keys from both A and B.
+
+On the other hand:
+
+keyof A | keyof B produces a union of keyof A and keyof B, which are themselves unions 
+of the keys of A and B, respectively.
+Hence, both are equivalent. Here is a TypeScript example to illustrate this:
+
+typescript
+Copy code
+type A = { a: number; common: string };
+type B = { b: number; common: string };
+
+// Keys: 'a' | 'common'
+type KeysA = keyof A;
+
+// Keys: 'b' | 'common'
+type KeysB = keyof B;
+
+// Keys: 'a' | 'common' | 'b' | 'common'
+type IntersectionKeys = keyof (A & B);
+
+// Keys: 'a' | 'common' | 'b' | 'common'
+type UnionKeys = keyof A | keyof B;
+In this example, IntersectionKeys and UnionKeys effectively become 'a' | 'common' | 'b', 
+demonstrating the equivalence.
+
+
+
+
+
+User
+keyof (A | B) is equivalent keyof A & keyof B
+------------------------------------------------
+ChatGPT
+Yes, that's correct.
+
+In TypeScript, keyof (A | B) is equivalent to keyof A & keyof B.
+
+Here's why:
+
+keyof T is a type operator in TypeScript that produces a string or 
+numeric literal union of its own keys.
+
+A | B is a union type that includes properties that exist in both A and B 
+(properties that exist only in A or B are not guaranteed).
+
+keyof (A | B) therefore produces a union of the keys from both A and B which 
+are common to both A and B.
+
+On the other hand:
+
+keyof A & keyof B produces an intersection of keyof A and keyof B, which are 
+themselves unions of the keys of A and B, respectively.
+So in effect, keyof A & keyof B gives you the common keys between A and B, which aligns 
+with the behavior of keyof (A | B).
+
+Here is a TypeScript example to illustrate this:
+
+typescript
+Copy code
+type A = { a: number; common: string };
+type B = { b: number; common: string };
+
+// Keys: 'a' | 'common'
+type KeysA = keyof A;
+
+// Keys: 'b' | 'common'
+type KeysB = keyof B;
+
+// Keys: 'common'
+type UnionKeys = keyof (A | B);
+
+// Keys: 'common'
+type IntersectionKeys = keyof A & keyof B;
+In this example, UnionKeys and IntersectionKeys effectively become 'common', 
+demonstrating the equivalence.
+
+
+
+
+
+User
+S[X] <:T[Y] is equivalent S<:T or X:>Y
+---------------------------------------------------
+ChatGPT
+Your statement seems to express a relation involving mapped or indexed types and type 
+compatibility in TypeScript. However, it's not entirely clear what the symbols stand for.
+
+In TypeScript:
+
+S[X] generally indicates an indexed access type, where X is a property of S.
+<: is a symbol often used to denote subtyping or type compatibility in type theory. 
+A <: B means "A is a subtype of B", or "A can be used wherever B is expected".
+S <: T would mean that type S is a subtype of type T, or that S can be used wherever T is expected.
+If we take S[X] <: T[Y] to mean "S[X] is a subtype of T[Y]", then it implies that wherever
+ you could use a T[Y], you could also use an S[X].
+
+The statement S <: T or X :> Y seems to suggest either S is a subtype of T or Y is a subtype of X. 
+The :> is not a common symbol in TypeScript or type theory, but if we assume it 
+to mean the reverse of <: (i.e., A :> B means "A is a supertype of B"), then X :> Y 
+would mean X is a supertype of Y or Y is a subtype of X.
+
+However, these two statements (S[X] <: T[Y] and S <: T or X :> Y) are not necessarily equivalent. 
+The first condition doesn't necessarily imply the second, and vice versa. For the second 
+condition to be true, either S has to be a subtype of T or X has to be a supertype of Y. 
+Neither condition implies that S[X] is a subtype of T[Y].
+
+Also, in practice TypeScript doesn't have a syntax for directly expressing these subtype 
+relationships in the way you're trying to. It's more about understanding the structural 
+compatibility between types.
+
+Please provide more specific details if this doesn't answer your question or if you meant 
+something different with the symbols you used.
+
+
+
+
+
+User
+keyof A <: keyof B is equivalent B :> A
+--------------------------------------------------
+ChatGPT
+Your statement seems to indicate a relationship between the keys 
+of two types A and B in TypeScript.
+
+The symbol <: is often used to denote subtyping in type theory. 
+If we read keyof A <: keyof B as "keyof A is a subtype of keyof B", 
+then it suggests that the keys of A are a subset of the keys of B.
+
+The symbol :> is not standard in TypeScript or in type theory, but if we assume 
+that it's intended to mean the reverse of <: (supertype), 
+then B :> A would read as "B is a supertype of A". 
+This could suggest that B has all the properties of A (and potentially more).
+
+However, these two statements are not necessarily equivalent, as it's possible 
+that B is a supertype of A but still does not include all the keys of A as keys of B.
+
+For instance, consider the following TypeScript code:
+
+typescript
+Copy code
+type A = { a: number; common: string };
+type B = { a: number; b: number; common: string };
+
+// 'a' | 'common'
+type keysA = keyof A;
+
+// 'a' | 'b' | 'common'
+type keysB = keyof B;
+Here, B is a supertype of A, but keyof A is not a subtype of keyof B because keyof 
+A includes key 'a' which does not exist in keyof B.
+
+It's also important to note that TypeScript's type system is structurally typed, 
+not nominally typed. This means TypeScript is more concerned with the shape of 
+the type (i.e., the properties it has) than with the names of the types. 
+It uses this structural typing to decide whether one type is assignable to another.
+
+For B to be a supertype of A (meaning you can use a value of type B wherever 
+a value of type A is expected), B must have at least all the properties that A has, 
+with compatible types. This is true even if B has additional properties that A does not have. 
+But this doesn't necessarily imply anything about the keys, as the relationship is about 
+the properties and their types, not just the property names (keys).
+
+
+
+
+
+User
+You are a little Typescript Albert Einstein!
+ChatGPT
+Thank you for your kind words! As an AI developed by OpenAI, I've been trained on a diverse 
+range of data sources and can provide information on a wide variety of topics, 
+including TypeScript and other programming languages. If you have any more questions about 
+TypeScript or any other topic, feel free to ask!

@@ -1,0 +1,88 @@
+Expressions
+-----------------------------------------------------------------------
+Puer functional programming centers around the notion of an expression
+
+Samuel Silas Curry citate:
+" All expression comes from within outward, from the center to the surface,
+  from a hidden source to outward manifestation. The study of expression as
+  a natural process brings you into contact with cause and makes you feel the  
+  source of reality"
+
+Programming, in its bradest sense is problem solving.
+- understanding the problem first is important
+- find a solution to the problem
+- there might be more than one solution to the problem
+
+Haskell Programming is Computation by Calculation: Function with input and output
+---------------------------------------------------------------------------------
+Programs in Haskell can be viewed as functions whose input is that of the 
+problem being solved and whose output is our desired result.
+
+Problem: 3 * (9+5)
+         -> 3 * 14       // unfolding a function definition
+ 	 -> 42
+
+	 3 * 9 + 3 * 5
+       -> 27 + 3 * 5
+       -> 27 + 15
+       -> 42
+
+Pure functions: same inputs produce same outputs
+-------------------------------------------------
+Every program written in Haskell always yields the same answer when given the same inputs
+regardless of the order in which we choose to perform the calculations.
+-------------------------------------------------------------------
+This is precisley the mathematical definition of a function:
+For the same inputs, it always yields the same output
+--------------------------------------------------------------------
+
+Calculation on expressions
+----------------------------
+In Haskell we perform calculation expressions. Every expression evaluates to a value
+
+Samples for expressions can be:
+- simple values: 42, character 'a'
+- lists: [1,2,3]
+- pairs ('b',4)
+- 1 + 2
+- x = x + 1 // never-ending sequence of calculations // nonterminating
+each of these examples evaluates to a value
+
+Expression has a type
+----------------------
+every expression and therefore every value has a type
+you can think of types as sets of expressions or values
+in which members of the same set have much in common
+
+Integer: set of all fixed-precision integers
+Char: the set of all characters
+
+The associatiion of an expression or value with its type is very important
+42	:: Integer
+'a'	:: Char
+[1,2,3]	:: [Integer]
+('b',3)	:: (Char, Integer)
+::	has type
+
+Type	starts with big Letter: Integer, Char, ...
+values	start with small letter: count, ...
+
+Type	indicate the operations wich are available on it
+Haskell world is devided in world of:
+- Types and
+- values
+
+Types help us to make sense of the world by organizing it into groups
+of common properties: shape, size, functionality, ...
+
+Function Types and Type Signatures: mapping values of T1 to values of T2
+---------------------------------------------------------------------------
+Function takes T1 values as input and produces T2 values as output: T1 -> T2
+" a function maps values of type T1 to values of T2"
+
+Function application: the normal use of functions
+the application of the function double to the list of 3,4,5
+
+some functions like (+), (*) , (-) are applied using infix syntax: 3 (+) 4 , 
+(+)	:: Integer -> Integer -> Integer
+

@@ -1,0 +1,548 @@
+React & TypeScript: how to type hooks (a complete guide)
+October 12, 2021 • 10 min read
+
+Using hooks is one of the most common things you do when writing React applications. If you use TypeScript in your apps, 
+knowing how to type hooks properly is very important (and if you don't use TypeScript, you should seriously think about it!).
+
+In this article we'll go over how to type each usual hook React provides us. There are also a few bonuses sprinkled in there, 
+like how to type forwardRef and how to type custom hooks.
+
+This post is meant both as a tutorial that you can read linearly, but also as a reference that you can go back to whenever you 
+have doubts about any of the topics covered. Feel free to bookmark this page for easy access later on.
+
+Info
+Typing hooks in React relies heavily on the concept of "generics" in TypeScript. If you're not familiar with that topic, check 
+out this article going over what generic types are in TypeScript, and their application to React before you continue with this article.
+
+Rely on type inference if you can
+Before diving into the meat of the subject, we have to talk a bit about type inference.
+
+In a lot of cases, TypeScript can infer the type of your hooks itself without your help. In those cases, you don't need to do anything yourself.
+
+For example, the following is perfectly valid TypeScript, and works as you would want:
+
+const [greeting, setGreeting] = useState('Hello World');
+
+TypeScript will understand that greeting is supposed to be a string, and will also assign the right type to setGreeting as a result.
+
+When to not rely on type inference
+Type inference fails in two main cases.
+
+The inferred type is too permissive for your use case.
+The inferred type is wrong.
+Let's explain both of these with examples.
+
+Inferred type is too permissive
+Let's look back at our previous example - we had a greeting of type string. But let's say the greeting could only 
+have one of three predetermined values.
+
+In that case, we would want greeting to have a very specific type, for example this one:
+
+type Greeting = 'Hello World' | 'Hey!' | "What's up?";
+
+Info
+This type uses both a union type and literal types.
+
+In that case, the inferred type is too permissive (string, instead of the specific subset of 3 strings we want), and you have 
+to specify the type yourself:
+
+const [greeting, setGreeting] = useState<Greeting>('Hello World');
+
+The inferred type is wrong
+Sometimes, the inferred type is wrong (or at least too restrictive/not the one you want). This happens frequently 
+in React with default values in useState. Let's say that the initial value of greeting is null:
+
+const [greeting, setGreeting] = useState(null);
+In this case, TypeScript will infer that greeting is of type null (which means that it's always null). That's obviously wrong: 
+we will want to set greeting to a string later on.
+
+So you have to tell TypeScript that it can be something else:
+
+const [greeting, setGreeting] = useState<string | null>(null);
+With this, TypeScript will properly understand that greeting can be either null or a string.
+
+Tip
+One thing important to mention here is that when type inference doesn't work you should rely on type arguments over type assertions.
+
+So prefer this:
+
+const [greeting, setGreeting] = useState<Greeting>('Hello World');
+over this:
+
+const [greeting, setGreeting] = useState('Hello World' as Greeting);
+Now that we are clear on when we can and can't rely on inferred types, let's see how to type each hook! 
+I've already spoiled the first one a bit...
+
+How to type useState
+This will be short, as it's pretty simple and I've already shown multiple examples in the previous section.
+
+const [greeting, setGreeting] = useState<string | null>(null);
+That's it: you just have to specify the type of the state in the generic.
+
+How to type useReducer
+useReducer is a bit more complex to type than useState, because it has more moving parts.
+
+There are two things to type: the state and the action.
+
+Tip
+If you're not comfortable with useReducer and the associated concepts, I would suggest giving How to 
+use React useReducer like a pro a read.
+
+Here is a useReducer example from my article on it. We will learn how to add proper types to it:
+
+import { useReducer } from 'react';
+
+const initialValue = {
+  username: '',
+  email: '',
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'username':
+      return { ...state, username: action.payload };
+    case 'email':
+      return { ...state, email: action.payload };
+    case 'reset':
+      return initialValue;
+    default:
+      throw new Error(`Unknown action type: ${action.type}`);
+  }
+};
+
+const Form = () => {
+  const [state, dispatch] = useReducer(reducer, initialValue);
+  return (
+    <div>
+      <input
+        type="text"
+        value={state.username}
+        onChange={(event) =>
+          dispatch({ type: 'username', payload: event.target.value })
+        }
+      />
+      <input
+        type="email"
+        value={state.email}
+        onChange={(event) =>
+          dispatch({ type: 'email', payload: event.target.value })
+        }
+      />
+    </div>
+  );
+};
+
+export default Form;
+Let's start with typing the state.
+
+How to type the reducer state
+We have two choices to type the state:
+
+Use the initialValue (if we have it) with the typeof operator
+Define a type alias State, and use that
+Here's the typeof initialValue option:
+
+const initialValue = {
+  username: '',
+  email: '',
+};
+
+const reducer = (state: typeof initialValue, action) => {
+  switch (action.type) {
+    case 'username':
+      return {...state,  username: action.payload };
+    case 'email':
+      return {...state,  email: action.payload };
+    case 'reset':
+      return initialValue;
+    default:
+      throw new Error(`Unknown action type: ${action.type}`);
+  }
+};
+
+And here's the type alias option:
+
+type State = {
+  username: string;
+  email: string;
+};
+
+const initialValue = {
+  username: '',
+  email: '',
+};
+
+const reducer = (state: State, action) => {
+  switch (action.type) {
+    case 'username':
+      return { ...state, username: action.payload };
+    case 'email':
+      return { ...state, email: action.payload };
+    case 'reset':
+      return initialValue;
+    default:
+      throw new Error(`Unknown action type: ${action.type}`);
+  }
+};
+How to type the reducer action
+The reducer action is a tad harder to type than the state because its structure changes depending on the exact action.
+
+For example for the 'username' action we might expect the following type:
+
+type UsernameAction = {
+  type: 'username';
+  payload: string;
+};
+But for the 'reset' action we don't need a payload:
+
+type ResetAction = {
+  type: 'reset';
+};
+So how do we tell TypeScript that the action object can have very different structures depending on its exact type? 
+With the help of discriminated unions!
+
+And they even have a very nice syntax (in my opinion):
+
+const initialValue = {
+  username: "",
+  email: ""
+};
+
+type Action =
+  | { type: "username"; payload: string }
+  | { type: "email"; payload: string }
+  | { type: "reset" };
+
+const reducer = (state: typeof initialValue, action: Action) => {
+  switch (action.type) {
+    case "username":
+      return {...state, username: action.payload };
+    case "email":
+      return { ...state, email: action.payload };
+    case "reset":
+      return initialValue;
+    default:
+      throw new Error(`Unknown action type: ${action.type}`);
+  }
+};
+The Action type is saying that it can take any of the three types contained in the discriminated union. 
+So if TypeScript sees that action.type is the string "username", it will automatically know that it should be in 
+the first case and that the payload should be a string. Handy, isn't it?
+
+And that's it! You have your useReducer fully typed, as it's able to infer everything it needs 
+from the types of the reducer function.
+
+Here is the example in its entirety:
+
+import { useReducer } from 'react';
+
+const initialValue = {
+  username: '',
+  email: '',
+};
+
+type Action =
+  | { type: 'username'; payload: string }
+  | { type: 'email'; payload: string }
+  | { type: 'reset' };
+
+const reducer = (state: typeof initialValue, action: Action) => {
+  switch (action.type) {
+    case 'username':
+      return { ...state, username: action.payload };
+    case 'email':
+      return { ...state, email: action.payload };
+    case 'reset':
+      return initialValue;
+    default:
+      throw new Error(`Unknown action type: ${action.type}`);
+  }
+};
+
+const Form = () => {
+  const [state, dispatch] = useReducer(reducer, initialValue);
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={state.username}
+        onChange={(event) =>
+          dispatch({ type: 'username', payload: event.target.value })
+        }
+      />
+      <input
+        type="email"
+        value={state.email}
+        onChange={(event) =>
+          dispatch({ type: 'email', payload: event.target.value })
+        }
+      />
+    </div>
+  );
+};
+
+export default Form;
+Tip
+The above types work well for useReducer, but not when using using Redux. Here is a good resource on that subject: 
+Do not create union types with Redux Action Types. It's most likely an antipattern.
+
+How to type useRef
+useRef has two main uses:
+
+To hold a custom mutable value, a bit like useState (but with important differences)
+To keep a reference to a DOM object
+Both of those uses require different types. Let's begin with the simpler one (at least type-wise).
+
+How to type useRef for mutable values
+It's basically the same as useState. You want useRef to hold a custom value, so you tell it the type.
+
+Let's take this example directly from the React documentation:
+
+function Timer() {
+  const intervalRef = useRef<number | undefined>();
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      // ...
+    });
+    intervalRef.current = id;
+    return () => {
+      clearInterval(intervalRef.current);
+    };
+  });
+
+  // ...
+}
+Info
+If you want a reminder on how the setInterval function works (in general but also in React), I've got you covered.
+
+How to type useRef for DOM nodes
+A classic use case for using useRef with DOM nodes is focusing input elements:
+
+import { useRef, useEffect } from 'react';
+
+const AutoFocusInput = () => {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current.focus();
+  }, []);
+
+  return <input ref={inputRef} type="text" value="Hello World" />;
+};
+
+export default AutoFocusInput;
+TypeScript has built-in DOM element types that we can make use of. The structure of those types is always 
+the same: if name is the name of the HTML tag you're using, the corresponding type will be HTMLNameElement.
+
+Tip
+Knowing HTML element type names is usually straightforward, but I've always struggled to remember the name of 
+the a tag type for some reason. It's HTMLAnchorElement.
+
+Another one that isn't obvious is the one for <h1> tags (and all the others). It's HTMLHeadingElement.
+
+You can also directly use HTMLElementTagNameMap['a'] to get the type from the tag name. It works for all HTML elements!
+
+For our input, the name of the type will thus be HTMLInputElement:
+
+import { useRef, useEffect } from 'react';
+
+const AutoFocusInput = () => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  return <input ref={inputRef} type="text" value="Hello World" />;
+};
+
+export default AutoFocusInput;
+Note that we've added a question mark to inputRef.current?.focus(). This is because for TypeScript, inputRef.current 
+is possibly null. In this case, we know that it won't be null because it's populated by React before useEffect first runs.
+ Adding the question mark is the simplest way to make TypeScript happy about that issue.
+
+Info
+I find it pretty fun to go look at the type definitions as they are defined in the TypeScript source code. 
+Here is the link for HTMLInputElement!
+
+Bonus: how to type forwardRef
+Sometimes you want to forward refs to children components. To do that in React we have to wrap the component with forwardRef.
+
+Here's the link to the React documentation on forwardRef if you want more info.
+
+We'll see a simple example using a controlled Input component (that doesn't do much but hey, it's just an example):
+
+import { ChangeEvent } from 'react';
+
+type Props = {
+  value: string,
+  handleChange: (event: ChangeEvent<HTMLInputElement>) => void,
+};
+
+const TextInput = ({ value, handleChange }: Props) => {
+  return <input type="text" value={value} onChange={handleChange} />;
+};
+Info
+You can learn all about using events with TypeScript and React in this article!
+
+Now here it is with forwardRef:
+
+import { forwardRef, ChangeEvent } from 'react';
+
+type Props = {
+  value: string;
+  handleChange: (event: ChangeEvent<HTMLInputElement>) => void;
+};
+
+const TextInput = forwardRef<HTMLInputElement, Props>(
+  ({ value, handleChange }, ref) => {
+    return (
+      <input ref={ref} type="text" value={value} onChange={handleChange} />
+    );
+  }
+);
+The syntax isn't very pretty in my opinion, but overall it's very similar to typing useRef. You just have to 
+provide forwardRef with what HTMLElement it should expect (in that case, HTMLInputElement).
+
+The one thing which is a bit weird and that can be tricky is that the order of the component arguments ref and 
+props is not the same as in the generic <HTMLInputElement, Props>.
+
+It's an easy mistake to make, but TypeScript will yell at you if you do it so you should notice it quickly enough. 😁
+
+How to type useEffect and useLayoutEffect
+Those are pretty easy since you don't have to give them any type.
+
+The only thing to be aware of is implicit returns. What I mean by that is that the callback inside useEffect is expected 
+to either return nothing or a Destructor function that will clean up any side effect (and Destructor is 
+he actual name of the type! See for yourself).
+
+Sometimes you might implicitly return things, which won't make TypeScript happy (so you should avoid it). 
+This is an example of such a case:
+
+const doSomething = () => {
+  return 'hey there';
+};
+
+useEffect(() => doSomething(), []);
+In the code above, doSomething returns a string, which means that the return type of the callback inside useEffect is also a string. 
+TypeScript doesn't want that, so it's not happy.
+
+How to type useMemo and useCallback
+Those are even easier than useEffect and useLayoutEffect since you don't need to type anything. Everything is inferred for you.
+
+How to type React contexts
+Info
+I wrote a guide on using context in React. Check it out if you have questions about using contexts in React!
+
+It's not an intro to contexts though, so if you're a beginner you should rather check the React documentation article on contexts.
+
+This is the example we'll be using:
+
+import { createContext, useState } from 'react';
+
+const AuthContext = createContext(undefined);
+
+const AuthContextProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+
+  const signOut = () => {
+    setUser(null);
+  };
+
+  useEffect(() => {
+    // fetch user and setUser
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export default AuthContextProvider;
+It's a basic form of the context you might have in your app to manage the authentification state of users.
+
+Providing types to the context is pretty easy. First, create a type for the value of the context, then provide it to 
+the createContext function as a generic type:
+
+import React, { createContext, useEffect, useState, ReactNode } from 'react';
+
+type User = {
+  name: string;
+  email: string;
+  freeTrial: boolean;
+};
+
+type AuthValue = {
+  user: User | null;
+  signOut: () => void;
+};
+
+const AuthContext = createContext<AuthValue | undefined>(undefined);
+
+type Props = {
+  children: ReactNode;
+};
+
+const AuthContextProvider = ({ children }: Props) => {
+  const [user, setUser] = useState(null);
+
+  const signOut = () => {
+    setUser(null);
+  };
+
+  useEffect(() => {
+    // fetch user and setUser
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export default AuthContextProvider;
+Once you have provided the type to createContext, everything else will be populated for you thanks to the magic of generics.
+
+One issue with the implementation above is that as far as TypeScript is concerned, the context value can be undefined. 
+We know that it won't be because we are populating it directly in the AuthContextProvider. So how can we tell TypeScript that?
+
+There are several solutions to that, but the one I prefer is using a custom context getter hook. This is something you 
+should be probably doing anyway, regardless of TypeScript:
+
+export const useAuthContext = () => {
+  const context = useContext(AuthContext);
+
+  if (context === undefined) {
+    throw new Error('useAuthContext must be used inside AuthContext');
+  }
+
+  return context;
+};
+The condition in this hook acts as a type guard and guarantees that the returned context won't be undefined.
+
+Bonus: how to type custom hooks
+Typing custom hooks is basically the same as typing normal functions, there's nothing to be aware of in particular.
+
+It's relatively common to be using generic types when using custom hooks, so be sure to check out my article about generics 
+if you want to learn more about them and their usage in React.
+
+There is one thing that is worth mentioning with respect to typing hooks, because it's a pattern common in React but less so elsewhere.
+
+I'm speaking about the case when the hook is returning tuple values, such as in useState and the following example:
+
+const useCustomHook = () => {
+  return ['abc', 123];
+};
+TypeScipt will widen the return type of useCustomHook to be (number | string)[]: an array that can contain either numbers or strings. 
+Usually, this isn't what you want since the first argument will always be a string and the second example always a number (in this example).
+
+This is how to correctly type the example above:
+
+const useCustomHook = (): [string, number] => {
+  return ['abc', 123];
+};

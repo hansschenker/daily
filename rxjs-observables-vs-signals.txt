@@ -1,0 +1,307 @@
+Could you let the user decide what DeferStrategy they want?
+fromObservable(obs$, DeferStrategy).
+DeferStrategy1: T => T | undefined
+DeferStrategy2: T => {T, hasInitialValue: true} | {hasInitialValue: False} (or something like ngx-http-request-state).
+DeferStrategy3: Delegate (an error is thrown if the value is ever used in the context of a thing that doesn't have a DeferStrategy of its own). That way, e.g. computed signals or effects could just not run, or could use their own DeferStrategy. When accessed in a template, the signal could be inside a <ng-container *ngWaitGroup> or suspense list or something that understands DeferStrategy. When accessed outside of a DeferStrategy context, the get() value would be T | undefined maybe, or throw an error, or need to be awaited or whatever. I just don't like the idea of throwing errors are runtime if you can avoid it.
+
+@jgbpercy
+Comment options
+jgbpercy
+9 hours ago
+4A seems like a real puzzler... Gut feel is that the standard we'll adopt in practice is, 99.9% of the time:
+
+Pass a possibly async Observable with an initial value OR
+Pass some known sync Observable (BehaviorSubject or a ReplaySubject we know has seen a value) to a userland-implemented wrapper util that implements behavior 1 (subscribe synchronously and error if no sync value). I'd personally prefer if a blessed version of that util was part of the interop package (as proposed by @e-oz in another comment) but also appreciate the desire to keep the API surface lean.
+Given the above, maybe my opinion here is moot, but option 2 for the default behavior of fromObservable does feel shaky... I can imagine scenarios where in thorough testing you never hit the specific conditions where the Observable hasn't emitted before Signal read, and then this happens to 1% of users in prod. But maybe this isn't much of an issue in practice...
+
+@robert-king
+Comment options
+robert-king
+8 hours ago
+i'm thinking you should just make fromObservable() require a defaultValue. it's the simplest. Maybe if you have a synch observable you can use it without a required defaultValue, as long as that can be a compile time error. you can always go fromObservable(obs$, undefined) to provide undefined as the default value. Although I think some people might use Subject() for triggers where they go trigger.next(undefined) and trigger.asObservable(). not sure.
+
+@alxhub
+Comment options
+alxhub
+7 hours ago
+Collaborator
+Maybe if you have a synch observable you can use it without a required defaultValue, as long as that can be a compile time error.
+
+That's part of the problem - it can't be a compile time error, because there is no way of knowing at compile time if any particular Observable is synchronous or not.
+
+Comment options
+
+benlesh
+10 hours ago
+First off, I found some potentially buggy code in your fromSignal implementation, you might want to checkout (See the IMPORTANT comment in the first example)
+
+And I have a couple of suggestions:
+
+As you probably know implementing Symbol.observable on your Signal will make the signals "just work" with RxJS.
+
+In RxJS version 8, simply having a subscribe method (being "subscribable") will also mean that the Signal will work 100% with all RxJS APIs.
+
+In either case, I think Symbol.observable offers the least intrusive API.
+
+if (typeof Symbol.observable === 'symbol') {
+    signal[Symbol.observable] = () => ({
+        subscribe(observer) {
+            let active = true
+            const watcher = effect(() => {
+              let value;
+              try {
+                // IMPORTANT: When dealing with any reactive function call you don't control
+                // like `observer.next()` (or anything similar), you want to catch the error 
+                // in the producer call, in this case `signal()`. You don't want to catch errors
+                // in the `observer.next` call itself. (this is a common mistake and it's not
+                // unique to RxJS, you'll see it in the next example as well)
+                value = signal()
+              } catch (err) {
+                observer.error(err);
+                return;
+              }
+              observer.next(value);
+            }, {injector, manualCleanup: true});
+            return {
+                unsubscribe() {
+                    if (active) {
+                        active = false
+                        watcher.destroy()
+                    }
+                }
+            }
+        }
+    })
+}
+However... option 3 may be more platable, which is to implement Symbol.asyncIterator, which also converts directly to Observable (albeit less directly). But has EVEN MORE INTEROP with "The Platform" and also converts directly to RxJS observables with no extra effort (as well as allowing users to "subscribe" to changes to signals using for-await loops:
+
+signal[Symbol.asyncIterator] = () => {
+  const deferreds = []
+  let dirty = true
+
+  const handleError = (reason) => {
+     // Called during errors
+    while (deferreds.length) {
+        deferreds.shift()!.reject(reason)
+    }
+  }
+  
+  const watcher = effect(() => {
+    let value;
+    try {
+        value = signal();
+        dirty = true
+    } catch (err) {
+        handleError(err)
+        return
+    }
+
+    if (deferreds.length) {
+        dirty = false
+        deferreds.shift()!.resolve({ done: false, value })
+    }
+  }, {injector, manualCleanup: true});
+
+  return {
+    next() {
+        return new Promise((resolve, reject) => {
+            if (dirty) {
+                dirty = false;
+                resolve({ done: false, value: signal() })
+            } else {
+                deferreds.push({ resolve, reject })
+            }
+        })
+    },
+    throw(reason) {
+        handleError(reason)
+        watcher.destroy();
+    },
+    return() {
+        // Called as a finalizer.
+        while (deferreds.length) {
+            deferreds.shift()!.resolve({ done: true, value: undefined })
+        }
+        watcher.destroy();
+        return Promise.resolve({ done: true, value: undefined })
+    }
+  }
+}
+And then your signal can be consumed in the following ways:
+
+import { from, of, concatMap } from 'rxjs':
+
+// These two work with Symbol.observable or Symbol.asyncIterator
+const source$ = from(signal);
+const source2$ = of('test').pipe(concatMap(() => signal))
+
+// This one only works with Symbol.asyncIterator
+async function test() {
+  for await (const value of signal) {
+    console.log(value)
+    if (value === 3) {
+      // it'll even stop watching here.
+      break;
+    }
+  }
+}
+Why should you consider a better interop change than fromObservable?
+
+fromObservable is a bad name. haha... Sorry, fromX idiomatically is going to mean "I'm creating an observable" to a lot of folks (and that's probably my fault, but whatever)
+If Angular's signal works with from, it'll be incredibly easy for people to use signals with Observable operators they're already familiar with.
+const observableToSignal = fromObservable; // fromObservable is a bad name
+
+import { r, concatMap, map, filter } from 'rxjs';
+
+const newSignal: Signal = r(
+  signal, // <-- A signal!
+  concatMap(fn), // <-- familiar RxJS operators!
+  map(fn2),
+  filter(fn3),
+  observableToSignal // <-- back to a signal!
+)
+Final suggestion:
+
+Maybe spend more time talking to your old friend, Ben. The RxJS team hasn't heard from y'all in years. I still love you, despite leaving in 2019. :)
+
+You must be logged in to vote
+12 replies
+@alxhub
+Comment options
+alxhub
+10 hours ago
+Collaborator
+@benlesh 👋
+
+I get your point about not wanting to catch errors from .next() - nice catch :)
+
+I don't think we're huge fans of fromObservable as a name either - definitely open to suggestions there.
+
+Re: Symbol.observable, .subscribe, AsyncIterable, etc. - on the team we've had some long conversations about the idea of making signals somehow "fit" into observable chains directly, without needing an explicit conversion like fromSignal. It's an interesting idea, but there's enough drawbacks that we decided not to go that route.
+
+The root problem is that of time. Signals don't have a time dimension. They're values, and they can notify interested consumers when those values are updated, but crucially, that notification does not include their new value. This is why we say they're values with change semantics, not streams of values. What you can do with that notification is schedule, sometime in the future, when you will read the signal and get its (potentially) new value.
+
+Converting from signal to observable means introducing this time dimension. The signal can notify (synchronously) when its value is updated, but reading the value is forbidden while that notification is in progress. You need to introduce some kind of scheduling/timing for when you're going to read the signal's updated value and dispatch it to the observable chain. It's this fundamental asynchronicity that gives signals their batching properties:
+
+const obs$ = fromSignal(counter);
+counter.set(1);
+counter.set(2);
+counter.set(3);
+
+// obs$ only emits 3, not 1 or 2.
+When should new values be dispatched then? There's a few options:
+
+Immediately following the signal write
+Most of the time you want batching, and want to observe the result of setting multiple signals. It'd also be surprising to users as the rest of the signal world executes with batched semantics.
+
+In a new microtask
+This would introduce additional rounds of change detection when tracking certain signals (e.g. input signals from zone components), which is likely to be a major use case. Care would also have to be taken to manage the zones of callbacks if multiple signals schedule together.
+
+Using effect() timing
+This is the current approach used by fromSignal. It has good timing characteristics, in that effects are executed by change detection and so have the same semantics as (for example) manually wrapping inputs with BehaviorSubjects. This avoids triggering multiple change detections.
+
+However, effects are necessarily tied to the running application (due to running within its change detection cycle). This would force calls to subscribe() or [Symbol.asyncIterator] to be made in injection contexts, which greatly limits any gains in flexibility when it comes to using them inside Observable chains.
+
+It also means that the whole effect pipeline isn't tree-shakable.
+
+@benlesh
+Comment options
+benlesh
+8 hours ago
+The root problem is that of time. Signals don't have a time dimension.
+
+Signals absolutely have a time dimension. It's hidden in the same paragraph:
+
+they can notify interested consumers when those values are updated, but crucially, that notification does not include their new value.
+
+The incorrect assumption here is that Observable (or any push-based type) must have a value. Observable<void> is a reasonable construct for "something happened, you figure it out".
+
+In the hierarchy of these sorts of "primitives" we have:
+
+Very primitive
+
+Most of these can exist in a language in a standalone way, and a building blocks of the next category
+
+Pull: Iterable<T>, or simple function returns () => T
+Push: Promise<T>, Observable<T>, and of course callbacks (callback: (value: T) => void) => void
+Less primitive
+
+Still generically useful, but composed from parts above.
+
+Pull then push: AsyncIterable<T>, or less common things like Iterable<Observable<T>>, Iterable<(callback: (value: T) => void) => void>
+Push then pull: Signals of any sort - push then pull (generally this is with some combination of the above)
+They have have their differences, but anywhere you see the word "push" or "notify", there's potential asynchrony.
+
+But, "AH HA!", you might say, "Signals can be read WITHOUT the PUSH!".
+
+This is true, but without the notification side, there's nothing special about Signals that would be worth the abstraction. Fundamentally, the thing that makes them "reactive" is that notification.
+
+But "OH HO!", you might say, "There's this concept that once notified, you want to schedule getting the values, that's where the 'time' comes in!". And you're not wrong. However, let's jump back to another set of principals around these things: The relationship between producer and consumer.
+
+Producers and Consumers
+Producer: The code that is creating or "producing" some value for the consumer.
+Consumer: The code that wants the value.
+And we can summarize the relationships thusly:
+
+Type	Producer Role	Consumer Role
+Observable	Connect some "subject" (in the observer pattern sense) to some observer/handler. Synchronously or asynchronously provide a values to the observer/handler. Communicate errors or completions via a similar mechanism.	Request that values (or even void) start being sent via "subscription", the handling of those values as they arrive, and possibly unsubscription in some (but not all) cases.
+Iterable	Synchronously produce a value and/or communicate completion or errors when the consumer requests the next value	Should request each value it requires. May opt to stop requesting values. In some cases, as with generators, may call return() in order to initialize finalizers.
+AsyncIterable	Responsible for providing consumers synchronously with a handle to a future value (or error). Often responsible for finalization when return() is called by the consumer (explicitly or implicitly)	Responsible for requesting the next value when it's ready for it, then handling that value when it arrives.
+Signal	Synchronously providing the latest value when requested. Possibly notifying consumers that the value has changed via some sort of subscription mechanism. (it's always there)	Reading the value from the Signal whenever it needs the value, and possibly subscribing to notifications for when the values has changed.
+We can do this for any combination of pull and pull type you can think of. They're all going to be basically the same with minor nuances. Iterator<Observable<T>>? Observable<() => T>? whatever. Some types make little sense, but they all work and they can all be converted bi-directionally in a finite number of ways.
+
+I don't want to get into a lot of "what abouts". There's a lot of ways to describe this, and while my descriptions above probably aren't perfect, I'd love if people can avoid "well actually"ing me and stay on topic.
+
+In the case of Signals, as used in a framework like Angular, the framework itself is the consumer of the signals. This means that the framework is responsible for deciding when it needs to synchronously read the value from the signal. It also means that the framework is responsible for deciding to subscribe, unsubscribe, or perhaps never subscribe to notifications of change.
+
+However, when Signals are "converted" to Observables, let's say. Then the observable becomes the "consumer", and the Signal is the "producer". That means that the observable itself must decide when it wants to read the value from the Signal. The simplest and most obvious behavior is no scheduling between notification of change and reading the value.
+
+Put even more plainly: Push, Pull, Pull/Push, Push/Pull types can ALL be converted to one another in obvious and direct ways. There's literally no reason we shouldn't have interop between everyone of these types.
+
+If there was a standard, agreed upon format for a Push/Pull type like Angular's Signals, MobX, Vue Refs, et al... RxJS would consume it appropriately.
+
+There's SO MUCH development time wasted around incompatible APIs when the reality is all of them can be broken down into a pretty small subset of 4-ish categories.
+
+If we wanted to dive further into the differences, there's going to be "whataboutisms" around things like "dependency graphs" etc. In every one of the types I mentioned above, there can (and often will) be a dependency graph that is either explicit or implicit.. In most Signal implementation's cases the dependency graph is implemented explicitly (but in Angular's case, those explicit relationships are implicitly defined via some shared state synchronous execution magic in the computed() calls). None the less, dependency graphs exist in an implicit sense when we talk about Observables, or XStream, or whatever... and those dependencies are defined through producer/consumer relationships. In RxJS's case, that's done with operators, where we're creating new observables that consuming other observables.
+
+Long story short: I'd implore you to reconsider your API here and implement a globally understood, common interop point. Symbol.asyncIterator is a standard, even. Symbol.observable is in wide use.
+
+I have more information we can discuss around this, but not publicly. Please DM me on Twitter or something and we should have some face-to-face time.
+
+@alxhub
+Comment options
+alxhub
+7 hours ago
+Collaborator
+The simplest and most obvious behavior is no scheduling between notification of change and reading the value.
+
+In Angular Signals, that would throw an internal assertion error.
+
+Reading signals is not "safe" during the change propagation phase, as while the change notification is propagating the graph is in an inconsistent state. Our signal APIs never expose this notification synchronously - the only guarantee effect gives you is that whenever one of its dependent signals notifies of a change, the effect will eventually rerun. It's up to the framework to process queued effects efficiently.
+
+So Observable<void> isn't an option for representing signal notifications, because it represents a special period of propagation in the signal graph that's not meant to be observable by the user and where reading from the graph will violate critical invariants. Converting signals to observables really does require some kind of scheduling.
+
+@benlesh
+Comment options
+benlesh
+5 hours ago
+That Observable<void> could fire at any time that you control. As a matter of consumption of the signal's values, you'd want that to run at the appropriate schedule. Sorry, I assumed that we were on the same page there.
+
+Some of what I was talking about above was talking about more portable signal implementations (like MobX, et al), but I suspect even there, the notification side would need to be scheduled to fire at the appropriate time. Clearly, no such implementation could read values until all dependencies that need to be changed have been notified or marked appropriately (depending on implementations).
+
+I'm not going to pretend that I've spent the same amount of time thinking about a Signal implementations as anyone else here... however, I do deeply care about interop and ease of use, and I stand by my suggestions above. The interop story here could be a lot better.
+
+In an ideal world, we'd have a uniform interop story for a generic Signal implementation that all similar parties could agree on and implement. (Like we do for asyncIterator, and even observable -- although that's more by community agreement than any standard)
+
+@benlesh
+Comment options
+benlesh
+5 hours ago
+Let me put this another way: There's literally no way that anything Angular's Signal is doing couldn't be converted to an Observable via any mechanism described above.
+
+Even if:
+
+It's only safe to read from the signal at specific points in time
+It's only safe to start watching a signal at a specific point in time
+It's only safe to destroy a watcher within a specific lifecycle
+Observable is lazy. You push values asynchronously. If it can be done with a function and callbacks, it can be done with observable. Even if that means needing to have the observable wait for the appropriate moments before it does certain things. In a lot of ways, this is what FRP scheduling is supposed to help handle. But this can be accomplished even without a RxJS "scheduler" (which is a construct we're aiming on improving very soon)

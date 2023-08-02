@@ -1,0 +1,167 @@
+
+https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API
+
+Web Audio Api
+--------------------------------------------------
+
+- audio context
+- audio nodes, which are linked together to form an 
+- audio routing graph. 
+
+Several sources — with different types of channel layout — are supported even within a single context. 
+This modular design provides the flexibility to create complex audio functions with dynamic effects.
+
+Audio nodes
+-----------
+Audio nodes are linked into chains and simple webs by their inputs and outputs. They typically start with one or more sources.
+
+Node types
+-----------
+- AudioBufferSourceNode and 
+- MediaElementAudioSourceNode and audio streams 
+- MediaStreamAudioSourceNode
+
+Sound files
+-------------
+sound files are just 
+- recordings of sound intensities themselves, which come in 
+  - from microphones or 
+  - electric instruments, 
+
+and get mixed down into a single, complicated wave
+
+A simple, typical workflow for web audio would look something like this:
+------------------------------------------------------------------------
+- Create audio context
+- Inside the context, create sources — such as <audio>, oscillator, stream
+- Create effects nodes, such as reverb, biquad filter, panner, compressor
+- Choose final destination of audio, for example your system speakers
+- Connect the sources up to the effects, and the effects to the destination.
+
+Sampling: continuos to digital
+------------------------------
+sampling means the conversion of a continuous signal to a discrete signal; or put another way, 
+a continuous sound wave, such as a band playing live, is converted to a sequence of samples 
+(a discrete-time signal) that allow a computer to handle the audio in distinct blocks.
+
+----------------------------------------------------------------------------
+const audio = new (window.AudioContext || window.webkitAudioContext)();
+const beeper = new Rx.Subject();
+beeper.sample(100).subscribe((key) => {
+
+    let oscillator = audio.createOscillator();
+    oscillator.connect(audio.destination);
+    oscillator.type = 'square';
+
+    oscillator.frequency.value = Math.pow(2, (key - 49) / 12) * 440;
+
+    oscillator.start();
+    oscillator.stop(audio.currentTime + 0.100);
+
+});
+-------------------------------------------------------------------------------
+
+envelope
+------------
+As you draw in the box, you’re creating an envelope — the shape of a sound changing over time. 
+In this section, you’ll learn how to use a synthesizer’s envelopes.
+
+modulator
+------------
+You don’t hear the envelope directly — the synth uses the envelope’s shape to determine how one or 
+more other aspects of the sound change over time. This process of using some part of the synthesizer 
+to affect other parts is called modulation. An envelope is an example of a modulator.
+
+modulation “shape”
+-------------------
+So far, our LFO has always moved smoothly back and forth between high and low. The specific shape of this motion — 
+a bit like a rolling hill — is referred to as a sine wave.
+
+But changing the LFO’s shape (or waveform) can completely change the character of the modulation.
+
+Try some of these shapes and listen to how they affect the pitch:
+
+SINE
+SAW
+SQUARE
+
+
+Most synthesizers have envelopes with four sections or stages, called 
+
+- attack, 
+- decay, 
+- sustain, and 
+- release. 
+
+You’ll often see these abbreviated as ADSR. Let’s look at how each stage works.
+
+Attack
+An envelope’s attack control determines how long it takes for the envelope to reach its peak at the start of a note.
+
+Decay and sustain
+An envelope’s decay control determines how long it takes for the envelope to decrease from its peak to the sustain level. 
+The envelope will then stay at the sustain level as long as the note is held.
+
+oscillator
+----------
+This repeating, back-and-forth change is called oscillation. Instead of envelopes, 
+synthesizers use oscillators to create this kind of modulation.
+
+
+frequency
+------------
+The number tells you the LFO’s frequency — how many times the oscillator 
+moves from its highest point to its lowest and back in one second.
+
+Frequency is measured in a unit called hertz (abbreviated Hz). A frequency of one hertz 
+means that a full oscillation (or cycle) happens once per second.
+
+pitch
+------------
+Here, the number tells you how much the pitch will change in semitones. 
+(A semitone is the difference in pitch between one key and the next on a piano.) 
+The highest value (48 st) means 48 semitones above and below the central pitch (or a total of eight octaves).
+
+synth sound
+------------
+How synths make sound
+So far we’ve learned a lot about how to change sounds on a synthesizer, but how does it make sound in the first place?
+
+Imagine a buzzing bee. The tone we hear is caused by the bee flapping its wings quickly.
+
+When the flapping is fast enough it will start to produce a low tone. In general, we start to hear 
+a tone when something oscillates faster than around 20 Hz.
+
+Most synths generate tones with audio oscillators. These are similar to the low-frequency oscillators used for modulation, 
+but they move much faster so they can produce tones directly.
+
+pulse width
+----------------
+Some oscillators produce a fixed shape, but other oscillators have controls that allow that shape to change.
+
+You can change the square oscillator’s timbre by changing its pulse width: the amount of time the oscillator spends in the high and low part of its cycle.
+
+DRAG
+Listen to how the sound changes as you drag to change the pulse width.
+
+The wave has its “fullest” sound at the center, where the waveform is symmetrical.
+
+filters
+--------
+Filters in the real world
+Imagine there’s music playing in the next room. If the music is loud enough, you can hear it through the wall, 
+but it usually sounds “muffled” or “dull.” This is because the wall is acting as a filter. 
+It blocks the high frequencies but lets the low frequencies through.
+
+Filters in synthesizers
+A filter behaves a bit like a wall or door. It lets some parts of the sound through and makes other parts quieter. 
+The filter below lets the lower parts of the sound through while blocking the higher parts.
+
+Dragging adjusts the cutoff frequency of the filter. In this case, the filter is removing high frequencies. 
+This type of filter is called a low-pass filter (it passes low frequencies and cuts high frequencies).
+
+More high frequencies make a sound “brighter.” Less high frequencies make it “darker.”
+
+As you adjust the cutoff frequency slowly, you’ll probably recognize this effect. The sound of a filter 
+being “swept” open or closed is a classic technique in many kinds of music.
+

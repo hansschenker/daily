@@ -1,0 +1,81 @@
+FRP = FP + R
+
+R: 
+- excel
+- signal (value changes over 
+
+Observable is
+ - functor : - value with context
+             - has map
+- monad is functor with bind
+
+
+
+
+type Direction = Up | Down | Left | Right
+
+Axis: type Axis = X | Y
+
+type Move = {step:number, axis:Axis, direction: Direction}
+
+type Point = {x:number , y: number}
+
+type Reducer<T> = (acc:T, curr:T) => T
+
+const add = (x:number, y:number) => x + y
+
+const nextSum<number>:Reducer<number> = (x,y) => x + y
+const nextSum<number>:Reducer<number> = add
+scan<number,number>(acc:number, curr:number= => add, 0)
+
+RxJs - Scan Operator , Accumulator - accumulates each value with a previous or initial value
+-------------------------------------------------------------------------------------------
+Applies an accumulator to each value from the source 
+
+- either via initial Value (startWith) or via a seed value (second argument of scan operator), 
+- or from the first value from the source.
+
+scan<V, A, S>(
+
+-----------------------------------------------
+(acc: V | A | S, value: V, index: number) => A,  seed?: S): 
+-----------------------------------------------  -----
+
+OperatorFunction<V, V | A>
+
+const point = (x:number,y:number) => Point
+
+
+
+Moves: 
+-------------------------------------------------------
+export const Moves = {
+  ArrowLeft: { step: -1, axis:X , direction: Left },        // 37
+  ArrowRight:{ step:  1, axis:X , direction: Right },       // 39
+  ArrowUp:   { step: -1, axis:Y , direction: Up},           // 38
+  ArrowDown: { step:  1, axis:Y , direction: Down},         // 40
+};
+
+
+// moves - from scan arrow keys - nextMove is a reducer
+-------------------------------------------------------
+const move$ = keyDown$
+  .pipe(
+    map((e: KeyboardEvent) => Moves[e.keyCode]),
+    filter(Boolean),
+    startWith(INITIAL_MOVE),
+    scan<Move,Move>(nextMove), // (accMove, currMove) => nextMove, initialMOVE  
+    distinctUntilChanged()
+  );
+
+// scan arrow keys - opposite move not allowed
+-------------------------------------------------------
+export function nextMove(previous:Move, next:Move):Move {
+  const isOpposite = (previous, next) =>
+    next.axis.X === -previous.axis.X ||
+    next.axis.Y === -previous.axis.Y;
+
+  return isOpposite(previous, next)
+    ? previous
+    : next;
+}

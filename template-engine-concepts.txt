@@ -1,0 +1,109 @@
+A template engine enables you to use static template files in your application. At runtime, the template engine 
+replaces variables in a template file with actual values, and transforms the template into an 
+HTML file sent to the client. This approach makes it easier to design an HTML page.
+
+Functions of the Template Engine (https://kb.justrelate.com/functions-of-the-template-engine-e7b5825aa87cdd26)
+---------------------------------------------------------------------------------------------------------------
+The Template Engine plays a central role on the live system. Its task is to export content it receives 
+from the Content Management Server, i. e. to generate web pages by applying layout files (templates).
+If the system includes the Verity Search Cartridge, its indexes are updated at the same time. 
+If installed, the Portal Manager is supplied with information about document access restrictions, channels and news.
+
+The Template Engine and the Search Engine Server work with a second directory hierarchy which is switched offline. 
+This hierarchy is switched live by the Template Engine at the command of the Content Manager. 
+Details about the directory hierarchies can be found in section The Directory Hierarchies.
+
+
+Import and Export
+The Template Engine works in phases. It alternately imports information about CMS file versions from the 
+Content Management Server (import phase) and generates web documents which are then switched online (export phase). 
+The export phase is divided into several subphases. The tasks of the individual phases are described in the following:
+
+import: The Template Engine receives so-called update records from the Content Manager, i. e. information about updated files. 
+If the system includes the Portal Manager, the Template Engine also receives update records relating to channels and news articles.
+
+importCB (from Version 6.7.2): The Template Engine executes a callback function that has access to the journal of 
+import actions and may trigger additional actions.
+
+export-init: The export requests resulting from the update records are processed and grouped. The grouping makes 
+it possible to have several slaves export files.
+
+export-fill: The export requests are executed which means that files are exported to the directory hierarchy switched offline. 
+This phase (and therefore the export procedure as a whole) is aborted, if a configurable number of files could 
+not be exported (system configuration entry tuning.export.acceptableFailures). If the system includes the Verity 
+Cartridge, the generated documents are indexed in parallel.
+
+export-fillCB: The Template Engine executes a callback function with which the updated directory hierarchy can be replicated as desired.
+
+export-switch: The updated directory hierarchy is switched live by swapping the targets of two symbolic links 
+pointing to the online and offline hierarchies.
+
+export-switchCB: The Template Engine executes another function with which the targets of the symbolic links can
+be swapped on other webserver systems as well.
+
+export-sync: The directory hierarchy now switched offline is updated.
+
+export-syncCB: This function allows you to update a remote directory hierarchy which is currently switched offline.
+
+export-sync-finished: The journal of changed files which the Template Engine creates and processes during the 
+export-fill and export-sync phases, respectively, is rotated. This ends the export phase, and the 
+Template Engine returns to the import phase.
+
+The Template Engine enters the export phase, when it receives a corresponding instruction from the Content 
+Management Server or one of the app publish or app export Tcl commands is executed. While app publish is used to 
+run a complete export and publication cycle or to resume an interrupted cycle, app export exports the files and 
+then returns to the import phase. Since the Template Engine exports files incrementally, app export can be used to 
+reduce the publication process (app publish) to swapping and synchronizing the directories, hence speeding it up. 
+Only errors should make it necessary to use these commands since the server normally receives equivalent instructions 
+as update records from the Content Manager by means of system jobs. Please refer to the Administration/Layout manual 
+for details about these jobs.
+
+If one of the export phases up to and including export-switch fails, the Template Engine returns to the import phase. 
+If, on the other hand, one of the next phases fails, the error state persists. In this case it is absolutely necessary t
+o remove the error cause first. Then the export procedure can be resumed with app publish, i. e. the directory hierarchies 
+can be swapped and the necessary synchronization processes 
+can be performed. If the cause of the error can not be eliminated (because, for example, a remote machine is unreachable), 
+the functions can be disabled, if necessary, by commenting out their code (it is then required to restart the server).
+
+The Callback Functions
+The Template Engine normally delivers content located on the system on which it is installed, meaning that it exports 
+the files into a local, offline directory hierarchy which is then switched online. Finally, the hierarchy previously 
+online is synchronized with the hierarchy which is currently online so that the next export is based on the current data.
+
+With distributed systems, these processes can, by means of callback functions, also be performed on one or more remote 
+The functions call the custom procedures described below. Please note that the functions need to indicate an 
+using the error command. If a callback function failed and is then called again, the result must be the same as if 
+it had been successful upon the first call. Callback functions must not modify the contents of the export directory tree.
+
+The callback functions need to be defined as server commands in a Tcl script file which must be placed in the
+ instance-specific script/cm/serverCmds directory.
+
+Phase importCB (from version 6.7.2), callback function importCallback
+
+As update records are being imported, the Template Engine creates a journal of the changes made to CMS files. 
+This callback function can process the journal and trigger additional actions depending on the file modifications.
+
+Phase export-fillCB, callback function exportFillCallback
+
+Prior to executing the callback function, the Template Engine finishes the export into the offline directory. 
+After execution, an equally complete offline directory hierarchy must exist on the remote machine. It must be 
+possible and safe to execute the callback function several times.
+
+Phase export-switchCB, callback function exportSwitchCallback
+
+The task of this function is to swap the online and offline directory hierarchies on a remote machine. When the 
+callback function is called, the local online directory hierarchy contains the new data and the offline hierarchy 
+contains the data previously online. Furthermore, the remote machine must be in the state in which it was after the 
+exportFillCallback was successfully executed, i. e. the offline hierarchy contains the new data, and the online 
+hierarchy the old data. After successful execution, there must exist an online and an offline directory hierarchy 
+which have been swapped so that their versions correspond to the respective versions on the local system. In the 
+case of an error, the remote directory hierarchies must not have been swapped.
+
+Phase export-syncCB, callback function exportSyncCallback
+
+The task of this callback is to update the offline hierarchy on the remote machine so that it corresponds to the 
+online hierarchy. Prior to calling the function, the Template Engine synchronizes the local hierarchies. 
+The callback function is only executed if the exportSwitchCallback was executed successfully, i. e. if the 
+current data is online and the outdated data is offline. After the function has been successfully executed, 
+both remote hierarchies must have the same versions.
+

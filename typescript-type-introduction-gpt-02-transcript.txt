@@ -1,0 +1,140 @@
+
+Search in video
+0:00
+now over time then we've added a bunch
+0:03
+of interesting uh new type Constructors
+0:06
+like index and index access types
+0:08
+um were added in in the in the last year
+0:11
+or so
+0:12
+um and this is the ability now to in the
+0:15
+type system reason over the names of the
+0:18
+properties of an object so here for
+0:20
+example I have a food type that has a
+0:23
+three properties and we have a a
+0:25
+built-in type operator called Kiev that
+0:28
+allows you to say what are the possible
+0:31
+names of properties of this type and
+0:34
+that'll give you a union type A or B or
+0:36
+C those are the possible string names of
+0:39
+those properties
+0:40
+we also have this thing we call index
+0:42
+access type where you say I'd like a
+0:45
+type that is the same as the type of the
+0:48
+a property in Foo so you can reach into
+0:50
+things that is an index access type
+0:53
+but remember again that this all
+0:55
+operates on sets so if you have a full
+0:58
+type and you index it with key of Foo
+1:00
+well that means you're now saying I it's
+1:03
+going to be a or b or c I don't know
+1:05
+which one it's going to be though
+1:07
+but if I index a foo with an A or B or C
+1:10
+what type would I get well you would get
+1:12
+a number or string or string array right
+1:15
+and so you see how we're operating on
+1:18
+sets all the time and we're trying to
+1:20
+figure out you know what what are these
+1:21
+things and this so you're going to ask
+1:23
+why is this useful
+1:24
+well
+1:26
+because there are lots of patterns in
+1:28
+JavaScript where you you pass around
+1:30
+objects and property names and then you
+1:34
+want to like fish out the property by
+1:36
+that name it's parameterized like for
+1:38
+example a get property method this is
+1:40
+how get and setting properties in react
+1:42
+works right but you need to now be able
+1:45
+to reason about that at a higher level
+1:47
+so you want to be able to say here's a
+1:50
+get property that takes some object T
+1:52
+and some key that is
+1:55
+whatever the permissible property names
+1:58
+of TR and it returns a t sub k
+2:02
+but we don't know what T and K are yet
+2:04
+but once we infer it then we would like
+2:07
+to type check it accordingly right
+2:09
+and so here if I declare myself a
+2:11
+variable of typhoon and some key
+2:15
+then if I say get property of Foo comma
+2:17
+a then we know
+2:19
+now we can infer type number for a and
+2:23
+we can infer an error or give an error
+2:25
+for because we know X is not a valid
+2:27
+property name and we could even say if
+2:30
+you give us something that is an A or a
+2:32
+b or c well then you're going to get a
+2:33
+number or string or a string array so
+2:36
+with these type operators we can now
+2:38
+actually start to give types to patterns
+2:41
+that occur in JavaScript libraries and
+2:43
+therefore we can finally give you better
+2:44
+statement completion and index

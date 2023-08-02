@@ -1,0 +1,108 @@
+const arrowKeys$ = fromEvent(document, 'keydown')
+  .pipe(
+    map(({key}) => key)
+    filter(isKeyAllowed)
+  )
+
+Custom operator: obs in obs out
+-------------------------------
+export const map = projectFn =>
+    source =>
+        new Observable(observer => {
+            return source.subscribe({
+                ...observer,
+                next: ev => observer.next(projectFn(ev))
+            })
+        })
+
+
+
+export function isKeyAllowed(key) {
+    const allowedKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
+    return allowedKeys.includes(key)
+}
+
+snakeMoves$.subscribe(render)
+
+const snakeMoves$ = arrowKeys$.pipe(
+        filter(isDirectionAllowed),
+        doAction(moveSnake),
+        doAction(shouldReverse),
+        doAction(shouldGrow),
+        doAction(shouldGrowBy2),
+    )
+
+Rules: rewrite in Given-When-Then
+-------
+Is direction allowed?
+--------------------
+Well a simple constraint is that two pieces of the snake can not be in the same position at the same time 
+but if your previous movement was ArrowRight and your next move is ArrowLeft that would cause you some trouble. 
+So we have to avoid going in opposite directions.
+
+Move snake
+-------------
+If the direction is allowed we should move our snake by one unit. The concepts above what a unit is and the space 
+from where it will move is entirely up to you. This action lets you take care of this particular feature.
+
+Should reverse?
+----------------
+What happen if the snake crash with a wall or the boundaries of the game? well in this case 
+I will provide an action to reverse snake direction but you maybe will come with a very different approached.
+
+Should grow?
+--------------
+In the case that the head of the snake occupies the same space than the food are, it will 
+elongate the snake size by one unit or the ones make sense to your application.
+
+Should growBy2?
+-----------------
+Really?, another action just for growing the snake size. Well in fact it comes pretty handy when you understand 
+that this action fits special purposes such as handling the collision with a different type of food and the effect 
+it produces over the snake size and the score of the game.
+
+snakeMoves$ is an stream what for every Arrow key stroke produces a change of the snake state
+
+connectStore(({snake}) => {
+        const {width, height} = gameArea
+        context.clearRect(0, 0, width, height)
+
+        drawOnCanvas(snake, tile)
+    })
+connectStore is just a function that subscribes to the changes on the store.
+
+food placing
+-----------
+const placingFood$ = irregularIntervals(5, 4, 10)
+        .pipe(
+            doAction(placeFood)
+        )
+
+function irregularIntervals(start, min, max) {
+    return new Observable(observer => {
+        const handler = () => {
+            observer.next()
+            clearTimeout(timeout)
+            timeout = setTimeout(handler, getRandomNumber(min, max) * 1000)
+        }
+
+        var timeout = setTimeout(handler, start * 1000)
+
+        return {
+            unsubscribe() {
+                clearTimeout(timeout)
+            }
+        }
+    })
+}
+
+snake hits itself
+------------------
+const fireWhenSnakeHitsItself$ = arrowKeys$
+        .pipe(
+            filter(snakeHittedItself),
+            doAction(() => {
+                start.innerText = 'Start Again'
+                reset()
+            })
+        )

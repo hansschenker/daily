@@ -1,0 +1,1366 @@
+for the ones finding new ways to ensure the job always gets done for the ones wearing many 
+hats for the ones who are
+
+Hands-On even from far away and the ones keeping business moving forward we are
+
+Granger offering professional grade Industrial Supplies Plus real-time product availability 
+and access to
+
+experts ready to answer your toughest questions call clickranger.com or just stop by Granger 
+for the ones who get it
+
+done
+
+[Music] hey everybody and welcome back to another episode of JavaScript jabber
+
+this week on our panel we have AJ O'Neill yeah yeah coming at you live from the standing desk 
+Dan shapir hey
+
+from very cold Tel Aviv Steve Edwards howdy from the Left Coast here in Portland I'm Charles 
+maxwood from top
+
+end devs and this week we have a special guest and that's Ryan izakarniato yeah that's carniado 
+I'm glad to be here yeah
+
+so somebody said something about solid.js and I was going to ask something about something something why
+
+why not use react but uh anyway why don't you introduce yourself real quick and then we can 
+uh we can dive into what
+
+solid is and why it exists and what it does sure yeah my name's Ryan carnado I
+
+created solo.js I I guess almost five years ago I've been just working on open
+
+source I asked I actually work at eBay I work on their open source framework
+
+there as well Marco JS so work on two JavaScript Frameworks and I'm kind of
+
+very passionate about benchmarking and performance and reactivity that's I just
+
+love fine grain reactivity which we'll probably talk about a bit today cool hey folks this is Charles 
+maxwood from top
+
+end devs and lately I've been working on actually building out top end devs if you're interested you 
+can go to
+
+topendabs.com podcast and you can actually hear a little bit more about my story about why I'm doing 
+what I'm doing
+
+with top end devs why I changed it from devchat.tv to top end devs but what I
+
+really want to get into is that I have decided that I'm going to build the platform that I always 
+wished I had with
+
+devchat.tv and I renamed it the top end devs because I want to give you the resources that are going 
+to help you to
+
+build the career that you want right so whether you want to be an influencer in Tech whether you want 
+to go and just max
+
+out your salary and then go live a lifestyle with your family your friends or just traveling the world 
+or whatever
+
+I want to give you the resources that are going to help you do that we're going to have career and 
+Leadership resources in there and we're going to be
+
+giving you content on a regular basis to help you level up and max out your career so go check it 
+out at top
+
+endeavs.com if you sign up before my birthday that's December th if you sign up before my birthday 
+you can get
+
+ off the lifetime of your subscription once again that's topend devs.com well
+
+yeah let's just dive in so maybe we'll have you back to talk about Marco JS but let's talk about solid 
+do you want to
+
+just give us an idea of what it is and maybe why we need yet another approach
+
+to some of these problems yeah for sure solo.js is a JavaScript framework that's
+
+built on the concept of fine grain reactivity you may have seen it before in things like mobx and even 
+View to a
+
+certain degree but uh its roots actually rely further back something uh an older
+
+framework called knockout.js I I was very enamored with Knockout JS it had
+
+its flaws it was kind of chaotic at times but what's what kind of happened over the years especially 
+with the mob
+
+acts is we've gone to a point where the execution was much more predictable and batching and we kind 
+of got a lot of the
+
+issues with it had kind of gone away but I've always liked that Paradigm because it was based off these 
+Primitives that
+
+you could build your uis from like you just have these simple things you know like uh observable computed 
+and then you
+
+just compose it on on top of each other and build your uis that way and I thought this was always 
+really really
+
+powerful um so to tell you the truth when react came out and did the class life cycles and stuff I 
+just wasn't really a fan we
+
+were used to these kind of more modular Behavior oriented uh approaches at my
+
+startup and over time knockout fellow the favor people stopped using as much
+
+and I was like okay well maybe I'll make we already kind of managed our own tooling a lot because my boss 
+when I
+
+first started although he moved on was the creator of knock back which was a backbone knockout Library so 
+I kind of
+
+got thrown into open source and I was maintaining these libraries to a certain degree and our our stack at 
+the startup
+
+and I was like okay well I want to improve it so I was like let's see if we can replace knockout with 
+something else
+
+and that's how I started working on this because I realized like we could you use the term reactivity in 
+the context of a
+
+UI in a framework now what does that exactly mean is it like a one-way data
+
+binding what do you mean exactly when you say using reactivity to compose a
+
+user interface yeah can I can I interject real quick before that if you're interested in knockout and what
+
+the history is there episode  of JavaScript jabber we talked to Steven Sanderson about it so and he's the guy
+
+that created that so anyway go ahead okay yeah mostly and and this is where the kind of more interesting 
+detail good
+
+is because it starts with these Primitives like three Primitives they're called different things in 
+different languages or different Frameworks but a
+
+reactive atom called a signal and then some kind of side effect creating thing we call them great effect 
+but it's
+
+sometimes called computed or auto run in different Frameworks and and then kind
+
+of derived pure derived value which we call memos again some of our naming seems to have a lot aligned 
+with react
+
+but generally speaking the the way solid works is the whole tree is actually made
+
+of just these Primitives there's no virtual Dom per se um it's more of like these kind of
+
+Expressions wrapping through closures around specific updates so like if you
+
+like you could if you're familiar with react you can you could almost picture use effect but in the 
+effect is just to
+
+update this one point in the Dom and with reactivity it's triggered off an
+
+auto tracking mechanism this those pieces are very similar and haven't changed from knockout at least on the
+
+API side like you have these signals or observables that are run or execute
+
+underneath the uh the effect or computed and whenever that effective computed
+
+runs it collects those it basically listens for for those getting access and
+
+the next time any of those values change it reruns that effect and basically with solid we've managed 
+to compose the whole
+
+the other changes as well but data binding is usually two-way what you describe seems to be more like 
+one way
+
+where it's not necessarily a database field it's just a valued memory but that when that updates that 
+triggers the the
+
+UI update but the UI doesn't automatically write the value back to
+
+that cell in memory or something like that is that correct as well yeah we generally do one one-way 
+binding a
+
+unidirectional flow so yes that sounds correct and that's basically the idea behind most reactive 
+Frameworks right is
+
+that you have one directional flow because that that's what makes it reactive if it's too directional 
+it wouldn't be reactive right it's the
+
+early Frameworks were all like reactive fragrance like knockout did use a lot of two-way binding it was 
+a deliberate
+
+choice and that that one inspired by react to not use two-way binding you still see two-way binding and 
+spelled
+
+and View and I guess angular although they've all moved to explicit two-way
+
+binding because they don't want it two-way binding can be dangerous um on in solid's case though we don't
+
+actually do two-way binding pretty much at all well let me try to Define this then because in my mind 
+when I think of
+
+two-way binding when I think of one-way binding what I think of is you have to actually call a function 
+or take an
+
+explicit action in order for data to change and when I think of two-way binding I think if I set a 
+property on
+
+an object there's some sort of magic some sort of quote-unquote observable or
+
+timer or something that that is manipulating the object in a weird non-javascripty way to to understand
+
+that something changed without you actually saying hey go go take an action on this is that the way that 
+we're
+
+speaking about it or how would you define it it's interesting because for me that's a gray area that's 
+one of the things that I did a lot with solid I
+
+blurred the lines on these sort of topics like solid does have that mutable underpinnings especially like 
+when we
+
+have proxy objects and stuff which some of our reactivity is based off of but I made a deliberate choice 
+to make all of
+
+those interfaces immutable so essentially everything's read write segregated so we don't actually update
+
+based off assignment everything is called from an explicit Setter but under the hood mechanically it is 
+closer to
+
+the libraries like you're describing it so it's like a philosophical choice so to sum it up basically 
+when we have a
+
+certain store of data which we'll talk about I guess in a bit how that actually what actually represents 
+that story data
+
+but we have some sort of storage of data when that data changes that triggers
+
+some code to execute you call it a sort of like use effect that code updates the
+
+user interface on the other hand if there's an event from the user interface I need to actually sort of 
+capture that
+
+event and use that event to actually trigger some sort of a Setter to
+
+explicitly change the data which could again obviously always trigger another
+
+effect to update the user user interface and probably does that would be more or
+
+less an accurate description yes yeah that's correct but the interesting thing is that I've looked at 
+some solid code
+
+ahead of this podcast and on the one hand it's obviously very reminiscent of
+
+react and I guess intentionally so I think it also uses jsx for example but
+
+on the other hand if there's one thing that I didn't actually see in the code it's use effects so either 
+I missed it
+
+or you somehow Implement use effect without actually implementing use effect
+
+yeah we do have it's called create effect um so we do have one you just you might
+
+not yeah I it I mean use effect isn't always used a lot in react like it's the
+
+escape hatch and people manually using Create effects fall into basically the same category of their 
+usage solid uses
+
+effects under the hood to do the rendering but like for the end user code where they'll need effects are 
+usually
+
+going to be like those like malt things like you know updating a title or something that needs to kind of 
+interact
+
+with the outside world and solid has Primitives for async which actually are
+
+one of the other big places where people use uh use effect so because we have a kind of a a special signal 
+that's
+
+designed to handle promises the patterns that people use When developing apps might not less necessarily 
+lend to using
+
+you know create effect all over the place they'll just go like pass this promise Us in and then they get 
+a signal so to speak so in other words it can be
+
+a very effective way of using the code right [Music]
+
+yeah what that means though so is that for example if sorry Chuck uh you go
+
+I've I've um well taken over the conversation we're talking a lot about how this works and I I think for 
+the
+
+most part if you've used something that uses this one-way data binding you're pretty familiar with the way 
+things flow
+
+through and it sounds like it uses some pretty familiar patterns my question is is how do any of these 
+differences
+
+actually materialize into a better experience for me or for my users or you
+
+know whatever right so is it faster is it easier to write is it prettier it's
+
+just hey you might like this approach better I mean what are we looking at yeah okay there's there's two 
+things
+
+here right if you're coming from a react perspective I do think reactivity appears on this to be simpler 
+like to
+
+write than uh hooks are there they don't have the same stale closure rules or the
+
+most rules there are trade-offs and you see this in view as well where and MOB Acts were like de-structuring 
+or
+
+accessing things outside of the context is can is something you have to be aware of because it matters where 
+things are
+
+accessed but generally speaking like you don't have news callback you don't have to use ref like there's 
+there's not this
+
+model of the whole component rebrunning so like in react often you have to be
+
+like oh what updated this time to cause the component to rerun for these these hooks to run and what state 
+am I in
+
+basically there's no never really need to have like a used graph for something that's not a Dom ref like 
+and that that
+
+kind of simplification really sort of helps a lot of people when they kind of approach it but like to be 
+fair spell
+
+and view have this characteristic as well solid similarity look to react makes this probably more impactful 
+for
+
+people because people assume that you needed a template these cell or you needed some other characteristics 
+to achieve this and um in our case we're
+
+saying no you don't you can you can use jsx and whatnot the the other side is
+
+solid is unique in a different sort of way it is the first to my well not the
+
+first but it's what like it's the first to gain popularity of a rendering technique based on this granularity 
+of
+
+change like even with you or spelled they still rerun components I mean it's
+
+Felton's compiler will split the code in half between a create and an update cycle but essentially 
+everything's like this component level granularity in
+
+terms of how things are rerun so like uh like something changes here and in
+
+stealth case the let belongs to the component so if you update that leadable then that component reruns 
+in View kind
+
+of the same idea they'll rerun their whole it won't ran their setup function they'll rerun the whole 
+template in
+
+solid um the the granularity applies all the way down right into the the jsx off to
+
+almost like a binding basis so like when you change one piece of data it literally can just like go okay 
+where
+
+are the places in the Dom that it updates and just go pinpoint and just run those things and to be fair 
+like
+
+knockout did this too but um we haven't seen this for uh quite some time and
+
+this does lead to a lot of performance on the update side but the trade-off obviously classically was the
+
+performance on The Creation side because you're creating a lot of these uh subscriptions and stuff so we we
+
+countered that by by being able to analyze the jsx and using the compiler
+
+in such a way that we don't have to like walk over the Dom to create the bindings or whatnot we can actually
+ generate
+
+um optimized Dom uh code at compile time where we know exactly where all the the
+
+kind of binding so to speak go in and this lets us separate how should I put
+
+the Dom creation code from The Binding code in a sense and then we can use optimal techniques like cloning 
+Dom
+
+nodes stuff you see in like lit to basically very quickly create the Dom and then pinpoint add the bindings 
+and
+
+as this turns out this approach isn't only more performant on update it's actually more performant on 
+creation so
+
+it's it's kind of that's where solid kind of got its first bit of attention was because in benchmarks it 
+basically
+
+just averaged out to have the considerably good performance across the board across different types of tests 
+one thing that sorry we're kind of
+
+diving into the OR diving into the details and I think it's worthwhile to mention that when you look at uh
+
+solid.js a code one of the things that struck me is again how similar it looks
+
+or feels to react I mean the other Frameworks that you mentioned that use a
+
+a different approach you mentioned the view or you mentioned uh svelte they
+
+obviously have a very different syntax than what people are most fronted
+
+developers are using Frameworks these days are in fact probably using react and and those Frameworks have 
+a very
+
+different look and feel on the other hand when I looked at solid it's deceptively similar and I'm
+
+intentionally using the word deceptively because then it kind of throws you for a
+
+loop because in a lot of ways it does behave code that looks similar behaves in a very different way and 
+I recently
+
+saw an example of use uh where the react of creating a timer uh component that
+
+updates a counter or timer like once a second and the react code obviously had
+
+the the set interval inside the use effect because the entire render function executes every time that the
+
+component needs to update and provides the jsx which then becomes a virtual Dom and does a Reconciliation 
+and whatnot
+
+whereas the solid code would look almost identical except that the set interval
+
+was directly in the quote unquote render function without being wrapped by a use
+
+effect which the the intuitive you know reaction of a react developer is hey
+
+this is going to execute every time we render but that's not the case because the function doesn't actually 
+execute
+
+every time you need to update the user interface you just the jsx provides you I guess with a one-time kind 
+of template
+
+into what you what the Dom needs to be but then you like drill into those parts
+
+of that generated Dom and update them directly without calling the render function again and again is that 
+a more
+
+or less accurate description yeah yeah that is correct and I think I understand like it's kind of funny I 
+don't know how
+
+to place it because the similarly to react is in some way it's intentional
+
+but I didn't expect things to get where we are now like I told you I started working on this in . and 
+there's a
+
+couple things that I really liked about react I like the unidirectional flow and
+
+because that solves a lot of the problems we had to knock out and I like jss because jsx is a primitive 
+it is a
+
+like you can just pick up and go here's a div and in our case it is a div like when you go a jsx device 
+element and
+
+literally go like const div equals jsx div you get a development back I liked that it was it was like this 
+granular
+
+piece that I could just use as I wanted to could pass it around most templating syntax can lock you in and 
+I was like no
+
+I just I just like that these are the building blocks I want to build my UI with so jsx is already well 
+typed it had
+
+it had all the characteristics it was already built it was spec I didn't have to do any work so as me as 
+one person by myself I was just like okay jsx is
+
+already here you know I don't have to invent the world again to do it so I was just going to jsx and 
+reactive printers
+
+and you got to understand at this time class components were a thing I didn't think anyone on the reacts 
+I would ever
+
+make something that that looked like hooks solid was already using hooks before hooks were a thing right 
+like
+
+that was just the pattern you use knockout they kind of look like hooks you know if you state observable 
+computed use memo uh or pure computed
+
+use memo computed use effect like there's a definite analog language wise uh between these things so I just 
+picked
+
+the things that were the smallest building blocks that I could do use to kind of build up to whatever 
+I wanted to
+
+build up to because that was my whole thing I'm big on these little pieces that can be adaptable to how 
+you want to
+
+use it and essentially react I mean I was fine on my own just doing that I
+
+entered some benchmarks around the end of  or I guess it was early . that's when I open sourced the library
+
+because I was like okay I want to like see how the performance is and can compete and open you know in 
+terms of
+
+performance I think I got something really good here and then a year later react released react Hooks and 
+that's when I was like oh my God they're
+
+actually they actually did it they're telling people to use patterns that look like this and then I I was 
+kind of excited some people were like oh I guess
+
+the job's done you know reacts now gone this way you don't need to worry about it I'm like no no no hooks 
+have a
+
+completely different execution there's something else uh the way they work there's hook rules there's a 
+whole different mental model I actually think
+
+this is something that people would be excited or interested in so that's when I started writing articles 
+that's when I
+
+started kind of getting out there and over time you know it's turned into this narrative about react versus 
+solid or
+
+whatever but it's funny because that's not really what I was trying to do my similarity react comes from 
+admiration
+
+in terms of principles and it just so happens that react kind of decided
+
+similar things are good too but that's going to be you know somewhat of an ego boost to see that other 
+people that are
+
+thinking hard about these problems are arriving at the solution maybe a little late to the party but 
+arriving at the solution in a similar way yeah I mean
+
+and the the thing is that that Drew attention and that's a bit how I ended up at eBay because the sort of
+
+experience I had on these granular patterns we realized could actually apply to hydration and a whole bunch 
+of stuff and I know that's a little bit off topic but essentially this way of
+
+thinking it was already there I didn't invent it it would just it was I just
+
+kind of whittled my way through you know all the different stuff and looked at the trade-offs and just 
+re-shifted everything and this is where we we ended
+
+up um I'm not going to say that there aren't like other considerations there that react doesn't have and 
+whatnot but
+
+it just it kind of just made sense hey folks I'm here with JD from raygun JD I
+
+I have to complain I mean when I started in Tech like  years ago one of the first things they taught me 
+was to use
+
+tail and graph to find the problem on a server and uh I I don't do that anymore
+
+um I have to say ray gun kind of solves that problem for me and picks up all the stuff that really is 
+relevant to the
+
+request or whatever that came in um I'm curious do you find that with
+
+kind of the ulsters like me a common thing or I think there's definitely better approaches to solving 
+some of
+
+these problems now you know I I always used to think of logging I heard this great analogy once it was 
+like you know
+
+logging tools are like coffins things go in there they very rarely come out you know and you feel safe 
+because it's
+
+there but there's so much noise understanding what's important and what's not takes a lot of effort
+
+um yeah and I mean you know often I talk about Reagan's crash reporting product as being like a black box 
+flight
+
+recorder like just tell me when the plane blows out up because I need to fix that really urgently you know 
+and that's
+
+been hugely valuable and you don't need to tell that that's true you know folks you should just go get ray 
+gun and then
+
+you can see when stuff breaks what matters you can get it at raygun.com
+
+they actually are doing the free trials go check it out but correct me if I'm wrong the the main reason 
+that hooks
+
+have all this these rules and I might even say overhead associated with them
+
+that seemingly does not exist in solid is that despite you calling solid a
+
+framework or Library it's more akin to an actual programming language no I mean
+
+if I if I understand solid correctly you kind of compile solid code is that not
+
+correct it sorts it's half and half and I think this is one of the places where I want to clarify because 
+there's always
+
+this jump people see react and they're like oh who cares it's just reacting they're like wait no this isn't 
+react then they go oh so we react like spell
+
+and svelt does compile everything into language but solid is actually mostly
+
+runtime and this is the part that isn't terribly obvious in that if you didn't use the jsx you can you can 
+still have
+
+it we have a tag template literal version and we have a hyperscript version on the like the ux is a little
+
+bit clunkier because you have to like wrap things and functions for them to execute lazily the jsx sort of 
+handles
+
+it for you automatically but essentially we're using runtime reactivity like mob
+
+X and the only thing that gets compiled is the jsx code like that's the thing it
+
+what and and in the case of components it's very simple compilation it literally is like look at this 
+component
+
+if it has a capital letter on it call it like a function like we don't really have functions like I was 
+sorry we don't
+
+really have components as my better way of playing it that's that's a performance thing that we might want 
+to talk about at some point but like
+
+essentially we just do a little bit of manipulation of the props to make sure that the reactive expressions 
+are wrapped we use Getters like object
+
+Getters on the props subject to make sure so we just look at it during compilation but the big part of the
+
+transform is actually that we do this off what I was talking about with the real Dom notes we extract out 
+the static
+
+part of the template and then we and which we clone and then we essentially walk the nodes that we need to 
+to attach
+
+the bindings then the compiler does that but like the reactivity like the use
+
+stuff it's all just run time which is kind of crazy because of this granular approach you kind of get the 
+same
+
+benefits as like something like felt or like react forget or these like Auto memoizing compilers but it's 
+so granular
+
+you don't actually need a compiler to achieve it so if let's see if I'm kind
+
+of trying to figure out in my head to see that I follow your explanation if I
+
+understand correctly what you're saying then effectively the render function for
+
+a component or whatever you choose to call it if I understand correctly kind of serves two purposes it's
+
+simultaneously the the thing that provides the initial tree that describes
+
+the Dom node that you construct the Dom tree that you construct and bind to or
+
+put placeholders in or whatever you want to call it and it's also kind of a one big used
+
+effects function in a sense that gets triggered or parts of it get triggered
+
+when they need to or something like that is that a correct explanation yeah I mean it's so much easier 
+when we're
+
+looking at the compiled code but the the whole thing is isn't it always
+
+it's just the way I can put this is components don't rerun the effects do so
+
+to speak and we it's like we have nested effects effects and effects and effects and those effects like 
+the nesting
+
+happens where there are conditional logic like Loops or control flow that's
+
+the only place where we need to actually do it if you think about if you have a component that's in a 
+component that's in a component
+
+um you don't in this kind of model you don't need to rerun any of those components unless there's some 
+kind of
+
+decision that needs to be made uh up higher up in the parent like show it or don't show it so like 
+essentially at
+
+that point where we make the decision whether to mount or unmount that component that's where there's 
+like the
+
+effect if it's top level like it never gets unmounted then we don't really need any kind of effect like 
+that top section
+
+will only ever run once and it does all the setup so essentially each function
+
+component it just breaks up essentially the as you said the Dom node creation and and it's just a list of 
+like these
+
+create effect calls basically and there might be components or other Dom nested
+
+inside so like and basically it's hard to say the state isn't tied to the components at all it so it can 
+be nested
+
+at every level and the way this all works is that our our effects like use
+
+effective sets have their cleanup logic uh wrapped into them so stuff that's created in the course of 
+that effect
+
+will be released when the fact uh is unmounted or reruns again but we know
+
+that it won't rerun again unless like you are say hiding or showing your
+
+component so like we basically build these helpers into solid um like some
+
+components that basically kind of memoize guard on those conditionals and
+
+then I mean again getting pretty technical but essentially stuff kind of just runs
+
+once and then only updates up to the nearest effect level that where a change
+
+happens whether that's just a binding or whether that's the you know some parents conditional or a 
+parent of a parent I
+
+know I'm not sure does that make sense at all yeah I think it does the one question one more question 
+that I do
+
+have though is where would you put shared State I mean if you've got a
+
+component level State it's pretty it seems pretty straightforward you would
+
+you know create it within that component but what about if you need to have some
+
+sort of a shared state that could impact various components in different ways how would you handle that
+
+there's a couple ways I mean the most basic level if you just if we just drew
+
+that counter component and this was in the article and you wanted to make two counters that choose the 
+same state you
+
+can literally just Hoist the signal out because it's not tied to a component it's updating it doesn't 
+trigger a
+
+component to re-render it triggers the effects to re-render like the things that subscribe to it you you 
+get Global
+
+States simply by just making a signal in a file and importing it like if like you could just like you 
+could basically make
+
+a file that's like my store or whatever and just go create signal and then import in  places and you've 
+got
+
+Global State I still push people usually towards using stuff like the contacts
+
+API there's nice about dependency injection kind of type patterns there is
+
+um benefits in like you know for SSR to keep things in the tree you know you don't want to like necessarily 
+have true
+
+globals so I think stuffly context API is still really beneficial we use patterns like that similar to react 
+the
+
+biggest difference again those in solid if you have a context API that has some reactive variables in it and 
+you you
+
+know subscribe to them all over the tree and by subscribe I mean literally just read them somewhere like use 
+them in the
+
+jsx OR in some kind of effect or something when you update them
+
+it doesn't cause the whole tree below them to re-render because like it doesn't need to it just looks and 
+goes
+
+okay what's subscribe to these things and update them pinpoint all over and I don't mean pinpoint update the 
+components like things like Joe time I
+
+mean literally pinpoint update the one place in the Dom that updates so shared state is really just the same 
+thing uh
+
+it's this is part of the the kind of mental shift is like all state is shared
+
+in a sense it's only uh the scope of which it's defined that ends up like giving it any kind of uh like 
+locality
+
+like it's just oh this was in a function so it you know or component sorry this was in a component so it 
+just lives as
+
+long as that components there because you know it's it's in that closure scope and when it's released it's 
+gone but
+
+generally speaking like all state and solid is global States so it's kind of like a State Library first and 
+View
+
+Library second yeah no one thing one one thing that look at considering the
+
+mobics analogy because I have used mobics with react and I'm thinking along along those lines one of the 
+challenges
+
+that can be that you can have when using more bits is that sometimes it does feel like magic and that magic 
+can be
+
+sometimes difficult to understand it's it's I recall two main issues one is
+
+when it's not it's not always trivial to understand why and when things are changing and the other thing 
+that could
+
+be challenging is if you somehow accidentally land yourself in a situation where you're trying to create
+
+a circular dependency yeah so how those two are still trying to deal with that
+
+yeah those two are still biggest part and this comes back to where we talked about we can't prevent it 
+completely but
+
+this is part of the reason why solid is big on unidirectional flow and immutable interfaces I found in my 
+experience too
+
+I use knockout for about a decade in production that often like while this can't completely alleviate those 
+kind of
+
+concerns often the problems are just Ray reads or stray writes and things that
+
+you just don't realize are actually impacting things and to solve that we
+
+have you know a couple mechanisms obviously you can have we still have the ability to set explicit 
+dependencies if you want like a reacts dependency rate
+
+we do have an API for that and the other part as I said is making it very clear what the setter is versus 
+what the like
+
+like it's not just an assignment it's not like the thing that always mobx has a strict mode for this and 
+actions and a
+
+different API to do this and but they didn't always is to make sure like because otherwise if you have 
+some big
+
+mutable proxy that you're passing through your tree and they reassign it to different props by the end you 
+might end up with some local variable that you
+
+assigned and then it goes you know oops that's reactive and and sends it all
+
+like throughout the tree and Causes Chaos we had stuff like that happen back in the day when um knockout 
+and well stuff like mobx has
+
+drastically improved that because now the the execution is predictable in terms of like the way it executes 
+in
+
+order in the way that it ensures that things only run once and it doesn't like Ping Pong it is still 
+possible to
+
+literally write an an infinite loop with enough Degrees of Separation we can catch it and go like hey 
+we think you
+
+wrote an infinite Loop but we can't really prevent the end user like we don't know until runtime that 
+they they
+
+have it in that infinite Loop but by putting these kind of guards ensuring like certain syntaxes like 
+h our
+
+Setters support react style Setters where you can pass where it passes in the previous value and then 
+you can
+
+update it like the like the incrementing examples you see where that way it doesn't register a read like 
+it's like
+
+if you register a read in an effect and then you write to it in the same effect you are creating an 
+infinite Loop because you updated it and then it runs
+
+again and then updated and it runs again so basically a lot of uh safeguards are kind of built in through 
+the API level
+
+and this is why I'm so big on being explicit I realized that a lot of the foot guns that we saw in these old
+
+reactive libraries which kind of caused them to go to favor react solved um a lot simply at an API level 
+like the
+
+design level being very explicit and this is why I'm I'm so big on this in terms of that there are different 
+ways
+
+to solve it right view solves it by having a v Dom like what's the worst thing that can happen you just kind 
+of feed it into a vdom and it'll it'll
+
+handle it you know if you do some stuff inefficiently yeah it'll just diff it and spelled compiler solves 
+it by being
+
+very localized like essentially you can't pass reactivity around I mean there's two-way binding but like 
+essentially like you have to use these
+
+like stores or like these different mechanisms to to do stuff and it's still very component based and you 
+can't you
+
+don't have the same amount of flexibility and portability so with solid I yeah I sometimes I seem like
+
+really strict it's because I understand how important it is that your code running is clear and for that 
+reason
+
+um you know the apis are designed in such a way that you know are are kind of
+
+explicit and sometimes people like oh why don't you like do the spelled thing or whatever and it's like 
+there's trade-offs there like I don't want to
+
+trade off composability I'm a big big fan of composability I and I'm not saying spell can't find other 
+patterns
+
+for that as well I'm just I'm just saying like there's certain things that I knew that I wanted to accomplish 
+and I
+
+saw in react an ability to constrain certain elements you know make them
+
+explicit that will actually alleviate a lot of the classic problems here so yeah if that makes sense I 
+think the API
+
+design was very intentional to make to safeguard against these things they were on the top of my mind 
+right from the
+
+beginning but that's why you know solid does look different than spells and View and whatnot and people 
+go like always
+
+like really confused by it on the reactive side because they just come to come to reactivity being like 
+yeah that's the easy part that's why you do
+
+it this way and I'm like no I use reactivity because I think it's a very powerful system it's very 
+
+very performant but we should be careful and we should design things in such a way where we know we we 
+are getting
+
+exactly what we desire to be so one thing that I'm wondering about so let's
+
+say somebody's listening to something like you know this sounds really cool maybe there are parts of this 
+they're thinking you know I want to dive into
+
+this a little bit more and understand some of the concepts that I'm not as familiar with but I really 
+want to try
+
+solid right I'm thinking I'm going to go put this on the next app or maybe I'm
+
+gonna go play with a smaller app and to play it somewhere where it's easy to deploy to and just see what
+ happens
+
+right how do I get started with a solid yeah the the best way right now is just
+
+our website is that we've been doing we put a lot of work into it and there's a  part tutorial this is 
+very inspired
+
+by svelte they have they have these great like online like small exercise tutorials which also kind of 
+double up
+
+as like a feature syntax kind of Carousel so to speak and we have that
+
+you can go in you can just try the different examples can get wrap your head a bit around what reactivity 
+is and
+
+what it means I we are different to react so I would I would definitely start there there's the full docs 
+up
+
+there as well but the tutorials just make it very easy step by step to seeing the pieces that are in solid 
+and how it
+
+works and from there we have uh and this is also in the get started guide on the
+
+web but we have we have like a bunch of templates um that you can just dig it down which make it makes 
+it very easy
+
+this is all mostly on the client-side single page app side of things we are
+
+working on a new starter uh called solid start that um we're nearing a Beta
+
+release for which is essentially a full stack SSR framework kind of similar to self kit or remix and 
+it's it has all
+
+like the file system routing the automatic SSR it supports streaming suspense on the server adapters for 
+like
+
+cloudflare work workers or netlify or like whatever deployment for cell like
+
+you want and in the future I imagine that's going to be one of the primary ways to get started but I think 
+I think
+
+really just start with the website the tutorials are really great resource also join the Discord honestly
+ that's that's
+
+where you find the help the community has been growing rapidly and uh it's the best place to ask questions 
+there's
+
+there's always people around to answer them so the Discord link is on the solid
+
+website yeah yeah and yeah GitHub Discord Reddit there the links are all right there okay find everything you
+
+need there so I have to ask this question for Steve are you ready Steve with uh bring it the drum but can you
+
+use solid with liquid templating [Music] all right I'm done I apologize I
+
+apologize on behalf of my fellow friends yeah I mean I'm [Applause]
+
+sorry I forgot to mention the studio audience but they appreciated that yeah I I was waiting for that uh 
+there's
+
+always this temptation there's a billion puns to be made off of solid but uh yes yes the thing is some people
+ know this
+
+because I've told the story a couple times it was solid didn't the name didn't come from like object-oriented
+
+programming or any kind of thing like that I was literally just in a punk rock band called Mr solid and and 
+later solid
+
+as we kind of progressed into a metal core band and essentially I just been going around by that moniker 
+forever I
+
+was just like Ryan solid you know kind of like Joey Ramone or something it was just like the tagged onto the 
+end of my
+
+name and that's my email and all that and I was like naming things as the hardest thing ever and I'm like 
+sitting
+
+there kind of trying to figure out like what I'm gonna call this framework and like not to mention ever go 
+on npm or
+
+like GitHub and trying to flip games to see if they're not taken and surprisingly I guess to be fair there's
+
+the Tim berners solid project which is for the like the next internet but other than that like there wasn't 
+anything on
+
+the solid JS side of things so I just I just kind of went with it and it helps I
+
+I get this great story behind it I even have the tattoo on my arm and oh wow
+
+yeah for those two since the audio podcast he's showing us the tattoo on his arm in the video yeah 
+unfortunately
+
+I was not able to discern it the video was a little too fuzzy for me so Ryan real quick what are the other 
+two hard
+
+things in computer science besides naming things well with the caching and caching It Off by one errors 
+right yeah
+
+yeah that's right those are the two hardest things yeah definitely so yeah it's been quite a
+
+journey to be fair High I wasn't ever expecting much of anything from it so you know when the comparisons 
+come up to
+
+react and whatnot I'm always kind of surprised and I feel like I have to sometimes step in myself and correct
+
+people there's been a lot of these narratives going around solid it's not react and it looks a bit like 
+react and
+
+it's intentional yet it's also wasn't it wasn't because I was trying to like
+
+undermine react it was just it just we you know we ended up where we ended up and I hope that when people 
+go and they
+
+look at it they can see past react which I know is a it's a big ask but like
+
+honestly like even today it's like I don't want to make a new templating language jsx it does like majority 
+of
+
+what I'd want I mean there might be a couple places that I'd prefer things to you know be improved maybe a 
+ittle bit
+
+more structured maybe a jsx would be good but the effort that goes into supporting types it goes into 
+templating
+
+syntax highlighting prettier like there's a whole world language server stuff like there's a whole world that
+
+you end up taking on when you go there and we use jsx in an unauthor unorthodox
+
+way so I can understand what how it's sort of not jsx in another sense it's not just hyperscript so it does 
+put us
+
+on this line because even though we get to leverage most of the tooling for the syntactual level like the 
+way things look like even typescript for jsx we get
+
+to completely leverage it's just a freebie we don't get to leverage other things like if a library decides 
+that we are agnostic because we target jsx it
+
+doesn't work with solid if a live if the Dom or sorry the web decides that they're going to add jsx to the 
+standard
+
+it's not going to help solid in fact it's probably going to make things worse because then there's going to 
+be a confusion there about like what the
+
+expectation is so I do see that I mean this has been very pragmatic approach to how it how I do things and 
+obviously
+
+with more people joining the community more ecosystem more work being done than
+
+it is more capable any more things that can be done but for the meanwhile I I like keeping things pragmatic 
+using what
+
+we have and just leveraging as it as much as we can cool all right well let's go ahead and move over to 
+picks hey
+
+folks if you love this podcast and would like to support the show or if you wish you could listen without 
+the sponsorship
+
+messages then you're in luck we're setting up new premium podcast feeds where you can get all of the episodes 
+released after Christmas  without
+
+the ads signing up will help us pay for editing and production and you can go sign up at devchat.tv premium 
+AJ do you
+
+want to start us off with picks oh let's see I've been pretty weak on the picks the last few episodes let 
+me see if I
+
+can let me see if I can return to my former glory of big pick status no no
+
+not really so what I would say is I've been watching they rebranded it six
+
+different times the latest iteration I think is called talks at Google I've been watching some of those and 
+I'm
+
+pretty satisfied side with the ones that have that have popped up I really like learning from people that 
+have lots of
+
+experience in the industry and that really consider software engineering as a craft not just not just 
+programming
+
+but actual engineering and I I just can't recommend enough that people watch
+
+those types of videos that are about the systematic approach to producing correct
+
+outcomes in code and you know as I always say Creeds of craftsmanship.com
+
+is where I'm curating those talks and articles and videos that I find so if you go to Creeds of 
+craftsmanship.com
+
+feel free to make a recommendation there and check out the the growing list I
+
+it's called Creeds of craftsmanship because it has also the various Creeds are right up at the top such 
+as the Zen
+
+of python the goproverbs dry wet and aha the agile Manifesto  Factor app laws
+
+of ux rails Doctrine pretty irrational testing trophy so yeah I'm I'm gonna
+
+pick that and then then if you want to follow I I'm doing live streams almost
+
+every day on on YouTube and twitch as cool age  and then the more structured
+
+content and the the better clips that come out of that because these live streams I I'm just doing code 
+right so
+
+I'm going four hours six hours a little short one might be two hours long but
+
+then I try to do some more structured content and I put that at underscore Beyond code on Twitter and 
+Beyond code
+
+bootcamp on on YouTube so if you're interested in that yeah check it out good deal Steve what are your 
+picks yes
+
+we've come to the high point of the podcast with the dad jokes unfortunately I already did some of those 
+yes but uh
+
+you can never have too many so recently you know I got a little parking ticket because I parked in the 
+wrong place and
+
+I I went to court for it and actually and entered a plea of insanity and I said your honor who in the 
+right mind
+
+would park in the passing Lane [Music] and uh Yesterday by accident at eight
+
+o'clock it was very time consuming especially when I went back for seconds [Music]
+
+and then along since AJ likes educating people did you know here's a little known fun fact before the Crowbar was
+
+invented crows simply drank at home [Music] thank you I think I see AJ cursing me
+
+out no I I wasn't I wasn't fast enough on the unmute oh okay because I'm using
+
+push to talk right now and I had another window selected by mistake and yeah but
+
+that one that was a good one that one goes uh you know a solid a I also I'll
+
+get it thank you thank you anyway those are my picks all right I'm gonna jump in with my picks I always 
+do a board game
+
+pick this one is a board and dice game it's mostly focused on the dice it's called dice Forge and 
+effectively what
+
+you do is you you have these dice that have different dice faces that you can
+
+snap into them and I'm trying to pull up Board Game Geek at the same time so
+
+anyway you roll the dice you get gold and you get these other tokens and then
+
+you can spend those tokens to get cards and then the cards give you Dice faces or you can just buy the 
+dice faces with
+
+gold and anyway we really have enjoyed playing it we have one of the expansions
+
+as well so I'm I don't remember if last time I talked about Board Game Geek but
+
+Board Game Geek is a website where they have a bunch of information about games it's basically a big 
+directory of board
+
+games and they have a weight I didn't realize this was a thing until last week but you can go and you 
+can look and see
+
+how the the game kind of ranks out with the other game so on a scale of one to five this one has a weight 
+of . so
+
+it's almost a two that means that it's not it's a little complicated but not terribly complicated I don't 
+
+picked it last time so I'm just gonna fill people in here for a minute just to give you an idea so 
+Monopoly for example
+
+if I look up Monopoly on here it has a weight of . so this is slightly more
+
+complex than Monopoly Settlers of Catan that's always a bad one to look up because they've got a million 
+versions
+
+of it Settlers of Catan or yeah they've got a bunch of different additions and stuff in here that was a 
+bad one to pick
+
+but if you do like Ticket to Ride For example that one's a . right so
+
+anyway you kind of get the idea some of the other games I've picked are like a three or three and a half 
+most of
+
+they're much more involved but this one is yeah it kind of clocks in there the
+
+the game I picked last time taco cat goat cheese pizza I think clocked in at about a one yeah it's a . 
+o just to
+
+give you an idea right so if you're not into the really involved games then you want to stay at the one or 
+two level so
+
+dice Forge is right in there if you really do like the more involved games then you can you know you can 
+rank up so
+
+like seven wonders is uh is the . right so that's probably on the edge of what most casual gamers are gonna 
+want
+
+to go for and then if you're way into board games you'll you'll pick other ones but board game Geeks also 
+has forums so some of the games that we've
+
+played that I've really enjoyed or that my family has enjoyed sometimes after they they publish the game 
+it becomes
+
+apparent that you can kind of read things two different ways right when you play a card or something like 
+that and
+
+so a lot of times they'll have clarifications in the in the rules and so as we play sometimes it's like 
+well
+
+does it mean this or doesn't mean that and you sometimes it seems that it'd be more obvious to be this than 
+that and
+
+sometimes it's just not that way and so then we'll go look on board game e can see if they have a 
+clarifications thread on the Forum so anyway I'm gonna pick
+
+boardgamegeek.com and dice Forge and then a few other things that I'm going
+
+to pick I kind of had something come up this last week that has forced me to
+
+speed up my timeline as far as getting dates out for the Summits so if you're
+
+looking for JS remote conf which is an online conference for JavaScript that I did I did one in . 
+I've done like
+
+four or five of them in other years and I've done them for other communities as well for some of the 
+other shows that we
+
+have um effectively what happened was David heinemeyer Hanson got Uninvited to do
+
+the keynote at railsconf because some of the organizers don't like some of the things he says online 
+frankly I think as
+
+long as he comes and sticks to rails I don't see a big problem with having him speak so he's going to 
+be doing our
+
+rails Summit in August but we'll get together people who love coach come and
+
+do code right so anyway so keep an eye out for that go to top endefs.com conferences to find out more 
+about the
+
+other conferences we have coming I am going to do a JavaScript one probably May or June and then we're 
+probably
+
+going to be doing a like a react one because we have a react podcast I'm planning to do at least one for 
+each
+
+show that we have that we're currently producing and anyway so keep an eye out for that we'll also be doing 
+one for
+
+View and one for angular because we have shows on those as well devops you get the idea but yeah the rails 
+one will be
+
+in August so anyway those are my picks Ryan what picks do you have yeah I'm always looking at new technology 
+in
+
+terms of the website on JavaScript JavaScript Frameworks I'm always bleeding edge every time a new framework 
+enters a benchmark I'm like there
+
+looking at what they're doing and I I'm always interested and this week I have a new framework was came out 
+and it's a
+
+different kind it's kind of more of on the alpine.js and petite view side where the idea is it's to enhance 
+existing
+
+HTML essentially uh that maybe was built with a rails back end or something else
+
+which makes a little different it's called corset actually corset.dev and what it does is it uses CSS style 
+syntax
+
+to add data binding on top of existing HTML really interesting take I've never seen anyone do this before it
+'s and if
+
+you just want to see something a little bit different way of approaching it I think I think it'd be cool to 
+kind of check out and take a look around it's
+it's very novel approach in a slightly different space than you know like you know our full like declarative 
+libraries
+
+but it seems very capable so I think that's something kind of worth looking at yeah I think that's how I got
+ off the
+
+top of my head I'm I'm very much immersed between working on Frameworks at work and uh in my free time so 
+that's
+
+my pick for here today I just dropped that cool one more question if people want to connect with you or see 
+what's
+
+going on with you and the things you're working on where do they find all that stuff best way to connect with 
+me is on
+
+um yeah Discord seriously just come to the go to our site click the Discord link join join us on Discord 
+I'm almost
+
+always available send me a message you know ask a question in the chat introduce yourself because that's 
+your
+
+best bet otherwise you follow me on Twitter at Ryan carnado and yeah I would
+
+say that those are the best ways all right cool well we'll go ahead and wrap it up here and until next time 
+folks max
+
+out adios bandwidth for this segment is provided by cashfly the world's fastest CDN deliver your content 
+fast with cash
+
+live visit c-a-c-h-e-f-l-y.com to learn more
+
+
+Primitives that
+:0
+you could build your uis from like you just have these simple things you know like uh observable computed 
+and then you
+:
+just compose it on on top of each other and build your uis that way and I thought this was always really 
+really
+:0
+powerful um so to tell you the truth when react came out and did the class life cycles and stuff I just 
+wasn't really a fan we
+:0
+were used to these kind of more modular Behavior oriented uh approaches at my
+:
+startup and over time knockout fellow the favor people stopped using as much
+:
+and I was like okay well maybe I'll make we already kind of managed our own tooling a lot because my boss 
+when I
+:
+first started although he moved on was the creator of knock back which was a backbone knockout Library so I 
+kind of
+:
+got thrown into open source and I was maintaining these libraries to a certain degree and our our stack at 
+the startup
+:
+and I was like okay well I want to improve it so I was like let's see if we can replace knockout with 
+something else
+:
+and that's how I started working on this because I realized like we could you use the term reactivity in 
+the context of a
+:
+UI in a framework now what does that exactly mean is it like a one-way data
+:
+binding what do you mean exactly when you say using reactivity to compose a
+:0
+user interface yeah can I can I interject real quick before that if you're interested in knockout and what
+:0
+the history is there episode  of JavaScript jabber we talked to Steven Sanderson about it so and he's the guy
+:
+that created that so anyway go ahead okay yeah mostly and and this is where the kind of more interesting detail good
+:0
+is because it starts with these Primitives like three Primitives they're called different things in different 
+languages or different Frameworks but a
+:
+reactive atom called a signal and then some kind of side effect creating thing we call them great effect but 
+it's
+:
+sometimes called computed or auto run in different Frameworks and and then kind
+:
+of derived pure derived value which we call memos again some of our naming seems to have a lot aligned with
+ react
+

@@ -1,0 +1,36 @@
+const AuthApiActions = createActionGroup({
+	source: 'Auth API',
+	events: {
+                  'Login Success': props<{ user: UserModel }>(),
+		  'Login Failure': props<{ error: AuthError }>(),
+	},
+});
+
+The goal of createActionGroup is to reduce the amount of code required to write 
+a group of actions with complete type safety. 
+The above would be equivalent to doing something like this:
+
+interface LoginSuccessAction {
+	type: '[Auth API] Login Success',
+	user: UserModel;
+}
+
+interface LoginFailureAction {
+	type: '[Auth API] Login Failure',
+	error: AuthError;
+}
+
+export const AuthApiActions = {
+	loginSuccess(user: UserModel): LoginSuccessAction {
+		return {
+			type: '[Auth API] Login Success',
+			user,
+		}
+	},
+	loginFailure(error: AuthError): LoginFailureAction {
+		return {
+			type: '[Auth API] Login Failure'
+			error,
+		}
+	},
+};

@@ -1,0 +1,122 @@
+Json Server
+----------------
+angular package.json scripts
+-------------------------------------
+"start": "ng serve --proxy-config proxy.conf.json",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "server":"json-server --watch api/db.json"
+
+paginate
+-----------
+- _page , page number: 		/posts?_page=7
+- _limit, page size		/posts?_limit=5
+
+sort
+-------------
+- _sort, sort field:		/posts?_sort=likes&_order=asc
+- _order, sort direction
+
+range
+--------
+- start, start number		/posts?_start=20&_end=30 (start inclusive, end exclusive, like js slice)
+- end, end number		/posts?_start=10&_limit=50
+- _limit, 
+
+
+operators: _gte or _lte or _ne or _like
+-------------------------
+- _gte, 			/posts?_likes_gte=3&likes_lte8
+
+- _ne,  to exclude a value	/posts?id_ne=1
+ 
+- _like RegExp 			/posts?title_like=server
+
+full  text search
+------------------
+- q				/posts?q=internet
+
+Relationships
+---------------------
+To include children resources, add _embed
+
+- _embed, add child		/posts?_embed=comments
+				/posts/1?_embed=comments
+_expand, add parent		/comments?_expand=post
+				/comments/1?_expand=post
+
+To get or create nested resources (by default one level, add custom routes for more)
+
+GET  /posts/1/comments
+POST /posts/1/comments
+
+$ json-server --watch db.json --port 3004
+$ json-server http://example.com/file.json
+$ json-server http://jsonplaceholder.typicode.com/db
+
+random data Tip use modules like Faker, Casual, Chance or JSON Schema Faker.
+-------------
+// index.js
+module.exports = () => {
+  const data = { users: [] }
+  // Create 1000 users
+  for (let i = 0; i < 1000; i++) {
+    data.users.push({ id: i, name: `user${i}` })
+  }
+  return data
+}
+
+custom routes
+--------------
+Add custom routes
+Create a routes.json file. Pay attention to start every route with /.
+
+{
+  "/api/*": "/$1",
+  "/:resource/:id/show": "/:resource/:id",
+  "/posts/:category": "/posts?category=:category",
+  "/articles\\?id=:id": "/posts/:id"
+}
+Start JSON Server with --routes option.
+
+json-server db.json --routes routes.json
+
+/api/posts # → /posts
+/api/posts/1  # → /posts/1
+/posts/1/show # → /posts/1
+/posts/javascript # → /posts?category=javascript
+/articles?id=1 # → /posts/1
+
+cli usage
+------------
+json-server [options] <source>
+
+Options:
+  --config, -c       Path to config file           [default: "json-server.json"]
+  --port, -p         Set port                                    [default: 3000]
+  --host, -H         Set host                             [default: "localhost"]
+  --watch, -w        Watch file(s)                                     [boolean]
+  --routes, -r       Path to routes file
+  --middlewares, -m  Paths to middleware files                           [array]
+  --static, -s       Set static files directory
+  --read-only, --ro  Allow only GET requests                           [boolean]
+  --no-cors, --nc    Disable Cross-Origin Resource Sharing             [boolean]
+  --no-gzip, --ng    Disable GZIP Content-Encoding                     [boolean]
+  --snapshots, -S    Set snapshots directory                      [default: "."]
+  --delay, -d        Add delay to responses (ms)
+  --id, -i           Set database id property (e.g. _id)         [default: "id"]
+  --foreignKeySuffix, --fks  Set foreign key suffix, (e.g. _id as in post_id)
+                                                                 [default: "Id"]
+  --quiet, -q        Suppress log messages from output                 [boolean]
+  --help, -h         Show help                                         [boolean]
+  --version, -v      Show version number                               [boolean]
+
+Examples:
+  json-server db.json
+  json-server file.js
+  json-server http://example.com/db.json
+
+https://github.com/typicode/json-server
+
+

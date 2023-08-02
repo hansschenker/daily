@@ -1,0 +1,18 @@
+function useSubscriptioncT>(
+  source$: Observable<T>,
+  nextHandler: (value: T) => void,
+  errorHandler: (err: any) => void
+{
+  useEffect(() => {
+    if (source$) {
+        const subs = source$.subscribe({
+        next: nextHandler,
+        error: errorHandler,
+      });
+
+      return () => { 
+         subs.unsubscribe();
+
+      };
+  }
+}

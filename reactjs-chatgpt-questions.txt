@@ -1,0 +1,186 @@
+What are React Hooks
+--------------------------------------------------
+JavaScript React Hooks are a feature introduced in React 16.8 that allow you to add state 
+and other React features to functional components. Prior to hooks, state and lifecycle 
+methods could only be added to class components, but with hooks, you can add state and 
+perform other actions with functional components.
+
+React Hooks make it possible to write your components as simple, pure functions that 
+take data as input and return an element tree as output. The main advantage of this 
+approach is that it eliminates the need for classes and simplifies the code for your 
+components, making them more readable and easier to maintain.
+
+Some of the most commonly used React Hooks include useState, useEffect, useContext, 
+and useReducer. The useState Hook lets you add state to your functional components, 
+while the useEffect Hook lets you perform side effects, such as data fetching or updating 
+the document title. The useContext Hook makes it easy to access and update context from 
+within your functional components, and the useReducer Hook lets you manage complex state 
+updates with a reducer function.
+
+React Hooks have become very popular since their introduction, and they are now widely 
+used in many React applications.
+
+How is a React Hook implemented?
+--------------------------------------------
+A React Hook is implemented as a JavaScript function that follows a specific naming convention and can 
+be used within a React functional component. The naming convention for a Hook is to start the function 
+name with "use" (for example, useState, useEffect, useContext, etc.).
+
+Here's an example of how the useState Hook is implemented:
+
+javascript
+Copy code
+import React, { useState } from 'react';
+
+function Example() {
+  // Declare a state variable and a function to update it
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+    </div>
+  );
+}
+In the example above, we import the useState Hook from the react package and then use it within our 
+functional component Example. The useState Hook is called with an initial state value (in this case, 0) 
+and returns an array with two elements: the current state value and a function that can be used to update 
+the state. We use destructuring assignment to extract these two elements into separate variables, count and setCount.
+
+In the component's render method, we use the count variable to display the number of times the button has 
+been clicked, and we use the setCount function to update the count state when the button is clicked.
+
+This is just one example of how a React Hook can be implemented, but there are many other Hooks available 
+and each one is used in a similar way. The key thing to remember is that React Hooks are just functions, 
+and they can be composed together to create custom Hooks that meet the specific needs of your application.
+
+A React Hook is implemented as a JavaScript function that follows a specific naming convention and can be 
+used within a React functional component. The naming convention for a Hook is to start the function name 
+with "use" (for example, useState, useEffect, useContext, etc.).
+
+Here's an example of how the useState Hook is implemented:
+
+javascript
+Copy code
+import React, { useState } from 'react';
+
+function Example() {
+  // Declare a state variable and a function to update it
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+    </div>
+  );
+}
+In the example above, we import the useState Hook from the react package and then use it within our functional 
+component Example. The useState Hook is called with an initial state value (in this case, 0) and returns an array 
+with two elements: the current state value and a function that can be used to update the state. We use destructuring 
+assignment to extract these two elements into separate variables, count and setCount.
+
+In the component's render method, we use the count variable to display the number of times the button has been clicked, 
+and we use the setCount function to update the count state when the button is clicked.
+
+This is just one example of how a React Hook can be implemented, but there are many other Hooks available and each one 
+is used in a similar way. The key thing to remember is that React Hooks are just functions, and they can be composed 
+together to create custom Hooks that meet the specific needs of your application
+
+How can you compose React Hooks
+--------------------------------
+React Hooks can be composed to create custom Hooks that encapsulate complex logic and state management. This allows 
+you to abstract away repetitive or complex code into reusable components that can be shared across your application.
+
+Here's an example of how you can create a custom Hook that encapsulates data fetching logic:
+
+scss
+Copy code
+import { useState, useEffect } from 'react';
+
+function useFetchData(url) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        setData(data);
+        setLoading(false);
+      } catch (error) {
+        setError(error);
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [url]);
+
+  return { data, error, loading };
+}
+In the example above, we create a custom Hook called useFetchData that takes a url argument and returns an object 
+with three properties: data, error, and loading. The Hook uses the useState Hook to manage the state of these 
+three properties, and the useEffect Hook to perform the data fetching logic.
+
+We can then use this custom Hook in our components like this:
+
+javascript
+Copy code
+function DataComponent() {
+  const { data, error, loading } = useFetchData('https://api.example.com/data');
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>An error occurred: {error.message}</p>;
+  }
+
+  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+}
+In the component above, we use the useFetchData Hook to fetch data from an API and display the results in 
+a preformatted JSON string. The component uses the loading and error properties to display a loading message and an 
+error message, respectively, while the data is being fetched.
+
+This is just one example of how you can compose React Hooks to create custom Hooks that meet the specific needs of your application. 
+By abstracting away complex logic into reusable components, you can make your code more maintainable and easier to understand.
+
+How to type a React Hook with Typescript
+------------------------------------------
+A React Hook is a special function that allows you to "hook" into the React state and lifecycle features 
+from functional components. Here's an example of how to type a simple useState hook with TypeScript:
+
+
+import React, { useState } from 'react';
+
+interface Props {
+  initialCount: number;
+}
+
+const Counter: React.FC<Props> = ({ initialCount }) => {
+  const [count, setCount] = useState<number>(initialCount);
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <button onClick={() => setCount(count - 1)}>Decrement</button>
+    </div>
+  );
+};
+
+export default Counter;
+In this example, we define an interface Props that describes the shape of the props object passed to the component. 
+Then, in the implementation of the component, we use the useState hook, passing it the initial count as an argument
+ and providing a type annotation for the type of the state value (number in this case). Finally, we use the state 
+value and the setter function returned by useState to render and update the count.
+

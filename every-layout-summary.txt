@@ -1,0 +1,209 @@
+axioms:
+Unless your design is founded on axioms, your output will be inconsistent and malformed
+
+Establish as system wide measure: system-wide, using typographic measure
+
+your axioms must determine your layout
+
+sample: content should not exceed 80 characters (rule: max-width: 60ch)
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+figcaption {
+  max-width: 60ch;
+}
+---------------------
+* {
+  max-width: 60ch;
+}
+html,
+body,
+div,
+header,
+nav,
+main,
+footer {
+  max-width: none;
+}
+------------------------------------------
+measure,	content - padding - margin = box-sizing: border-box
+
+Designing for the web is designing without seeing (you do not know in what context
+your component will be rendered.
+
+Not individual elements
+------------------------
+Do not style individual elements
+
+Style types of elements
+-------------------------
+Instead, we should ask ourselves which type of elements the rule
+might apply to
+
+global styles (axioms should be captured in global styles)
+layout styles
+compent styles
+utility styles
+
+ch unit reacts to font-size change , px does not
+
+global defaults require global selectors
+
+Exception based approach
+---------------------------------------
+An exception-based approach to CSS lets us do of our styling
+with the of our code.
+
+ITCSS (Inverted Triangle CSS: Global -> Specific
+-------------------------------------
+In Harry
+Roberts’ thesis, specificity (how
+specific selectors are) is inversely proportional to reach (how many
+elements they should affect).
+
+Custom Properties for Global Values
+------------------------------------
+global rule
+------------------------------
+:root {
+  --measure: 60ch;
+}
+* {
+  max-width: var(--measure);
+}
+---------------
+the exceptions for the rule 60ch are:
+----------------------------------
+html,
+body,
+div,
+header,
+nav,
+main,
+footer {
+ max-width: none; /* no limit on these boxes - design for the exceptions */
+}
+
+max-width
+--------------------------------------
+max-width overrides width, but min-width overrides max-width
+<length>
+Defines the max-width as an absolute value.
+
+<percentage>
+Defines the max-width as a percentage of the containing block's width.
+
+none
+No limit on the size of the box.
+
+max-content
+The intrinsic preferred max-width.
+
+min-content
+The intrinsic minimum max-width.
+
+fit-content(<length-percentage>)
+Uses the fit-content formula with the available space replaced by the specified argument, 
+
+i.e. min(max-content, max(min-content, argument)).
+
+
+Stack Flow Primitive
+------------------------
+The trick is to style the context, not the individual element(s). The
+layout primitive injects margin between elements via their
+common parent:
+
+Stack
+margin at imediate precessor
+-----------------------------
+.stack > * + * {
+  margin-top: 1.5rem;
+}
+
+at any nested level
+-----------------------
+.stack * + * { 
+  margin-top: 1.5rem;
+}
+This can be useful where you want to affect elements at any nesting
+level, while retaining white space regularity.
+
+
+
+Using the adjacent sibling combinator ( ), is only applied
+where the element is preceded by another element: no “left over”
+margin. The universal (or ) selector ( ) ensures any and all
+elements are affected. The key construct is known as the
+.
++ margin-top
+wildcard *
+* + * ow
+
+If the body text is (i.e. ⨉ the ), it makes
+sense to use as the ratio for your modular scale. Read the
+, and how it can be expressed with
+CSS custom properties.
+
+A
+more deliberate approach would be to set up alternative non￾recursive with different margin values, and nest them where
+suitable. Consider the following.
+Stacks
+----------------------------
+[class^='stack'] > * {
+  margin-top: 0;
+margin-bottom: 0;
+}
+.stack-large > * + * {
+  margin-top: 3rem;
+}
+.stack-small > * + * {
+  margin-top: 0.5rem;
+}
+
+The first declaration block’s selector resets the vertical margin for all
+-like elements (by matching class values that with
+). Importantly, only the vertical margins are reset, because the
+stack only vertical margin, and we don't want it to reach
+outside its remit. You may not need this reset if a universal reset for
+is already in place
+
+
+The Box Layout Primitive
+----------------------------------------------
+The 's role within this layout system is to take care of any styles
+that can be considered intrinsic to individual elements; styles which
+are not dictated, inherited, or inferred from the meta-layouts to
+which an individual element may be subjected. But which styles are
+these? It feels like they could be innumerable.
+Box
+Not necessarily. While some approaches to CSS give you the power
+(or the , depending on your perspective) to apply any and every
+style to an individual element, there are plenty of styles that do not
+need to be written in this piecemeal way. Styles like ,
+, and can all be or otherwise applied
+globally, as set out in . And they should,
+because setting these styles on a case-by-case basis is redundant.
+pain
+font-family
+color line-height inherited
+
+Global and local styling
+-----------------------
+:root {
+  font-family: sans-serif;
+}
+
+.box {
+/* ↓ Not needed because the style is inherited */
+/* font-family: sans-serif; */
+}
+
+We are building dynamic,
+responsive wireframes. Aesthetics can be applied on top
+

@@ -1,0 +1,160 @@
+What is functional reactive programming
+-------------------------------------------------------------------------------
+
+I've seen for how functional programming can kind of
+maintain a functional style while
+solving a wider range of problems
+
+what is functional reactive programming
+--------------------------------------
+
+- functional reactive programming is an abstraction
+
+
+- whenever we're operating with an abstraction that is not very concrete
+  that doesn't directly map to ideas we're already used to we really need to
+  present answers to two different questions:
+
+- 1 what the abstraction is we need to make sure we
+  define it and kind of give enough detail
+
+- it's very hard to link the details of what an abstraction is 
+  to how you would actually use it or 
+  how you think about it
+
+- abstractions are just formal rules but humans can't
+  necessarily think about formal rules
+  without some additional context some
+  understanding of what the abstraction is
+
+
+- why we care about it
+
+- start for understanding functional reactive programming is trying to
+  understand what the components mean so
+-when we say reactive 
+
+
+- reactive programming means two important things
+  - it means writing programs that can change over time 
+  - we care about the behavior of our program over time
+  - we care about how it interacts over time
+
+- this means that our program might need
+  - to respond to events happening elsewhere in our code
+  - it might actually need to respond to things happening outside of the program
+
+- functional reactive programming is an abstraction for thinking about and
+  programming with time 
+
+- what does functional mean
+  functional reactive programming is a functional style abstraction 
+  it's built along the same ideas that we like in functional programming 
+  and in particular there's three points that to me define what it
+  means for an abstraction to be functional style the 
+
+- first one is that
+-------------------
+  it is explicit all of these salient parts of the abstraction are defined in the
+  abstraction itself 
+
+  we don't implicitly use features of the language to capture
+  the core parts of the abstraction in the case of functional reactive programming
+
+- this means is that time and how things change over time are fundamental
+  parts of the abstraction provided by FRP
+
+- where in imperative programming we often work with time implicitly by relying on
+  the current state of mutable variables
+
+- functional programming makes connections between data in our code more explicit 
+  functional reactive programming makes time and how things change over time more explicit
+
+- second one is step is 
+----------------------
+ that functional reactive programming is designed to be very composable 
+ 
+ we want to be able to write our reactive systems out of small reusable parts 
+ and we want to be able to build up a larger system out of these small parts and then 
+ finally functional reactive programming needs to be declarative 
+ 
+ we want some way to talk about behavior over time 
+ some way to talk about reactive programming without needing to specify all of the details of
+ how it actually gets executed of how it
+
+-the goal of the abstraction is to abstract over a lot of
+ the specific details of what happens in the actual machine 
+ how we get information from the outside world 
+ how the information over time travels back and forth between our program
+
+
+
+FRP is with twospecific kinds of abstractions: Behaviors and Events
+---------------------------------------------------------------------
+
+- behaviors and a behavior of an int for example represents an int that can
+  continuously change over time so specific examples that are easily expressed as behaviors are 
+  - things like the mouth position so the mouse always has a position and 
+    while we're moving the position might be changing continuously 
+
+- when somebody presses a key or when somebody clicks the mouse button
+  there's a discrete event that we want to call a mouse click or a key press so in
+  in order to capture that effectively we want to have these 
+
+- two different abstractions 
+  - one the behavior for continuously changing things and then
+  - one a stream of events for things that change at points in time 
+
+- behaviors let us directly express the state in our program as it changes over time 
+- events let us describe a specific events that happen at specific points and the
+
+- combination of these two lets us more explicitly express exactly the kind of
+  logic that we would write in an imperative setting using mutable state
+  and callbacks and event handlers so
+
+- we want a simple model for what a behavior and an event is
+
+
+- behaviors are functions from time to a value and then 
+- events being discrete points on time you can just think of
+  them as a list of time value pairs
+
+
+simple pattern we have some: Input -> Combinators -> Output
+-------------------------------------------------------------------
+
+Inputs
+--------------
+- series of inputs these are events and behaviors that correspond to external
+  things in our world then the library
+
+Combinatorss
+--------------
+- gives us a wide set of combinators that let us combine events and behaviors we
+  use those Combinator's to build up a model of the domain that we're working on 
+
+Output
+-----------------
+- we can take that model and we feed it to the real world 
+  via a set of output functions
+
+Domain
+-----------------
+- inputs and the outputs are gonna vary depending on the domain in which we're programming our reactive
+  code
+
+- the events the behaviors and the Combinator's can actually be the
+  same regardless of what we're doing
+
+- UI specific
+- robotics
+- sensors so we can take a camera and
+- games
+- simulation
+- animation
+- audio
+
+- FRP and practice is that it makes itcvery easy to add new features without 
+  significantly changing existing code so
+
+

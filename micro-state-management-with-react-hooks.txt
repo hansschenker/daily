@@ -1,0 +1,420 @@
+State in Frontend:
+------------------
+
+- form state (user input)
+- server state
+- navigation state (router state)
+- user input
+- animation state
+- request state
+
+
+with React hooks is to handle various states with special solutions for them
+
+base state management requirements, to do things such as these:
+			
+				Read state
+				Update state
+				Render with state
+
+
+But there may be additional requirements to do other things, such as these:
+			
+				Optimize re-renders
+				Interact with other systems
+				Async support
+				Derived state
+				Simple syntax; and so on
+
+
+The useState hook is a basic function to create a local state
+
+The useReducer hook can create a local state too and is often used as a replacement for useState
+
+The useEffect hook allows us to run logic outside the React render process
+
+it allows us to implement features that work with the React component lifecycle.
+
+The reason why React hooks are novel is that they allow you to extract logic out of UI components
+
+State separate from UI
+----------------------
+
+// logic
+const useCount = () => {
+			  const [count, setCount] = useState(0);
+			  return [count, setCount];
+			};
+
+// UI
+			const Component = () => {
+			  const [count, setCount] = useCount();
+			  return (
+			    <div>
+			      {count}
+			      <button onClick={() => setCount((c) => c + 1)}>
+			        +1
+			      </button>
+			    </div>
+			  );
+			};
+
+
+We now have a clearer name—useCount.
+				Component is independent of the implementation of useCount.
+
+
+The following code snippet provides an example of what a React component would look like with a global state: 
+			const Component1 = () => {
+			  const [state, setState] = useGlobalState();
+			  return (
+			    <div>
+			      {JSON.stringify(state)}
+			    </div>
+			  );
+			};
+
+Implementing global states in React is not a trivial task. 
+This is mostly because React is based on the component model. 
+In the component model, locality is important,
+meaning a component should be isolated and should be reusable
+
+A component is a reusable piece of a unit, like a function. If you define a component, 
+it can be used many times. This is only possible if a component definition is self-contained. 
+If a component depends on something outside, it may not be reusable because its behavior can 
+be inconsistent. Technically, a component itself should not depend on a global state.
+
+global state solutions
+---------------------
+•Chapter 3, Sharing Component State with Context
+•Chapter 4, Sharing Module State with Subscription
+•Chapter 5, Sharing Component State with Context and Subscription
+
+
+useState hook:
+---------------
+
+manage single value
+----------------
+Updating the state value with a value
+One way to update the state value with useState is by providing a new value.
+You can pass a new value to the function returned by useState 
+that will eventually replace the state value with the new value. 
+
+
+const Component = () => {
+			  const [state, setState] = useState({ count: 0 });
+			  return (
+			    <div>
+			      {state.count}
+			      <button onClick={() => setState({ count: 1 })}>
+			        Set Count to 1
+			      </button>
+			    </div>
+			  );
+			};
+
+manage single value with update function
+-----------------------------------------
+Updating the state value with a function
+			Another way to update the state with useState is called a function update.
+			Here is a counter example showing updating with a function:
+
+			const Component = () => {
+			  const [count, setCount] = useState(0);
+			  return (
+			    <div>
+			      {count}
+			      <button onClick={() => setCount((c) => c + 1)}>
+			        Increment Count
+			      </button>
+			    </div>
+			  );
+			};
+
+useState hook with lazy evaluation (fn will only run with initializaton)
+-------------------------------------------------------------------------
+Lazy initialization
+			useState can receive a function for initialization that will be evaluated only in the first render. We can do something like this:
+			const init = () => 0;
+			const Component = () => {
+			  const [count, setCount] = useState(init);
+			  return (
+			    <div>
+			      {count}
+			      <button onClick={() => setCount((c) => c + 1)}>
+			        Increment Count
+			      </button>
+			    </div>
+			  );
+			};
+
+The init function is evaluated lazily, not evaluated before calling useState; in other words, it's invoked just once on mount
+
+Using useReducer
+------------------			
+In this section, we will learn how to use useReducer. 
+We will learn about its typical usage, how to bail out, its usage with primitive values, and lazy initialization
+
+
+A reducer is helpful for complex states. Here's a simple example a with two-property object:
+
+			const reducer = (state, action) => {
+			  switch (action.type) {
+			    case 'INCREMENT':
+			      return { ...state, count: state.count + 1 };
+			    case 'SET_TEXT':
+			      return { ...state, text: action.text };
+			    default:
+			      throw new Error('unknown action type');
+			  }
+			};
+
+			const Component = () => {
+			  const [state, dispatch] = useReducer(
+			    reducer,
+			    { count: 0, text: 'hi' },
+			  );
+			  return (
+			    <div>
+			      {state.count}
+			      <button
+			        onClick={() => dispatch({ type: 'INCREMENT' })}
+			      >
+			        Increment count
+
+			const reducer = (state, action) => {
+			  switch (action.type) {
+			    case 'INCREMENT':
+			      return { ...state, count: state.count + 1 };
+			    case 'SET_TEXT':
+			      return { ...state, text: action.text };
+			    default:
+			      throw new Error('unknown action type');
+			  }
+			};
+
+			const Component = () => {
+			  const [state, dispatch] = useReducer(
+			    reducer,
+			    { count: 0, text: 'hi' },
+			  );
+			  return (
+			    <div>
+			      {state.count}
+			      <button
+			        onClick={() => dispatch({ type: 'INCREMENT' })}
+			      >
+			        Increment count
+			      </button>
+			      <input
+			        value={state.text}
+			        onChange={(e) =>
+			          dispatch({ type: 'SET_TEXT', text: e.target.value })}
+			      />
+			    </div>
+			  );
+			};
+
+useReducer allows us to define a reducer function in advance by taking the defined reducer function and initial state in parameters. 
+The benefit of defining a reducer function outside the hook is being able to separate code and testability. Because the reducer 
+function is a pure function, it's easier to test its behavior.
+
+useContext
+----------
+const createStateContext = (
+			  useValue: (init) => State,
+			) => {
+			  const StateContext = createContext(null);
+			  const StateProvider = ({
+			    initialValue,
+			    children,
+			  }) => (
+			    <StateContext.Provider value={useValue(initialValue)}>
+			      {children}
+
+			Factory pattern with a custom hook
+			------------------------------------
+			Creating a custom hook and a provider component is a somewhat repetitive task; however, we can create a function that does the task.
+			The following example shows createStateContext as a concrete implementation. 
+
+
+
+
+
+			The createStateContext function takes a useValue custom hook that takes an initial value and returns a state. 
+			If you use useState, it returns a tuple of the state value and the setState function. The createStateContext 
+			function returns a tuple of a provider component and a custom hook to get the state. 
+			This is the pattern we learned in the previous sections.
+
+			In addition, this provides a new feature; the provider component accepts an optional initialValue 
+			prop that is passed into useValue. This allows you to set the initial value of the state at runtime 
+			instead of defining an initial value at creation. The code is illustrated in the following snippet:
+*****************************************************
+			const createStateContext = (
+			  useValue: (init) => State,
+			) => {
+			  const StateContext = createContext(null);
+			  const StateProvider = ({
+			    initialValue,
+			    children,
+			  }) => (
+			    <StateContext.Provider value={useValue(initialValue)}>
+			      {children}
+			    </StateContext.Provider>
+			  );
+			  const useContextState = () => {
+			    const value = useContext(StateContext);
+			    if (value === null) throw new Error("Provider
+			      missing");
+			    return value;
+			  };
+			  return [StateProvider, useContextState] as const;
+			};
+
+
+
+Now, let's see how to use createStateContext. We define a custom hook, useNumberState; 
+it takes an optional init parameter. We then invoke useState with init, as follows:
+
+			const useNumberState = (init) => useState(init || 0);
+
+			By passing useNumberState to createStateContext, we can create as many 
+state Contexts as we want; we created two sets of them. The types of useCount1 and useCount2 
+are inferred from useNumberState. The code is illustrated in the following snippet:
+
+			const [Count1Provider, useCount1] =
+			  createStateContext(useNumberState);
+			const [Count2Provider, useCount2] =
+			  createStateContext(useNumberState);
+			Notice we avoid the repetitive definition thanks to createStateContext.
+
+
+module state
+-----------------------------------------------------------------------------------------------------------------------
+export const createContainer = (initialState) => {
+			  let state = initialState;
+			  const getState = () => state;
+			  const setState = (nextState) => {
+			    state = typeof nextState === 'function'
+			      ? nextState(state) : nextState;
+			  };
+			  return { getState, setState };
+
+			Notice that we added export to these functions to express that they are expected to be used outside the module.
+			In React, we often update a state with functions. Let's modify setState to allow a function update:
+
+			export const setState = (nextState) => {
+			  state = typeof nextState === 'function'
+			    ? nextState(state) : nextState;
+			};
+			You can use a function update as follows:
+			setState((prevState) => ({
+			  ...prevState,
+			  count: prevState.count + 1
+			}));
+
+			Instead of defining a module state directly, we can create a function for creating a container 
+			that includes state and some access functions.
+			The following is the concrete implementation of such a function:
+
+			export const createContainer = (initialState) => {
+			  let state = initialState;
+			  const getState = () => state;
+			  const setState = (nextState) => {
+			    state = typeof nextState === 'function'
+			      ? nextState(state) : nextState;
+			  };
+			  return { getState, setState };
+			};
+			You can use this as follows:
+			import { createContainer } from '...';
+			const { getState, setState } = createContainer({
+			  count: 0
+			});
+
+
+Now, let's implement a module state with a Subscription. We'll call it store, which holds the state value and the subscribe method, in addition to the getState and setState methods that we described in the Exploring the module state section. A createStore is a function to create store with an initial state value:
+			type Store<T> = {
+			  getState: () => T;
+
+			Subscription is a way to get notified of things such as updates. A typical use of a Subscription would look like the following: 
+			const unsubscribe = store.subscribe(() => {
+			  console.log('store is updated');
+			});
+			Here, we assume a store variable to have a subscribe method that takes a callback function and returns an unsubscribe function.
+			In this case, the expected behavior is that whenever store is updated, the callback function is invoked and it shows the console log.
+			Now, let's implement a module state with a Subscription. We'll call it store, which holds the state value and the subscribe method, 
+			in addition to the getState and setState methods that we described in the Exploring the module state section. 
+			A createStore is a function to create store with an initial state value:
+
+			type Store<T> = {
+			  getState: () => T;
+			  setState: (action: T | ((prev: T) => T)) => void;
+			  subscribe: (callback: () => void) => () => void;
+			};
+			 
+			const createStore = <T extends unknown>(
+			  initialState: T
+			): Store<T> => {
+			  let state = initialState;
+			  const callbacks = new Set<() => void>();
+			  const getState = () => state;
+			  const setState = (nextState: T | ((prev: T) => T)) => {
+			    state =
+			      typeof nextState === "function"
+			        ? (nextState as (prev: T) => T)(state)
+			        : nextState;
+			    callbacks.forEach((callback) => callback());
+			  };
+			  const subscribe = (callback: () => void) => {
+			    callbacks.add(callback);
+			    return () => {
+			      callbacks.delete(callback);
+			    };
+			  };
+			  return { getState, setState, subscribe };
+			}; 
+
+
+Compared with the createContainer function that we implemented in the Exploring the module state section, 
+createStore has the subscribe method and the setState method, which invokes callbacks.
+			We use createStore as follows:
+
+			import { createStore } from '...';
+			const store = createStore({ count: 0 });
+			console.log(store.getState());
+			store.setState({ count: 1 });
+			store.subscribe(...);
+
+			The store variable holds state in it, and the entire store variable can be seen as a module state.
+			Next up is the use of the store variable in React.
+			We define a new hook, useStore, which will return a tuple of the store state value and its update function:
+
+			const useStore = (store) => {
+			  const [state, setState] = useState(store.getState());
+			  useEffect(() => {
+			    const unsubscribe = store.subscribe(() => {
+			      setState(store.getState());
+			    });
+			    setState(store.getState()); // [1]
+			    return unsubscribe;
+			  }, [store]);
+			  return [state, store.setState];
+			};
+
+const Component1 = () => {                            
+			  const [state, setState] = useStore(store);  
+			  const inc = () => {
+			    setState((prev) => ({                       
+			      ...prev,
+			      count: prev.count + 1,                   
+			    }));                    
+			  };              
+			  return (                       
+			    <div>
+			      {state.count} <button onClick={inc}>+1</button>
+			    </div>                                 
+			  );               
+			};
+

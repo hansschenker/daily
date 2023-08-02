@@ -1,0 +1,96 @@
+store
+init
+-------------------------------------------------------------------------------
+export interface MoviesState {
+  movies: Movie[];
+}
+
+@Injectable()
+export class MoviesStore extends ComponentStore<MoviesState> {
+  
+  constructor(private readonly moviesService: MoviesService) {
+    super({movies: Movie[], moviesPerPage: 10, currentPageIndex: 0});
+
+
+ // add movie to cstore
+
+  // Each new call of getMovie(id) pushed that id into movieId$ stream.
+  readonly getMovie = this.effect((movieId$: Observable<string>) => {
+    return movieId$.pipe(
+      // ?? Handle race condition with the proper choice of the flattening operator.
+      switchMap((id) => this.moviesService.fetchMovie(id).pipe(
+        //?? Act on the result within inner pipe.
+        tap({
+          next: (movie) => this.addMovie(movie),
+          error: (e) => this.logError(e),
+        }),
+        // ?? Handle potential error within inner pipe.
+        catchError(() => EMPTY),
+      ))
+    );
+  })
+
+  readonly addMovie = this.updater((state, movie: Movie) => ({
+    movies: [...state.movies, movie],
+  }));
+
+  selectMovie(movieId: string) {
+    return this.select((state) => state.movies.find(m => m.id === movieId));
+  }
+
+  // reading movies cstore
+  readonly movies$: Observable<Movie[]> = this.select(state => state.movies);
+  
+  // combining selectors
+  readonly movies$ = this.select(state => state.movies);
+  readonly userPreferredMovieIds$ = this.select(state => state.userPreferredMoviesIds);
+  readonly userPreferredMovies$ = this.select(
+    movies$,
+    userPreferredMovieIds$,
+    (movies, ids) => movies.filter(id => ids.includes(id)),
+  );
+  // debouncing selectors
+    this.effect((moviePageData$: Observable<{moviesPerPage: number, currentPageIndex: number}>) => {
+      return moviePageData$.pipe(
+        concatMap(({moviesPerPage, currentPageIndex}) => 
+            this.movieService.loadMovies(moviesPerPage, currentPageIndex)).pipe(
+              tap(results => this.updateMovieResults(results)),
+            ),
+      );
+    })(fetchMoviesData$) // ?? effect is triggered whenever debounced data is changed
+  }
+
+  // Updates how many movies per page should be displayed
+  readonly updateMoviesPerPage = this.updater((state, moviesPerPage: number) => ({
+    ...state,
+    moviesPerPage, // updates with new value
+  }));
+
+  // Updates which page of movies that the user is currently on
+  readonly updateCurrentPageIndex = this.updater((state, currentPageIndex: number) => ({
+    ...state,
+    currentPageIndex, // updates with new page index
+  }));
+
+  readonly moviesPerPage$ = this.select(state => state.moviesPerPage);
+
+  readonly currentPageIndex$ = this.select(state => state.currentPageIndex);
+
+  private readonly fetchMoviesData$ = this.select(
+    moviesPerPage$,
+    currentPageIndex$,
+    (moviesPerPage, currentPageIndex) => ({moviesPerPage, currentPageIndex}),
+    {debounce: true}, // ?? setting this selector to debounce
+    );
+}
+
+
+  } // constructor
+
+} // class
+
+
+
+
+  
+

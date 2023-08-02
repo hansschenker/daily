@@ -1,0 +1,109 @@
+sander elias - serialize an js object
+--------------
+const serialize = o =>
+  Object.keys(o).reduce(
+    (search, k) => (search += `${k}=${encodeURIComponent(o[k])}&`),
+    ''
+  );
+----------------
+
+In the below code fragment, first accumulator is assigned the 
+
+- initial value 0. 
+- currentValue is the element of the numbersArr array being processed. 
+- currentValue is added to the accumulator. 
+- return value is provided as an argument in the next call to the callback function.
+
+sum numbers
+----------------
+const nbrs = [67, 90, 100, 37, 60];
+
+const sum = 
+  nbrs.reduce( (acc, curr) => acc + curr), 0);
+
+sum student marks:
+----------------
+const students = [
+    { subject: 'Maths', marks: 78 },
+    { subject: 'Physics', marks: 80 },
+    { subject: 'Chemistry', marks: 93 }
+];
+
+const studentMarksSum = students.reduce((acc, curr) => acc + curr.marks, 0);
+
+flatten array of arrays
+-------------------
+const arrs = [ [1,2], [3,4], [5,6], [7,8] , [9,10] ];
+
+const arr = arrs.reduce((acc, curr) => acc.concat(curr));
+
+grouping object properties
+-------------------------
+const ss = [
+    {subject: 'Physics', marks: 41},
+    {subject: 'Chemistry', marks: 59},
+    {subject: 'Pure Maths', marks: 36},
+    {subject: 'Applied Maths', marks: 90},
+    {subject: 'English', marks: 64},
+];
+
+let initial = {
+    passes: [], 
+    fails: []
+}
+
+const passesAndFails = 
+  ss.reduce((acc, current) => { (curr.marks>=50) ? acc.passes.push(curr) : acc.fails.push(curr); return acc;}, initial);
+
+remove duplicates in array
+-----------------------------
+const arrWitDups = [1, 5, 6, 5, 7, 1, 6, 8, 9, 7];
+
+const arrNoDups = arrWithDups.reduce((acc, curr) => {
+    if(!acc.includes(curr)) acc.push(curr);
+    return acc;
+}, []);
+
+
+create a function pipeline
+------------------------------
+let calcs = [increment, double, decrement];
+const result = calcs.reduce((total, func) => func(total), 8);
+
+
+map Object to Array
+--------------------------------------
+const colors = ['green', 'red', 'red', 'yellow', 'red', 'yellow', 'green', 'green'];
+
+var colorsMap = colors.reduce((prev, color) => {
+  if (prev[color] >= 1) prev[color]++;
+  else prev[color] = 1;
+  return prev;
+}, {});
+
+console.log(colorsMap);
+// result: {green: 3, red: 3, yellow: 2}
+
+find number which appears odd times
+-----------------------------------
+const findOdd = (xs) => xs.reduce((a, b) => a ^ b);
+
+console.log(findOdd([1, 2, 2, 1])); // Result: 0
+console.log(findOdd([1, 2, 2, 1, 2, 3, 3])); // Result: 2
+console.log(findOdd([1, 2, 3, 4])); // Result: 4 -> Not working
+
+reduceRight
+---------------------------
+const prices = [5.99, 2.99, 3.99, 11.59];
+
+let sum = prices.reduceRight(function (preVal, currVal) {
+    console.log('prev: ', preVal, 'curr: ', currVal);
+    return prev + curr;
+});
+console.log(sum);
+
+// prev:  11.59 curr:  3.99
+// prev:  15.58 curr:  2.99
+// prev:  18.57 curr:  5.99
+// 24.560000000000002
+

@@ -1,0 +1,172 @@
+-- all data types
+ 
+data Snake = Snake { _body :: [Point], _direction :: Point }
+makeLenses ''Snake
+ 
+data World = World { _snake :: Snake , _food :: [Point]
+                   , _score :: Int , _maxScore :: Int }
+makeLenses ''World
+ 
+--------------------------------------------------------------------------------
+-- everything snake can do
+ 
+moves (Snake b d) = Snake (step b d : init b) d
+eats  (Snake b d) = Snake (step b d : b) d
+bites (Snake b _) = any (== head b)
+step ((x,y):_) (a,b) = (x+a, y+b)
+ 
+turn (x',y') (Snake b (x,y)) | (x+x',y+y') == (0,0)  = Snake b (x,y)
+                             | otherwise             = Snake b (x',y')
+ 
+--------------------------------------------------------------------------------
+-- all randomness
+ 
+createWorld = do xs <- map fromIntegral <$> getRandomRs (2, 38 :: Int)
+                 ys <- map fromIntegral <$> getRandomRs (2, 38 :: Int)
+                 return (Ok, World snake (zip xs ys) 0 0)
+                 where
+                   snake = Snake [(20, 20)] (1,0)
+ 
+-------------------------------------------------------------------------------
+-- A tyny DSL for declarative description of business logic 
+ 
+data Status = Ok | Fail | Stop
+ 
+continue =\x -> (Ok, x)
+stop     =\x -> (Stop, x)
+f >>> g  =\x -> case f x of { (Ok, y) -> g y; b -> b }    -- chain composition
+f <|> g  =\x -> case f x of { (Fail, _) -> g x; b -> b }  -- alternative
+p ==> f  =\x -> if p x then f x else (Fail, x)            -- condition
+l .& f   = continue . (l %~ f)                             -- modification
+l .= y   = continue . set l y                              -- setting
+ 
+--------------------------------------------------------------------------------
+-- all business logic
+ 
+updateWorld _ =  id >>> (snakeEats <|> snakeMoves) 
+  where
+    snakeEats  = (snakeFindsFood ==> (snake .& eats)) >>>
+                 (score .& (+1)) >>> (food .& tail)
+ 
+    snakeMoves = (snakeBitesTail ==> stop) <|>
+                 (snakeHitsWall ==> stop) <|>
+                 (snake .& moves)
+ 
+    snakeFindsFood w = (w^.snake & moves) `bites` (w^.food & take 1)
+    snakeBitesTail w = (w^.snake) `bites` (w^.snake.body & tail)
+    snakeHitsWall w  = (w^.snake.body) & head & isOutside
+    isOutside (x,y) = or [x <= 0, 40 <= x, y <= 0, 40 <= y]
+ 
+--------------------------------------------------------------------------------
+-- all event handing
+ 
+handleEvents e (s,w) = f w
+  where f = case s of
+          Ok -> case e of
+            EventKey (SpecialKey k) _ _ _ -> case k of
+              KeyRight -> snake .& turn (1,0)
+              KeyLeft  -> snake .& turn (-1,0)
+              KeyUp    -> snake .& turn (0,1)
+              KeyDown  -> snake .& turn (0,-1)
+              _-> continue
+            _-> continue
+          _->\w -> w & ((snake.body) .= [(20,20)]) >>>
+                         (maxScore .& max (w^.score)) >>> (score .= 0)
+
+
+
+----------------------------------------------------------
+-- | A screen coordinate is just a pair of integers (x,y).
+type Coord = (Int, Int)
+
+-- | Directions.
+data Dir = North | East | South | West
+  deriving (Eq, Show, Enum)
+
+-- | Compute the adjacent coordinate in a given direction.
+movePos :: Coord -> Dir -> Coord
+movePos (x, y) d = case d of
+  North -> (x,      y - 1)
+  East  -> (x + 1,  y)
+  South -> (x,      y + 1)
+  West  -> (x - 1,  y)
+
+outOfBounds :: Coord -> Bool
+outOfBounds (x,y) = x<0 || y<0
+-- could also check some maximum x and y
+
+
+
+{-
+  A simple single player snake game.
+-}
+module Snake where
+
+import ANSI(ansiGoto, ansiColour, Colour(..))
+import Program(Program, putS, getC)
+import Game(runGame, Game)
+import Coord(Coord, Dir(..), outOfBounds, movePos)
+
+-- | A snake is a 
+-- list of coord.s for the body 
+-- and a dir. of travel.
+
+data Snake = Snake { pos :: [Coord]
+                   , dir :: Dir
+                   }
+
+-- | The starting position of the snake.
+startingSnake :: Snake
+startingSnake = Snake ((11,10) : replicate 20 (10,10)) East
+
+-- | Check if a snake has collided with itself.
+collision :: Snake -> Bool
+collision g = case pos g of
+  []      -> False
+  p : ps  -> outOfBounds p  ||  any (p==) ps
+
+-- | Output a string at a given coordinate (uses some ANSI magic).
+putStrAt :: Coord -> String -> Program ()
+putStrAt p s = putS $ gotoPos p ++ s
+  where
+    gotoPos (x, y) = ansiGoto (x * 2 + 1) (y + 1)
+
+-- | Draw the snake. The last part of the tail is erased.
+drawSnake :: Colour -> String -> Snake -> Program ()
+drawSnake col px s = do
+  let ps = pos s
+  putStrAt (last ps) "  "                 -- erase previous tail
+  putStrAt (head ps) $ ansiColour col px  -- print new head
+
+-- | The different actions that the player can take.
+data Action = Turn Dir | Exit deriving Show
+
+-- | Keyboard controls. Binds keys to actions.
+controls :: [(Char, Action)]
+controls =
+  zip "wasd" (map Turn [North, West, South, East]) ++
+  [ ('q', Exit), ('\ESC', Exit) ]
+
+-- | One step of the actual game
+snake :: Game Snake
+snake g 
+  | collision g = do
+      putStrAt (0, 28) "Game Over!"
+      stop
+  | otherwise = do
+      drawSnake Red  "()" g
+      putStrAt (0,0) ""
+      mc <- getC
+      case mc >>= \c -> lookup c controls of  -- Maybe is a monad
+        Nothing       -> continue_
+        Just (Turn d) -> continue d
+        Just Exit     -> stop
+  where
+    -- Moving the snake means adding a new head and removing the last
+    -- element of the tail.
+    move (p:ps) d = movePos p d : p : init ps
+
+    stop          = return Nothing
+    continue_     = continue (dir g)
+    continue d    = return $ Just $ g { pos = move (pos g) d
+                                      , dir = d }

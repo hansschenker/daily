@@ -1,0 +1,104 @@
+
+1
+
+
+What do you think of this? After distinctUntilChanged we pair the value with the previous one 
+using pairwise and then map them back into one with a new field, 
+the measured duration of time between the successive emits. To get the very first value 
+that does not have a predecessor, we need to startWith a dummy value {timeStamp:undefined}.
+
+import { fromEvent, merge } from 'https://cdn.skypack.dev/rxjs@^6.6.7?min';
+import { 
+    groupBy, 
+    map, 
+    distinctUntilChanged, 
+    mergeAll,
+    pairwise,
+    startWith } from 'https://cdn.skypack.dev/rxjs@^6.6.7/operators?min';
+
+const keyPresses = merge(
+  fromEvent(window, 'keydown', {capture: true}),
+  fromEvent(window, 'keyup', {capture: true}),
+).pipe(
+  groupBy(e => e.code),
+  map(group => group.pipe(
+    startWith({timeStamp:undefined}),
+    distinctUntilChanged(null, e=>e.type), 
+    pairwise(),
+    map(([e0,e1])=>Object.assign(e1,{duration:e1.timeStamp-e0.timeStamp})))),
+  mergeAll(),
+);
+
+keyPresses.subscribe(e=> {
+  console.log(JSON.stringify({code:e.code, type:e.type, duration:e.duration}));
+});
+
+----------------------------------------------------------------------------
+import { fromEvent, merge } from 'https://cdn.skypack.dev/rxjs@^6.6.7?min';
+import { 
+    groupBy, 
+    map, 
+    distinctUntilChanged, 
+    mergeAll,
+    pairwise,
+    startWith } from 'https://cdn.skypack.dev/rxjs@^6.6.7/operators?min';
+
+const keyPresses = merge(
+  fromEvent(window, 'keydown', {capture: true}),
+  fromEvent(window, 'keyup', {capture: true}),
+).pipe(
+  groupBy(e => e.code),
+  map(group => group.pipe(
+    startWith({timeStamp:undefined}),
+    distinctUntilChanged(null, e=>e.type), 
+    pairwise(),
+    map(([e0,e1])=>Object.assign(e1,{duration:e1.timeStamp-e0.timeStamp})))),
+  mergeAll(),
+);
+
+keyPresses.subscribe(e=> {
+  console.log(JSON.stringify({code:e.code, type:e.type, duration:e.duration}));
+});
+
+-----------------
+const down = Rx.Observable.fromEvent(document, "keydown")
+    .distinctUntilKeyChanged("keyCode");
+
+const up = Rx.Observable.fromEvent(document, "keyup");
+
+up.withLatestFrom(down, (u, d) => ({
+    name: `${String.fromCharCode(d.keyCode)}-key`,
+    pressTime: u.timeStamp - d.timeStamp
+}))
+    .groupBy(x => x.name)
+    .mergeMap(group => group.scan((acc, x) => {
+        acc[group.key].push(x.pressTime);
+        return acc;
+    }, {[group.key]: []}))
+    .scan((acc, x) => Object.assign(acc, x))
+    .subscribe(console.log);
+
+-------------------------
+const keyDown$ = Rx.Observable.fromEvent(document, "keydown")
+  .filter(e => !e.repeat)
+
+const keyUp$ = Rx.Observable.fromEvent(document, "keyup");
+
+keyDown$
+  .mergeMap(keyDown => // For every key down we start a new observable, waiting for the-same-key up event
+    keyUp$.filter(keyUp => keyUp.keyCode === keyDown.keyCode)
+    .take(1)
+    .map(keyUp => ({
+      keyCode: keyUp.keyCode,
+      key: keyUp.key,
+      duration: keyUp.timeStamp - keyDown.timeStamp
+    }))
+  )
+  .scan((actions, action) => { // The scan collects all the actions aggregated in a map by key. It emits the current aggregated map for every action
+    actions[action.key] = actions[action.key] || {};
+    const actionIndex = Object.keys(actions[action.key]).length;
+    actions[action.key][actionIndex] = `${Math.round(action.duration)}ms`;
+    return actions;
+  }, {})
+  .subscribe(console.log)
+-----------------------------------------

@@ -1,0 +1,412 @@
+// PLAY: https://codepen.io/ivo-the-scripter/pen/KKKojGE
+type Form = string[][];
+
+interface State {
+    readonly score: number,
+    readonly speed: number,
+    readonly x: number,
+    readonly y: number,
+    readonly currentForm: Form | null,
+    readonly field: Form,
+};
+
+enum ACTION { MOVE_LEFT, MOVE_RIGHT, ROTATE, PIN_DOWN };
+
+const EMPTY = "";
+const FORMS: Form[] = [
+    // I
+    [['aqua'],
+    ['aqua'],
+    ['aqua'],
+    ['aqua']],
+
+    // S
+    [[EMPTY, "red", "red"],
+    ["red", "red", EMPTY]],
+
+    // Z
+    [['green', 'green', EMPTY],
+    [EMPTY, 'green', 'green']],
+
+    // O
+    [['yellow', 'yellow'],
+    ['yellow', 'yellow']],
+
+    // T
+    [['purple', 'purple', 'purple'],
+    [EMPTY, 'purple', EMPTY]],
+
+    // L
+    [['orange', 'orange', 'orange'],
+    ['orange', EMPTY, EMPTY]],
+
+    // J
+    [['blue', 'blue', 'blue'],
+    [EMPTY, EMPTY, 'blue']]
+];
+
+// =============================================================================
+// Game
+
+function getInitialState(): State {
+    return {
+        score: 0,
+
+        // In moves per second.
+        speed: 1.5,
+
+        // Position of the current form
+        x: 0,
+        y: 0,
+        currentForm: null,
+
+        field: [
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+        ]
+    };
+}
+
+function getRandomForm(): Form {
+    return FORMS[Math.floor(Math.random() * FORMS.length)] || getRandomForm();
+}
+
+/**
+ * Calculates the next state from the previous one.
+ */
+function next(state: State | false): State | false {
+    if (!state) throw new Error("State is false");
+
+    if (!state.currentForm) {
+        const form = getRandomForm();
+        const width = form[0].length;
+        const fieldWidth = state.field[0].length;
+        return next({
+            ...state,
+            x: Math.floor((fieldWidth - width) / 2),
+            y: - 1 * form.length,
+            currentForm: form
+        });
+    }
+
+    const nextState: State = {
+        ...state,
+        y: state.y + 1,
+        speed: state.speed + 0.005
+    };
+
+    if (!isItFreeForCurrentForm(nextState, nextState.x, nextState.y)) {
+        // End game
+        if (state.y <= 0) {
+            return false;
+        }
+
+        return updateScore({
+            ...state,
+
+            x: 0,
+            y: 0,
+            currentForm: null,
+
+            field: replaceFormInField(
+                state.field,
+                state.x,
+                state.y,
+                state.currentForm
+            )
+        });
+    }
+
+    if (!isItFreeForCurrentForm(nextState, nextState.x, nextState.y + 1)) {
+        return updateScore({
+            ...nextState,
+
+            x: 0,
+            y: 0,
+            currentForm: null,
+
+            field: replaceFormInField(
+                nextState.field,
+                nextState.x,
+                nextState.y,
+                state.currentForm // keep the type-checker happy :/
+            )
+        });
+    }
+
+    return nextState;
+}
+
+function updateScore(state: State): State {
+    const { field, score } = state;
+    const index = field.findIndex(row => row.indexOf(EMPTY) === -1);
+
+    if (index !== -1) {
+        return updateScore({
+            ...state,
+            field: [
+                [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+                ...field.slice(0, index),
+                ...field.slice(index + 1),
+            ],
+            score: score + 1
+        });
+    }
+
+    return state;
+}
+
+function applyAction(state: State, action: ACTION) {
+    if (state.currentForm === null) {
+        throw new Error('Add curentForm before trying to apply actions.');
+    }
+
+    const { currentForm } = state;
+
+    if (action === ACTION.PIN_DOWN) {
+        let result = { ...state };
+
+        while (isItFreeForCurrentForm(result, result.x, result.y + 1)) {
+            result.y++;
+        }
+
+        return updateScore({
+            ...result,
+
+            x: 0,
+            y: 0,
+            currentForm: null,
+
+            field: replaceFormInField(
+                result.field,
+                result.x,
+                result.y,
+                state.currentForm // typescript :/
+            )
+        });
+    }
+
+    let result: State;
+    switch (action) {
+        case ACTION.MOVE_LEFT:
+            result = {
+                ...state,
+                x: Math.max(state.x - 1, 0)
+            };
+            break;
+        case ACTION.MOVE_RIGHT:
+            result = {
+                ...state,
+                x: state.x + 1
+            };
+            break;
+        case ACTION.ROTATE:
+            result = {
+                ...state,
+                currentForm: currentForm[0].map((_, i) => (
+                    currentForm.map(row => row[i]).reverse()
+                ))
+            };
+            break;
+        default: throw new Error(`Unknown action: ${action}`)
+    }
+
+    return isItFreeForCurrentForm(result, result.x, result.y) ? result : state;
+}
+
+/**
+ * Checks if current form can be placed on the specified coordinates.
+ */
+function isItFreeForCurrentForm(state: State, x: number, y: number): boolean {
+    if (!state.currentForm) {
+        throw new Error(`No current form!`);
+    }
+
+    const { currentForm } = state;
+    const width = state.field[0].length;
+    const height = state.field.length;
+    const formWidth = state.currentForm[0].length;
+    const formHeight = state.currentForm.length;
+
+    if (x + formWidth > width) return false;
+    if (y + formHeight > height) return false;
+
+    const subMatrix = state
+        .field
+        .slice(Math.max(y, 0), y + formHeight)
+        .map(row => row.filter((_, i) => (
+            i >= x && i < x + formWidth
+        )));
+
+    if (y > 0 && subMatrix.length !== currentForm.length) return false;
+    if (y < 0 && !subMatrix[0]) return true;
+    if (subMatrix[0].length !== currentForm[0].length) return false;
+
+    for (let i = 0; i < formHeight; i++) {
+        for (let j = 0; j < formWidth; j++) {
+            if (subMatrix[i] && currentForm[i][j] && subMatrix[i][j]) return false;
+        }
+    }
+
+    return true;
+}
+
+function replaceFormInField(field: Form, x: number, y: number, form: Form): Form {
+    const width = form[0].length;
+    const height = form.length;
+    const result = field.map(row => row.slice());
+    for (let i = x; i < x + width; i++) {
+        for (let j = y; j < y + height; j++) {
+            try {
+                if (j >= 0) result[j][i] = form[j - y][i - x] || result[j][i]; // TODO: error here
+            } catch (e) {
+                debugger;
+            }
+        }
+    }
+
+    return result;
+}
+
+// =============================================================================
+// Rendering
+
+const render = (() => {
+    const field = document.createElement('div');
+    field.classList.add('field');
+    Object.assign(field.style, {
+        border: 'solid 2px black',
+        width: '300px',
+        height: '600px',
+        margin: '10px auto',
+        position: 'relative',
+    });
+
+    const score = document.createElement('div');
+    Object.assign(score.style, {
+        border: 'solid 2px black',
+        width: '200px',
+        height: '20px',
+        margin: '2px auto',
+        textAlign: 'center',
+    });
+    score.classList.add('score');
+
+    const squares: HTMLElement[] = [];
+
+    return (state: State) => {
+        if (!score.parentNode) document.body.appendChild(score);
+        if (!field.parentNode) document.body.appendChild(field);
+
+        score.innerHTML = `${state.score} lines`;
+
+        if (squares.length === 0) {
+            const fragment = document.createDocumentFragment();
+            state.field.forEach((row, i) => row.forEach((_, j) => {
+                const s = document.createElement('div');
+                const width = (1 / state.field[0].length) * 100;
+                const height = (1 / state.field.length) * 100;
+                Object.assign(s.style, {
+                    display: 'inline-block',
+                    width: `${width}%`,
+                    height: `${height}%`,
+                    position: 'absolute',
+                    top: `${i * height}%`,
+                    left: `${j * width}%`,
+                    border: 'dotted 1px black'
+                });
+                squares.push(s);
+                fragment.appendChild(s);
+            }));
+            field.appendChild(fragment);
+        }
+
+        const renderField = state.currentForm ? replaceFormInField(
+            state.field,
+            state.x,
+            state.y,
+            state.currentForm
+        ) : state.field;
+
+        renderField.forEach((row, i) => row.forEach((backgroundColor, j) => {
+            const s = squares[i * renderField[0].length + j];
+            Object.assign(s.style, { backgroundColor });
+        }));
+    }
+})();
+
+// =============================================================================
+// Game Loop
+
+function gameLoop(onEnd: Function) {
+    let state = getInitialState();
+    let nextState: State | false = false;
+
+    const keyDownHandler = (e: KeyboardEvent) => {
+        if (!state.currentForm) return;
+
+        if (e.keyCode === 38) { // up arrow
+            state = applyAction(state, ACTION.ROTATE);
+            render(state);
+        } else if (e.keyCode === 37) { // left arrow
+            state = applyAction(state, ACTION.MOVE_LEFT);
+            render(state);
+        } else if (e.keyCode === 39) { // right arrow
+            state = applyAction(state, ACTION.MOVE_RIGHT);
+            render(state);
+        } else if (e.keyCode === 32) { // space
+            state = applyAction(state, ACTION.PIN_DOWN);
+            render(state);
+            render(state);
+            document.onkeydown = null;
+        }
+    };
+
+    (function loop() {
+        if (nextState = next(state)) {
+            document.onkeydown = keyDownHandler;
+            state = nextState;
+            render(state);
+            setTimeout(() => {
+                requestAnimationFrame(loop);
+            }, 1000 / state.speed);
+        } else {
+            document.onkeydown = null;
+            alert('?????? ???????');
+            onEnd();
+        }
+    })();
+}
+
+// =============================================================================
+// Start
+
+export const start = () => {
+    gameLoop(() => {
+        if (window.confirm('???? ?????')) {
+            setTimeout(start, 10);
+        }
+    });
+}
+
+start();

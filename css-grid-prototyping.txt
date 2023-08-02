@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Example for rapid prototyping with CSS Grid Layout with focus on 'grid areas'.">
+  <meta name="author" content="Rüdiger Alte">
+  <title>Rapid Prototyping with CSS Grid - a Basic Template</title>
+
+<style>
+*{box-sizing:border-box}html{font-size:100%}body{background-color:#f8f4f4;margin:2rem}nav{-ms-grid-row:1;-ms-grid-column:1;grid-area:nav}header{-ms-grid-row:3;-ms-grid-column:1;grid-area:header}.teaser{-ms-grid-row:5;-ms-grid-column:1;grid-area:teaser}main{-ms-grid-row:7;-ms-grid-column:1;grid-area:main}aside{-ms-grid-row:9;-ms-grid-column:1;grid-area:aside}.team{-ms-grid-row:11;-ms-grid-column:1;grid-area:team}footer{-ms-grid-row:13;-ms-grid-column:1;grid-area:footer}.grid-container{display:-ms-grid;display:grid;grid-template-areas:"nav" "header" "teaser" "main" "aside" "team" "footer";grid-gap:.5rem;padding:.25rem}@media only screen and (min-width:550px){.grid-container{-ms-grid-columns:1fr .75rem 1fr;grid-template-columns:repeat(2,1fr);-ms-grid-rows:auto .75rem auto .75rem auto .75rem auto .75rem auto .75rem auto .75rem auto;grid-template-areas:"nav nav" "header header" "teaser teaser" "main main" "aside ." "team team" "footer footer";grid-gap:.75rem;padding:.5rem}nav{-ms-grid-row:1;-ms-grid-column:1;-ms-grid-column-span:3}header{-ms-grid-row:3;-ms-grid-column:1;-ms-grid-column-span:3}.teaser{-ms-grid-row:5;-ms-grid-column:1;-ms-grid-column-span:3}main{-ms-grid-row:7;-ms-grid-column:1;-ms-grid-column-span:3}aside{-ms-grid-row:9;-ms-grid-column:1}.team{-ms-grid-row:11;-ms-grid-column:1;-ms-grid-column-span:3}footer{-ms-grid-row:13;-ms-grid-column:1;-ms-grid-column-span:3}}@media only screen and (min-width:800px){.grid-container{-ms-grid-columns:1fr 1rem 1fr 1rem 1fr;grid-template-columns:repeat(3,1fr);-ms-grid-rows:auto 1rem auto 1rem auto 1rem auto 1rem auto 1rem auto;grid-template-areas:"nav nav nav" "header header header" "teaser teaser teaser" "aside main main" "team team team" "footer footer footer";grid-gap:1rem;padding:.75rem}nav{-ms-grid-row:1;-ms-grid-column:1;-ms-grid-column-span:5}header{-ms-grid-row:3;-ms-grid-column:1;-ms-grid-column-span:5}.teaser{-ms-grid-row:5;-ms-grid-column:1;-ms-grid-column-span:5}main{-ms-grid-row:7;-ms-grid-column:3;-ms-grid-column-span:3}aside{-ms-grid-row:7;-ms-grid-column:1}.team{-ms-grid-row:9;-ms-grid-column:1;-ms-grid-column-span:5}footer{-ms-grid-row:11;-ms-grid-column:1;-ms-grid-column-span:5}}.grid-box{border-radius:.125rem;padding:.5rem;font-size:1.25rem}@media only screen and (min-width:550px){.grid-box{padding:.75rem;font-size:1.5rem}}@media only screen and (min-width:800px){.grid-box{padding:1rem;font-size:1.75rem}}.footer-box-1{-ms-grid-row:1;-ms-grid-column:1;grid-area:footer-box-1}.footer-box-2{-ms-grid-row:1;-ms-grid-column:3;grid-area:footer-box-2}.footer-box-3{-ms-grid-row:3;-ms-grid-column:1;grid-area:footer-box-3}.footer-box-4{-ms-grid-row:3;-ms-grid-column:3;grid-area:footer-box-4}.sub-grid{display:-ms-grid;display:grid;-ms-grid-columns:1fr 1rem 1fr;grid-template-columns:repeat(2,1fr);-ms-grid-rows:auto 1rem auto;grid-template-areas:"footer-box-1 footer-box-2" "footer-box-3 footer-box-4";grid-gap:1rem}@media only screen and (min-width:800px){.sub-grid{-ms-grid-columns:1fr 1rem 1fr 1rem 1fr 1rem 1fr;grid-template-columns:repeat(4,1fr);grid-template-areas:"footer-box-1 footer-box-2 footer-box-3 footer-box-4"}.footer-box-1{-ms-grid-row:1;-ms-grid-column:1}.footer-box-2{-ms-grid-row:1;-ms-grid-column:3}.footer-box-3{-ms-grid-row:1;-ms-grid-column:5}.footer-box-4{-ms-grid-row:1;-ms-grid-column:7}}.sub-grid-box{padding:.5rem;background-color:#7f7f7f;color:#fff}.grid-nav-main{display:-ms-grid;display:grid;-ms-grid-columns:minmax(75px,1fr) .25rem minmax(75px,1fr) .25rem minmax(75px,1fr);grid-template-columns:repeat(3,minmax(75px,1fr));grid-gap:.25rem;justify-content:center;align-items:center;margin:0;padding:.5rem 0;list-style:none}@media only screen and (min-width:380px){.grid-nav-main{-ms-grid-columns:minmax(100px,1fr) .25rem minmax(100px,1fr) .25rem minmax(100px,1fr);grid-template-columns:repeat(3,minmax(100px,1fr))}}@media only screen and (min-width:550px){.grid-nav-main{grid-template-columns:repeat(auto-fit,minmax(75px,1fr))}}.grid-nav-main a{display:block;background:#d3d3d3;color:#333;font-size:.8rem;line-height:1;margin:0;padding:.5rem 0;text-align:center;text-decoration:none;transition:all .75s ease}.grid-nav-main a:hover{background-color:#333;color:#d3d3d3}@media only screen and (min-device-width:800px){.grid-nav-main a{font-size:1rem;line-height:1.2;padding:1rem;text-align:center}}.teaser{background-color:#1a1a1a;color:#e5e5e5}main{background-color:#e5e5e5;color:#1a1a1a}aside{background-color:#bfbfbf;color:#4d4d4d}.team{background-color:#7f7f7f;color:#f2f2f2}footer,header{background-color:#4d4d4d;color:#bfbfbf}
+</style>
+</head>
+
+<body>
+<div class="grid-container">
+  <nav>
+    <ul class="grid-nav-main">
+      <li><a href="">Home</a></li>
+      <li><a href="">Products</a></li>
+      <li><a href="">Features</a></li>
+      <li><a href="">About</a></li>
+      <li><a href="">Find us</a></li>
+      <li><a href="">Contact</a></li>
+    </ul>
+  </nav>
+    <header class="grid-box">
+      <h1>Rapid Prototyping with CSS Grid</h1>
+      <h2>A Basic Template - Flexible and Expandable</h2>
+    </header>
+    <div class="grid-box teaser">
+      <h3>Teaser</h3>
+    </div>
+    <main class="grid-box">
+      <h3>Main</h3>
+      <p>Back to the article Rapid Prototyping with CSS Grid Layout in <a href="../rapid-prototyping-with-css-grid-layout.html">english</a> or in <a href="../rapid-prototyping-mit-css-grid-layout.html">german</a> language.</p>
+    </main>
+    <aside class="grid-box">
+      <h3>Aside</h3>
+    </aside>
+    <div class="grid-box team">
+      <h3>Team</h3>
+    </div>
+    <footer class="grid-box sub-grid">
+      <div class="sub-grid-box footer-box-1">
+        footer box 1
+      </div>
+      <div class="sub-grid-box footer-box-2">
+        footer box 2
+      </div>
+      <div class="sub-grid-box footer-box-3">
+        footer box 3
+      </div>
+      <div class="sub-grid-box footer-box-4">
+        footer box 4
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

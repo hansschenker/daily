@@ -1,0 +1,33 @@
+type assertions
+-------------------------------
+type someTypeEnum = '1';
+type someOtherTypeEnum = '2' | '3';
+type combinedTypeEnum = someTypeEnum | someOtherTypeEnum;
+
+function typeAssertion<T extends combinedTypeEnum>(args: T): args is T & someTypeEnum {
+    return args === "1";
+}
+
+const a: combinedTypeEnum = "1"
+const b: combinedTypeEnum = "2"
+const c: combinedTypeEnum = "3"
+const d = "1"
+const e = "2"
+const f = "4"
+
+let one: "1" = "1"
+
+if (typeAssertion(a)) one = a
+if (typeAssertion(b)) one = b
+if (typeAssertion(c)) one = c
+if (typeAssertion(d)) one = d
+if (typeAssertion(e)) one = e
+if (typeAssertion(f)) one = f // this one gives an error
+
+
+abstract class
+---------
+abstract class Command -{ abstract commandLine(): string; 
+execute() { console.log('Executing:', this.commandLine()); } } 
+class GitResetCommand extends Command { commandLine() return 'git reset --hard'; 
+} 

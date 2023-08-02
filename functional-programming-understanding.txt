@@ -1,0 +1,49 @@
+ computing the value 10 does not involve
+
+understanding anything about numbers, it is just syntactically replacing expressions by
+
+expressions and this is something that we will see more formally later. So, this is
+
+how computation works in a functional programming language, you have rules which tell you how
+
+you can replace one expression by other expression and you keep replacing expressions, until
+
+you reach the value which cannot be simplified.
+
+So, let us look at another recursively defined function. So, just as addition is repeated
+
+tself m times. So, we have to apply
+9:25
+plus n, m times starting from 0. So, the base case says that if I multiply any number by
+9:32
+0, then I will get 0. So, multiplying, so this is not n, but 0,
+9:38
+so multiplying n by 0 is 0 for every n and now, n times m plus 1 is just n plus n times
+9:51
+m. So, this is the inductive case, I know how to do this, because this is smaller and
+9:59
+this is now a known function, because we already define plus. So, plus was not a given function,
+10:05
+succ was the given function, but we already defined plus in terms of succ. So, now, we
+10:09
+can use plus to define multiplication.
+10:14
+So, to summarize, a functional program describes rules to tell us how to compute outputs from
+10:24
+inputs, what we have seen is that the basic operations that we use is to combine functions.
+10:30
+So, we use function composition, we feed the output of one function as the input of another
+10:35
+function and now, often we have to apply this function composition more than once, but not
+10:41
+a number of times, we know in advance. So, when we did plusTwo and plusThree , we
+10:44
+knew exactly how many times, we have to compose the function, but when we wrote the general
+10:48
+plus or the general multiply, we have to apply these function depending on the value of the
+10:52
+argument. So, for such functions, we saw that recursive definitions are a good way to capture
+10:58
+the dependence of the number of times the function has to be composed based on the input
+11:02
+value.

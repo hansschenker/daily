@@ -1,0 +1,1151 @@
+Transcript
+
+
+
+Good morning, everyone from Seattle and welcome to the fourth TSConf.
+
+we are, again, online. I had hoped that we would be able to meet in-person this year. 
+I really do miss, the personal interactions that we've had at that,
+
+we had at our first two TSConfs. But on the other hand, it's awesome that we have these fantastic digital platforms
+
+that allow us to at least continue. And I want to give a big thanks to, the SitePen team for all the work they do
+
+to pull together this conference, under all of these changing circumstances. it's just awesome.
+
+And I'm really looking forward today. There's just a great lineup of speakers.
+
+It's gonna be a lot of fun. And I also want to say thanks to all of you out there for all of your support
+
+of TypeScript over all this time. it really is wonderful and we exist because of you and because of your
+
+enthusiasm, we keep going That's really what powers our motivation.
+
+so, true to tradition. This is gonna be sort of a year in review of TypeScript.
+
+we're gonna talk about, what we do and why we do it and how we do it.
+
+we're gonna talk about what's happened in our community and then we're gonna look at all of the new things 
+that we implemented in the past year and what
+
+we're, what we're gearing up to implement, you know, in the nearest future.
+
+I've shown this slide many times and but I still like it, this, is --this slide captures in one, in one 
+image why we exist, you know, JavaScript
+
+is a language that has some issues. and we basically, but it's a super-popular language.
+
+And so we, see it as our job to sort of protect you from the bad parts of
+
+JavaScript and emphasize the good parts. and one of the, one of the ways you emphasize the good parts
+
+is by having great tooling, and great tooling, and great tooling.
+
+We all know by experience is. Only possible when your tooling can reason about your code and your
+
+tooling can reason about your code. Only if it somehow understands what goes on in the code. And that's
+ why TypeScript adds a static type system to, JavaScript, and using
+
+then that static type system that enables us in-turn to build fantastic tooling.
+
+That gives you all of the things that you want from large app development, like stigma completion,
+or code navigation error messages, compile
+
+navigation, transpilation and so forth.
+
+Believe it or not TypeScript turns  in about four weeks three weeks.
+
+we first shipped on October st in . and now I have personally been working, believe it or not on TypeScript for more
+
+than a decade, which is really crazy. You would think, you would think it wouldn't take that long to get it right.
+
+But amazingly we're still discovering new things.
+
+We're still, we're still paving new ground. as we try to capture, you know, the semantics of JavaScript in our type
+
+system and in our tooling, I was thinking about how much time have we
+
+actually invested in this product? And I think we're now well over  man years into, into TypeScript.
+
+And it's been fun. It's and it's, you know, we, love doing this. We're, gonna, keep doing it.
+
+We keep still discovering new things that we can do as, we'll see, now on
+
+this journey, we've learned a lot. and in particular, we've learned a lot about how to run development in, the
+
+open and how to really do, open source. We now been on GitHub for more than  years, actually.
+
+and we've sort of boiled our operating, the way we operate down these six principles, you know, be open source and open development.
+
+we see it as our job to closely track the ECMAScript standard, but any part of the language that we share with ECMAScript, We do not see it
+
+as our job to innovate in that part. so that means the base JavaScript language, any kind of
+
+innovation that happens there. We want that to happen through TC. and we actively participate in the JavaScript standardization process
+
+and we've championed multiple proposals through that process. but we don't see it as our job to somehow change JavaScript
+
+outside of the normal processes. However, we do see it as our job to innovate in the islands
+
+inside JavaScript that we have carved out for our type system. and we have been doing a lot of innovation, over the years and really
+
+it's all in the name of giving us the ability to build best of breed tooling. and I hope you see that, day-to-day when you use our product.
+
+We also are really serious about like continually lowering the barrier to entry.
+
+you know, there's a whole sort of --there's, sort of a whole continuum
+
+of where you could possibly be in your usage of TypeScript. You could, for example, just use JavaScript, you could just have
+
+a project with JavaScript files. Even if you opened that up in an editor like VSCode that uses TypeScript as
+
+its JavaScript language service, we can still provide a whole lot of services because we can infer 
+a lot of things, even from un-annotated JavaScript.
+
+Or we could check your un-annotated JavaScript, or we could go one more step, and add, JSDoc comments 
+that you can slur up Or you can go all
+
+the way and rename your files to Ts and introduce type annotations. and we're happy in every place in that.
+
+We see it as our job to bridge that entire gap from plain JavaScript
+
+to full-on strict mode TypeScript. and of course we're super-serious about, engaging with the community.
+
+I think you see that through conferences like this, but also our work on GitHub and all of our development 
+that you open on the issue tracker and so forth.
+
+now it's been yet another great year for TypeScript in terms of use and adoption.
+
+in the latest StackOverflow survey, we were the third-most loved language.
+
+if you look at red monk's language, ranks, we are solidly in the top ten.
+
+it's a little funny because If you look at stack overflow they had Node,
+
+JS SQL, as programming languages.
+
+and if you remove those it's the usual suspects ahead of us and TypeScript.
+
+every thought it was possible, but, there it is. And it's wonderful, of course.
+
+it's wonderful to see the state of, JS language satisfaction We're now for four years running, we have 
+had the highest satisfaction ranking
+
+of any of the languages that target ECMAScript I also years ago, when
+
+we were in-person, which was great. and at the time we were talking about this amazing milestone that
+
+we were about to reach on NPM of  million downloads per month.
+
+this month we are close to  million. downloads.
+
+We will in the next few months reach a billion downloads
+
+population, downloads TypeScript, downloads every year it's a ton of autoprovision downloads from, you know, stuff,
+
+really, really, deep adoption that, of course makes us very happy.
+
+this is our team, these wonderful people. I have still not seen any of them in-person for the last  months,
+
+other than chance meeting on the street in capital hill here.
+
+I miss them, they do great work. and I am so fortunate to work with these people.
+
+and really keeping a beat and it speaks a lot to that cloud workflow that we
+
+basically we're already on because we do all of our processes on GitHub.
+
+let's talk a bit about what's happening in the
+
+TypeScript and ECMAScript, community. and see --speeding up the tool chain in large project development
+
+with JavaScript pretty much. every -- [stream stopped] -- every year, using a trans piler because you
+
+need to remove your type annotations and you can transpile because you can go down a level and you're 
+probably also using [stream stopped] --a bundler
+
+or a packager, you know, because the module system on the web, still has a lot of growing up to do [Stream stopped]
+
+community that, you know, [froze] --it feels like every
+
+year there's a new framework. And we certainly early on, we were somewhat which is also fantastic,
+
+DefinitelyTyped, of course, continues to be a super-important part of our, ecosystem.
+
+just in the past year, there were , pull requests, to DefinitelyTyped.
+
+which is -- per day.
+
+we Devote a full-time resource on a rotating basis on our development team
+
+to continuously monitor, pull requests, and make sure that everything is up and
+
+running and, over the years we've built an awful lot of tooling that powers,
+
+the whole sort of DefinitelyTyped and puts them up on the namespace in
+
+NPM, Others that moves, them forward, categorizes them, and makes sure that they get reviewed by the 
+framework, maintainers, et cetera, et cetera.
+
+We've done a lot of work on our website in the past year. I'll maybe just show you that in-person here, 
+let's go to the website
+
+and in particular, this is just a new landing page, which is great.
+
+we've also done an enormous amount of work on our handbook. and I think in particular things that, 
+first of all, it is actually now much
+
+more up to date, with the language. But also it is now written completely in markdown and we've run a bunch of
+
+tools, as well that allows us to really create a super-create experience here. For example, if you 
+look at these examples in our documentation, when I hover over.
+
+portions of the code. You'll see that I get quick info just as if I was in, the TypeScript editor.
+
+this is an open source tool called Twoslash that was built by, our team.
+
+and we pre-process all of this documentation by running it through this tool. And then the tool uses the compiler to actually add all of
+
+these hover hints, automatically. so that's another, sort of great innovation.
+
+I think, if we go to the end of this page, you'll see that, all of our docs are open source.
+
+and you can actually do pull requests on the documentation. and if you look at, at the pull requests we had in the past year, there were .
+
+More than  pull requests in this, in the year that we've had this
+
+documentation online, which is fantastic, which means that the community is continuously making our documentation better, which is, really great.
+
+I should show also another cool thing, is, we have, now an online
+
+TSConfig reference, which is really great because we have an awful lot
+
+of compiler options at this point. go to strict null checks here, you can learn about all of the meanings
+
+of all of these compiler options. that's a great resource. And of course the playground keeps getting better.
+
+we have the ability to use multiple versions of the compiler. It's super-easy to validate bug requests and build repros that you
+
+can just copy and paste, into, issues. And if you look at, whoops, one second that I particularly like is like the
+
+section that described what's new in the, in each of the versions of TypeScript
+
+with illustrative examples here. So you can look at what is this exact optional properties Well, here's an
+
+example that talks about what it is you can see it just in terms of code,
+
+which I also think is really wonderful.
+
+another interesting development is GitHub's web-based editor. I don't know if any of you have used it, but, I would highly recommend it.
+
+let me try and show this. It is basically the ability to fire off a development experience inside your browser
+
+directly on top of, repos in GitHub.
+
+So if I, for example, go to the TypeScript repo here, and I go to one of my own pull requests.
+
+Here is one that I have for doing some variance computation fixes here.
+
+and let's try to look at, look at the code in this, in this PR.
+
+And of course, if I, if someone wanted to review this code, well, they're looking at this browser hosted 
+view, which is great, but you know, it's
+
+sort of like looking through your code through a toilet paper roll, right? it's like, what I wanted to
+ navigate and see what is this
+
+createTypeReference function do? that gets hard, but now you can fire up the GitHub, web-based editor just by
+
+pressing [Stream stopped] --dot anywhere. I'm pressing the dot key here now, and you'll notice that
+
+it opens up [stream stopped]
+
+How it works, at Microsoft.
+
+and we also have a team that's building an open source, type checker for Python called PyWrite and a 
+anguage service on top of that called Pylance.
+
+and interestingly PyWrite and Pylance are built in TypeScript.
+
+And they share, well, they forked and used some of our code from
+
+the TypeScript type checker. there's a lot of commonality And we're in the same, problem space,
+
+right, we are building, type checkers for dynamic programming languages.
+
+
+- literal types and 
+- mapped types. they are now in the feature.
+
+another feature is 
+- noCheckedIndexedAccess. I'm going to take a look at, those.
+
+Template Literals
+--------------------------------------------------------------------------
+So let's go where are my demos at? Let's start with template literal types.
+so just briefly reviewing, Template literal types are the ability to have,
+string literals with holes in them. If you will, similar to template, literal expressions in JavaScript
+
+here, we declare an event name that is mumble followed by change. when we instantiate that type, we get, foochange, bass
+
+change here we get foochange. But if we distribute it over a type it distributes, if we have multiple union
+
+types, we basically formed across product. but it's also possible to have holes that, Do not represent a
+
+finite number of possibilities. All of these up here were finite numbers. These are effectively infinite possibilities.
+
+So there can be any string here followed by a dash followed by any string. And those we keep in that form.
+
+but the type checker will check that when you assign something to that type, there must be a dash.
+
+If there's no dash, you will see you get an error message. likewise here there has to be a dash and a number.
+ if this last bit here is not a number, you get an error message. now that's that's definitely pretty cool.
+
+where it gets even cooler is that you could actually build little algorithms that manipulate types and
+ generate new types from other types, using string.
+
+Using string literal types. and so here, for example, is a little utility type called trim that trims off
+
+all the blanks off of a string literal. And you see that we do that by first inferring to, something is that starts
+
+with a blank and then a hole and then we grab whatever is the rest there.
+
+if that matches, then we Recurse. and like wise, we do it for trailing blanks and Recurse, and then at
+
+the end, we have the trimmed string and you see how that works out. and with this capability, it's really now possible 
+to algorithmically create
+
+types by operating over other types. And indeed our type system is now a it's a little functional programming language.
+
+the values in this functional programming language are types and you write functions by implementing generic types or parametric types, if you
+
+will, where the parameters are, other types, and to wit normal functional
+
+programming language, techniques such as recursion are equally applicable here.
+
+So you can write recursive algorithmic types that then compute new types, by iterating.
+
+Now that's all. sort of Interesting and theoretical. but now that we, now that this feature has been in use for a year, 
+we actually have
+
+real world examples of what it looks like. And so here, I'm gonna show some of those. one example I stumbled across was, 
+someone giving strong typing to a
+
+nifty formatting function, where you pass a format string that has named holes where values are gonna go.
+
+and then you pass an object literal with properties that have those names and provide the values.
+
+And of course, in a traditional programming language, I mean, you would say format takes a string and an object.
+
+There would be no checking here whatsoever. But wouldn't it be nice if we could check that this object literal you passed
+
+actually matches the names that you used here, but how would you do that? well, you could modify the compiler and build 
+knowledge of a particular
+
+format function into the compiler. but we don't want to do that. But now that we have computed types, you could actually write
+
+types that compute, the result. And so here is a place holders utility type that extracts a union of string
+
+literals from the, the names in the holes of the formatting string.
+
+So we, and the way this works is we infer from our string to some number
+
+of characters followed by an open curly followed by something that we want to capture np, followed by a close curly, followed by the rest
+
+of the string that we capture in R. and when it matches, then we say, take that P that we captured here
+
+and union it with the remaining place holders in the rest.
+
+And when it doesn't match, then return an empty unit because now there's nothing left to match. Right.
+
+And sure enough, that actually allows us to infer now, here that,
+
+well, you passed in name and age. Well, so we can write a format function that says this is a string, and then
+
+we can apply placeholders to that. And notice then the experience I get when I'm typing this and I press control
+
+space to get statement completion, we've actually extracted name. and we can just
+
+finish this off. And if I press control space again, now we know that the age property still remains.
+
+and also if I misspell one of them, we tell you, this is not what we expected.
+
+this is pretty cool. This is like a mini DSL that you could actually implement
+
+simply using algorithmic types. Another example that's sort of similar is routing, like the express framework, which
+
+is super-popular has the ability to write handlers that indeed cap that then capture
+
+portions of a URL in variables, that you can then manipulate in your handler.
+
+And here's an example of a type that extracts all of the, variable
+
+names from the static URL that you provided here and now, and then
+
+presents it S properties on params. when I say params dot, I get nice stigma completion that
+
+matches, what my route was. again, super-useful. something that happens in the real world.
+
+Right? similar, there are libraries that do things like, fetch properties
+
+from through dotted paths. Let's say I have a, strongly typed object here with that that
+
+contains an array of other objects. there are utility libraries that sort of provide the ability to fetch a
+
+property by following a dotted path. And here's one example of how this could be statically typed.
+
+I'm not gonna actually go over what all of these types do, but notice you can examine that. I'll put all of the 
+examples up in a repo afterwards, but notice how we get
+
+statement completion off all of the possible paths you could write here. and if I pick cars..make, I get Ford.
+
+but if I pick cars..make, you will see that I get Trabant.
+
+Another thing that happens in the real world that can now be modeled in system.
+
+and I could go on here. Also, we have as clauses and map types that allows use to, for example,
+
+create, let's say you have a utility function that adds eventhandlers to, an object by, grabbing --by approximating it and grabbing all of
+
+its properties and then firing events. When the properties change, you can model that by, something like this, where now
+
+when I say Homer dot, you can see that our utility type added event handlers
+
+based on what you strongly typed in. The change serves up a value.
+
+that is indeed a number. oops. So if I do statement, you will see that that's now a number.
+
+So again, Another way that the type system has become, richer.
+
+let's take another look at, one of the things that we did in, in , which
+
+is indexed access types Or, sorry. strong, sorry.
+
+I should rephrase that. It is the no indexed access, noUncheckedIndexedAccess compiler option.
+
+look at this code and then tell me whether there's a problem here. potentially.
+
+well, as it's written currently, there probably isn't, In TypeScript, we have said when you index into an array, there's the array.
+
+that isn't generally safe, JavaScript has wonky ways to create.
+
+arrays with whole stigma. if I try to catch the role, we do catch that we know that's going to
+
+produce an undefined and that was not allowed with what you said here, but what if instead I said let equals curly c
+urly, and A, sub  equals, hello.
+
+And foo of a, at this point, I have created an array with  holes.
+
+that is present and the length is . that's awfully hard for a type checker to comprehend.
+
+And so effectively, even though we could try to verify that I
+
+is less than array.length here, there still would be problems. so it really is a problem that is not solvable meaningfully 
+in a type checker.
+
+And we've said, you know, up until now, we've said that, Hey it is the --It
+
+is better to just say array accesses return the element type of the array, because the alternative is simply too painful, 
+but some people want that pain
+
+and they want the stricter checking. and so now we give you a compiler option called noUncheckedIndexedAccess
+
+which basically reflects the reality of the world.
+
+That whenever you fish something out of an array at a computed index, you might
+
+get undefined because you might actually access an element that isn't there. And it is up to you now to ensure that you handle that.
+
+For example, by specifying a default value, some people like
+
+that, and it's certainly an added level of security, or type safety. but.
+
+We feel that it is strict enough that we, it is too strict for strict mode, even, you could call it pedantic mode or like stern mode or something.
+
+We haven't given this mode a name by itself, but it is an option that is not included in strict, but it is nonetheless provided.
+
+should you wish to go there? so that's that guy.
+
+all right. Let's try to, move on to TypeScript, ., which was February of this year,
+
+and some of the highlights there are, that I'm gonna show you is, type alias preservation and, leading and middle rest elements in tuples.
+
+And also some of the work we did to improve our uncalled function, detection, and finally, a new refactoring to implement missing helper functions.
+
+So let's go back and let's, let's continue going here and look at, type alias preservation.
+
+You'll note that I am defaulting in here to TypeScript . right now. I'm going to show you what was the experience before TypeScript . here, I
+
+have, a discriminated union called shape and I have a variable of type shape.
+
+And if I hover over that, yes, it shows me that the type of it is shape. But now what I have a shape that could possibly be undefined?
+
+Now, if I hover, unfortunately we've lost the alias. We've lost the name And now we see the structure of the type and
+
+that's true down here as well. if I intersect or if I intersect and union and the types get
+
+more and more complicated. Now, the thing that's interesting is to TypeScript type checker, it
+
+doesn't actually matter because we have a structural type system. there's no difference between shape or undefined and this mumbo jumbo here,
+
+it's the same thing to the type checker. But of course it's a very different thing to humans, at least because it makes it a
+
+lot harder to recognize what's going on. Let's say there's an error in my program here. For example, now I get an error message one, two, three is
+
+not assignable to youcan't see the forest for the trees here.
+
+we did work in . to be smarter about preserving type aliases.
+
+And I'll show you what, the experience now looks like.
+
+so. again, Shape is a shape, but now, we actually preserve what you wrote here.
+
+We preserved the name in that new union that we create, we preserve it in intersection, and we preserve it in combinations of both.
+
+And if you make an error, it's a much nicer experience.  is not assignable to shape Yes, this is something you can understand.
+
+there's an additional angle to this, which is the preservation
+
+of re-aliased-type aliases.
+
+say here, let me go back to ..
+
+here. I have a special name for are a array things and then a even more
+
+special name for string array things. but when I used the aliases, they used to get flattened down to the original.
+
+alias. And in particular, a thing like the omit helper type would get
+
+flattened down to pick of exclude because that's how it's written. of course that's what you see in error messages.
+
+And where did these picks and excludes come from? I wrote omit. now we do a better job of preserving these aliases.
+
+So you see T, but T is now an array thing. which of course structurally it's the same.
+
+it's the same again, but we preserved the name and for omit we're also preserving the name.
+
+just one of those things that makes life easier when you're grocking through big error messages.
+
+another thing we, whoops, Coe request.
+
+middle and ending, rest elements. Again, here's the state of the world before TypeScript ..
+
+you could have rest elements at the end of a tuple but now at the beginning or the middle of a tuple.
+
+You wonder why, is, that interesting? And we'll look at some examples of why it's interesting, but first
+
+observe that, in versions later than ., this is now legal syntax and the
+
+type system actually understands it. now why is this interesting?
+
+Well, take, a, an example like this, these functions, the functions exist
+
+in the real world that sort of have interesting semantics, for example,
+
+a function that takes some number of strings and then followed by a last parameter that has a different type.
+
+This could, for example, be a formatting function that takes a whole bunch of strings and then an options bag at the end that talks about how the strings
+
+should be formatted, or it could be a high order function that takes a bunch of other functions and a Combinator at the end, or what have you, people write these.
+
+now if you were to sort of naively go and try to implement it in JavaScript, you might write something like function foo and then write
+
+dot, dot, dot strings, string array. And then my number, as the last argument, right?
+
+But you'll quickly learn that JavaScript does not permit REST elements anywhere,
+
+but as the last in the parameter list, however, you can sort of cheat using
+
+tuple types in TypeScript, and you could say, Hey, my args is indeed. a REST array.
+
+A REST parameter, which is an array, but tuples are arrays. and we could have more restrictive types on arrays.
+
+For example, we could have an array that consists of some number of strings followed by a number.
+
+And so we could basically give a strongly-typed array type to our rest argument.
+
+And of course we still must fetch out manually, the strings and the last
+
+one, the last number, but the type checker will indeed check when I make calls to this function, that I am passing, a compatible parameter list.
+
+you could also argue maybe our type checker should be so smart that what you pick all but the last element out of a tuple, then we
+
+should type this as a string array. And this as a number and you know, maybe This is one of those another
+
+area we should capture in the type system, we're not currently doing that. you do have to write an notation here, or, an assertion, but still
+
+the important thing is that callers can get strongly, strong checks.
+
+an example, another example here, this time using generics is, a, a function
+
+that can carries the last argument instead of the first argument, which is traditionally how carrying works.
+
+so here I have a function that takes three arguments and when I carry, it
+
+carries the last argument and gives me a function that takes two arguments, because I've provided this one and I can keep going Step  equals curryLast f of .
+
+And now I get an argument that takes one and et cetera, et cetera.
+
+again, this is. Written generically here as a tuple that starts with a available number of
+
+element and then has an ending element. I'll leave it to you to look over the types, when you grab the examples later,
+
+I talked a little bit about how we improved our uncalled function support. here we are, again in TypeScript ..
+
+and we have some code here that has, an error that often happens, which
+
+is you forget to call a function. You really wanted to check whether should display returns true or false,
+
+instead you're checking whether the function is truthy, which all functions are because they're objects.
+
+and that's probably not what you meant. and the same is true down here.
+
+and then, of course you could fix the issue by adding paren, paren and calling the function.
+
+but there were still, some issues. if, so, first of all, we sort of had a bug that if you also checked something else,
+
+this conditional, then we wouldn't warn you that you forgot to call a function.
+
+And we really should have. and down here. we now check that yes, you called a function.
+
+however, the function returns a promise of Boolean, which is always truthy,
+
+but you probably meant to, await it. so in . and actually in . that came in at different times.
+
+We now have even more cleverness. first of all, we get this particular situation, correct.
+
+Here That you have to call, but here we now have a new error that says, did you
+
+perhaps forget to await here, because we detect that you're, checking the promise
+
+instead of the result of the promise. And indeed we fixed the error by awaiting.
+
+So another nice thing, that, captures errors that often happen.
+
+finally, let's look at, a nice little refactoring that appeared in ..
+
+This was actually done by, the community, which is the ability to implement, uncalled functions, or undefined functions.
+
+So here I have a function count items that I haven't actually implemented anywhere.
+
+now we have a refactoring that says, add missing function, declaration, and notice how we will, we will actually infer from the call, the
+
+types of the arguments to the function. So this is a nice little type saver. You can sort of program by example and then go implement afterwards.
+
+So that's some of what happened in .. moving on to ..
+
+I'm gonna show you here. Some of the interesting things, here was the ability to have separate get and set property types.
+
+the ability also to, do stronger checking of overriding, and, in derived classes,
+
+we're gonna look at, contextual narrowing for, or smarter narrowing on generic types and finally, another factoring for import statement completion.
+
+let's try to take a look at this. oops,
+
+let's start by looking at, get and set typing.
+
+Here's a class, that uses a private field size, as you can see.
+
+and then it has, accessers that access the state that we've stored in the private field by returning this size.
+
+But then our setter is smart, because it allows you not just to give it
+
+numbers, but anything that can be converted to a number such as a string or a Boolean, and checks that it is finite and then stores it as a number.
+
+and that really means that that real world usage you're of course permitted to pass a number, but you're actually also permitted to pass a string containing a
+
+number or, or, a false, for example, this happens in the real world, for example,
+
+in the Dom, there are many examples of this you know, you might think then,
+
+well, you might think, well, then I could just model that bay saying, my setter takes string or number or Boolean.
+
+it works for this, but when I read thing.size, it, reads a
+
+string or number of Boolean. that's not what I wanted. I actually wanted to reflect the fact that when I read from it, I get numbers.
+
+But when I set it, I'm permitted to set other, values as well.
+
+Now. So the new thing that we have in  --that we introduced in .
+
+is the ability to have separate type annotations for the getter.
+
+and the setter. so here, I'm saying that my setter returns numbers, but my
+
+getter permits more than that. And now indeed, when I say thing.size, I read a number, but I
+
+am permitted to assign, other types. We actually have a restriction here that says you can't, for example, say
+
+that this guy returns, say big end, because the type of a get accesser
+
+must be assignable to its set accesser. that means it is okay for you to take a broader set of types in your setter.
+
+but it is not okay for your getter to return something that you couldn't pass to the setter.
+
+because at that point you wouldn't be able to assign a property to itself. And that sort of would be strange, right?
+
+So that's, that's the separate read-write types on property accessers.
+
+And of course there's a corollary here that we now in declaration files support the ability to specify, get and set, with a, with
+
+separate type annotations, as well,
+
+another feature we did in, or actually that the community did a community
+
+member, did kingwell implemented this one, I believe, is, an override, modifier
+
+and a, and a, no implicit override.
+
+compiler flag. And you will show you by example, what they do. Let's say I have a base component with virtual methods they show a high
+
+component that derived classes are defined classes are intended to override.
+
+let's say, I wrongly think, the method I'm supposed to override is called show.
+
+I, write my display lodging in my derived component and it never gets called.
+
+and I'm wondering why, and it is because I should have actually overridden showComponent here.
+
+We now have, a modifier called override. And when you specify override, you are basically telling the compiler to
+
+please validate that I am overriding. My intent here is to override something called show.
+
+now you will see we get an error message you're not overriding because there is no show in the base component.
+
+And then I could. Now that I have been alerted, I could fix it and actually override the right method.
+
+Now let's say in the process of righting any override, I decide that I need a helper method.
+
+and I decide to call that helper method. now I have a different problem.
+
+Now I have inadvertently overridden something they wasn't even actually aware that the base class provided.
+
+and that could be problematic too. now in order to guard against that, we have a new noImplicitOverride compiler
+
+option and this compiler option, is, one you could turn on if you, want to.
+
+Its not part of strict and I'll explain why, but you'll see that at this point here, It says you need to say override because you're
+
+overriding here and you didn't say it. and that of course can, then could even now choose to override, or I
+
+could give my helper method a didn't name, that doesn't complicate. you might ask, gosh, this is super-useful.
+
+why didn't you just enable this by default? Well, because there's an awful lot of code out there that looks like this, right?
+
+Where yes, I override, but I didn't say my intent because we didn't
+
+make you say the intent previously. this new flag basically makes you say the intent, but it is a
+
+breaking change to turn it on. It is maybe a breaking change that you want, but it's a your choice.
+
+so this is a safeguard that you can turn on or off. depending on, how much validation you want,
+
+let's look at. Some improvements we did to, our control flow analysis of generic types.
+
+This is actually, if you look, if we go back and look at, this issue we have here, control.
+
+click on it. There, this issue goes back what more than  years, and someone was complaining here
+
+well, I'll show you what the issue is. let's say I have a generic function that takes a T and my T is
+
+constrain to string or undefined. and then I check whether T whether my X is undefined.
+
+And now you wonder what now inside this guarded block is the type of X?
+
+well, surely X is still a T I ought to be able to assign X To something else
+
+of type T, but it is also a stripping yet T could be string or undefined.
+
+So it's really sort of like, it's like a T where the constraint has changed to just be string, but that's hard to model because that would need
+
+a new type parameter and whatever. so traditionally we would have some issues with this where we would say, you
+
+know, we don't narrow generics because generics are themselves, not union types.
+
+but they might have union type constraints that we would like to narrow. But then we would do that in certain cases where we're absolutely sure
+
+that that's a fine thing to do. say, you say X.length, for example here. we know that we're gonna be accessing the constraint of X.
+
+So why don't we start by narrowing X to string or undefined and then We can narrow away the undefined by observing that there's a guard and then
+
+you can actually access length here. because syntactically, we know that's a fine thing to do, but you would error
+
+here, for example, where it says call, take string with an X, even though it indicates it until wanting this that's not a T there's an indication we
+
+shouldn't care about the T-ness anymore. that's what we've implemented.
+
+in . is what we call contextual narrowing of generic types, where
+
+we observe X, in this particular case here is used in a context that
+
+doesn't care about its generic type. And so we can safely narrow it and then get further narrowings
+
+from control flow analysis. here we actually narrow X first a string and undefined, and control
+
+flow analysis and then narrows. it To just string. but here we know we're in a context that cares about generics because
+
+we're assigning it to something that's a type T so with don't narrow here. So it's of like, you can have your cake and eat it too, solution to the problem.
+
+but it's nice to finally, it took us four years to think of this, but, we got there.
+
+let's look at another cool little feature that was in ., which is, import statement completion here.
+
+I have a project that I've just, I'm using Node So I've installed the typings for node and my node modules.
+
+And now when I say import and I start typing, you'll see that we get statement completion on all of the things I could import from the
+
+modules that are part of my project. And we do that also by looking at your package, JSON and what have you.
+
+So I can simply statement complete by pressing tab here and.
+
+we'll write the rest of the statement for you, including which module you import from. now if you try to statement complete, now, you only see things
+
+that come from Fs, Like watch file. and I can grab more from there and I say I could import, a log from console
+
+just makes it easier to write these imports, that we all have to write.
+
+It is funny, by the way, how in Python, you first say what you're importing from,
+
+and then you say what you're importing and that's actually also the case, like in Link and C and other things that look like this, because from a, statement
+
+completion, perspective, we don't know. We, have to look at the entire universe, to begin with because you haven't told
+
+us where it's supposed to come from. but, I think this is a pretty clever solution to that issue.
+
+All right. whoops. And that brings us to, ., which we just shipped in August.
+
+we're good on time here. and some cool things, ended up going in there, like in particular like
+
+control flow on constant conditions and, index signatures for more types.
+
+and then we have a couple of new, interesting compiler options, that we'll also, try to take a look at.
+
+so let's start with, our improvements to control flow analysis.
+
+this again is a super-old issue. Let's try to go back, in time here, from .
+
+Someone was complaining that I can't narrow based on a
+
+computed Boolean condition here. I have to, I am forced to write the condition inline every time.
+
+and it's something that we've chewed on for a long time. And I think we had imagined some very complicated solutions to this issue.
+
+And then it turns out that it wasn't actually that hard to fix,
+
+but let's just first observe, the state of the world before ..
+
+here I have a piece of code that narrows my argument, based on the, you
+
+know, the check that it's a string. And so in here, arg ends up having type string.
+
+let's say that I refactor here and I extract that to something
+
+like say arg is string, a Boolean. that computes, the same thing.
+
+And now the narrowing goes away we look at arg as string that's a Boolean.
+
+that doesn't do anything for arg. it turns out it does, but we're not seeing that.
+
+in the control flow analyzer. our vision has gotten better, in  . and we now actually groc this.
+
+and we understand that arg is string. Indeed is really just an alias for this condition and what our control flow
+
+analyzer does in certain circumstances, I will talk about what those are It
+
+will inline and treat arg is string as an analyzer and pretend that
+
+you said arg is string right here. And indeed you do get the narrowing.
+
+Let me talk a little bit about what are some of the limitations of that,
+
+well, first of all, the computation that you do with the capturing of the Boolean condition has to be stored in a non-mutable local.
+
+So if I said let arg is string here, you'll see that we do not narrow.
+
+because there might have been in the intervening space right here. Some assignment to, arg is string that we don't track.
+
+Now, of course we could do that work, but that would be even more work for the control flow analyzer, which means it would go slower for all code out there.
+
+and so it's always a balancing act that we're doing there. And so we're saying, you know, typically the right thing to do
+
+anyway is capture this in a const. And so we simply just checked that if you are, if you are trying to check a
+
+condition that was stored in a const, then we will look at that condition, in situ.
+
+Now we also require that the thing you check in the condition itself is const.
+
+Now I didn't actually say const on by argument here, but we treat arguments that have no function, in the argument body as the same as const.
+
+so there was an assignment in the function body somewhere, you'll see that again, we don't narrow because that assignment might have happened.
+
+Intervening intervening in between the test and the time
+
+that you are checking the test. Again, we could do more work in a control flow analyzer to see if
+
+there are any intervening assignments between here and the place where you computed the conditional.
+
+We don't currently do that work because again, it would slow, it would slow everything down, to do it.
+
+And it's really not a typical pattern anyway. so that's the, the simple narrowing.
+
+we also do the same for discriminated unions here, so I could extract
+
+a discriminated union check, into an is an isCircle local.
+
+And you'll see that the code continues to work. we narrow shape here, to, a circle And here.
+
+We narrow it to, a square, indeed.
+
+You can actually extract just the discriminate itself. Let's say, instead of extracting the entire condition, I extract just
+
+shape.kind into a local called kind, which is another pattern that's quite common.
+
+Let's say you're gonna check your discriminate multiple times, in your function body.
+
+So you put it in a local because that's more efficient than accessing bodies. And previously we wouldn't be able to get that.
+
+now we do, you can even, use a de-structuring to capture it. so because we consider those to be the same.
+
+and that again is a, common pattern. there's another common pattern that we're currently not handling which
+
+is where you use a de-structuring to extract both a discriminate and a payload that is present if all discriminates, in allVariants but has a varying type
+
+and you extract both into locals. And now you have these two appearing disconnected locals
+
+that actually are connected. the control analyzer does not have the ability to see that currently.
+
+It's something we're still, we're still thinking about. we might be able to get that, but that was not, in this work.
+
+finally, This composes nicely too. let's say I have a string or number of Boolean, and I compute you know, whether
+
+it's a string and whether it's a number and whether it's a string or number. and we actually get that as well.
+
+here it's string or number in the other branch it's Boolean. which is lovely.
+
+there is some limit to the amount of nesting. I can reveal that it's five, I've never seen any code that went deeper
+
+than five levels of nested checks. and So our analyzer just says after five levels stop inlining.
+
+but, yeah, so that's, that's control for analysis. I think that's a really super-nice problem to finally have solved.
+
+another one is, Index signatures or some of the restrictions that we have
+
+traditionally had on index signatures. if we go back to version . and earlier, if I try to write an index signature
+
+for, symbols, for example, which is something that people have wanted to
+
+do, I would get the, the error message that, you know, has to be a string or
+
+a number, nothing else is supported. And that was traditionally the way that we represented index signatures.
+
+but as JavaScript has grown more advanced and as our type checker has grown more advanced, there are, some very common patterns that you could
+
+not capture, with these restrictions. And so in . we're lifting the restrictions.
+
+But with some caveats that I'll talk about, it's now possible to declare first
+
+of all, an index signature for symbol. and when you do, then you can index with symbols, but you cannot
+
+index with strings or other thins. you will get an error on that. that's lovely.
+
+now the restriction on index signatures now is they can effectually be any type you want, but the type must be something that could not be represented.
+
+as unit types or literal types. It must, in other words, be something that represents, an infinite set of
+
+possible values or almost infinite. If So let's say I tried to write a key, which is either quote a or quote B.
+
+Well, that I could have written as two properties optional properties called a and B So index signatures are not the right thing to use to implement that.
+
+So, but, if I use a type like symbol or string or number or some type
+
+that represents an infinite set of possible values, then an index signature is the correct construct.
+
+And then we do permit it. Let's whoops. Let's look at another example here, which is template literal index signatures.
+
+Let's say I have an options bag that has That must be numbers. And then by the way, my options banks allows me to have properties
+
+named data mumble of any type, and I can have any type as long
+
+as it starts with data mumble. that's now possible. You will see this thing represents an infinite set of possible values.
+
+It's not something that could have been allowed by a finite set of declared properties.
+
+we check it properly, you can have a datafoo, but not a bad foo.
+
+that doesn't meet the pattern. That is pretty common in, HTML, to have data-properties and so forth.
+
+So now you can actually model it. another problem that this solves is a longstanding request for the
+
+ability to have index signatures for, tack primitive types.
+
+it's common in TypeScript to use this pattern of I'm going to take a primitive, I'm going to have special types of strings, like product IDs
+
+or social security numbers, or phone numbers, or what have you that have been subjected to some validation.
+
+And that validation is indicate the by the attachment of a tag. and you can't just assign a normal string to it.
+
+You must first validate it. And then you get an ID string, for example, and this the pattern
+
+that people use, but of course, You also want the ability to have
+
+index signatures for these things. So you can have dictionaries that can only be indexed by IDs, for example,
+
+and that now becomes possible. So here I have a regular string and I have an ID string, and I have
+
+a dictionary from ID to string. I wrote it as a record of ID from a string.
+
+You could have equally, well, written it as an index signature for a colon ID, it's the same thing.
+
+and you'll note that I can't index with a plain string, I can index with an ID string.
+
+Finally. another longstanding request is, why can't I write? a Union of possible things in my index signature.
+
+previously, you could only have written string or number, Why couldn't. I write that. Well, now you can, again, each member of the union must represent
+
+an infinite set of possible values. You can't have literal types here, but, you can, combine like, template literals
+
+with place holders, combine tacked primitive or literal types and so on.
+
+we basically just is flattened that out to a set of index signatures for each of the type use mentioned in the union.
+
+So that is that work And that is in ..
+
+let me also show, another Interesting feature, actually this sort of
+
+goes back to all the way at the beginning of TypeScript and the way that we have traditionally treated.
+
+try-catch and specifically the way we typed the catch variable when you write a
+
+type catch, ever since day one, TypeScript has simply given type any to catch
+
+variables, which back in the old days was really the right thing to do, any was our
+
+top type, and it was our own top type. And we don't know what E might be here.
+
+we gave it type any. that meant you could write anything. You wanted. You could access any old property, you wanted to here and never hear about it.
+
+and even then, you know, you might actually also hear there's no
+
+guarantee That the thing gets thrown. will have a message property at all.
+
+You might throw , you might throw something that isn't an error object, right. And JavaScript is perfectly happy to do that.
+
+it's unfortunately. but that's the reality. now a few versions back, we allowed you to at least put an notation here that treats
+
+it as unknown, which is in today's world. That's what we would have done. We would have said we don't know anything about this.
+
+E. So it's type is unknown, which is the safe top type, if you will. Right.
+
+and here then you would have gotten, an error or you will get an error. But now of course you have to remember yourself to write these type annotations
+
+every time and that's cumbersome. so in, whoops --in TypeScript, ., We have now in strict mode included a new, compiler flag called, use unknown in catch variables.
+
+and so when you're in district mode, your catch variables. Now get type unknown.
+
+you can of course do the opposite and give them type any, if you want. That's fine.
+
+but you have to manually say, so we don't have like that implicit any that came
+
+out of nowhere, that we used to have. And That's, definitely the intent of strict mode.
+
+so I think this is a nice thing. It's been long overdue. It would be lovely if we could know more about E here, but.
+
+It, you can never be quite certain. So some people have suggested, oh, we should just give it type
+
+error because that's what it always is Or almost always is. Yes. Well, sorta kinda, but there's, as you can tell here, it's
+
+very easy to make a mistake. And now you have a bug in your program that you never heard of.
+
+So that's that one. and final thing I wanted to show from . is, a new compiler flag
+
+called, exact optional properties. again, let me just start by showing you the history of this one.
+
+this goes back to .
+
+Yep.  years ago. someone, Pointed out.
+
+and look at all the upvotes. you know, our treatment of optional properties is kind of wonky.
+
+and I will agree that it is. I'll show you what the wonkiness is, this is the state of the world as it
+
+exists without this new compiler option. now I should preface it by saying, as you all know, in JavaScript,
+
+JavaScript permits you to read properties from an object that don't exist, or properties that don't exist and you just get undefined.
+
+And that's been a built-in behavior since day one, some programming languages don't, you know, they would have given you an error, but that's not JavaScript.
+
+So in JavaScript, When properties are optional, you simply read an undefined,
+
+but there's a distinction there. The undefined that you get back, did that mean that the property wasn't
+
+there or was it because the property was there and had the value undefined?
+
+for most cases you don't really care. I mean, I knew I just got an undefined, but the distinction really that between
+
+the two is, should you permit it to assign undefined to an optional property?
+
+and that was a distinction that traditionally we couldn't make. when you. wrote a question string or B question string undefined, we
+
+treated a question string, the same as undefined, Hey, a possible
+
+value of the property is undefined. And therefore we allowed you to assign undefined to the property, which would
+
+make the property exist and make the value undefined, which is not what you really intended, because you had your set string.
+
+you sort of see the dilemma there and.
+
+it's Something that rarely matters, but it does matter sometimes in particular, when
+
+you're like doing object spreads and you are dealing with optional, properties in
+
+react, for example, and other frameworks. and so we now have this new compiler option, that I'm gonna turn on
+
+called exactOptionalPropertyTypes. that you could argue if we were to do it over today, this is how we would do it.
+
+I'll talk about why we can't make it the default. but observe what happens now with this option on, if I declare obj, me make
+
+a distinction between string and sin string undefined in the type annotation.
+
+The first is a when you assign, you must assign a string.
+
+But when you read might get undefined because it might not be there. And B says.
+
+You can define string or undefined And you might get undefined, and you can't tell
+
+if it's because the property wasn't there or was there and nows it this is an error.
+
+a says the only thing you can assign is strings. Now with that in place, it turns out that now we can give safe
+
+treatment to the in operator. here, when you say obj.a.length, you can't do that a might not be there, but
+
+if you check that a is there, then indeed we can narrow the type of a to string
+
+versus string or undefined up here. and same, if you called the HandsOnProperty method, you can narrow.
+
+We could dot no that. narrowing before, we could not know whether the property was missing or
+
+whether it was there with the value. undefined. now an interesting effect of this is that, for optional properties that don't
+
+include undefined, you can't just read them and assign them to themselves. here, if, if you say obj.a equals obj.a, that is not permitted and you can sort of
+
+go, well, it kind of makes sense that it's not permitted, if I were to read here and A wasn't there, I would get undefined.
+
+And then I would stuff undefined into a, which is exactly the thing that we want to avoid.
+
+So in order to assign a property to itself, you have to first check that it exists.
+
+and then we will permit it. Now, as I said, in.
+
+In a green field, in a new world, this is how we would have done it in the type checker. but it is a breaking change to do it.
+
+And the reason it's breaking is that there is like an enormous, like you could argue this should have been part of strict mode, right?
+
+Shouldn't it. And we had it as part of strict mode to begin with, but it breaks a lot of
+
+stuff in particular on definitely typed, there's gazillions of typings, that
+
+are written without regard to whether the library actually permits you to
+
+stuff undefined into properties or not. it's very typical to write this, but really mean this because it's
+
+shorter to just write string and we know that the compiler is gonna slap undefined on it anyways. So

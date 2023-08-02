@@ -1,0 +1,16 @@
+// install ngrx (?ng add @ngrx/schematics)
+ngrxi
+
+// add ngrx schematics
+ng add @ngrx/schematics
+
+// create root store
+ng generate store Store --root --module app.module.ts --statePath store  --stateInterface AppState
+
+// create feature 
+ng generate feature products/state/Product -m products --creators true --api true -r ../../store/index
+
+	
+
+
+

@@ -1,0 +1,30 @@
+Typescript Mapped Types
+------------------------------------------------------------------------------------------
+
+Mapped types 
+- build on the syntax for index signatures, 
+  which are used to declare the types of properties which have not been declared ahead of time
+
+index access type
+------------------
+Indexed Access types provide a mechanism for 
+- retrieving part(s) of an array or object type via indices.
+  We can use an indexed access type to look up a specific property on another type:
+
+type Person = { age: number; name: string; alive: boolean };
+type Age = Person["age"];
+     
+type Age = number
+
+index access syntax
+-----------------------
+interface NumberByName {
+  [name:string] : number 
+}
+
+mapped type syntax
+----------------------
+  { [P in T]:U }
+
+When you don’t want to repeat yourself, sometimes a type needs to be based on another type.
+

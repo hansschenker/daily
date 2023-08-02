@@ -1,0 +1,866 @@
+string literal types
+-------------------------------------------
+type Vertical = "top" | "middle" | "bottom";
+type Horizontal = "left" | "center" | "right";
+
+type Position = `${Vertical}-${Horizontal}`;
+
+declare function setPosition(pos: Position): void;
+
+setPosition("top-right");
+setPosition("bottom-left");
+
+type HexNum = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+type HexLet = "a" | "b" | "c" | "d" | "e" | "f";
+type HexChar = HexNum | HexLet;
+
+type HexPair = `${HexChar}${HexChar}`
+
+// Stub
+type Color = {};
+
+declare function makeColor(r: HexPair, g: HexPair, b: HexPair, a?: HexPair): Color;
+
+makeColor("aa", "1a", "ff");
+makeColor("ba", "da", "55", "e5");
+makeColor("zz", "vv", "1j"); // error!
+-------------------------------------------------------------------------------------
+
+function generic syntax:
+-------------------------------------------------
+function identity<T>(value: T): T { 
+  return value; 
+}
+
+arrow function syntax:
+-----------------------------------------------------------------------------------
+const identity = <T>(value: T): T => value;
+
+type version: checked at compile time
+-------------------
+type isNumber<T> =
+T extends number
+? 'number'
+: 'other'
+
+value version of isNumber: checked at runtime
+----------------------
+const isNumber = (value: unknown) => 
+typeof value === 'number'
+? number
+: 'other
+
+Conditional Types
+----------------------------------------------------------------
+export type TypeName<T> = 
+T extends string ? 'string' :
+T extends number ? 'number' :
+T extends boolean ? 'boolean' :
+T extends undefined ? 'undefined' :
+T extends symbol ? 'symbol' :
+T extends bigint ? 'bigint' :
+T extends Function ? 'function' :
+'object'
+
+
+function typeName<T>(t:T): TypeName<T> {
+  return typeof t as Typename<T>
+} 
+
+type Partial<T> = {
+  [P in keyof T]?:T[P]
+}
+
+type AsyncData<T> = {
+  data: T
+  fulfilled?: boolean
+  loading?: boolean
+  error?: boolean
+}
+
+type AsyncGames = AsyncData<Game[]>
+type AsyncGame = AsyncData<Game | null>
+type AsyncUser = AsyncData<User | null>
+type AsyncUserGames = AsyncData<UserGame[]>
+type AsyncBrowseGames = AsyncData<BrowseGame[]>
+function getProperty<Type, Key extends keyof Type>(obj: Type, key: Key) {
+  return obj[key];
+}
+ 
+type User = {
+  name: string, // "John Doe"
+  age: number, // 22
+  score: Grade, // B
+}
+type Grade = 'S' | 'A+' | 'A' | 'B' | 'C' | 'D' | 'U'
+type Sport = {
+  name: string,
+  goals: number
+}
+type UserScore = 
+  Pick<User, 'name' | 'age' | 'score'> 
+  & 
+  Pick<Sport, 'goals'>
+
+
+
+let x = { a: 1, b: 2, c: 3, d: 4 };
+ 
+getProperty(x, "a");
+getProperty(x, "m");
+Argument of type '"m"' is not assignable to parameter of type '"a" | "b" | "c" | "d"'.
+
+function create<Type>(c: { new (): Type }): Type {
+  return new c();
+}
+
+typeof type operator
+--------------------
+const center = {x:0, y:0, z:0}
+type Point = typeof center // Point equals center
+
+sample.json
+----------
+const personResponse = {
+  "name":"joe",
+  "email":"joe@sample.com",
+  "firstName":"joe",
+  "lastName":"doe"
+}
+
+type PersonResponse = typeof personResponse
+
+Lookup type
+------------
+invoice: {
+ date: string,
+ payment: { creditCardToken: string
+ address: {street: string, streetNbr:number}
+}
+}
+
+type address = invoice['payment']['address']
+
+type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>
+
+Keyof Type Operator
+-----------------------
+The keyof operator takes an object type and produces 
+- a string or 
+- numeric literal union of its keys. 
+
+// get any property on any type
+-------------------------------------------------------------------
+function getProp<T,P extends keyof T>(obj:T, prop:P) {
+  return obj[prop]
+}
+
+// set any property on any type
+--------------------------------------------------------------------
+function setProp<T,P extends keyof T>(obj:T, prop:P, value:T[p]) {
+  return obj[prop] = value
+}
+
+
+---------------------------------------------------------------------------------------------
+Conditional Types
+---------------------------------------------------------------------------------------------
+
+
+The following type P is the same type as “x” | “y”:
+
+type Point = { x: number; y: number };
+type P = keyof Point;
+    
+type P = keyof Point
+
+type Arrayish = { [n: number]: unknown };
+type A = keyof Arrayish;
+    
+type A = number
+ 
+type Mapish = { [k: string]: boolean };
+type M = keyof Mapish;
+    
+type M = string | number
+
+typeof vs keyof
+-----------------
+
+type level: keyof T
+-----------
+keyof returns a literal union type, 
+sample: P keyof T:T[P]
+
+value level
+------------
+while Object.keys returns values.
+sample: Object.keys(car)
+
+maybe PromsieLike
+-------------------------------------
+class Nothing<T> implements PromiseLike<T> {
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2> {
+        return (onrejected as any)(this);
+    }
+}
+class Just<T> implements PromiseLike<T> {
+    constructor(private value: T) { }
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): PromiseLike<TResult1 | TResult2> {
+        return (onfulfilled as any)(this.value);
+    }
+}
+
+type Maybe<T> = Nothing<T> | Just<T>
+
+const nothing = <T>(): Nothing<T> => new Nothing;
+const just = <T>(value: T): Just<T> => new Just(value)
+
+async function hu() {
+    console.log(await just(5) + await just(4));
+    try { console.log(await nothing<number>() + await just(4)); }
+    catch (e) { console.error("XD") }
+    return await just(5) + await just(5);
+}
+
+async function logit(promise) {
+    try { console.info(await promise); }
+    catch (e) { console.error(e); }
+}
+logit(hu());
+
+
+undo reducer
+-----------------------------------------------------------
+function useUndoReducer<State, Action>(
+  reducer: (state: State, action: Action) => State,
+  initial: () => State[]
+) {
+  const [index, setIndex] = useState(0);
+  const [history, setHistory] = useState(initial);
+  const state = history[index];
+  const dispatch = useCallback(
+    (action: Action) => {
+      const updated = history.slice(0, index + 1);
+      updated.push(reducer(state, action));
+      setHistory(updated);
+      setIndex(index + 1);
+    },
+    [index, state, history]
+  );
+  const undo = useCallback(() => {
+    if (index > 0) {
+      setIndex(index - 1);
+    }
+  }, [index]);
+  const redo = useCallback(() => {
+    if (index < history.length - 1) {
+      setIndex(index + 1);
+    }
+  }, [index, history]);
+  return [state, dispatch, undo, redo, history, setIndex] as const;
+}
+
+
+union types for createAction (blog.logrocket, michal zalecki) 
+// https://blog.logrocket.com/pattern-matching-and-type-safety-in-typescript-1da1231a2e34/
+https://michalzalecki.com/
+----------------------------------------------------------
+The very same technique we used to come up with our Either type 
+can be applied where using switch statement is already popular, in redux’s reducer. 
+Instead of having an only binary option of Leftor Right, we can have as many options as action types we have to handle. 
+For the record, we strive to optimize for reducer correctness and ease of development thanks to accurate autocompletion.
+
+enum ActionTypes {
+  REQUEST_SUCCESS = "REQUEST_SUCCESS",
+  REQUEST_FAILURE = "REQUEST_FAILURE",
+}
+
+type SFA<T, P> = { type: T, payload: P };
+
+const createAction = <T extends ActionTypes, P>(
+  type: T,
+  payload: P
+) : SFA<T, P> => ({ type, payload });
+
+const success = (payload: { items: Todo[] }) =>
+  createAction(ActionTypes.REQUEST_SUCCESS, payload);
+
+const failure = (payload: { reason: string }) =>
+  createAction(ActionTypes.REQUEST_FAILURE, payload);
+
+const actions = { success, failure };
+
+type Action = ReturnType<typeof actions[keyof typeof actions]>;
+
+type Todo = { id: string };
+
+type State = { items: Todo[] , error: string };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionTypes.REQUEST_SUCCESS:
+      return { ...state, items: action.payload.items, error: "" };
+    case ActionTypes.REQUEST_FAILURE:
+      return { ...state, items: [], error: action.payload.reason };
+  }
+  return state;
+}
+
+email validation
+----------------------------
+export type Result<T> = 
+    | { ok: true, value: T }
+    | { ok: false, message: string }
+
+interface IValidator<T> {
+    go(value: unknown): Result<T>;
+}
+
+type StringRule = 
+    | { type: "equal", value: string }
+    | { type: "notEqual", value: string }
+    | { type: "minLength", min: number } 
+    | { type: "maxLength", max: number }
+
+class StringValidator implements IValidator<string> {
+    constructor(private rules?: StringRule[]) {
+        if (!Array.isArray(this.rules)) {
+            this.rules = [];
+        }
+    }
+
+    /**
+     * Adds a rule to the array of rules, or replaces a rule if it already exists.
+     * Use this function to prevent having multiple rules of the same type. 
+     */
+    private addRule: (rule: StringRule) => StringRule[] = rule => {
+        // Filter the current rule set, removing any rule that has the same type of the one being added
+        const filtered = this.rules.filter(r => r.type !== rule.type);
+
+        // Add the new rule to the filtered rule array 
+        return [...filtered, rule]
+    }
+
+    /**
+     * Fails if the value being validated is not equal to @param value.
+     */
+    equals: (value: string) => StringValidator = value => {
+        this.rules = this.addRule({ type: "equal", value: value });
+        return this;
+    }
+
+    /**
+     * Fails if the value being validated is equal to @param value.
+     */
+    notEquals: (value: string) => StringValidator = value => {
+        this.rules = this.addRule({ type: "notEqual", value: value });
+        return this;
+    }
+
+    /**
+     * Fails if the string's length is less than @param min.
+     */
+    minLength: (min: number) => StringValidator = min => {
+        this.rules = this.addRule({ type: "minLength", min: min });
+        return this;
+    }
+
+    /**
+     * Fails if the string's length is greater than @param max.
+     */
+    maxLength: (max: number) => StringValidator = max => {
+        this.rules = this.addRule({ type: "maxLength", max: max });
+        return this;
+    }
+
+    /**
+     * Fails if the string is empty.
+     */
+    notEmpty: () => StringValidator = () => {
+        // We don't need to use a specific rule for notEmpty here, we can just set a min length of 1!
+        this.rules = this.addRule({ type: "minLength", min: 1 });
+        return this;
+    }
+
+    /**
+     * Fails if the string is not empty. NOTE that an empty string is _not_ the same as a null or undefined value.
+     */
+    empty: () => StringValidator = () => {
+        // Again, we don't need a specific rule for empty, we just set a max length of 0
+        this.rules = this.addRule({ type: "maxLength", max: 0 });
+        return this;
+    }
+
+    /**
+     * Checks an individual rule against the value being validated.
+     */
+    checkRule: (rule: StringRule, value: string) => Result<string> = (rule, value) => {
+        throw new Error("Not yet implemented");
+    }
+
+    go: (value: unknown) => Result<string> = value => {
+        throw new Error("Not yet implemented");
+    }
+}
+
+checkRule: (rule: StringRule, value: string) => Result<string> = (rule, value) => {
+    const err = msg => ({ ok: false, message: msg });
+    const ok = () => ({ ok: true, value: value });
+
+    switch (rule.type) {
+        case "equal": 
+            return rule.value !== value 
+                ? err(`Value was expected to be ${rule.value} but was ${value}.`) 
+                : ok();
+
+        case "notEqual":
+            return rule.value === value 
+                ? err(`Value must not be ${rule.value}.`) 
+                : ok();
+
+        case "minLength":
+            return value.length < rule.min 
+                ? err(`String length must be greater than or equal to ${rule.min} but was ${value.length}.`) 
+                : ok();
+
+        case "maxLength":
+            return value.length > rule.max 
+                ? err(`String length must be less than or equal to ${rule.max} but was ${value.length}.`) 
+                : ok();
+    } 
+}
+
+go: (value: unknown) => Result<string> = value => {
+    // Since the value is unknown, we must check that the type is string before validating each rule
+    if (value === null) {
+        return {
+            ok: false,
+            message: "StringValidator expected a string but received null."
+        }       
+    } else if (value === undefined) {
+        return { 
+            ok: false,
+            message: "StringValidator expected a string but received undefined."
+        }
+    } else if (typeof value !== "string") {
+        return {
+            ok: false,
+            message: `StringValidator expected a string but received ${typeof value}.`
+        }
+    }
+
+    // TypeScript compiler now knows that value is a string
+    // Iterate over all rules and short-circuit to return an error if any rule fails
+    for (let rule of this.rules) {
+        const result = this.checkRule(rule, value);
+
+        if (result.ok === false) {
+            return result;
+        }       
+    }
+
+    // If none of the rules in the loop had an error, the value passed validation!
+    return {
+        ok: true,
+        value: value
+    }
+}
+
+const validator = new StringValidator().notEmpty().maxLength(20).notEqual("foo");
+const go = (value: string) => {
+    const result = validator.go(value);
+
+    if (result.error) {
+        console.error(result.message);
+    } else {
+        console.log(`String value is valid: ${result.value}.`);
+    }
+}
+
+go("foo"); // String value is valid: foo.
+go("bar"); // Value must not be bar.
+go("something longer than 20"); // String length must be less than or equal to 20 but was 24.
+
+
+type PropertyValidator<T> =
+    | IValidator<T>
+    | (value: unknown) => Result<T>;
+
+/**
+ * Takes the <T> type and requires all of its properties to be a PropertyValidator.
+ */
+type Shape<T extends object> = Record<keyof T, PropertyValidator<any>>;
+
+/**
+ * Determines whether the value is an IValidator by checking for a .go function.
+ */
+function isValidator<T>(value: unknown): value is IValidator<T> {
+    // Check if the value has a .go function. If so, it's an IValidator
+    return typeof (value as IValidator<T>).go === "function";
+}
+
+class ShapeValidator<T extends object> implements IValidator<T> {
+    constructor(private shape: Shape<T>) { }
+
+    go: (value: unknown) => Result<T> = value => {
+        const err: (msg: string) => Result<T> = msg => ({ ok: false, message: msg });
+
+        // First check that the value is an object and not an array, null, undefined, etc
+        if (value === null || value === undefined) {
+            return err("Value cannot be null or undefined.");
+        } else if (Array.isArray(value)) {
+            return err("Value must be an object but was an array.");
+        } else if (typeof value !== "object") {
+            return err(`Value must be an object but was ${typeof value}.`);
+        }
+
+        // Get the keys of both the expected shape, and the value
+        const expectedKeys = Object.getOwnPropertyNames(this.shape);
+        const actualKeys = Object.getOwnPropertyKeys(value);
+
+        // Check if any expected property is missing from the value
+        for (let expected of expectedKeys) {
+            if (actualKeys.indexOf(expected) === -1) {
+                return err(`Value is missing expected property ${expected}.`);
+            }
+        }
+
+        // All properties are accounted for! Now loop through each validator on the expected shape and test the value
+        for (let expected of expectedKeys) {
+            const validator = this.shape[expected];
+            const propValue = value[expected];
+
+            // TypeScript doesn't yet know if this is an IValidator, or a function. Use the isValidator guard to check.
+            const result = isValidator(validator) ? validator.go(propValue) : validator(propValue);
+
+            // If validation failed, short-circuit the loop and return an error
+            if (result.ok === false) return result;
+        }
+
+        // All validation passed!
+        return {
+            ok: true,
+            value: value
+        }
+    }
+}
+type LineItem = {
+    name: string;
+    manufacturer: string;
+}
+
+type PurchaseRequest = {
+    token: string;
+    line_item: LineItem;
+    /**
+     * Customer has the option to tell us a date by which they need the order.
+     */
+    needed_by: string | null;
+}
+
+const validator = new ShapeValidator<Expected>({
+    token: new StringValidator().notEmpty(),
+    line_item: new ShapeValidator<LineItem>({
+        name: new StringValidator().notEmpty(),
+        manufacturer: new StringValidator().notEmpty()
+    }),
+    needed_by: (value: unknown) => {
+        if (value === null) {
+            return { ok: true, value: null };
+        }
+
+        // Value is not null, so use a string validator to validate it.
+        return new StringValidator().notEmpty().go(value);
+    }
+});
+
+validator.go({
+    token: "token",
+    line_item: {
+        name: "Widget",
+        manufacturer: "Foo Co."
+    },
+    needed_by: null
+}); // { ok: true, value: ... }
+
+validator.go({
+    token: "token",
+    line_item: {
+        name: "Widget",
+        manufacturer: "Foo Co."
+    },
+    needed_by: null
+}); // { ok: true, value: ... }
+
+validator.go({
+    token: "token",
+    needed_by: null
+}); // { ok: false, message: "Value is missing expected property line_item." }
+
+validator.go("foo"); // { ok: false, message: "Value must be an object but was string." }
+
+go: (value: unknown) => Result<T> = value => {
+    ....
+
+    // Get the keys of both the expected shape, and the value
+    const expectedKeys = Object.getOwnPropertyNames(this.shape);
+    const actualKeys = Object.getOwnPropertyKeys(value);
+
+    // Check if any expected property is missing from the value
+    for (let expected of expectedKeys) {
+        if (actualKeys.indexOf(expected) === -1) {
+            return err(`Value is missing expected property ${expected}.`);
+        }
+    }
+
+    // All properties are accounted for, now reduce over each validator and add it to the output value if it passes
+    const defaultState = { ok: true, value: {} }
+    const output = expectedKeys.reduce<Result<T>>((state, key) => ({
+        // Check if value has failed validation at any point. If so, short-circuit and return the error.
+        if (state.ok === false) return state;
+
+        const validator = this.shape[key];
+        const propValue = value[key];
+
+        // TypeScript doesn't yet know if this is an IValidator, or a function. Use the isValidator guard to check.
+        const result = isValidator(validator) ? validator.go(propValue) : validator(propValue);
+
+        // Return the error if validation failed
+        if (result.ok === false) return result;
+
+        // Otherwise, tack the value onto the state object
+        return {
+            ok: true,
+            value: {
+                ...state.value,
+                [key]: result.value
+            }
+        }
+    }, defaultState)
+
+    return output;
+}
+There we go, the ShapeValidator is officially complete! Now it will only return the exact properties that it's expected to validate. 
+As a sidenote, this is kind of looping and reducing is one of my favorite parts of functional programming, and is very prevalent 
+in more functional languages like F#. It's such a joy that we can use functional paradigms in TypeScript/JavaScript.
+
+
+discriminated union: educative.io , ts masterclass, 
+-------------------------------------------------------
+interface EmailContact {
+    kind: 'email';
+    email: string;
+}
+
+interface PhoneContact {
+    kind: 'phone';
+    phone: number;
+}
+  
+type Contact = EmailContact | PhoneContact;
+
+interface Customer {
+    name: string;
+    contact: Contact;
+}
+
+function printCustomerContact({ contact }: Customer) {
+    if (contact.kind === 'email') {
+        // Type of `contact` is `EmailContact`!
+        console.log(contact.email);
+    } else {
+        // Type of `contact` is `PhoneContact`!
+        console.log(contact.phone);
+    }
+}
+
+terser type definition
+.-------------------------
+
+type Contact =
+    | { kind: 'email', email: string }
+    | { kind: 'phone', phone: number };
+
+more save without string kind name
+------------------------------------
+const enum ContactType { Phone, Email };
+
+type Contact =
+    | { type: ContactType.Email, email: string }
+    | { type: ContactType.Phone, phone: number };
+
+
+type Tree
+  | {type: 'empty'}
+  | {type: 'leaf', value:number}
+  | {type: 'node', left:Tree, right: Tree}
+
+domain modeling with discriminated unions
+--------------------------------------------
+domain rules:
+
+    Users
+    -----
+  - Users place orders for products. 
+
+    Products
+    --------
+
+  - Users have contact information, email or postal addresses, and at least one is required. 
+
+    Orders
+    ------
+  - Orders should include price, product name, quantity, 
+
+    Payment
+    --------
+  - payment date, paid amount, sending date, and delivery date.
+
+
+
+type Customer = {
+  name: string;
+  contactInfo: ContactInfo;
+};
+
+type ContactInfo =
+  | { kind: "emailOnly"; email: string }
+  | { kind: "postalOnly"; address: string }
+  | { kind: "emailAndPostal"; email: string; address: string };
+
+type PaidOrderData = { paymentDate: Date; amount: number };
+type SentOrderData = { sendingDate: Date };
+type DeliveredOrderData = { deliveryDate: Date };
+
+type OrderState =
+  | { kind: "new" }
+  | { kind: "paid"; paidData: PaidOrderData }
+  | { kind: "sent"; paidData: PaidOrderData; sentData: SentOrderData }
+  | {
+      kind: "delivered";
+      data: PaidOrderData;
+      sentData: SentOrderData;
+      deliveredData: DeliveredOrderData;
+    };
+
+type Order = {
+  customer: Customer;
+  state: OrderState;
+  productName: string;
+  price: number;
+  quantity: number;
+};
+
+state machines: sample loading state of fetch request
+.....................................................
+const enum FetchFlow = { initial, loading, data, error}
+
+type State =
+    | { type: FetchFlow.initial }
+    | { type: FetchFlow.loading }
+    | { type: FetchFlow.success, data: string[] }
+    | { type: FetchFlow.error, errorMessage: string };
+
+type Action =
+    | { type: 'fetchRequested' }
+    | { type: 'fetchSucceeded', success: string[] }
+    | { type: 'fetchFailed', message: string }
+    | { type: 'fetchCancelled' };
+
+function reducer(state: State, action: Action): State {
+    switch (state.type) {
+        case 'loading':
+            switch (action.type) {
+                case 'fetchSucceeded':
+                    return { type: 'data', data: action.data };
+                case 'fetchCancelled':
+                    return { type: 'initial' };
+                case 'fetchFailed':
+                    return { type: 'error', message: action.errorMessage };
+                case 'fetchRequested':
+                    return state;
+            }
+        case 'initial':
+        case 'error':
+        case 'data':
+            switch (action.type) {
+                case 'fetchRequested': return { type: FetchFlow.loading };
+                case 'fetchCancelled': return { type: FetchFlow.initial}
+                case 'fetchFailed':return { type: FetchFlow.error, message: action.message };
+                case 'fetchSucceeded':return { type: FetchFlow.success, data: action.data };
+                    return state;
+            }
+    }
+}
+
+function reducer(prevState: State, action: Action): State {
+    switch (prevState.type) {
+        case 'dataPartiallyLoaded':
+        case 'loading':
+            switch (action.type) {
+                case 'dataFetchingInProgress':
+                    return { type: 'dataPartiallyLoaded', data: action.data };
+                case 'dataFetchingSucceeded':
+                    return { type: 'withData', data: action.data };
+                case 'dataFetchingCancelled':
+                    return { type: 'initial' };
+                case 'dataFetchingFailed':
+                    return { type: 'error', errorMessage: action.errorMessage };
+                case 'dataRequested':
+                    return prevState;
+            }
+        case 'initial':
+        case 'error':
+        case 'withData':
+            switch (action.type) {
+                case 'dataRequested':
+                    return { type: 'loading' };
+                case 'dataFetchingCancelled':
+                case 'dataFetchingFailed':
+                case 'dataFetchingSucceeded':
+                case 'dataFetchingInProgress':
+                    return prevState;
+            }
+    }
+}
+
+type assertions
+-------------------------------
+type someTypeEnum = '1';
+type someOtherTypeEnum = '2' | '3';
+type combinedTypeEnum = someTypeEnum | someOtherTypeEnum;
+
+function typeAssertion<T extends combinedTypeEnum>(args: T): args is T & someTypeEnum {
+    return args === "1";
+}
+
+const a: combinedTypeEnum = "1"
+const b: combinedTypeEnum = "2"
+const c: combinedTypeEnum = "3"
+const d = "1"
+const e = "2"
+const f = "4"
+
+let one: "1" = "1"
+
+if (typeAssertion(a)) one = a
+if (typeAssertion(b)) one = b
+if (typeAssertion(c)) one = c
+if (typeAssertion(d)) one = d
+if (typeAssertion(e)) one = e
+if (typeAssertion(f)) one = f // this one gives an error
+
+----------------------------------------
+type FunctionPropertyNames<T> = { [K in keyof T]:
+T[K] extends Function ? K : never }[keyof T];
+
+interface Part {
+    id: number;
+    name: string;
+    subparts: Part[];
+    updatePart(newName: string): void;
+}
+
+type T40 = FunctionPropertyNames<Part>;  // "updatePart"
+

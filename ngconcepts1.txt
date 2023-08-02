@@ -1,0 +1,549 @@
+Angular Architecture
+-------------------------------------------------------------------------------------------
+A Module
+-------
+The basic building blocks of an Angular application are NgModules, 
+which provide a compilation context for components. 
+NgModules collect related code into functional sets; 
+an Angular app is defined by a set of NgModules. 
+An app always has at least a root module that enables bootstrapping, 
+and typically has many more feature modules.
+
+A Component Directive is a class with an associated template
+------------------------------------------------------------
+Components define views, which are sets of screen elements that Angular 
+can choose among and modify according to your program logic and data.
+
+Separate view layer from logic layer through Dependency Injection
+-------------------------------------------------------------------
+Components use services, which provide specific functionality not directly related to views. 
+Service providers can be injected into components as dependencies, 
+making your code modular, reusable, and efficient.
+
+Angular Services
+---------------------------------------------------------------------
+Router Service
+Http Service
+Forms Service
+Platform Service
+Injection Service
+ChangeDetection Service
+ViewFactory Service
+ComponentFactory Service
+
+Angular is based on following Technologies
+----------------------------------------------------------------------------------------
+A is written in Typescript (classes, decorators, observables)
+A is heavily based on the library RxJs
+A uses Webpack as treeshaking and bundling tool
+A uses Npm as package manager
+
+
+Angular Mental Model: From Static HTML to Dynamic HTML
+-----------------------------------------------------------------------------------------
+Change HTML Static view to a HTML Dynamic View with Data Binding and Change Detection.
+Static Form becomes a dynamic Form with data binding and validation
+
+Data Binding
+--------------
+Angular separates updating the application model and updating the view through data binding
+
+Event bindings are used to update the application model.
+Change detection uses property bindings to update the view. 
+
+Updating the view is unidirectional and top-down. 
+This makes the system more predictable and performant.
+
+We make the system more efficient by using the OnPush change detection strategy 
+for the components that depend on immutable input and only have local mutable state.
+
+Directives
+----------
+A extends the DOM with directives
+
+Directives are the A way to interact with the DOM (CRUD DOM Elements).
+
+Component Directive	C creates a DOM Element, has a template attached to it
+			and creates its own view.
+
+Attribute Directive	U update a DOM Element
+-------------------------------------------------------------------------------
+Attribute directives alter the appearance or behavior of an existing element. 
+In templates they look like regular HTML attributes, hence the name.
+
+Structural Directive	D delete a DOM Element
+-----------------------------------------------------------------------------
+Structural directives are responsible for HTML layout. They shape or reshape 
+the DOM's structure, typically by adding, removing, or manipulating elements.
+
+Template = HTML + Directives
+---------
+Directives are placed in a template
+
+View
+----
+A Template gets compiled by the template compiler and gets instanciated into
+a living View
+
+Services
+----------
+All not View related stuff in A is located in services.
+
+
+Angular
+-------------------------------------------------------------------------------------
+Angular View Layer - a browser extensibility toolkit
+Angular Directive - a browser instruction
+
+Angular is a platform and framework for building client applications in HTML and TypeScript. 
+Angular is written in TypeScript. 
+It implements core and optional functionality as a set of TypeScript libraries 
+that you import into your apps
+
+With Angular Core we can essentially extend the browser native functionality and 
+create our own HTML tags and attributes, and associate some behavior to them.
+
+Angular Compiler
+------------------------------------------------------------------------------------
+Angular is a sophisticated compiler, which takes an NgModule type and produces an NgModuleFactory (viktor savkin)
+
+Jit Compilation - at run time
+
+AOT Compilation - ahead of time as a build step of the application
+-------------------------------------------------------------------------
+To make AOT work the application has to have a clear separation of the static and dynamic data in the application
+classes and decorators, which the new versions of JavaScript and TypeScript support, made it way easier
+The central part of Angular is its compiler.
+The compilation can be done just in time (at runtime) and ahead of time (as a build step).
+
+The AOT compilation creates smaller bundles, tree shakes dead code, 
+makes your templates type-safe, and improves the bootstrap time of your application.
+The AOT compilation requires certain metadata to be known statically, 
+so the compilation can happen without actually executing the code.
+
+NgModule
+-----------------------------------------------------------------------------------
+An NgModule has components declared in it. While creating the module factory, the compiler will take the template 
+of every component in the module, and using the information about declared components and pipes, 
+will produces a component factory. The component factory is 
+a JavaScript class the framework can use to stamp out components
+
+Modules are the basic building blocks of A and are the units of compilation.
+NgModules, which provide a compilation context for components. 
+an Angular app is defined by a set of NgModules
+
+NgModules are the unit of compilation and distribution of Angular components and pipes
+
+1 RootModule
+--------------------------------------------------------------------------------
+An app always has at least a root module that enables bootstrapping, 
+and typically has many more feature modules.
+
+
+N Feature Modules
+----------------------------------------------------------------------------------
+
+Components
+-----------------------------------------------------------------------------------
+Components define views, which are sets of screen elements that Angular can choose among 
+and modify according to your program logic and data.
+
+A component knows how to interact with its host element.
+A component knows how to interact with its content and view children.
+A component knows how to render itself.
+A component configures dependency injection.
+A component has a well-defined public API of input and output properties
+
+
+Template
+----------------------------------------------------------------------------------
+You may be familiar with the component/template duality from your experience with 
+model-view-controller (MVC) or model-view-viewmodel (MVVM). In Angular, 
+the component plays the part of the controller/viewmodel, 
+and the template represents the view.
+
+Template Syntax
+---------------------------------------------------------------------------------
+Template Syntax:
+
+Interpolation				{ expression }
+Property binding			[ disabled ] ="isDisabled()"
+Event binding				(click) = "onClick($event)"
+Attribute binding			[highlight]
+Class binding				[.highlight]
+Style binding				[ngStyle.backgroundColor]="background()"
+Two-way data binding with ngModel 	[(name)] = "contact.name"
+
+HTML is the language of the Angular template. 
+Almost all HTML syntax is valid template syntax. The <script> element is a notable exception; 
+it is forbidden, eliminating the risk of script injection attacks. 
+In practice, <script> is ignored and a warning appears in the browser console. 
+See the Security page for details.
+
+Some legal HTML doesn't make much sense in a template. The <html>, <body>, 
+and <base> elements have no useful role. Pretty much everything else is fair game.
+
+You can extend the HTML vocabulary of your templates with components and directives 
+that appear as new elements and attributes. In the following sections, you'll learn 
+how to get and set DOM (Document Object Model) values dynamically through data binding.
+
+Templates give us is a clear boundary separating the view layer from the rest of the framework, 
+so we swap the implementation of the view layer without breaking any applications
+
+DOM Element - ElementRef
+------------------------------------------------------------------------------------
+
+
+Element injectors
+------------------------------------------------------------------------------------------------
+An injector does not actually belong to a component, but rather to the component 
+instance's anchor element in the DOM. A different component instance on a different 
+DOM element uses a different injector.
+
+Components are a special type of directive, and the providers property of @Component() 
+is inherited from @Directive(). 
+
+Directives can also have dependencies, and you can configure providers 
+in their @Directive() metadata. When you configure a provider 
+for a component or directive using the providers property, that provider belongs to the injector 
+for the anchor DOM element. 
+
+Components and directives on the same element share an injector.
+
+Learn more about Element Injectors in Angular.
+Injector bubbling
+Consider this guide's variation on the Tour of Heroes application. At the top is the AppComponent which has some subcomponents, such as the HeroesListComponent. The HeroesListComponent holds and manages multiple instances of the HeroTaxReturnComponent. The following diagram represents the state of this three-level component tree when there are three instances of HeroTaxReturnComponent open simultaneously.
+
+
+Providers
+---------------------------------------------------------------------------------------------
+When a component requests a dependency, Angular tries to satisfy that dependency with a provider 
+registered in that component's own injector. If the component's injector lacks the provider, 
+it passes the request up to its parent component's injector. 
+If that injector can't satisfy the request, it passes the request along to the next parent 
+injector up the tree. The requests keep bubbling up until Angular finds an injector 
+that can handle the request or runs out of ancestor injectors. If it runs out of ancestors, 
+Angular throws an error.
+
+If you have registered a provider for the same DI token at different levels, 
+the first one Angular encounters is the one it uses to provide the dependency. If, 
+for example, a provider is registered locally in the component that needs a service, 
+Angular doesn't look for another provider of the same service.
+
+
+Services
+--------------------------------------------------------------------------------------------
+Service is a broad category encompassing any 
+
+value, 
+function, or 
+feature that an app needs. 
+
+A service is typically a class with a narrow, well-defined purpose. It should do something 
+specific and do it well.
+
+Angular distinguishes components from services to increase modularity and reusability. 
+By separating a component's view-related functionality from other kinds of processing, 
+you can make your component classes lean and efficient.
+
+Ideally, a component's job is to enable the user experience and nothing more.
+ 
+A component should present properties and methods for data binding, in order to mediate 
+between the view (rendered by the template) and the application logic (which often includes 
+some notion of a model).
+
+A component can delegate certain tasks to services, such as 
+
+fetching data from the server, 
+validating user input, 
+or logging directly to the console. 
+
+By defining such processing tasks 
+in an injectable service class, you make those tasks available to any component. 
+You can also make your app more adaptable by injecting different providers of the same kind 
+of service, as appropriate in different circumstances.
+
+Angular doesn't enforce these principles. Angular does help you follow these principles 
+by making it easy to 
+
+factor your application logic into services and 
+make those services available to components through dependency injection.
+
+Dependency Injection
+---------------------------------------------------------------------------------------------
+Dependency injection (DI), is an important application design pattern. 
+Angular has its own DI framework, which is typically used in the design of Angular applications 
+to increase their efficiency and modularity.
+
+Dependencies are services or objects that a class needs to perform its function. 
+
+DI is a coding pattern in which a class asks for dependencies from external sources 
+rather than creating them itself.
+
+In Angular, the DI framework provides declared dependencies to a class when that class 
+is instantiated. This guide explains how DI works in Angular, and how you use it to make 
+your apps flexible, efficient, and robust, as well as testable and maintainable.
+
+
+
+DI is wired into the Angular framework and used everywhere to provide new components with 
+the services or other things they need. Components consume services; that is, 
+you can inject a service into a component, giving the component access to that service class.
+
+To define a class as a service in Angular, use the @Injectable() decorator to provide 
+the metadata that allows Angular to inject it into a component as a dependency.
+Similarly, use the @Injectable() decorator to indicate that a component or other class 
+(such as another service, a pipe, or an NgModule) has a dependency.
+
+The injector is the main mechanism. Angular creates an application-wide injector 
+for you during the bootstrap process, and additional injectors as needed. You don't have 
+to create injectors.
+
+An injector creates dependencies, and maintains a container of dependency instances 
+that it reuses if possible.
+
+A provider is an object that tells an injector how to obtain or create a dependency.
+
+For any dependency that you need in your app, you must register a provider with 
+the app's injector, so that the injector can use the provider to create new instances. 
+For a service, the provider is typically the service class itself.
+
+A dependency doesn't have to be a service
+
+it could be 
+
+a function, for example, or 
+a value.
+
+
+View Hierarchy
+--------------------------------------------------------------------------------------
+view hierarchy
+A tree of related views that can be acted on as a unit. 
+The root view is a component's host view. A host view can be the root of a tree of embedded views,
+collected in a view container (ViewContainerRef) attached to an anchor element in the hosting component. The view hierarchy is a key part of Angular change detection.
+
+The view hierarchy doesn't imply a component hierarchy. 
+
+Views that are embedded in the context of a particular hierarchy can be host views 
+of other components. 
+Those components can be in the same NgModule as the hosting component, 
+or belong to other NgModules.
+
+
+View - ViewRef
+-------------------------------------------------------------------------------------
+
+
+Host View - ViewRef
+-------------------------------------------------------------------------------------
+When you create a component, it's associated directly with a single view, called the host view. 
+The host view can be the root of a view hierarchy, which can contain embedded views, 
+which are in turn the host views of other components. 
+Those components can be in the same NgModule, or can be imported from other NgModules. 
+Views in the tree can be nested to any depth.
+
+The hierarchical structure of views is a key factor in the way Angular detects 
+and responds to changes in the DOM and app data
+
+Embedded View
+-------------------------------------------------------------------------------------------
+Represents an Angular view in a view container. An embedded view can be referenced 
+from a component other than the hosting component whose template defines it, or it 
+can be defined independently by a TemplateRef.
+
+abstract class EmbeddedViewRef<C> extends ViewRef 
+
+
+View Container - ViewContainerRef
+-------------------------------------------------------------------------------------------
+
+Data Binding
+------------------------------------------------------------------------------------
+input data
+-------------
+Event binding lets your app respond to user input in the target environment by updating 
+your application data.
+
+computed data
+----------------
+Property binding lets you interpolate values that are computed from your application 
+data into the HTML.
+
+load stored data
+-----------------
+
+Interpolation
+
+
+Oneway Data Binding
+
+
+Twoway Data Binding
+
+
+NgTemplateOutlet
+-----------------------------------------------------------------------------------
+Inserts an embedded view from a prepared TemplateRef.
+You can attach a context object to the EmbeddedViewRef by setting [ngTemplateOutletContext]. 
+[ngTemplateOutletContext] should be an object, the object's keys will be available 
+for binding by the local template let declarations.
+
+[ngTemplateOutletContext] 
+-----------------------------------------------------------------------------------------
+
+
+
+<ng-container *ngTemplateOutlet="templateRefExp; context: contextExp"></ng-container>
+
+
+
+
+Directives are the CRUD Operations for Angular
+-------------------------------------------------------
+CD : create DOM Element (Component Directive has Template attached to it)
+AD : update DOM Element (can be an custom Attribute, a CSS Class
+SD : add DOM Element (*ngFor)
+     remove DOM Element (*ngIf)
+
+Host Element
+---------------------------------------------------------------------------------------------------------
+To turn an Angular component into something rendered in the DOM you have to associate an Angular component 
+with a DOM element. We call such elements host elements.
+
+A component can interact with its host DOM element in the following ways:
+It can listen to its events. (@HostListener Decorator)
+It can update its properties. (@HostBinding Decorator)
+It can invoke methods on it. (elementRef.nativeElement.invoke('focus'))
+
+HostListener
+---------------------------------------------------------------------------------
+Binds a CSS event to a host listener and supplies configuration metadata. 
+Angular invokes the supplied handler method when the host element emits the specified event, 
+and updates the bound element with the result. If the handler method returns false, 
+applies preventDefault on the bound element.
+
+
+Queries
+In addition to access its host element, a component can interact with its children. 
+There are two types of children a component can have: content children and view children
+@ViewChild, @ViewChildren, @ContentChild, @ContentChildren
+
+Directive Microsyntax for writing your own structural directives
+--------------------------------------------------------------------------------------
+Microsyntax
+The Angular microsyntax lets you configure a directive in a compact, friendly string. 
+
+The microsyntax parser translates that string into attributes on the <ng-template>:
+The let keyword declares a template input variable that you reference within the template. 
+The input variables in this example are hero, i, and odd. The parser translates let hero, 
+let i, and let odd into variables named, let-hero, let-i, and let-odd.
+
+The microsyntax parser takes of and trackBy, title-cases them (of -> Of, trackBy -> TrackBy), 
+and prefixes them with the directive's attribute name (ngFor), yielding the names ngForOf 
+and ngForTrackBy. Those are the names of two NgFor input properties . 
+That's how the directive learns that the list is heroes and the track-by function is trackById.
+
+As the NgFor directive loops through the list, it sets and resets properties of its own context 
+object. These properties include index and odd and a special property named $implicit.
+
+The let-i and let-odd variables were defined as let i=index and let odd=odd. Angular sets 
+them to the current value of the context's index and odd properties.
+
+The context property for let-hero wasn't specified. Its intended source is implicit. 
+Angular sets let-hero to the value of the context's $implicit property which NgFor has 
+initialized with the hero for the current iteration.
+
+The API guide describes additional NgFor directive properties and context properties.
+
+NgFor is implemented by the NgForOf directive. Read more about additional 
+NgForOf directive properties and context properties NgForOf API reference.
+
+These microsyntax mechanisms are available to you when you write your own structural directives. 
+Studying the source code for NgIf and NgForOf is a great way to learn more.
+
+Template input variable
+A template input variable is a variable whose value you can reference within a 
+single instance of the template. There are several such variables in this example: 
+hero, i, and odd. All are preceded by the keyword let.
+
+A template input variable is not the same as a template reference variable, 
+neither semantically nor syntactically.
+
+You declare a template input variable using the let keyword (let hero). 
+The variable's scope is limited to a single instance of the repeated template. 
+You can use the same variable name again in the definition of other structural directives.
+
+You declare a template reference variable by prefixing the variable name with # (#var). 
+A reference variable refers to its attached element, component or directive. 
+It can be accessed anywhere in the entire template.
+
+Template input and reference variable names have their own namespaces. 
+The hero in let hero is never the same variable as the hero declared as #hero.
+
+One structural directive per host element
+Someday you'll want to repeat a block of HTML but only when a particular condition is true. 
+You'll try to put both an *ngFor and an *ngIf on the same host element. Angular won't let you. 
+You may apply only one structural directive to an element.
+
+The reason is simplicity. Structural directives can do complex things with the host element 
+and its descendents. When two directives lay claim to the same host element, which one takes 
+precedence? Which should go first, the NgIf or the NgFor? Can the NgIf cancel the effect of 
+the NgFor? If so (and it seems like it should be so), how should Angular generalize the 
+ability to cancel for other structural directives?
+
+There are no easy answers to these questions. Prohibiting multiple structural directives 
+makes them moot. There's an easy solution for this use case: put the *ngIf on a container 
+element that wraps the *ngFor element. One or both elements can be an ng-container 
+so you don't have to introduce extra levels of HTML.
+
+
+
+Attribut Directive (enhance DOM Element with Presentation and Behavior)
+-------------------------------------------------------------
+Marks a class as an Angular directive. You can define your own directives 
+to attach custom behavior to elements in the DOM. 
+The options provide configuration metadata that determines 
+how the directive should be processed, instantiated and used at runtime.
+
+Structural Directive (add/remove DOM Elements)
+------------------------------------------------------------------------
+Structural directives are responsible for HTML layout. They shape or reshape the 
+DOM's structure, typically by adding, removing, or manipulating elements.
+
+As with other directives, you apply a structural directive to a host element. 
+The directive then does whatever it's supposed to do with that 
+host element and its descendants.
+
+
+Component (create a single DOM Element: 1 Template -> 1 DOM Element )
+----------------------------------------------------------------------
+Components are the most basic UI building block of an Angular app. 
+An Angular app contains a tree of Angular components.
+
+Angular components are a subset of directives, always associated with a template. 
+Unlike other directives, only one component can be instantiated per an element in a template.
+
+A component must belong to an NgModule in order for it to be available to another component 
+or application. To make it a member of an NgModule, list it in the declarations field 
+of the @NgModule metadata.
+
+Note that, in addition to these options for configuring a directive, you can control 
+a component's runtime behavior by implementing life-cycle hooks. For more information, 
+see the Lifecycle Hooks guide.
+
+
+Directive use cases
+---------------------------------------------------------------------------------
+Autofocus on input fields
+
+Async email/username validators
+
+Autosize for textareas
+
+Debounce directive for input fields
+
+Infinite scroll
+
+Sticky directive (makes an element fixed position when it reaches a certain scrolling distance)
+modal dialog box

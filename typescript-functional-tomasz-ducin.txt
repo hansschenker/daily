@@ -1,0 +1,366 @@
+/**
+ * FUNCTIONAL COMPOSITION
+ *
+ * Tomasz Ducin
+ * http://ducin.it
+ * twitter: @tomasz_ducin
+ */
+
+// some initial stuff
+
+type ContractType = "contract" | "permanent";
+
+type Developer = {
+  "id": number;
+  "nationality": "PL" | "DE",
+  "salary": number;
+  "firstName": string;
+  "lastName": string;
+  "contractType": ContractType;
+  "skills": string[];
+};
+
+declare const devs: Developer[]
+
+///////////////////////////////////////
+
+let fn: Function
+
+type FnType = () => number 
+
+type CloseOverAnumber = () => () => () => number
+
+type NoopFn = () => void
+
+var noopFn: NoopFn = () => {}
+
+///////////////////////////////////////
+
+interface InterfaceFunction {
+  (): void
+  get: Function
+  post: Function
+}
+// $("div")
+// $.get(...)
+// $.post(...)
+// $.ajax(...)
+
+// TYPE INFERENCE
+// no inference for function params
+
+function add(a: number, b: number){
+  return a + b
+}
+
+// TYPE COMPATIBILITY
+
+type City = 'Warsaw' | 'Wrocław'
+
+type CityFn = (arg: City) => void
+
+type StringFn = (arg: string) => void
+
+var cityFn: CityFn
+var stringFn: StringFn
+
+cityFn = stringFn
+stringFn = cityFn // fails with strictFunctionTypes (contravariance)
+
+///////////////////////////////////////
+// GENERICS
+
+type FnParam<T> = (t: T) => boolean
+type FnGeneric = <T>(t: T) => boolean
+
+type DeveloperBoolFn = FnParam<Developer>
+var f5: FnGeneric = (d: Developer) => true // FAILS!
+// assigned function needs to have a generic, fails because it's a certain type, not a generic
+
+// only generic fn can be assigned to a generic-fn type
+declare const f6: FnGeneric;
+f6(devs[0])
+f6(1)
+
+// (1) input parameters and output type has to match
+// (2) you can pass a fn that accepts less params, but not more params
+
+const add1 = (a) => a + 1
+var arr = [1, 2, 3].map((a, idx, arr) => a + 1)
+
+///////////////////////////////////////
+// example 1: Composing Boolean Functions - negate
+
+type EntityBoolFn<T> = (t: T) => boolean
+// type DevBoolFn = (d: Developer) => boolean
+type DevBoolFn = EntityBoolFn<Developer>
+
+const devHasContractType =
+  (c: ContractType) =>
+    (d: Developer) => d.contractType === c
+const devIsContractor = devHasContractType("contract")
+// const devIsPermanent = devHasContractType("permanent")
+
+type BoolComposition = (dfn: DevBoolFn) => DevBoolFn
+const negate: BoolComposition =
+  (bfn: DevBoolFn) =>
+    (d) => !bfn(d)
+
+const devIsPermanent = negate(devIsContractor)
+
+///////////////////////////////////////
+// example 2: Composing Boolean Functions - all
+
+const all = (dfns: DevBoolFn[]): DevBoolFn =>
+  (d) => dfns.every(dfn => dfn(d))
+
+// 2nd : reduce
+// 3rd : recursion
+// 4th : some
+// 5th : find
+
+// /\/\/\
+// |____|
+// REDUCE
+
+// (bigger is NOT what we need here)
+let bigger = [1,2,3].every(a => a > 0)
+
+///////////////////////////////////////
+// example 3: Limitation of TS: mergeMultipleObjects
+// reduce ran against dynamic number of arguments, each with potentially different shape
+
+const merge2Objects = <T extends Object, U extends Object>
+  (obj1: T, obj2: U) =>
+    ({ ...obj1, ...obj2 })
+
+function mergeMultipleObjects<T extends Object, U extends Object>(t: T, u: U): T & U
+function mergeMultipleObjects<T extends Object, U extends Object, W extends Object>(t: T, u: U, w: W): T & U & W
+function mergeMultipleObjects<T extends Object, U extends Object, W extends Object, X extends Object>(t: T, u: U, w: W, x: X): T & U & W & X
+function mergeMultipleObjects(objects: []) {
+  return objects.reduce(merge2Objects)
+}
+
+let r1 = mergeMultipleObjects(
+  {name: 'John'},
+  {age: 40},
+  {city: "Liverpool"},
+  {band: "The Beatles"})
+
+console.log(devIsContractor(devs[1]) )
+console.log(devIsPermanent(devs[1]) )
+
+///////////////////////////////////////
+// example 4: Limitation of TS: pipe
+// the same limitation, reduce with different shapes (function signatures)
+
+function pipe<T, U, V>(
+  fn1: (t: T) => U,
+  fn2: (u: U) => V
+): (t: T) => V
+function pipe<T, U, V, W>(
+  fn1: (t: T) => U,
+  fn2: (u: U) => V,
+  fn3: (v: V) => W,
+): (t: T) => W
+function pipe<T, U, V, W, X>(
+  fn1: (t: T) => U,
+  fn2: (u: U) => V,
+  fn3: (v: V) => W,
+  fn4: (w: W) => X,
+): (t: T) => X
+function pipe(...fns: Function[]){ // left -> right
+  return (value) => fns.reduce( (v, fn) => fn(v), value )
+}
+
+let processing = pipe(
+  (devs: Developer[]) => devs.filter(d => d.nationality === 'PL'),
+  (devs) => devs.filter(d => d.skills.includes('TypeScript')),
+  (devs) => devs.reduce((maxSalaryDev, d) =>
+    maxSalaryDev.salary > d.salary ? maxSalaryDev : d, devs[0]), // max salary
+  (dev) => `${dev.firstName} ${dev.lastName}`
+)
+const endOfThisLiveCodingSession = processing(devs)
+
+// enjoy the magnificent types within the pipe!
+
+
+--------------------------------------------------------------------------------------------------------------
+import { INC } from './constants';
+
+export const Inc = () => ({
+  type: INC as typeof INC
+})
+
+export type Actions =
+  | ReturnType<typeof Inc>
+
+----
+import React from 'react'
+import { connect } from 'react-redux'
+
+import { AppState } from './state';
+
+export const ReduxComponent = connect(
+  (state: AppState) => ({
+    count: state.count
+  }),
+  (dispatch) => ({
+    //
+  }))((props: { count: number }) => <span>{props.count}</span>)
+------------------------------------
+export const INC = "INC"
+
+--------
+epic
+--------
+import { Observable, empty, interval } from "rxjs";
+import { ActionsObservable, ofType, combineEpics, StateObservable } from "redux-observable";
+
+import { switchMapTo, tap, mapTo, withLatestFrom } from "rxjs/operators";
+
+import { Actions, Inc } from "./actions";
+import { AppState } from "./state";
+
+
+export const logIncEpic = (action$: ActionsObservable<Actions>, state$: StateObservable<AppState>) => action$.pipe(
+  ofType("INC"),
+  withLatestFrom(state$),
+  tap(([action, state]) => console.log(action.type, state)),
+  switchMapTo(empty()),
+)
+
+export const each5secEpic = (action$: ActionsObservable<Actions>) => interval(5000).pipe(
+  mapTo(Inc())
+)
+
+export const rootEpic = combineEpics(
+  logIncEpic,
+  each5secEpic
+)
+-----------
+reducer
+----------
+import { AppState } from './state';
+import { Actions } from './actions';
+
+const initialState: AppState = {
+  count: 1
+}
+
+export const rootReducer = (state = initialState, action: Actions) => {
+  switch(action.type) {
+    case "INC":
+      return { ...state, count: state.count + 1 }
+
+    default:
+      return state
+  }
+}
+----------
+
+state
+-------
+export type AppState = {
+  count: number
+}
+---------
+
+store
+--------
+import { createStore, applyMiddleware, Store } from 'redux'
+import { composeWithDevTools } from 'redux-devtools-extension'
+import thunk from 'redux-thunk'
+import { createEpicMiddleware, EpicMiddleware } from 'redux-observable'
+
+import { rootReducer } from './reducers'
+import { rootEpic } from './epics'
+const epicMiddleware: EpicMiddleware<Actions, Actions, AppState> = createEpicMiddleware();
+
+const middleware = [thunk, epicMiddleware]
+
+import { AppState } from './state';
+import { Actions } from './actions';
+
+const composeEnhancers = composeWithDevTools({
+  name: "IT Corpo React App"
+});
+
+export const getStore = (): Store<AppState> => {
+  const store = createStore(rootReducer, composeEnhancers(
+    applyMiddleware(...middleware),
+    // other store enhancers...
+  ))
+
+  epicMiddleware.run(rootEpic);
+
+  return store;
+}
+-----------
+npm i redux react-redux redux-devtools-extension redux-observable redux-thunk @types/react-redux
+git clone https://gist.github.com/ducin/f8d4b1fffcc84c1bf16876dd8b6876d9 src/store
+rm -rf src/store/.git # aby git nie robił submodules
+-----------------------
+
+json-faker
+-------
+{
+"name": "jsf-demo",
+"description": "JSON-Schema-faker demo gist",
+"main": "run.js",
+"dependencies": {
+"json-schema-faker": "^0.2.6"
+}
+}
+------------
+
+json-faker run
+----------var jsf = require('json-schema-faker');
+var schema = require('./schema.json');
+
+var sample = jsf(schema);
+console.log(sample);
+------------
+
+
+
+json-faker schema
+----------------
+{
+"type": "object",
+"properties": {
+"user": {
+"type": "object",
+"properties": {
+"id": {
+"$ref": "#/definitions/positiveInt"
+},
+"name": {
+"type": "string",
+"faker": "name.findName"
+},
+"email": {
+"type": "string",
+"format": "email",
+"faker": "internet.email"
+}
+},
+"required": [
+"id",
+"name",
+"email"
+]
+}
+},
+"required": [
+"user"
+],
+"definitions": {
+"positiveInt": {
+"type": "integer",
+"minimum": 0,
+"exclusiveMinimum": true
+}
+}
+}
+---------------------

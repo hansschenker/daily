@@ -1,0 +1,9 @@
+const [errorMsg, setErrorMsg] = useState('');
+
+const count = useObservable(source2$, 0, (err) => setErrorMsg(err.message));
+
+return (
+  <div className="App">
+    {count} {errorMsg}
+  </div>
+);

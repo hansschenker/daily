@@ -1,0 +1,29 @@
+Attribute directives 
+
+- listen to and 
+- modify the behavior 
+            - of other HTML elements, 
+            - attributes, 
+            - properties, and 
+            - components. 
+
+ - css class attribute: 	ngClass: Adds and removes a set of CSS classes, [class.isDisabled]="true" 
+ - css style attribute: 	ngStyle: Adds and removes a set of HTML styles. 
+ - html form:           	ngModel: Adds two-way data binding to an HTML form element.
+
+
+@HostBinding('class.highlighted')  [highlighted]="isHighlighted"
+@HostBinding('style.border')
+@HostBinding('attr.disabled')    get disabled() { return this.isDisabled }
+
+@HostBinding('class.highlighted')
+
+
+get cssClasses() {
+  return 'highlighted' = isHighlighted
+}
+
+
+
+@HostListener('mouseenter')
+onMouseEnter(){}

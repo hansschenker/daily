@@ -1,0 +1,111 @@
+/*
+Countdown rules:
+Players select 6 number cards at random from two different decks.
+One deck has 25, 50, 75, 100.
+Another has the numbers 1-10, each twice.
+
+A random number, the target, is picked between 100-999.
+Players must find a way to the target using the number cards.
+Numbers can be added, deducted, multiplied, or divided.
+A card can only be used once in a given solution.
+Negative numbers are not allowed.
+Non-integers are not allowed.
+*/
+
+function pickRandom<T>(arr: T[]): T {
+  const index = Math.floor(Math.random() * arr.length);
+  return arr.splice(index, 1)[0];
+}
+
+const largeNums = [25, 50, 75, 100];
+// 1-10, twice
+const smallNums = Array.from({ length: 20 }, (_, i) => (i % 10) + 1);
+const ops = ['+', '-', '*', '/'];
+
+// 100-999
+const target = Math.floor(Math.random() * 900) + 100;
+
+const numbers = [
+  pickRandom(largeNums),
+  pickRandom(largeNums),
+  pickRandom(smallNums),
+  pickRandom(smallNums),
+  pickRandom(smallNums),
+  pickRandom(smallNums),
+];
+
+console.log('Target', target);
+console.log('Numbers', numbers);
+
+let solutionSteps = Infinity;
+
+function solveBranch(numbers: number[], steps: number = 0): string | undefined {
+  let branchSolution: string | undefined = undefined;
+
+  // The solution is not allowed to dip into negative numbers at any point.
+  // So. sort the numbers descending, to avoid negatives and fractions < 1.
+  numbers.sort((a, b) => b - a);
+
+  for (let i = 0; i < numbers.length; i++) {
+    // We only need to look forward from the current position, because:
+    // Order doesn't matter with addition.
+    // Order matters with deduction, but the other way around would be < 0.
+    // Order doesn't matter with multiplication.
+    // Order matters with division, but the other way around would be < 1.
+    for (let j = i + 1; j < numbers.length; j++) {
+      for (const op of ops) {
+        let subResult: number;
+
+        switch (op) {
+          case '+':
+            subResult = numbers[i] + numbers[j];
+            break;
+          case '-':
+            subResult = numbers[i] - numbers[j];
+            // Zero doesn't help, and might land us with div-by-zero later.
+            if (subResult === 0) continue;
+            break;
+          case '*':
+            // Multiplying by 1 is a waste of a move.
+            if (numbers[i] === 1 || numbers[j] === 1) continue;
+            subResult = numbers[i] * numbers[j];
+            break;
+          default:
+            // '/'
+            // Dividing by 1 is a waste of a move.
+            // Fractions are not allowed.
+            if (numbers[j] === 1 || numbers[i] % numbers[j]) continue;
+            subResult = numbers[i] / numbers[j];
+            break;
+        }
+
+        if (subResult === target) {
+          solutionSteps = steps + 1;
+          return `${numbers[i]} ${op} ${numbers[j]} = ${subResult}`;
+        }
+
+        // We've already found a simpler solution. Bail.
+        if (steps + 1 === solutionSteps) return;
+
+        // Create a new set of numbers, removing the cards we've used,
+        // and replacing them with a made-up card of our intermediate result.
+        const newNumbers = [
+          ...numbers.slice(0, i),
+          ...numbers.slice(i + 1, j),
+          ...numbers.slice(j + 1),
+          subResult,
+        ];
+
+        const subSolution = solveBranch(newNumbers, steps + 1);
+        if (!subSolution) continue;
+
+        // Document the solution, but a shorter solution may come up later.
+        branchSolution = `${numbers[i]} ${op} ${numbers[j]} = ${subResult}\n${subSolution}`;
+      }
+    }
+  }
+
+  return branchSolution;
+}
+
+console.log(solveBranch(numbers) || 'Could not solve');

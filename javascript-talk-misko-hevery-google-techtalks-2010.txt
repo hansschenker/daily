@@ -1,0 +1,1313 @@
+ But I've been doing it very intensely. I've been working on a project
+
+called angular. And I was able to kind of learn how to push the browser into new limits,
+
+et cetera, so I'm just going to share some of the know-how I have. By the way, this is
+
+an introduction in a sense that I wanted to show you how JavaScript works not necessarily
+
+what the syntax of JavaScript is or all the nuances that I'm sure, you know, most of you
+
+guys can figure out just fine. So we're going to talk about basic concepts of JavaScript
+
+and, mainly, the 
+
+-fact that everything in JavaScript is an object or 
+- an object that's really just a HashMap, 
+
+right, it's just a hash. And so all the 
+
+-primitive types, which are objects,
+ - arrays, 
+ - strings, 
+ - numbers, 
+ - functions, 
+
+ null and undefined is not an object 
+
+- JavaScript is a functional language. 
+  In a such, there's maybe a little bit of different way of thinking
+
+about the problem than OO, but nevertheless because we're coming from an OO world, we're
+
+going to talk--we're going to show you how we can build OO systems mainly classes, inheritance,
+
+and, you know, that standard OO conventions that we have. And we're going to talk about
+
+a little bit about the browser. So, keep in mind that we're talking about JavaScript in
+
+its purest form, not necessarily JavaScript, how it's also tied with the browser and how
+
+it's also tied with the API that it has. I'm only talking about the language itself. I
+
+personally am a big fan of the language itself. The APIs are kind of interesting. But the
+
+browser is where most people have the kind of the hatred towards JavaScript because all
+
+the browsers are different, right? But, you know, keep in mind that the differences between
+
+the browsers are not the differences between JavaScript but rather than differences between
+
+browsers. And so we will talk about that in a bit. So if you are on a--on your computer
+
+and you want to follow along, you can--let's see, I cannot do it here. But just about any
+
+webpage you open, and you hit Inspect Element, a little debugger comes along down here. And
+
+then you can click on--if you're in Safari or Chrome, you can click in over here and
+
+you can type commands over here. So you can say, I don't know, "+" and, you know, it
+
+values immediately. So as I--we go along, I encourage you to go and try these things
+
+on your browser as well. Okay. So let's start with the basic, which is that the--we have
+
+an object. And so, you can really declare objects in one of two ways. You can say new
+
+object if you're coming from a Java world. How many people are coming from Java world?
+
+About everybody, right? Okay. So this should be very natural to you to do. The second one
+
+is it kind of a shorthand notation, which is just two curlies. How many people know
+
+JSON? Okay. So the two curlies should be, again, familiar to you, right? And so, this
+
+is basically how you instantiate an object. Now, a couple of things that you might not
+
+know about JavaScript, first of all, you can--there's this type of operator when you can say--and
+
+it actually returns a string. So if you say "typeof obj", you'll get a string that says
+
+"object". And you can also say, "obj instanceof Object". Now, here's something interesting.
+
+Notice that in the first case it's returning a string with lowercase O, in a second case,
+
+this is actually a variable, which is a global variable called object that refers to a constructor.
+
+And so what's your saying there is that--what "obj" constructed using the constructor function
+
+object. And, again, the answer is true. And you can try this on your debugger and you'll
+
+see the same thing happens. And all objects have several special properties that are just
+
+always present. And one of these properties is, for example, a constructor and that points
+
+to the function which constructed the objects. So if you say, "obj.constructor" you will
+
+get back a function that was the constructor. So in essence, the line that says, "obj instanceof
+
+Object" and the "obj.constructor" are basically the same way of asking the same question.
+
+Well, sort of. In this case, it's the same thing. In a case where you would have inheritance
+
+and you would basically have something else like a vehicle that inherits from object,
+
+you know, the "vehicle.constructor" will point to a vehicle. But the--if you say, "Is vehicle
+
+instanceof Object," that will still say true. So the instance of operate is a little more
+
+intelligent not only does it say, "Was it constructed," it also says, "Well, maybe some
+
+of the parent classes could have been the constructor of it as well. So it kind of works
+
+just like you would expect it in Java. Does that make sense? By the way, stop me as I'm
+
+talking about this thing. I love questions. If something is not clear and you want more
+
+explanations, you know, just go ahead. Yes, go for it.
+
+>> You said that everything is an object in JavaScript, so in this instance of object,
+
+what type of anything equals object? >> HEVERY No. If you say "typeof", for example,
+
+three, it will come back as a number. >> Other than the number.
+
+>> HEVERY If you say type of string--strings are kind of weird. They're kind of an object
+
+and kind of a primitive, and they'll auto convert on you automatically sometimes. So
+
+they'll come back as a string. But in general, for all the objects that you--all the classes
+
+that you declare when you say "typeof", it will always come back as an object that's
+
+correct. But if you say "instanceof", you might be able to get more mileage out of it,
+
+that's a very good point. And one thing I didn't mention is, there are concepts of primitive
+
+types in JavaScript, and the primitive types are number and Boolean, and I think that's
+
+it. Strings--string is kind of a weird one. It's kind of a--it's a primitive type but
+
+it--sometimes it behaves as an object. Okay. So, on the bottom, we just have a simple assignment.
+
+And I'm just trying to point out that you can assign in one of two ways. You can either
+
+do a literal assignment using the dot or you can say, using the bracket notation and in
+
+the string. And the reason why you want to use the bracket notation is that what's inside
+
+of it could be a variable, right? So you could have a variable "X=name" and then you can
+
+say "obj[X]", right? And X values to name and therefore you're saying "object.name".
+
+>> Can I ask a question? >> HEVERY Yes.
+
+>> When I look at this "obj instanceof", I just--you're like ripping my hair. Is there
+
+a better way to do this even though this might be illegal?
+
+>> HEVERY What is it that you're having trouble with?
+
+>> Like... >> Can you repeat the question for [INDISTINCT]?
+
+>> HEVERY Oh, sorry. He says, he's trying to rip his hair off when he sees "obj instanceof"
+
+object. >> In other words, is there a dot thing or
+
+a--you could pass this in parenthesis or something like that?
+
+>> HEVERY No. There is no other notation. I mean, you can create your own function that
+
+does this right. But I mean, if you look at other languages like Java, they have the same
+
+exact thing. Like in Java, you would say, "x instanceof class" and it will evaluate
+
+to either true or false. So this is something that other objects--other languages have as
+
+well, so it's not--nothing unique, nothing unique to JavaScript. Okay. So let's talk
+
+about the prototype chains. This is kind of where it gets interesting and where all the
+
+power of JavaScript comes from. So I can declare a class--sorry, I can declare an object instance
+
+called vehicle, and I'm going to give it an attribute called powered equals true. And
+
+you notice--and before, I would just use double curlies to declare it an object. It's also
+
+possible that I get inside of those level curlies, enter new attributes of this object.
+
+So the vehicle will automatically have a property called powered and it will be set to true.
+
+And I can also create a Volvo and I'll say that it seats four. So, now, I have two classes;
+
+vehicle and Volvo. And as you can see, they're completely independent. They're not related
+
+in anyway, all right, there's no references from one to the other. And so if I can say--if
+
+I say, "Volvo.seats", I will get four. And if I say, "Volvo.powered", I will get undefined.
+
+And that make sense because, you know, I haven't defined the powered on Volvo. And what I can
+
+do next is something interesting. I can say "Volvo.__proto__", it's a special property,
+
+another one of those magic properties, and I can send it to vehicle. What it is basically
+
+is if you think of an object as a HashMap, what's you're setting there is the parent
+
+HashMap saying that, if I'm going to look up a property called powered, let's say and
+
+if you don't have it set in your HashMap, ask your parent, maybe he has it. And this
+
+can be chained as deep as you want, maybe and so on and so forth, right? So, now, after
+
+we set the property, I can say, "Volvo.powered" and it will answer back as true because while
+
+the Volvo doesn't have the powered property, the vehicle which the Volvo inherits from
+
+does. And so, now, you get a--you get back to true. So now I can do something more interesting
+
+and that is I can say, "Volvo.powered = 'gasoline';". And so I'm overwriting the property powered
+
+on Volvo. And, so my question becomes, which property am I overwriting? Is it the property
+
+on Volvo? Is it the property on vehicle? And the answer to that is, it's on the Volvo itself.
+
+So what you're doing is you're covering up the property of the parent object. So "Volvo.powered"
+
+returns gasoline, but "vehicle.powered" still returns true, that was the original setting
+
+that we have over there. And we can also say, "Volvo.proto.powered" and that comes back
+
+as true because you're saying, "Go to the parent object, which is now vehicle and look
+
+at the powered and that becomes true." >> It doesn't matter if they're actually the
+
+same type? >> HEVERY The concept of type is kind of
+
+a stretch--sorry--to repeat the question. Does it matter if they're not of the same
+
+type? Well, there is really no--well, there are types, but they're very vague inside of
+
+JavaScript, right? And so there are no constraints. And you can really do anything you want. And
+
+the interpreter will be perfectly happy to do this. So there are no restrictions on types
+
+in JavaScript. It's a very weakly-typed language. Okay, does that make sense? All right, so
+
+let's go make some more interesting stuff with functions. So just like you can declare
+
+objects, you can declare functions. And keep in mind that what is true of object is also
+
+true of functions because function is an object. So, they can declare a function. And there's
+
+only two ways to declare a function. So the first case is what's known as the main function.
+
+So you say "function add" it takes two parameters "(a, b)" and it will return simply the sum
+
+of A and B. And I'm also going to declare a--I can also have an anonymous function to
+
+the second line, which says "function (a) (returns -a ;)." And I'm going to assign it
+
+to a variable negate. So in the first case, I have a function that has a name Add and
+
+in the second case, I have a variable negate, which is pointing to an anonymous function.
+
+It turns out that there's really very few differences if any between these two. The
+
+only difference is that if you'll say "add.name", it will actually give you the name of the
+
+function. Whereas, if you say, "negate.name", it will say, "I don't know--I don't have a
+
+name." It will just have an empty string. But other than that, in both cases, the function
+
+pointer, which is where the property negate and add is set, is set to the current scope.
+
+And I mean the case over here is actually going to be on a window. And we'll talk about
+
+that later on. So if you'll say, "window.add", you will get a reference to the add function.
+
+If you say "window.negate", you will get a reference in negate function. Anyway, so functions,
+
+after you declare them, they can be called. So you can say, "Add (, )" and that will
+
+call the function and will evaluate it. Not only can you call them in that particular
+
+way, you can also call them using apply and call. And apply is basically a--kind of a
+
+reflective way of calling the function. And we'll talk about that a little bit in the
+
+second, so that it takes the first argument, which is the functions, this. We'll talk about
+
+it in the next slide. So I'll just pass in a null for a second. And in the "apply", you
+
+can pass an array of arguments into the functions. So, again, if you say, "Add.apply", and you
+
+say array of "(, )", it's the same thing that's calling the add function directly and
+
+you get three. The call is the same exact thing except the arguments are not in an array.
+
+So you would say, "Why would I want to do that?" You would want to do it because if
+
+you wanted to call a function reflectively and you don't know how many arguments it has
+
+ahead of time, passing in an array of arguments allows you to build up any argument strings
+
+you want. Okay. So going on, "typeof add" returns a function, you know, just as we would
+
+expect. "Add.name" returns add, because that's the name of the function, because you could
+
+say, "X=add", right? And then you could say, "X.name", and will still return add. Does
+
+that make sense? Okay. So "add.length" will return number of arguments that the function
+
+has. We already said that negate is anonymous. It doesn't have a name. And I'm just pointing
+
+out the type of "add.apply" is also a function. So not only are you declaring function, the
+
+each function also gets these two special helper functions, the "apply and call" for
+
+calling it. And I also want to point out that it also has the special constructor property,
+
+which points to a global constructor function called function. And because it points to
+
+a global constructor function that also means you can call the constructor using the new
+
+operator. So if I say "new function" and I pass in an argument A and in the second argument,
+
+I'll pass in a string, which is actually a piece of JavaScript code, these will actually
+
+instantiate a new function. It's a kind of alluded way of doing it. But this is actually
+
+perfectly valid as well. So if you wanted to create functions on the fly, you can do
+
+that as well. So, does that make sense with functions? Any questions on it? Okay, it sounds
+
+like we're doing good. Okay, now, one more thing about function, I guess to talk about
+
+is closures. And this is kind of something that is very new to JavaScript--I'm sorry.
+
+It's a concept that's new if you're coming to JavaScript. It's not a concept you're going
+
+to have in, let's say, Java. And the closures is what's really powerful about JavaScript,
+
+but it takes a really while to get used to it and kind of knowing how to get the most
+
+out of them. But anyways, so here's an example called greeter. So there's a function called
+
+greeter, and it will take a salutation. So let's say the salutation is the word hello,
+
+right? So internally, we declare a variable called counter and we declare a variable called
+
+prefix. And the prefix is simply a period plus salutation plus an extra space on the
+
+end. And what we are going to return out of this function is another function. It's going
+
+to get confusing a little bit, isn't it, a function that returns a function. But bear
+
+with me for a second. So the inner function gets returned, and so what we can do on the
+
+bottom as you can see over there is we can say, "var greet = greeter ('Hello')". So the
+
+greet variable now is a function that we can call, and that's actually the function that's
+
+inside of the auto function. So, now, if I say, "greet ('World')", it will say, "'.
+
+Hello World!'". And if I called the "greet ('World')" again, it will say "'. Hello World!'".
+
+Now, why is that? If you look at the inner function, it increments a counter, that means
+
+that the state of variables is preserved between in locations, right, that's why the counter
+
+keeps incrementing. If you--first of all, if you are trying to do something like this
+
+in Java, the compiler would force you to declare a counter as a final. Are you guys familiar
+
+with what I'm just saying? Okay. Some of you are shaking your heads, okay. First, it will
+
+declare a "final". That's because the compiler actually needs a copy of that variable. It's
+
+not really a same reference as it is in JavaScript. But in JavaScript, it's actually a same reference.
+
+So the function that gets returned out--from within the greeter has a reference to a counter,
+
+but that's the same reference that when you instantiate--when you called the greeter function
+
+that you had. And so, that reference persists for the duration not just of the function
+
+called but also for subsequent durations because there's a reference to it, and the reference
+
+is the function that you returned. So you can think of it as, there is a state that
+
+exists outside of the function when the function was declared, right? And that state is their
+
+counter. Not only is the state the counter but also the prefix variable is the statement.
+
+The prefix doesn't change over time as you invoke it, but it also stays. And so, the
+
+bottom function, the greeter function, the one that gets returned allows you to basically
+
+say, "Hello World" or, "Hello," you know, your name over there or something like that.
+
+So what we say is that, the inner function is bound through the closure to counter and
+
+to prefix. Does that kind of make sense? >> [INDISTINCT] again.
+
+>> HEVERY The inner greeter function is actually unnamed function, right? The inner unnamed
+
+function is bound to counter and prefix. And we call the variables that we are bound to
+
+closure. Did I say it wrong the first time? >> No, it's just...
+
+>> HEVERY Just don't make sense. Yes? >> A couple of questions, if you create a
+
+new--if you invoke greeter again, the new function, that returns will have a separate
+
+finding, right? >> HEVERY Correct. So, diversion is defining
+
+invoke the "greeter" again; it would have a separate binding. That's true. And not only
+
+it would have a safer binding, but the function returned from "greeter" would not be the same
+
+function as the first invocation. So if you did equal equal on it, it will return false.
+
+>> The second, does it have a reference to everything in its scope even if it doesn't
+
+correctly reference it or...? >> HEVERY That is up to the interpreter.
+
+>> Repeat that question. >> HEVERY Sorry. The question was, does the
+
+inner function have access to everything even if it doesn't reference it? And that's actually
+
+up to the interpreter to implement. I believe the answer is, yes, because the closures are
+
+really just HashMaps and they're chained. And I believe if you're inside of like Firefox,
+
+you can--Firebug, you can actually see them. But I could be wrong on this. I could be very,
+
+very wrong, so don't quote me on it. But because you don't actually have a reference, there
+
+is--the compile--the interpreter could optimize it away and you would never know because there's
+
+really no way to get a hold of the closure object to be able to do reflection on it.
+
+All right, let me--somebody else had a question or was it already answered?
+
+>> We have the same question. >> HEVERY So same question, all right, good.
+
+So let's go on. Okay. So now that we talked about functions and objects, let's see if
+
+we can create a class. And this is something that a lot of people have trouble with because
+
+if you come from a different language like, for example, Java, there's only one way to
+
+create a class, right? And there's a class keyword and you instantiate a class and there's
+
+specific syntax for it. And the class is the first class citizen for the compiler. That's
+
+how it's done. In JavaScript--JavaScript is more of a function language than an OO language.
+
+And so there really is no keywords or anything that basically allows you to create a class,
+
+rather, everything is done through conventions, right? So the concept of a class and something
+
+that behaves like a class, you can build it in JavaScript, but it's convention-only based
+
+which means, if you go to project A versus project B, people have might have chosen different
+
+ways of using the conventions. And now, it sounds like a scary proposition, but it turns
+
+out that all the conventions are internally compatible with each other. So if you're passing
+
+classes around, you can happily pass it to somebody else. It works just like you would
+
+expect. And they all have different advantages and disadvantages, which are--is nice to take
+
+advantage of for, you know; use it to play to the strength and weaknesses of them. And
+
+so, it's really up to you how to use it. So let's say we wanted to create a standard example,
+
+which is the circle, right? So I'm going to say, "Let's create a circle," which is an
+
+object. And I'm going to give it a property called the radius, which is, let's say five,
+
+and then I'm going to assign a method area to it, which is simply a function that says,
+
+"this.radius" times, "this.radius", right, that's multiple--the power of two and times
+
+Pi, all right, standard implementation like nothing surprising there. And notice what
+
+you can do is that you can simply just assign functions into properties, and they just automatically
+
+become so. So, you can say "circle.area" and will compute the answer which is  and some
+
+change. And really--when we're talking about OO what we care about is the final syntax
+
+of how the user would use the class, right? And so, the standard issue is that you have--in
+
+object and object has methods and you can invoke methods on that object, right? That's
+
+really what OO is at the heart of it. And also means that the data and the methods travel
+
+together. So, let's have some fun with this class, just to kind of point out how different
+
+the JavaScript is. So, let's try--let's see if we can decompose the code. So, I can have
+
+a variable called "fn." And I can say "fn=circle.area." And notice because I didn't put parenthesis
+
+on the end, I'm not calling the function; I'm simply getting a reference to the function,
+
+right? And if I call "fn.call," I would get back a NaN not a number. Now, why is that?
+
+Anybody try to guess? Go ahead. >> Because "this" is undefined.
+
+>> HEVERY That's correct. That's because "this" is undefined. What happens is and this
+
+is kind of interesting is that when I say, "circle.area," whatever is on that left hand
+
+side of the dot from the function, in this case it's the circle, becomes the function,
+
+"this." Does that make sense? What I just said, okay? So, when I called the area function,
+
+it so happens that that was referenced from a circle object. And that circle object becomes
+
+the "this" of the function. And so, when the function body gets executed, "this.radius,"
+
+actually points to the circle, and so, "circle.radius" returns property of . But when you call the
+
+function without the dot notation, you no longer have "this." And so, if you just say,
+
+"fn" and just put parenthesis on it. Or if you say, "fn.call" and put parenthesis on
+
+it, it just blows up. Now, it doesn't just blow up and this is one of those horrible
+
+things in JavaScript that I wished they hadn't done. But it's not that "this" becomes undefined,
+
+its lot worst than that. If "this" is undefined and we would at least have some useful exceptions
+
+being thrown. But no, then, this is one of the grand mistakes of JavaScript and that
+
+is "this" becomes the global object. And the global object happens to be the window. So,
+
+it's either "window.radius=" and I do the "fn call" again, I would get back . because
+
+ times  is  times Pi is Pi, right? So, this is absolutely horrible and this will
+
+bite you in so many different ways when you forget to properly--this is called binding.
+
+If you forget to properly bind and you automatically default to a window, it--you'll get to the
+
+strange situations where, oh, if you have a single instance of an object, it happens
+
+to work because you're sharing the global space but if you have multiple instances,
+
+all of a sudden a weird thing start to happen. And it all comes down to "this." And this
+
+is one of those horrible things that I wished that I haven't done. There's a big gotcha
+
+basically. But, it turns out there is--this is where the call comes into play. And now,
+
+I noticed I can say "fn call" and I can pass in a circle. And what I'm saying now is execute
+
+the function "fn" which was "circle.area," right? But call it at such fact in "this"
+
+is the object circle. And now things work as you would expect. Yes.
+
+>> Isn't it sort of just the case that call functions--all functions just basically kick
+
+variable a number of arguments. You know, you have to go or you should...
+
+>> HEVERY Yes. >> ...instantiate a function and creates this
+
+method called call and prime and it takes the first founder is, "this."
+
+>> HEVERY Uh-hmm. >> The use and the rest would just probably
+
+function. So, I mean, it looks like what you did was you just called it with a different
+
+number of arguments that had a-an argument put a [INDISTINCT] variable.
+
+>> HEVERY Okay. So... >> Is that what happens?
+
+>> HEVERY Sort of. So, are you fooling with Python? I want to rephrase the question.
+
+>> No. >> HEVERY No, okay, okay. So the question
+
+was, isn't that each function has a hidden first argument which is basically the functions
+
+of "this" or self. In the Python this is actually explicit. You have actually to say "self"
+
+or "this." And the answer to that is not really and let me show you why. In this particular
+
+case which is the--basically called, "add.apply" and I explicitly pass a, "null." I said; call
+
+this function with "null" as, "this." Now, JavaScript actually calls it with window.
+
+So even if you pass a "null" or undefined or whatever other thing that doesn't actually
+
+evaluate into object, it will still call it with window. So, like in this case if I call
+
+"fn.call," and there is nothing in the arguments, all arguments that are not bound automatically
+
+become undefined. So you would expect that you would have an undefined for this, that's
+
+not the case. You'll still have window. This is one of those horrible things that done
+
+in JavaScript. As a matter of fact, you can make an assumption that if the function was
+
+called without proper binding, it will be a window. And that's a very safe assumption
+
+to make. >> Does any other, I mean, all the [INDISTINCT]?
+
+>> HEVERY Everything defaults to undefined. >> Undefined.
+
+>> HEVERY Yes. >> [INDISTINCT]
+
+>> HEVERY Except for the first argument and except inside of the special call and apply
+
+which defaults to window. Okay. All right. So now, let's build up. So, this is a primitive
+
+kind of a class. And you know why you really build classes this way because every time
+
+you make a class, you basically have to assign all of the methods to it, right? But we know
+
+that if you have a class really there's two pieces to it. There is the state and there
+
+are the methods, right? And so, and we also know that objects can be chained together
+
+to kind of have certain properties come from other objects. So wouldn't it be nice if we
+
+could simply create a single object that has all the methods on it and then, we would instantiate
+
+new objects for the instances. And then, we would tie those instances proto to the parent
+
+object which happens to have the methods. In that way, we have a nice OO going on, right?
+
+Does that make sense what I just said? Okay. So, as a convention we put a capital C for
+
+a class. So here, just another object called circle with a capital C. And I'm going to
+
+put a method on it called area just like I had before. And on the bottom, I'm going to
+
+say, "var instance," and I'm going to create new instance "radius," and I'm going to
+
+say, "instance proto." And I'm going to point it to the circle class. And now, I can say,
+
+"instance.area." And the reason this works is because when the interpreter tries to look
+
+up the area, it looks into the instance first and says, "I don't have it." So, looks at
+
+the instance proto which is a circle, it finds it. And now, it tries to call it and it looks
+
+like at the right hand, sorry, the left hand side of the dot notation and says, "Oh, I
+
+see an instance over there." That becomes the "this" of the function. And then the function
+
+executes as it normally would. Does that make total sense? All right. So, this is kind of
+
+a standard way of the way many languages do this is that they have the concept of a class,
+
+and then the concept of an instance, right? And if you're in Java, you know, the class
+
+is actually an object as well and so is the instance. It kind of gets convoluted a little
+
+bit because everything is an object but really there's a different thing if it's an instance
+
+and a different thing if it's a class. What you can do is actually, if you can declare
+
+a property on a circle with a capital C, that's essentially the same thing as in Java declaring
+
+a static property on a class, right? Because that's shared across everybody. The only difference
+
+is, is that--well, no, that's the same thing as in Java. If I declare a property, you know,
+
+if I declare a constant name equals Google, let's say and I say, "Private static," that's
+
+the same, you know, it would then encode, I can just simply refer to Google and it will
+
+automatically be available. And so, it's the same thing here, if you say, "circle.google,"
+
+it would become automatically available to you because you can--you just automatically
+
+have it inherited to you. Does that make sense? Okay. So, we can achieve the separation of
+
+a class from the instance using this trick. The only problem is with this so far is the
+
+notation, right? Notation is a kind of a pain that have to set the proto and there's really
+
+no constructor and all that sense. So let's see if we can solve all these problems one
+
+at a time. First, let's see if we can do a constructor. So, let's say we have a function
+
+called circle. And again, this function is in no way special. It's only a convention,
+
+right? And so, it's not like special function like in Java but the constructors are only
+
+special functions. You can't call them not that you can--it's just a function. And, you
+
+know as a notation, we're going to put a capital C from Java and I come from the Java world,
+
+so I put capital C meaning there's a class to save a constructor. And what we're going
+
+to do inside of that constructor is we're going to say, "this.radius" is we're going
+
+to set the radius on it and we're going to say, "this.area" and I'm going to set the
+
+function on it as well. So this constructor will build the object for me, automatically.
+
+So now, I can do something interesting. I can say, "var instance" I'm creating an empty
+
+object. And I can call the constructor by saying, "Circle.call," I'm going to pass instance
+
+as "this" to the constructor, right? And the second argument is "" which is the radius.
+
+And so, that will actually construct, it will assign the radius to the instance and also
+
+assign area to the instance. And then, I can say, "instance.area," and will compute the
+
+answer. But there's a shorter way of doing this. And that is to simply say, "new Circle
+
+()." The first two lines are almost with fewer differences identical. So, any function
+
+in JavaScript can be a constructor. And the new keyword is just shorthand to saying, "Make
+
+a new object and call the constructor as this parameter on that object." The new keyword
+
+has no other meaning. So let's see how they're different. Well, I can call an "instance"
+
+both instance and instance I can call the area and we'll resolve with the same answer.
+
+But if I say, "instance instanceof Circle," I'll get a false. Well, if I say, "instance
+
+instanceof Circle," I'll get a true. The reason why we have this difference is because remember
+
+I said there was a special property called the constructor. In the--the new operator
+
+not only call--instantiates an object and calls it but it also sets the constructor
+
+property to itself so that if you could say, "instance.constructor" it will point to the
+
+circle function, whereas, in our case, we didn't do that, right? And so, our "instanceof"
+
+doesn't really work properly and so we can fix that. We can--I don't have it on this
+
+slide but if you would have said "instance.constructor=Circle," then the instance of--would properly behave
+
+the way we'd expect. Okay. So, this is a pretty good class like we're getting pretty good
+
+in terms of syntax into what we want from a OO system, you know, it's pretty usable,
+
+very close to Java. The only feedback I have on this is that we don't have the separation
+
+between the class and an instance rather the--every time we call the constructor, we're constructing
+
+whole bunch of functions. And those can take up space and means you can't be passing it
+
+around. It also means because the function is inside of the other function, that function
+
+has closure which means that function has a reference to radius, it could have, right?
+
+In our case, it doesn't. But I could have simply drop "this.radius" and just say, "radius"
+
+and it would still work the same way. So, while this is definitely one way of declaring
+
+a class, it is--it has certain side effects that I'm not really fond of. And so, let's
+
+see if we can build an exact class that behaves just like what you would expected in Java.
+
+And so for that, what we really want to do is when you say, "function Class," we want
+
+to instantiate--we can instantiate instance of that class. And then, we want to compare
+
+it with another instance done differently, so here we instantiate  by just creating
+
+an object. We're assigning the constructor back to the class on a top. And we assign
+
+the "instance.proto" to the "Class.prototype." Now, what is the prototype? It turns out that
+
+every function has this property, a special property called prototype. And we're going
+
+to talk about it in a second. And what the prototype does is it--has basically when you
+
+instantiate the new classes in the new operator not only do you set it's constructor, you
+
+also set its "__proto" to the function's prototype, which means you are automatically setting
+
+the parent class of that object, parent in terms of property inheritance. So what I'm
+
+trying to show you is that the instance new Class is absolutely equivalent to the instance
+
+code. If you create objects in these two ways, there is no way that you can tell them apart
+
+in runtime, so the new operator is equivalent to creating an object, setting the constructor
+
+to the class, assigning the proto to the class as prototype and then, calling the constructor
+
+on that class. So if I say "instance[][]" that, with notations "instance[][].constructor"
+
+would be to, "Class." If I say "instance[][].proto," it would be "Class.prototype." And if I say,
+
+"instanceof Class," it would return, "True." So you cannot tell these two objects apart,
+
+they're identical at runtime. Okay. So, let's talk about this prototype first for a second,
+
+this is kind of an interesting. So what is the function's prototype do? So, again, let's
+
+go back to function. And we declare class called Circle just like before. This time
+
+we only do is assign the property to the radius. And every function automatically has a property
+
+called a prototype which happens to be an object. And so, we can assign other methods
+
+or anything we want into the prototype. So in our case, we are assigning our area function
+
+into it. When we instantiate the circle using the "new Circle ()," right, the new operator
+
+sets the "instance.proto, __proto__" to the "Circle.prototype" which means it automatically
+
+inherits all the methods that it had. And so, this is the kind of the classical way
+
+of defining in it--a class in JavaScript because it provides a separation between instance
+
+data and the functions. The functions are declared in a higher level of object which
+
+gets its property's automatically inherited. Does that make sense? Or did I confuse myself?
+
+No questions? All right. Good. As you want on those things but it's hard to graph but
+
+I'm glad that, yes. >> What's the difference between "__proto"
+
+and the prototype? >> HEVERY Okay. What's the meaning of prototype
+
+and "__proto?" Good question. The "__proto" is what the runtime uses to look at the parent
+
+object in order to resolve the property. The ".prototype" is a special property name on
+
+a function and a function only, which is what the new operator uses to copy on to the "__proto__."
+
+You can think of the prototype as a template. And the proto as the runtime reference to
+
+the parent. Confused, huh? Sorry, I'm not explaining it right.
+
+>> In practice, do people tend to use "__proto?" >> HEVERY No, it hidden from you. So, it
+
+turns out--good question. In practice, do people use the "__proto?" Sort of. It turns
+
+out, you can read "__proto" on all browsers but you can only write to it on everywhere
+
+but IE. So many of the examples I have showed you will not work on IE, but that's okay because
+
+you can always do it through the new operator. So why is it a little confusing is because
+
+"Circle.prototype" is an object which means "Circle.prototype.__proto" could have other
+
+object hanging as a parent of itself, which is how you would do inheritance in JavaScript
+
+but I'm not going to go there because that's, you know, more brain-twisting. So every object
+
+has "__proto", but only functions have prototype, which is the template used for creating a
+
+new operator. Hopefully, that kind of helps a little bit. All right. Okay. So let's talk
+
+about the function binding problem which is that we have--or this disappears on us from
+
+time to time. And this is something that's really useful to have, so because functions
+
+our first class property which means you can just, you know, pass it around, call them
+
+et cetera, it makes for a very different kind of style of programming. You know, in Java
+
+if you wanted to do a callback, you have to interface and interface has to be implemented
+
+and so, you know,  lines of code later, you'll finally have yourself a callback. In
+
+JavaScript, you can just pass a function somewhere and you're done. So, let's look at this example
+
+over here. So let's see, we have a class called Greeter. And the--there's a method called
+
+Greet on that class, right? And the Greet takes a name. And supposed there's another
+
+class called server, some instantiating greet and also instantiating class called server.
+
+I haven't declared server in this example because I've kind run out of space. But just
+
+imagine there's a server class somewhere. And the server class has a method called "getUser."
+
+And here is something interesting in JavaScript which we'll talk about in a second later and
+
+that is JavaScript has exactly one thread. And that thread is responsible not just for
+
+running your code but also for updating the UI for the page, Which means that if you are--or
+
+if you wouldn't be a disciplined JavaScript programmer and you decided to do something
+
+like "server.getUster" and the server would take three seconds to come back with the response,
+
+your UI would be blocked for three seconds. We don't want that to happen. So, it turns
+
+out that every single API call in JavaScript or rather in the browser, right? Because now
+
+we're leaving the domain of the language and now we're in the domain of the APIs. All APIs
+
+in the browser are non-blocking which means it is every method code that you called instantaneously
+
+returns. I mean, there's some intrinsing time that it takes to execute a method, right?
+
+But they all return immediately. What that means is that it's impossible to write a piece
+
+of code that is--that doesn't return essentially from a user's point of view immediately. Now,
+
+it is possible to get yourself in an infinite loop, right? But I'm sure in getting yourself
+
+in an infinite loop, you always going to have to be forced to return immediately. So now,
+
+if you have the server object that talks to an external resource like a server, and that
+
+takes several seconds to come back with the result, how in the world do you process the
+
+result? The way it's done in JavaScript is that you call the method and you pass in a
+
+function that will become the callback. What it means is that here's a function that I
+
+want you to call when you are ready with your data, right? This is very different from Java
+
+programming where you simply say, "Call the,"--in Java, you would say, you know, "var name=server.getUser"
+
+and that call would block for several seconds until the server will come back with the response
+
+and you would--and you continue your execution. So everything in the Java world, sorry, JavaScript
+
+world is non-blocking. So you have to pass in a function. So what we want over here is
+
+to simply say, look, once the server comes back with the result, why don't you just greet
+
+the user, using the greet method, right? But do you see a problem with this? The problem
+
+is, that you're passing the greet function and that greet function when it gets called
+
+will no longer have the property of "this" associated with it. So when the function says,
+
+"this.salutation," it will get the "window.salutation," right? And that's a problem. So, what we need
+
+to do is we need to do the second form on the bottom. It says, "server.getUser" and
+
+we're passing in a function that has a name and that function simply forwards the call
+
+unto the "greeter.greet(name)." And because the call was being forwarded now the greet
+
+method has a property "this" because the greeter variable is enclosed, right, it's part of
+
+the closure of the function. And so this is it, this is basically what's called binding
+
+"this" to a function. Does that make sense? Why it's necessary? Okay, so now this is necessary
+
+and this is basically how you solve this problem but it's a kind of pain in the butt to do
+
+because you have to do it everywhere whenever callbacks are involved. So let's see if we
+
+can do something to help augment this. Let's say we declare a function called bind and
+
+that function will take the functions "this" and will also take a function and it will
+
+return a new function and when you call that function it will forward on to the "fn" function
+
+and it will call it with the function "this" method and oh, by the way there is this hidden
+
+property called arguments that is the arguments of the function that's happened to be called--that
+
+you happen to call and so we just going to forward all the arguments that you called
+
+with the functions on to the next one. It's a little mind bending here but do you see
+
+what's its doing? You're saying, give me a function, such data file called this function
+
+with the improper of "this," you will call it, you will forward the call on with the
+
+proper "this." So then what you can do is you can simply say, "server.getUser(bind(greeter,
+
+greeter.greet))" and that will do all the magic for you, so you don't have to do all
+
+the pieces. Okay, I think this is all pretty much what you have to know about JavaScripts,
+
+and now we're going to go on talk little bit about the browser.
+
+>> I have a question. >> HEVERY Yes.
+
+>> So, go back to the last slide. You said that when you called a function the left side
+
+of the period is the "this"? >> HEVERY Correct.
+
+>> So if you call it "greeter.greet" why is not why is it "this" not the greeter?
+
+>> HEVERY Because you are not calling it there. You, sorry, the question was--thank
+
+you, Brad. The question was, the left hand side of the function that on the left hand
+
+side of the dot becomes the function "this", so why is this necessary? It's necessary because
+
+the "greeter.greet" on this page, you are simply getting a reference to the function,
+
+you are not actually calling it. There's no parenthesis over there and when that happens,
+
+when you don't call it immediately you are losing the left hand side of the, of the "this."
+
+>> But you actually call it and upgrade it. >> HEVERY So when you call it later on, all
+
+you have is a reference to a function and you no longer have the context which is the
+
+"this" which belongs to that function. So, good question. Yes?
+
+>> This applied, was it really necessary? If we could just have written "fnThis.fnArgument"?
+
+>> HEVERY It's actually necessary. So the question was, was applying necessary? How
+
+would you call "fnThis." and you have to call the name of the function, you don't know the
+
+name. So you would say, what, "fnThis.fn"? >> No.
+
+>> HEVERY Well, but still--so, okay, that requires us to go all the way at the beginning.
+
+So you were just saying, on the bottom of that you see "obj["name"]". The name is the
+
+name of the property. So, now if you're saying--if you say "fnThis.fn", you're saying take the
+
+property "fn" of the "fnThis", which is not the same thing, right? What you want to say
+
+is you want to say fnThis[fnName] but then when you do that, again, you lose the "this"
+
+because you no longer use the proper notation. So unfortunately, apply is necessary. Oh,
+
+yes. So I wanted to actually point out one more crazy thing you can do in JavaScript
+
+and that is, because all classes that are built in which is the object strength, array
+
+and so on, are built-in that they're also--they have the proper constructors, everything,
+
+you can actually extend them. So here's an example, let's say, you have a text and the
+
+text is "Hello" and I'm going to say type of text is string, so therefore "text.__proto"
+
+should be "String.prototype" and it actually is, it returns true. So then I'm going to
+
+say text to reverse and that's going to say, "Oh, I don't know what reverse is.' Okay,
+
+no problem, so I'm going to say "String.prototype.reverse = function" and I'm going to declare a reverse
+
+function inside of there and inside of that function this is the string that I'm interested
+
+in. And that means that later on I can say text.reverse equals, you know, it returns--it
+
+returns back hello in reverse notation. The thing I'm trying to point out here, is that
+
+you get you can extend the internal behavior of classes, you can also overwrite it. Is
+
+this a good idea? Probably not. Because if you decide to write a reverse function and
+
+you use somebody else's library and they also decide to use a reverse function, you can
+
+have collisions. There's a library over there called prototype I think. There's a JavaScript
+
+library called prototype, not to be confused with a prototype of a function where they've
+
+chosen to extend the prototypes of existing JavaScript classes. And that library is essentially
+
+became the incompatible library with everything else. And so because of that they--they were
+
+the first ones, so luckily they end up having to own these classes. Everybody else goes
+
+out of their way to make sure they don't touch the built-in types because just in case you
+
+have a prototype that JavaScript included, you know, it will break whatever you have,
+
+so not a good idea. If you are writing a library, horrible idea. If you are writing an end-user
+
+application where you have a full control of all the--of all the classes that are in
+
+there, this is probably okay to do. So, it depends on what you're writing it might or
+
+might not be a good idea. I just want to point out basically that you can extend types as
+
+well. Okay, we're running out of time. Iteration, you can have an array. Array is declared using
+
+this square bracket instead of the curly bracket. And if you think about what an array is, it
+
+is essentially an object that has special property called length. And has keys which
+
+is zero is car, one is book, two is table. So the next line makes total sense if you
+
+think about in terms of objects because you just say, "oh, well, iterate from "i=" until
+
+I less than the special property length. And then when I want a reference the specific
+
+key, I simply say log--I'm sorry, that should say array of i, right in--concatenating an
+
+array. And so the end--the end result is you're going to have car, book and table concatenated
+
+together. But you can also do something else. There's another way of doing iteration and
+
+that is you can iterate over the keys of the object and that is the second form of which
+
+is you say for i in array and that basically returns zero, one, two, three or if it's an
+
+object it will return the keys of the object. So in this second case, you're actually returning
+
+zero, one, two, and if it's an object will return, you know, name, greeting, blah, blah,
+
+blah and so on and so forth. So actually I believe we have an example over here which
+
+is that, you know, if you have an object called Spanish and you iterate over with the four
+
+key in Spanish the key becomes the left hand side of the pair, right, the house and the
+
+hello and the Spanish off key becomes the right hand side which is the casa and hello,
+
+hola. Okay, I want to fly through this because--right. So there's--now let's talk about browsers
+
+a bit, so a brow...yes? >> One thing worthwhile mentioning is that
+
+you have hidden properties on these objects that but you don't get the iteration?
+
+>> HEVERY Correct. There are hidden properties all over JavaScript. And I should have pointed
+
+that out. And there's actually of--another hidden property called, which is a function
+
+called has own property, which you can call to test to see if the property you happen
+
+to get is real or hidden. More advance stuff. Okay, so there's this global object called
+
+window which we talked about earlier and everything defaults to window. And it turns out that
+
+if you declare a function, function greet just like this, it's always declared inside
+
+of some scope. And if it's really declared as it is over here without a scope it becomes
+
+the window. So function greet can be called directly as greet or it can be called as "window.greet".
+
+And notice that if inside of the function I create a bar salutation the "window.salutation",
+
+obviously, is not it because that's specific to the function. But if I forget to put the
+
+word var in front of it like I said message and I was really wanting to say "var=message",
+
+you automatically get the "window.message" set. So, again, it's one of those horrible
+
+things that if you forget the keyword var, the verbal becomes global. It's the most horrible
+
+thing ever but you got to live with it, so don't forget the var because the codes will
+
+kind of work as long as you have a single instance of something. And if you have two
+
+instances then, obviously, the state will clobber each other. So, anyways, I'm just
+
+kind of pointing out how the war works and how the things are always declared inside
+
+of the scope. Okay, we talked about the asynchronous API a little bit. And I want to, you know,
+
+XHR char is the typical thing we use called the XMLHttpRequest, I believe. And so, let's
+
+say, you want to make a request called the GET request to a server on some URL. You have
+
+to provide back a function. This is the callback function that gets called at a later point
+
+in time. We kind of talked about it already. What I want to point out is the pseudocode
+
+of how the browser actually works behind the scenes. Again, remember, there's only a single
+
+thread executing everything. The nice thing about it is you don't have to worry about
+
+locks; you don't have to worry about somebody else concurrently modifying something, like
+
+you are in control, when you're in control and there's nobody else doing anything else.
+
+The way it works inside of the browser is that there is a queue of things to do and
+
+that queue is usually ordered by time. So everything to do has a time stamp when in
+
+the future it has to be done. That way you can do things like animation when you have
+
+to scroll something from left to right and then you have to make sure that every  milliseconds
+
+something happens you--there's a special method for inserting stuff into this cube. But if
+
+a callback--if the browser makes a request to a server and at some point later the server
+
+comes back with a result, the result gets in queued on to the head of the cube so it
+
+gets automatically inserted. And this wait for event is the only blocking call within
+
+the whole browser. What it does is it says wait until you have something to do, if you
+
+have something to do, execute it, and then after you executed update the screen, update--maybe
+
+the DOM has changed as a result of the execution, and if so, go redraw the screen. And this
+
+is in a tight loop like this. This is when sometimes you--when you get into an infinite
+
+loop inside of the--inside of your JavaScript that's inside of the event portion of it,
+
+the browser will say, "Hey, your JavaScript has been running for  seconds, do you want
+
+to kill it? Looks like something bad happens, right?" Because you shouldn't really ever
+
+have to do something for  seconds, that means you--something is broke, right, because
+
+all the APIs are non-blocking. So I just wanted to kind of point out how kind of the browser
+
+works internally. I'm sorry we're kind of running out of time. I don't mind speaking
+
+further. Let's just keep going, okay. If we have to go somewhere--I apologize for going
+
+overtime. Okay, so let's talk about the DOM. So now we're kind of leaving the domain of
+
+JavaScript and we're going into the domain of how the browsers work. And so when people
+
+complain about how horrible JavaScript is, but really they're complaining about how bad
+
+the DOM is, okay. The JavaScript itself is actually a very nice language, it's a very
+
+consistent across browsers; it's the DOM that will kill you. So what is a DOM? DOM is the
+
+parse representation of the HTML in the standard document object model, which means you can
+
+get a node, you can get a children of its node, you can actually listen, so on and so
+
+forth. And it turns out that if you modify that DOM node the browsers will automatically
+
+redraw to update whatever the changes you've made. So let me give you an example of it.
+
+So, here, this piece of code actually executes. So, you can say "window.document.body" that
+
+gives you the body element of the DOM. And you can say, "body.innerHTML" and you can
+
+do an assignment bold hello world in italics and bold and this will actually set the browsers
+
+body tag to that HTML. Then you can do something more interesting, you can say, "Okay, well,
+
+let's grab the person." So person is really just take the body and get me the elements
+
+by tag name "i", because there's only one "i", I asked for the first one. And so it
+
+give me an array of all the "i's" in a DOM but really I'm interested on the first one.
+
+And I can say, "person.textContent = 'Misko'" and so now it will say, "Hello, Misko," right?
+
+And this is basically how all of the AJAX applications work. They're modifying the structure
+
+of the DOM on the fly, that's the whole magic. Now, thanks to WC, the DOM API is horrendous
+
+to work with, it's just bad. It's--what they try to do is they try to design an API that
+
+would work for every single language everything from C to JavaScript. And as a result, the
+
+API is really hard to work with. So there's lots of libraries to kind of make this thing
+
+easier and we'll talk about them maybe a little bit in a second. But I want to go over a couple
+
+of JavaScript gotchas and that is the OO is by convention only. So, people when they come
+
+to JavaScript and they see OO in there and they say, "Ah, what is this crazy language?
+
+You can only--you can declare a class in three different ways." And the answer is yeah, you
+
+can declare in three different ways but that's because it's a functional language. It's not
+
+an OO language and we're just coming at it from the point of view of OO and we're so
+
+desperate to create classes inside of our language that that's just kind of what we
+
+get. Everything defaults to global window so watch out. If you don't have a var you
+
+have a window, references to functions lose "this", again, default to window. And then
+
+browser is single threaded and all calls have to return immediately. And it's impossible
+
+to wait for something and we kind of pointed that out. So browser incompatibilities, this
+
+is kind of the stuff that you have to watch out for. So as I said JavaScript is remarkably
+
+consistent across browsers. I have found very few differences between the way JavaScript
+
+works between all the browsers. String bracket is one of the things that doesn't work in
+
+IE, it's always IE that's different, everybody else is fine. Trailing commas, for example,
+
+in IE that's going to be an array of three elements with the last element being null,
+
+whereas everyone else it's just an element of two elements. In IE, you cannot set the
+
+proto. And then, of course, what's different is all the APIs between the browsers, right.
+
+So the way you interact with DOM is different between all the browsers. It's not the fault
+
+of language; it's the fault of the APIs. Now, DOM and CSS on the other hand is remarkably
+
+inconsistent between browsers. The way you interact with it, what gets rendered when
+
+you put the same set of DOM and CSS elements is going to be different. And so, you know,
+
+there are all kinds of so--for the DOM problem, there are lots of third party libraries including
+
+Google's closure to deal with the inconsistencies between the DOM manipulation and they do a
+
+fairly good job of abstracting it away. The CSS inconsistencies, though, there really
+
+is no solution or at least no good solution. So if somebody can come up with some, I mean,
+
+the world will be very thankful to you. And, you know, the engines really are the IE engine,
+
+the WebKit engine, the FireFox and Opera engine. It turns out the WebKit, FireFox and Opera
+
+are pretty consistent between them. WebKit is, obviously, Safari and Chrome together,
+
+so they were almost identical. The IE is always the odd one out and even IE,  and  especially
+
+across CSS selectors is very, very different. Oh, yeah, and memory leaks is one more thing

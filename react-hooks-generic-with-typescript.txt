@@ -1,0 +1,40 @@
+import { useState, ChangeEventHandler } from "react";
+
+interface ResetFunction {
+    (): void
+}
+
+interface Bind<T> {
+  value: T,
+  onChange: ChangeEventHandler<any>
+}
+
+export function useInput<T>(
+    initialValue: T
+): [T, Bind<T>, ResetFunction] {
+    const [value, setValue] = useState<T>(initialValue);
+
+    const reset = () => {
+        setValue(initialValue);
+    };
+
+    const bind: Bind<T> = {
+        value,
+        onChange: e => {
+            setValue(e.target.value);
+        }
+    };
+
+    return [value, bind, reset];
+}
+
+React components and props
+-------------------------
+
+React is conceptually a function that converts a state to a user interface (UI). 
+When you code with React, the 
+----------------------------------------------------------------------------------------
+React component is literally a JavaScript function, and its arguments are called props
+
+
+-

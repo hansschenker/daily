@@ -1,0 +1,671 @@
+1
+--------------
+DESCRIPTION:
+These kata series aim to show the possibilities of reactive programming.
+
+For this we are going to implement part of the functionality of the magnificent RxJS library.
+
+In this first part we have no choice but to start with a theoretical part but in the next katas the theoretical part will be minimal.
+
+First things first:
+
+What reactive programming is?
+If the functional programming is the programming with pure functions, the reactive programming would be the programming with observables.
+
+What is an observable?
+An observable is a powerful pattern that enables non-deterministic and lazy push computations.
+
+Let's clarify each of the terms.
+
+Non-deterministic
+By this we mean that observables can return multiple values in contrast to functions that only return a single value. An EventEmitter would be in this sense as an observable since it emits several values, while a promise would be like a function by issuing a single value.
+
+Lazy
+Lazy means that observables do not emit until there is a subscription. Oservables resemble functions since they do not perform any computation until they are invoked.
+
+Push
+In Pull systems, the Consumer determines when it receives data from the data Producer. The Producer itself is unaware of when the data will be delivered to the Consumer.
+
+In Push systems, the Producer determines when to send data to the Consumer. The Consumer is unaware of when it will receive that data.
+
+Every JavaScript Function is a Pull system. The function is a Producer of data, and the code that calls the function is consuming it by "pulling" out a single return value from its call.
+
+Promises, EventEmitters and Observables are types of Push systems. In both (Producer) delivers a resolved value to registered callbacks (Consumers), but unlike functions, they determine precisely when that value is "pushed" to callbacks.
+
+In a practical way, we could say that an observable is a push function with zero arguments that emits values over time and to which we can apply transformation functions, such as mapping, filtering or reducing.
+
+Ok, enough of theory. Let's start!
+
+Observable creation
+create function
+Your task is implement the create function defined as follows:
+
+declare function create<T>(f: (o: Observer<T>) => void): Observable<T>;
+
+interface Observer<T> {
+ next: (value: T) => void;
+ complete: () => void;
+}
+
+interface Observable<T> {
+ subscribe: (o: Subscriber<T>) => Subscription;
+}
+
+interface Subscriber<T> {
+ onNext?: (value: T) => void;
+ onComplete?: () => void;
+}
+
+interface Subscription {
+ unsubscribe: () => void;
+}
+create function receives a function, which will receive an observer, and returns an observable.
+
+A observer is a collection of callbacks, next and complete, who knows how to listen to values delivered by the observable. When the observer "sees" a new value, it calls the next method and when it "knows" that there will be no more values it calls complete.
+
+The observable returned by create is an object with a subscribe function. Remember that observable is lazy and does not do any work until someone subscribes to it.
+
+The subscribe function receives a subscription. This object has two keys, onNext and onComplete. They are invoked when the observer calls next and complete respectively.
+
+RxJS library can manage errors that we omitted in this kata for simplicity.
+
+Let's see it with an example.
+
+const observable = create(function (observer) {
+  observer.next(1);
+  observer.next(2);
+  observer.next(3);
+  setTimeout(() => {
+    observer.next(4);
+    observer.complete();
+    observer.next(5); // observable is completed. 5 is never emitted.
+  }, 1000);
+});
+
+console.log('just before subscribe');
+observable.subscribe({
+  onNext: x => console.log('got value ' + x),
+  onComplete: () => console.log('done'),
+});
+console.log('just after subscribe');
+just before subscribe
+got value 1
+got value 2
+got value 3
+just after subscribe
+#after one second
+got value 4
+done
+Note that the first three calls to next are synchronous and the fourth is asynchronous. The calls after completing are omitted.
+
+If you subscribe multiple times, the observable sends all the values to each subscriber:
+
+const observable = create(function(observer) {
+  observer.next(1);
+  observer.next(2);
+  observer.complete();
+});
+
+observable.subscribe({
+  onNext: x => console.log("from first subscriber got value " + x)
+});
+
+observable.subscribe({
+  onNext: x => console.log("from second subscriber got value " + x)
+});
+from first subscriber got value 1
+from first subscriber got value 2
+from second subscriber got value 1
+from second subscriber got value 2
+The result would be the same even if the subscription is asynchronous.
+
+observable.subscribe({
+  onNext: x => console.log("from first subscriber got value " + x)
+});
+
+setTimeout(() => {
+  observable.subscribe({
+    onNext: x => console.log("from second subscriber got value " + x)
+  });
+});
+As soon as you unsubscribe you stop receiving notifications:
+
+const observable = create(function(observer) {
+  observer.next(1);
+  observer.next(2);
+  setTimeout(() => {
+    observer.next(3);
+  }, 1000);
+});
+
+const subscription = observable.subscribe({
+  onNext: x => console.log("got value " + x),
+  onComplete: () => console.log("done")
+});
+
+setTimeout(() => {
+  subscription.unsubscribe();
+}, 500);
+got value 1
+got value 2
+
+2
+-------------------
+Reactive programming: #2 Basic observables creation
+16surtich
+Details
+Solutions
+Discourse (2)
+DESCRIPTION:
+To do this kata you must have completed #1 part.
+
+In this kata we will use the create function from #1 to create some interesting observables that, in turn, will serve us in the rest of the series kata.
+
+To complete this kata you may have to improve the version you gave in kata #1.
+
+Let's start.
+
+of observable
+Emit variable amount of values in a sequence and then emits a complete notification.
+
+declare function of<T>(...xs: T[]): Observable<T>
+
+const source = of(1, 2, 3, 4, 5);
+//output: 1,2,3,4,5,"completed"
+const subscribe = source.subscribe({onNext: val => console.log(val), onComplete: () => console.log("completed")});
+empty observable
+Observable that immediately completes.
+
+declare function empty<T>(): Observable<T>
+
+//output: 'Complete!'
+const subscribe = empty().subscribe({
+  onNext: () => console.log('Next'),
+  onComplete: () => console.log('Complete!')
+});
+interval observable
+Emit numbers in sequence based on provided timeframe. Never complete!
+
+declare function interval(period: number): Observable<number>
+
+//emit value in sequence every 1 second
+const source = interval(1000);
+//output: 0,1,2,3,4,5....
+const subscribe = source.subscribe({onNext: val => console.log(val)});
+CAUTION: Interval never completes, but Codewars does not finish running the tests if there are pending timers. To avoid timeouts you must unsubscribe from observable interval. See test section.
+
+from event
+Turn event into observable sequence.
+
+declare funtion fromEvent = (
+  element: EventEmitter,
+  eventName: string
+): Observable<Event>
+
+class MyEmitter extends EventEmitter {}
+const myEmitter = new MyEmitter();
+//emit value in sequence every 1 second
+const source = fromEvent(myEmitter, "event");
+
+// output: an event occurred
+const subscribe = source.subscribe({onNext: val => console.log(val)});
+
+myEmitter.emit('event', 'an event occurred');
+
+3
+------------
+Reactive programming: #3 Premier operators
+6surtich
+Details
+Solutions
+Discourse
+DESCRIPTION:
+This is the third part of the series on reactive programming.
+
+Before facing your resolution, you must have completed the previous two katas (#1, #2).
+
+The real power of reactive programming comes from its operators. Operators are functions that allow transforming one observable into another.
+
+We have at our disposal a lot of operators that allow us to adapt the observables to our needs. The rest of the katas in this serie, including the one that is starting, consists in implementing some of these operators.
+
+Here we will deal with the most basic operators known for their similarity to the functions used with lists: map, filter, reduce.
+
+Operator definition
+The first thing is to define the type of an operator. We have said that an operator is a transformation operation over an observable. Then its type will be trivial:
+
+type Operator<T, R> = (o: Observable<T>) => Observable<R>;
+map operator
+Apply projection with each value from source. Like map functions in arrays.
+
+Your job will be to implement the map function.
+
+export function map<T, R>(f: (x: T) => R): Operator<T, R> {
+  return (observable: Observable<T>): Observable<R> => {
+    // Your job start here.
+  }
+}
+Note that the map function receives a function from T to R and an observable of Ts and returns an observable of Rs.
+
+Also note that the map function receives the second parameter, the observable of Ts, in a currified way. There are two practical reasons to do this. The first one will be explained below but the second explanation will have to be postponed until the next kata in which we will talk about the pipe function.
+
+We have said that an operator is a transformation function of observables. But in order to transform the observable, most operators need some additional parameters. The problem is that these parameters differ from one operator to another. Some need a function, whose types are specific to each operator, others receive a number, others an observable, ...
+
+This is the reason why if we include the additional parameters in the operator type, it would be very complicated if not impossible to generalize the definition of an operator valid for all of them.
+
+If we currify what is common to all operators, the observable that they receive, we can define the operator type how we have done it above.
+
+To be honest, we've done a bit of cheating, since the map function is no longer really an operator.
+
+Note that what the map function actually does is to return an operator once we have partially applied the transformation function from T to R. So we can say that the map function is a mapping operator factory ;)
+
+In any case and for simplicity, we will continue saying that map is an operator.
+
+Let's start with practical work proposing some examples of what map should do.
+
+//emit (1,2,3,4,5)
+const source = of(1, 2, 3, 4, 5);
+//add 10 to each value
+const example = map(val => val + 10)(source);
+//output: 11,12,13,14,15
+const subscribe = example.subscribe({ onNext: val => console.log(val) });
+//emit ({name: 'Joe', age: 30}, {name: 'Frank', age: 20},{name: 'Ryan', age: 50})
+const source = of(
+  { name: 'Joe', age: 30 },
+  { name: 'Frank', age: 20 },
+  { name: 'Ryan', age: 50 }
+);
+//grab each persons name, could also use pluck for this scenario
+const example = map(({ name }) => name)(source);
+//output: "Joe","Frank","Ryan"
+const subscribe = example.subscribe({ onNext: val => console.log(val) });
+filter operator
+Emit values that pass the provided condition. In this case, filter operator would be defined like this.
+
+export function filter<T>(f: (x: T) => boolean): Operator<T, T> {
+  return (observable: Observable<T>): Observable<T> => {
+    // Put your code here
+  }
+}
+I think the declaration is self-explanatory although we clarify it with some examples.
+
+const source = of(1, 2, 3, 4, 5);
+//filter out non-even numbers
+const example = filter(num => num % 2 === 0)(source);
+//output: "Even number: 2", "Even number: 4"
+const subscribe = example.subscribe({onNext: val => console.log(`Even number: ${val}`)});
+//emit ({name: 'Joe', age: 31}, {name: 'Bob', age:25})
+const source = of({ name: 'Joe', age: 31 }, { name: 'Bob', age: 25 });
+//filter out people with age under 30
+const example = filter(person => person.age >= 30)(source);
+//output: "Over 30: Joe"
+const subscribe = example.subscribe({onNext: val => console.log(`Over 30: ${val.name}`)});
+reduce operator
+Reduces the values from source observable to a single value that's emitted when the source completes. Just like Array.prototype.reduce()
+
+The corresponding declaration will be
+
+export function reduce<T, R>(f: (acc: R, x: T) => R, seed: R): Operator<T, R> {
+  return (observable: Observable<T>): Observable<R> => {
+    // Your code goes here
+  }
+}
+And this is an example:
+
+const source = of(1, 2, 3, 4);
+const example = reduce((acc, val) => acc + val, 0)(source);
+//output: Sum: 10'
+const subscribe = example.subscribe({onNext: val => console.log('Sum:', val)});
+
+4
+-------------
+Reactive programming: #4 Pipelining operators
+6surtich
+Details
+Solutions
+Discourse (2)
+DESCRIPTION:
+This is the fourth part of the series on reactive programming.
+
+Before facing your resolution, you must have completed the previous three katas:
+
+#1 Create function
+#2 Basic observables creation
+#3 Premier operators
+In the previous kata we learned how to transform an observable using operators. In this we are going to create a pipe function that allows us to combine several operators.
+
+With the current solution we can combine operators but the result is a bit ugly.
+
+Let's try, for example, to create an observable in a single instruction with the last test proposed in #3.
+
+const sum$ = reduce((s, n) => s + n, 0)(map(n => n * 2)(filter(n => n % 2 !== 0)(of(1, 2, 3, 4, 5))));
+We could do nicer if we had a pipe function.
+
+const sum$ = of(1, 2, 3, 4, 5).pipe(filter(n => n % 2 !== 0), map(n => n * 2), reduce((s, n) => s + n, 0));
+Better, isn't it?
+
+But before we start we are going to define the pipe operator.
+
+function pipe<T, R>(
+  ...operators: Array<Operator<any, any>>
+): Operator<T, R> {
+  // Your code
+}
+Yes, pipe can be considered as an "high order operator" since it receives a list of operators and an observable of Ts and returns an observable of Rs to which the operators have been applied from left to right.
+
+Note that we have had to sacrifice part of the type-safe provided by TypeScript. By allowing a list of operators we had to use <any, any>. We would have liked to reinforce the type definition by specifying that operator types must match.
+
+We could have done this if we knew exactly how many operators receive pipe operator. For example, if it only received two, the definition would have been type-safe in this way.
+
+In the previous kata, we do not fully explain why operators should be currified. I think you can understand this now. If they were not, we could not combine them with the pipe operator.
+
+function pipe<T, R, S>(f: Operator<T, R>, g: Operator<R, S>): Operator<T, S> {
+  ...
+}
+We would have to overload the pipe definition for 2, 3, 4, ... operators, but we prefer not to do it this way.
+
+Let's start!
+
+pipe operator
+Your task is to implement the pipe operator.
+
+Here you have some examples.
+
+const example = pipe(map(val => val + 10))(of(1, 2, 3, 4, 5));
+// output: 11, 12, 13, 14, 15
+example.subscribe({ onNext: val => coonsole.log(val) });
+const sum$ = pipe(
+  filter(n => n % 2 !== 0),
+  map(n => n * 2),
+  reduce((s, n) => s + n, 0)
+)(of(1, 2, 3, 4, 5));
+// output: 18
+sum$.subscribe({
+  onNext: val => console.log(val)
+});
+pipe method
+Now to make it even simpler, let's modify Observable type to allow pipelining.
+
+interface Observable<T> {
+  subscribe: (o: Subscriber<T>) => Subscription;
+  pipe: <R>(...operators: Array<Operator<any, any>>) => Observable<R>;
+}
+So any observable must have a pipe function.
+
+const source = create(observer => {
+  observer.next(1);
+  observer.next(2);
+}).pipe(filter(v => v === 2));
+
+// output: 2
+source.subscribe({ onNext: v => (val = console.log(val) });
+const sum$ = of(1, 2, 3, 4, 5).pipe(
+  filter(n => n % 2 !== 0),
+  map(n => n * 2),
+  reduce((s, n) => s + n, 0)
+);
+// output: 18
+sum$.subscribe({
+  onNext: val => console.log(val)
+});
+take and tap operators
+We are going to finish this kata by implementing a couple of simple and useful additional operators.
+
+take
+Emit provided number of values before completing. The definition of the take operator is as follows.
+
+function take<T>(n: number): Operator<T, T> {
+  return (observable: Observable<T>): Observable<T> => {
+    // your code
+  }
+}
+const source = of(1, 2, 3, 4, 5).pipe(take(3));
+
+// output: 1, 2, 3
+source.subscribe({
+  onNext: v => console.log(v)
+});
+tap
+Transparently perform actions or side-effects, such as logging. With the following definition.
+
+function tap<T>(f: (x: T) => void): Operator<T, T> {
+  return (observable: Observable<T>): Observable<T> => {
+  }
+}
+Tap receives a function that applies a side effect (such as logging, mutation, or testing) that leaves the value unchanged for the following pipeline operators.
+
+For example:
+
+// output: 1, 2, 2, 4, 3, 6, 4, 8, 5, 10
+of(1, 2, 3, 4, 5)
+        .pipe(
+          tap(n => console.log(n)),
+          map(n => n * 2),
+          tap(n => console.log(n))
+        )
+        .subscribe({});
+
+5
+---------------------
+
+Reactive programming: #5 Observable juggling
+5surtich
+Details
+Solutions
+Discourse
+DESCRIPTION:
+This is the fifth part of the series on reactive programming.
+
+Before facing your resolution, you must have completed the previous katas:
+
+#1 Create function
+#2 Basic observables creation
+#3 Premier operators
+#4 Pipelining operators
+In this kata we are going to implement three examples of operators that allow us to mix two observers: concat, merge and zipWith.
+
+concat operator
+Concat two observables. Starting with the first observable and when finished, continue with the second.
+
+The type definition would be:
+
+export function concat<T>(o: Observable<T>): Operator<T, T> {
+  return (p: Observable<T>) => {
+    // Your code
+  }
+}
+Although at first it may seem strange, to maintain consistency with the definition of the previous operator, first we issue the values of p observable and then the values of the o observable.
+
+Here you have an example.
+
+// emits 1,2,3
+const sourceOne = of(1, 2, 3);
+// emits 4,5,6
+const sourceTwo = of(4, 5, 6);
+// emit values from sourceOne, when complete, subscribe to sourceTwo
+const example = sourceOne.pipe(concat(sourceTwo));
+// output: 1,2,3,4,5,6
+const subscribe = example.subscribe({
+  onNext: val => console.log(val)
+});
+merge operator
+Mix the values of two operators by interleaving their values as they arrive. The type definition is the same as concat.
+
+export function concat<T>(o: Observable<T>): Operator<T, T> {
+  return (p: Observable<T>) => {
+    // Your code
+  }
+}
+An example would be:
+
+// emits 0,1,2,3,...
+const sourceOne = interval(3);
+// emits 0,1,2,3,....
+const sourceTwo = interval(7);
+const example = sourceOne.pipe(merge(sourceTwo));
+// output: 0,1,0,2,3,1,4
+const subscribe = example.subscribe({
+  onNext: val => console.log(val)
+});
+zipWith operator
+Returns an observable whose values result from applying a function with the values of two observables.
+
+This is the first example that we propose of an operator that is not implemented in RxJS. The implementation is slightly more complicated than the previous ones.
+
+Let's see its type definition.
+
+function zipWith<T, R, S>(f: (x: T, y: R) => S) {
+  return (p: Observable<R>): Operator<T, S> => {
+    return (o: Observable<T>): Observable<S> => {
+      // put your code here
+    }
+  }
+}
+This is the example.
+
+const sourceOne = of(1, 2, 3);
+const sourceTwo = of(4, 5, 6);
+const example: Observable<number> = sourceOne.pipe(
+  zipWith((x, y) => x + y)(sourceTwo)
+);
+
+// output: 5,7,9
+example.subscribe({
+  onNext: val => console.log(
+});
+
+6
+-----------
+Reactive programming: #6 The Observable Monad
+4surtich
+Details
+Solutions
+Discourse
+DESCRIPTION:
+This is the sixth part of the series on reactive programming.
+
+Before facing your resolution, you must have completed the previous katas:
+
+#1 Create function
+#2 Basic observables creation
+#3 Premier operators
+#4 Pipelining operators
+#5 Observable juggling
+In this kata we are going to deal with the M word. Yes, observables are also monads. But do not be scary. It is easier than it seems to be.
+
+Suppose we want to implement an operator that receives a function that receives a value and returns an observable. This is the function part:
+
+f: (x: T) => Observable<R>
+The operator will also receive an observable and it will apply the function to each value issued by the observable.
+
+Why would we want something like that?
+
+Let's take an example:
+
+Suppose you want to implement the repeat operator. To do this, you could start from scratch, or you could define repeat from other operators.
+
+repeat receives a number and an observable and repeats one emission after another as many times as indicated.
+
+function repeat<T>(times: number): Operator<T, T> {
+  return (observable: Observable<T>): Observable<T> => {
+    ....
+  }
+}
+At first you might think that you could define repeat like this:
+
+const repeat = times => observable => of(...Array(times).fill(null)).pipe(map(_ => concat(observable)));
+That is, we generate as many values as times param and replace each value with the observable param and then concatenate the observables.
+
+This looks good, but we have a problem. The map operator preserves the structure (returns an observable) and the function it receives returns observables too, so we will end with an observable whose values are observables as well.
+
+We can deal with this by subscribing to the outer observable, then subscribe to the inner observables. Of course we would have to deal with the unsubscriptions and with the complete and next states of all the observables. It seems a mess, right?
+
+Besides, implementing repeat in this way we lose the possibility of composing it with pipe operator. This is not going to work:
+
+// v does not match because is an observable of numbers, it is not a simple number
+interval(500).pipe(take(3), repeat(4), map(v => v * 2));
+This is what we are talking about when we say that a structure is a monad: A monad is a structure for which there is a function that allows us to compose functions that receive a simple value and return a value within the structure.
+
+In this kata we are going to deal with observables as a monads.
+
+concatMap operator
+We can define concapMap operator like this:
+
+function concatMap<T, R>(f: (x: T) => Observable<R>): Operator<T, R> {
+  return (o: Observable<T>) => {
+    ....
+  }
+}
+An example of use could be the repeat function that we have proposed before.
+
+function repeat<T>(times: number): Operator<T, T> {
+  return (observable: Observable<T>): Observable<T> => {
+    return of(...Array(times).fill(null)).pipe(concatMap(_ => observable));
+  };
+}
+Now you can compose repeat operator:
+
+interval(500).pipe(take(3), repeat(4), map(v => v * 2));
+Now your job is to implement concatMap.
+
+mergeMap operator
+mergeMap has the same definition as concatMap. The behavior differs in that the inner observables do not wait for the completion to begin issuing and they do so as they are available.
+
+function mergeMap<T, R>(f: (x: T) => Observable<R>): Operator<T, R> {
+  return (o: Observable<T>) => {
+    ....
+  }
+}
+To see the difference between concatMap and mergeMap, let's suppose that we impliment repeat with mergeMap in this way:
+
+function repeat<T>(times: number): Operator<T, T> {
+  return (observable: Observable<T>): Observable<T> => {
+    return of(...Array(times).fill(null)).pipe(mergeMap(_ => observable));
+  };
+}
+Let's see the output of the following code:
+
+const source = interval(2).pipe(take(3));
+const example = repeat(3)(source);
+// output: 0,0,0,1,1,1,2,2,2
+example.subscribe({
+  onNext: val => conssole.log(val)
+});
+The implementation with concatMap would have produced a very different result:
+
+// output: 0,1,2,0,1,2,0,1,2
+switchMap operator
+And finally we get to the last operator of the kata and the series: switchMap is one of my favorite operators because it allows us to simplify a task that is usually tedious as cancellations are.
+
+The canonical example that is usually used to explain the problem of cancellations is an autocomplete search. How to ensure that as you type, previous searches that have been sent to the server are not displayed? This is a complex challenge since we can not be sure that the order in which the server resolves requests is preserved. switchMap and other cancellation operators are perfect for these situations.
+
+This is the switchMap definition:
+
+function switchMap<T, R>(f: (x: T) => Observable<R>): Operator<T, R> {
+  return (o: Observable<T>) => {
+    ....
+  }
+}
+With switchMap, every time the external observable emits a new value, the current internal observable emission is canceled and a new inner observable is created with that value and the function, this new inner observable starts to emit again.
+
+For example:
+
+const outer = interval(50).pipe(take(3));
+const inner = (x: number) => {
+  const interval$ = interval(20).pipe(
+    map(y => [x, y]),
+    take(4)
+  );
+  return interval$;
+};
+const example: Observable<[number, number]> = outer.pipe(
+  switchMap(inner)
+);
+
+// output: [0, 0] [0, 1] [1, 0] [1, 1] [2, 0] [2, 1] [2, 2] [2, 3]
+// Note that [0, 2], [0, 3] are not emitted because the inner observable has been canceled by the arrival of a new value of the outer observable, which in this case has a value of 1.
+// [1, 2], [1, 3] are caceled by the 2 outer value.
+// However, [2, 0] [2, 1] [2, 2] [2, 3] are all emitted because the outer observable no longer emits more values after 2.
+example.subscribe({
+  onNext: val => console.log(val),
+});
+

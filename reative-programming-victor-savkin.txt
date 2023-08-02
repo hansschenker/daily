@@ -1,0 +1,68 @@
+
+-events and state, 
+deriving and executing, 
+reified and transparent, 
+self observation and external observation
+
+Events
+----------------------------------
+Events are discrete and cannot be skipped. Every single event matters, 
+including the order in which the events are emitted. The “most recent event” 
+is not a special thing we care about. Finally, very rarely are events directly displayed to the user.
+
+- events are discrete
+- each event is important
+- order is important
+
+State
+--------------------------------------
+The state, on the other hand, is continuous, i.e., it is defined at any point in time. 
+We usually do not care about how many times it gets updated–only the most recent value matters. 
+The state is often displayed or has a meaningful serialization form.
+- state is continuous (defined at any point in time)
+- we do  not care how many times the state changes
+- the most recent state is important
+
+Shopping Cart Sample
+-----------------------------------------------
+
+Events
+---------------------------------------------
+Take a shopping cart as an example. We can use mouse click events to change the content of the shopping cart. 
+Clicking on a plus button increases the number of items, and clicking on a minus decreases it. 
+The number of clicks matters. And we cannot skip any of them, as it would change the content of the shopping cart. 
+We will never have to examine the last click event or display it to the user.
+
+State
+------------------------------------------
+The totals field, on the other hand, is the state. We only care about its latest value, 
+which reflects the content of the shopping cart, not about how many times the total was updated.
+
+Event Streams
+----------------
+Event streams are sequences of values produced over a period of time. 
+And the state is a single value that varies over time.
+
+Mouve Move sample stream
+--------------------------
+type Pair = [number, number]; 
+
+const moves: Observable<Pair> = 
+  fromEvent(document.body, "mousemove").
+  map(e => [e.screenX, e.screenY]); 
+
+const position = new BehaviorSubject<Pair>([0,0]); 
+moves.subscribe(position); 
+
+position.value // returns the current position of the mouse
+
+--------------------------------------------------------------------------------
+Source - Mouse - Events is the source (triggers state change -> position
+
+Sink   - Position - State is triggered by mouse moves (position changes when mouse moves)
+-----------------------------------------------------------------------
+
+State Change is created a sequence of events -> think Finite State Machines and Statecharts
+-------------------
+this example also shows that the state is often created from a sequence of events.
+

@@ -1,0 +1,175 @@
+Composing Types
+-------------------------------------------------------------------------------------------------
+The most basic way of composing types is with union and intersection types.
+
+- Union Types (Sum Type, either this or that, addition of type cardianlity) and 
+- Intersection Types (Product Types, record, cartesian producct)
+
+Union: 
+-----------------------------
+ interface Foo {
+ 2   foo: string;
+ 3   xyz: string;
+ 4 }
+ 5 
+ 6 interface Bar {
+ 7   bar: string;
+ 8   xyz: string;
+ 9 }
+10 
+11 const sayHello = (obj: Foo | Bar) => {
+12   /* ... */
+13 };
+
+Foo | Bar is a type that has either all required properties of Foo OR all required properties of Bar.
+
+Intersection
+------------------------------
+ const sayHello = (obj: Foo & Bar) => {
+2   /* ... */
+3 };
+4 
+5 sayHello({ foo: "foo", bar: "bar", xyz: "xyz" });
+
+Now sayHello requires the argument to have both foo AND bar properties. 
+Inside sayHello it’s possible to access obj.foo, obj.bar, and obj.xyz.
+
+In set theory, union and intersection are names of operations on sets. 
+A+B
+The union of two sets is a set that contains all elements from both sets. 
+
+The intersection of two sets is a set that only contains elements that are present in both sets.
+A-B
+
+Discriminated Unions
+-------------------------------------------------------------------------------------------------
+express business rules in the type system
+
+"Customer needs to provide either email or phone number"
+
+interface EmailContact {
+ 2   kind: "email";
+ 3   email: string;
+ 4 }
+ 5 
+ 6 interface PhoneContact {
+ 7   kind: "phone";
+ 8   phone: number;
+ 9 }
+10 
+11 type Contact = EmailContact | PhoneContact;
+12 
+13 interface Customer {
+14   name: string;
+15   contact: Contact;
+16 }
+17 
+18 function printCustomerContact({ contact }: Customer) {
+19   if (contact.kind === "email") {
+20     // Type of `contact` is `EmailContact`!
+21     console.log(contact.email);
+22   } else {
+23     // Type of `contact` is `PhoneContact`!
+24     console.log(contact.phone);
+25   }
+26 }
+
+Contact type can be written in a much terser way as it’s not necessary 
+to create standalone PhoneContact and EmailContact types - they can be inlined.
+
+1 type Contact =
+2   | { kind: "email"; email: string }
+3   | { kind: "phone"; phone: number };
+
+nterestingly, a discriminator does not have to be a single property. 
+A group of literal properties can also act as a discriminator! In such a case,
+ every combination of values marks a different member of the union type.
+
+ 1 type Foo =
+ 2   | { kind: "A"; type: "X"; abc: string }
+ 3   | { kind: "A"; type: "Y"; xyz: string }
+ 4   | { kind: "B"; type: "X"; rty: string };
+ 5 
+ 6 declare const foo: Foo;
+ 7 
+ 8 if (foo.kind === "A" && foo.type === "X") {
+ 9   console.log(foo.abc);
+10 }
+
+Users place orders for products.
+Users have contact information, email or postal addresses, and at least one is required.
+Orders should include price, product name, quantity, payment date, paid amount, sending date, and delivery date.
+
+
+State machines - a useful tool in state management
+-------------------------------------------------------------------------------------------------
+A state machine is a directed graph where nodes represent all possible states of a view or of the whole app, 
+and where edges represent possible transitions between the states
+
+type State =
+ 2   | { type: "empty" }
+ 3   | { type: "loading" }
+ 4   | { type: "withData"; data: string[] }
+ 5   | { type: "error"; errorMessage: string };
+ 6 
+
+ 7 type Action =
+ 8   | { type: "dataRequested" }
+ 9   | { type: "dataFetchingSucceeded"; data: string[] }
+10   | { type: "dataFetchingFailed"; errorMessage: string }
+11   | { type: "dataFetchingCancelled" };
+12 
+
+13 function reducer(prevState: State, action: Action): State {
+14   switch (prevState.type) {
+15     case "loading":
+
+There are four states:
+
+empty - fetching has not started yet or has been canceled
+loading - fetching is in progress
+withData - fetching was successful
+error - fetching failed
+
+Let’s create a discriminated union that represents all of the possible states. 
+Next, let’s look at all possible actions that can result in state transitions. 
+Finally, we’ll build a reducer which describes all of the possible transitions.
+
+ 1 type State =
+ 2   | { type: "empty" }
+ 3   | { type: "loading" }
+ 4   | { type: "withData"; data: string[] }
+ 5   | { type: "error"; errorMessage: string };
+ 6 
+ 7 type Action =
+ 8   | { type: "dataRequested" }
+ 9   | { type: "dataFetchingSucceeded"; data: string[] }
+10   | { type: "dataFetchingFailed"; errorMessage: string }
+11   | { type: "dataFetchingCancelled" };
+12 
+13 function reducer(prevState: State, action: Action): State {
+14   switch (prevState.type) {
+15     case "loading":
+16       switch (action.type) {
+17         case "dataFetchingSucceeded":
+18           return { type: "withData", data: action.data };
+19         case "dataFetchingCancelled":
+20           return { type: "empty" };
+21         case "dataFetchingFailed":
+22           return { type: "error", errorMessage: action.errorMessage };
+23         case "dataRequested":
+24           return prevState;
+25       }
+26     case "empty":
+27     case "error":
+28     case "withData":
+29       switch (action.type) {
+30         case "dataRequested":
+31           return { type: "loading" };
+32         case "dataFetchingCancelled":
+33         case "dataFetchingFailed":
+34         case "dataFetchingSucceeded":
+35           return prevState;
+36       }
+37   }
+38 }

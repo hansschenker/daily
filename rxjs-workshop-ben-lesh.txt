@@ -1,0 +1,87 @@
+drop ball with mergeAll
+------------------------
+{
+  const { fromEvent } = Rx.Observable;
+  const { map, mergeMap, mergeAll, tap } = Rx.operators;
+  
+  const dropBallButtonMergeAll = view1.querySelector('#dropBallButtonMergeAll');
+  const dropBallButtonMergeMap = view1.querySelector('#dropBallButtonMergeMap');
+  const svg = d3.select(view1.querySelector('svg'));
+	
+  // map() + mergeAll().
+  fromEvent(dropBallButtonMergeAll, 'click')
+    .pipe(
+      map(() =>
+        addBall(svg, 'blue')
+      ),
+      tap(x => {
+        // Logging here so you can see the inner observable returned by addBall() via the map().
+        console.log(x);
+        return x;
+      }),
+      mergeAll() // Subscribes to inner observable returned by addBall() so our animation actually happens.
+  	)
+    .subscribe();
+  
+  // mergeMap().
+  fromEvent(dropBallButtonMergeMap, 'click')
+    .pipe(
+      mergeMap(() =>
+        addBall(svg, 'red')
+      ),
+  	)
+    .subscribe();
+  
+  return 'example1';
+}
+--------------------------------------------------------------------------------------------
+{
+  const { fromEvent } = Rx.Observable;
+  const { concatAll, concatMap, map } = Rx.operators;
+  
+  const dropBallButtonConcatAll = view2.querySelector('#dropBallButtonConcatAll');
+  const dropBallButtonConcatMap = view2.querySelector('#dropBallButtonConcatMap');
+  const svg = d3.select(view2.querySelector('svg'));
+	
+  // map() + concatAll().
+  fromEvent(dropBallButtonConcatAll, 'click')
+    .pipe(
+      map(() =>
+        addBall(svg, 'green')
+      ),
+      concatAll()
+  	)
+    .subscribe();
+  
+  // concatMap().
+  fromEvent(dropBallButtonConcatMap, 'click')
+    .pipe(
+      concatMap(() =>
+        addBall(svg, 'orange')
+      ),
+  	)
+    .subscribe();
+  
+  return 'example2';
+}
+----------------------------------
+{
+  const { fromEvent } = Rx.Observable;
+  const { switchMap } = Rx.operators;
+ 
+  const dropBallButtonSwitchMap = view3.querySelector('#dropBallButtonSwitchMap');
+  const svg = d3.select(view3.querySelector('svg'));
+  
+  // switchMap().
+  fromEvent(dropBallButtonSwitchMap, 'click')
+    .pipe(
+      switchMap(() =>
+        addBall(svg, 'purple')
+      ),
+  	)
+    .subscribe();
+  
+  return 'example3';
+}
+--------------------------------------------------------------------
+https://observablehq.com/@camargo/rxjs-merge-strategies

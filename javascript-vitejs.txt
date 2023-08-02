@@ -1,0 +1,13 @@
+function getImageUrl(name) {
+return new URL(../assets/images/${name}, import.meta.url).href
+}
+
+By calling the href property of the returned URL object, the function will 
+return a string containing the full URL of the image file, including the protocol 
+(e.g. "https:"), the hostname (e.g. "www.example.com"), and the path to the file.
+
+<template>
+ <div class="gallery">
+        <img v-for="img in gallery" :key="img " :src=" getImageUrl(img )">
+    </div>
+</template>

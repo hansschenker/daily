@@ -1,0 +1,215 @@
+Attribute Directive (like a DOM attribute)
+--------------------------------------------------------------------------
+In Angular, you can attach Attribute Directives on any elements on the DOM, 
+and if the Directive’s selector matches, 
+Angular will instantiate the Directive with the appropriate context.
+
+Directive Context
+--------------------------------------------------------------------------
+- html element: 		A context is an environment that the Directive is created with. 
+- di injector tree position:	Directive's access to parent directives via Angular’s Dependency Injection
+
+html element (some directive)
+------------------------
+<div some></div>
+<button some></button>
+
+di tree position: access to HTMLElement the directive is attached to:
+---------------------------------------------------------------------------
+When a Directive is attached on an HTMLElement, the Directive will have access to:
+
+ElementRef<TElement>: where TElement is the actual type of the element. 
+Eg: <button> is HTMLButtonElement, <div> is 
+- HTMLDivElement. 
+- ElementRef is the reference to the DOM element that is rendered
+
+@Directive({/*...*/})
+export class SomeDirective {
+	constructor(elRef: ElementRef<HTMLButtonElement>) {}
+}
+
+ng-container: Hosting a directive without a DOM element
+------------------------------------------------------------------------
+The Angular <ng-container> is a grouping element that doesn't interfere 
+with styles or layout because Angular doesn't put it in the DOM.
+
+Use <ng-container> when there's no single element to host the directive.
+
+Here's a conditional paragraph using <ng-container>.
+
+src/app/app.component.html (ngif-ngcontainer)
+
+<p>
+  I turned the corner
+  <ng-container *ngIf="hero">
+    and saw {{hero.name}}. I waved
+  </ng-container>
+  and continued on my way.
+</p>
+
+Component
+---------------------------------------------------------------------------
+<some-component some></some-component>
+
+When a Directive is attached on a Component, the Directive will have access to:
+
+- ElementRef<HTMLElement>: same as above
+- access to Component type 
+- access to the instance of the Component
+
+@Directive({/*...*/})
+export class SomeDirective {
+	constructor(
+    // 👇 the <some-component> element
+		elRef: ElementRef<HTMLElement>,
+    // 👇 the SomeComponent instance
+		some: SomeComponent
+	) {}
+}
+
+
+ng-template
+----------------------------------------------------------------------------
+<ng-template some></ng-template>
+
+the Directive will have access to:
+- ElementRef<Comment>: When you render ng-template, Angular will put a comment: <!-- container --> in its place. 
+  This comment will be available for the Directive via ElementRef<Comment>
+
+- TemplateRef<any>: The TemplateRef instance.
+
+@Directive({/*...*/})
+export class SomeDirective {
+	constructor(
+    // 👇 the <!-- container --> comment
+		elRef: ElementRef<Comment>,
+    // 👇 the TemplateRef instance
+    // 👇.                   👇 you can use any specific generic here if you know what the Context is
+		templateRef: TemplateRef<any>
+	) {
+		console.log(elRef.nativeElement.textContent): // logs: 'container'
+	}
+}
+
+ViewContainerRef is always available to Attribute Directive
+----------------------------------------------------------------------------------
+Inheritance
+
+- access to the Hierarchical Injector Tree
+
+Other directives
+-------------------------------------
+<input [ngModel]="name" some />
+
+- access to the NgModel instance and anything that NgModel might have inherited (the underlying NgControl), 
+  so you can have a Directive that might do some additional Form logic.
+
+Component’s Providers
+---------------------------------------
+<some-component some></some-component>
+
+- has access to anything that is provided in SomeComponent’s providers
+
+@Component({
+	/*...*/,
+             // 👇 this will also be made available to SomeDirective
+	providers: [SomeService]
+})
+export class SomeComponent {}
+- access to SomeComponent’s ancestors’ Injector
+
+<some-parent>
+	<some-component some></some-component>
+</some-parent>
+
+- anything in SomeParent also available to SomeDirective via Dependency Injection.
+
+Root/Platform Providers: 
+-------------------------
+ChangeDetectorRef, NgZone, ApplicationRef, @Inject(DOCUMENT), etc.
+Everything listed here might not be exhaustive, as these are the things that I am aware of. 
+
+console.log injector
+----------------------
+You can quickly check what is available in any specific building block of Angular 
+by injecting the Injector and checking it in the console
+
+Directive’s Selector
+---------------------------
+One powerful feature of Angular Directives is specifying the selector 
+- like CSS Selectors (class selector .some, attribute selector [some], element selector some)
+
+ CSS Selectors, you can apply some conditions to them. For example, 
+- [some][foo]:not([bar]),
+- [some][bar]:not([foo]),
+- [some]:not([foo]):not(bar) . 
+
+This says: SomeDirective can be instantiated by itself, with [foo] input, 
+or with [bar] input but never [foo] and [bar] inputs at the same time.
+
+
+
+@Directive({
+	selector: '[some]'
+})
+export class SomeDirective {}
+
+
+SomeDirective handles some certain logic for SomeComponent  (reusable behavior)
+-------------------------------------------------------------------------------
+that is extracted out of the Component to achieve Separation of Concern. 
+
+Having to do the following is tedious
+
+<some-component some></some-component>
+<some-component some></some-component>
+<some-component some></some-component>
+<some-component some></some-component>
+<some-component some></some-component>
+
+Element Selector or Component Selector for Directive
+-----------------------------------------------------
+Instead, we can change SomeDirective’s selector to some-component 
+so that it will get instantiated in the same manner as SomeComponent
+
+@Directive({
+            // 👇 nothing really prevents you from doing this
+	selector: 'some-component'
+})
+export class SomeDirective {}
+
+CursorPointer Directive sample
+----------------------------------------------------------------
+@Directive({
+	selector: '[cursorPointer]'
+})
+export class CursorPointerDirective {
+	constructor() {}
+}
+This is how we would want to use CursorPointerDirective
+
+<ngt-mesh cursorPointer></ngt-mesh>
+
+The job of CursorPointerDirective is to listen to the pointers’ events and update document.body style. Let’s fill the directive up
+
+@Directive({
+	selector: '[cursorPointer]'
+})
+export class CursorPointerDirective implements OnDestroy {
+  
+	destroyed$ = new Subject();
+
+	constructor(
+    
+		@Inject(DOCUMENT) document: Document, // to change document body style
+    
+
+		@Optional() object3dInputsController: NgtObject3dInputsController
+	) {}
+
+- a Directive shares the same life-cycle with the Element/Component that it's attached to
+
+	ngOnDestroy() {
+		this.destroyed$.next();
+	}
+}

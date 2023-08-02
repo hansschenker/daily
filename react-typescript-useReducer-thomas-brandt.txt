@@ -1,0 +1,82 @@
+// blog article
+// https://thomasbandt.com/model-view-update-with-react-and-typescript
+
+import React, { useReducer } from "react";
+
+interface State {
+  userName: string;
+  password: string;
+  isValid: boolean;
+}
+
+const initialState: State = {
+  userName: "",
+  password: "",
+  isValid: false,
+};
+
+type UserNameChangedMsg = {
+  type: "UserNameChangedMsg";
+  userName: string;
+};
+
+type PasswordChangedMsg = {
+  type: "PasswordChangedMsg";
+  password: string;
+};
+
+type Msg = UserNameChangedMsg | PasswordChangedMsg;
+
+function validate(state: State): boolean {
+  return state.userName.length > 0 && state.password.length > 0;
+}
+
+function assertUnreachable(x: never): never {
+  throw new Error("Didn't expect to get here");
+}
+
+function update(state: State, msg: Msg) {
+  switch (msg.type) {
+    case "UserNameChangedMsg": {
+      const newState = { ...state, userName: msg.userName };
+      return { ...newState, isValid: validate(newState) };
+    }
+    case "PasswordChangedMsg": {
+      const newState = { ...state, password: msg.password };
+      return { ...newState, isValid: validate(newState) };
+    }
+  }
+  return assertUnreachable(msg);
+}
+
+function signIn(state: State) {
+  // Do some validation work here ...
+}
+
+export default function () {
+  const [state, dispatch] = useReducer(update, initialState);
+
+  return (
+    <div>
+      <input
+        type="text"
+        placeholder="User name"
+        defaultValue={state.userName}
+        onChange={(e) =>
+          dispatch({ type: "UserNameChangedMsg", userName: e.target.value })
+        }
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        defaultValue={state.password}
+        onChange={(e) =>
+          dispatch({ type: "PasswordChangedMsg", password: e.target.value })
+        }
+      />
+      <button disabled={!state.isValid} onClick={() => signIn(state)}>
+        Sign in
+      </button>
+    </div>
+  );
+}

@@ -1,0 +1,141 @@
+the goal, rather, is to 
+
+- abstract control flows and operations on data 
+- with functions in order to avoid side effects
+- and reduce mutation of state in your application
+
+functional program￾ming is based on:
+......................................................
+■ Declarative programming
+ - is a method to abstract away the control flow for logic required for software to perform an action, 
+   and instead involves stating what the task or desired outcome is. 
+   Declarative programming is a high-level programming concept, which is the opposite of imperative programming.
+
+■ Pure functions
+ - The function return values are identical for identical arguments 
+   (no variation with local static variables, 
+    non-local variables, mutable reference arguments or input streams).
+ - The function application has no side effects 
+   (no mutation of local static variables, non-local variables, 
+    mutable reference arguments or input/output streams).
+ - A pure function is a computational analogue of a mathematical function. 
+   (you can reason about the behavior of pure functions because they behave allways the same way
+
+  mapping between a function’s arguments and its return value
+
+
+■ Referential transparency (given a function and an input value, you will always receive the same output. 
+                            That is to say there is no external state used in the function
+
+  if a function consistently yields the same result on the
+  same input, it’s said to be referentially transparent
+
+  Purity and referential transparency encourage you to think this way because in
+  order to glue simple functions together, they must agree on the types of inputs and
+  outputs. From referential transparency, you learn that a function’s complexity 
+  is some￾times directly related to the number of arguments it receives (this is merely a practical
+  observation and not a formal concept indicating that t
+
+■ Immutability
+
+
+separate data and functions
+--------------------------
+data 				- is in the form of: pair, and pair of pairs = list (head and tail(rest of the list))
+control flow			- with function composition
+recursion       		- repeated call of a function on itself
+recursive data structures: 	- list as pair of pairs, tree as node of of nodes
+
+devide and conquer
+
+imperative control flow is with if (branching) and loop (state variables which change on each iteration)
+
+functional control flow: is linear : input -> output -> input -> output
+                                     (output of one function is the input of the next function)
+1 2 3 4
+4! = 4 × 3 × 2 × 1 = 24
+
+n! = n × (n−1)!
+
+
+fac n = n <= 0 ? 1 : fac(n-1)
+ 
+
+function composition
+---------------------
+A function chain is a lazy evaluated program, which means it
+defers its execution until needed. 
+
+
+
+Functional programming in Javascript (based on 
+--------------------
+----------------
+
+functional programming capabilities for
+.........................................
+- anonymous functions
+- have higher-order function they
+- some kind of immutability 
+- lazy collections
+
+functional programming is about
+..................................
+- composing pure functions and 
+- a pure function is just a mapper it takes one object and produces another 
+  it doesn't modify the objects it takes it just takes one object and produces another one
+- no matter how many times you put the same object to that
+  function it should always produce the same result and 
+- pure functional programming is about composing those functions together
+
+Benefits of functional programming
+----------------------------------------
+■ Encourage you to decompose tasks into simple functions
+
+functional programming is effectively the interplay between decompo￾sition 
+(breaking programs into small pieces) and composition (joining the pieces
+back together)
+
+■ Process data using fluent chains
+
+
+■ Decrease the complexity of event-driven code by enabling reactive paradigms
+
+Code that uses pure functions has zero chance of changing or breaking global
+state, which helps make your code more testable and maintainable.
+
+■ Functional programming is done in a declarative style that’s easy to reason
+about. This improves the overall readability of the application and makes your
+code leaner through a combination of functions and lambda expressions.
+
+■ Data processing in a collection of elements is done fluently via function chains
+that link operations such as map and reduce.
+
+■ Functional programming treats functions as building blocks by relying on
+first-class, higher-order functions to improve the modularity and reusability of
+your code.
+
+■ You can reduce the complexity of event-based programs by combining func￾tional with reactive programming.
+
+comparing imperative with functional programming
+---------------------------------------------------------------------
+Comparing some important qualities of object-oriented and functional programming. These
+qualities are themes that are discussed throughout this book.
+
+Comparison			Functional 						Object-oriented
+---------------------------------------------------------------------------------------------------------------------
+Unit of composition 		Functions						Objects instances of classes
+
+Programming style 		Declarative (What - expression evaluates to a value)	Imperative (How - statement step or state change)
+
+Data and behavior 		stand￾alone functions not coupled with data		Tightly coupled in classes with methods
+
+State management 		Treats objects as immutable values 			Favors mutation of objects via instance methods
+
+Control flow 			Function composition and recursion			Loops and conditionals
+
+Thread safety 			Enables concurrent programming 				Difficult to achieve
+
+Encapsulation 			Not needed because everything is immutable		Needed to protect data integrity
+
+

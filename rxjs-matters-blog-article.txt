@@ -1,0 +1,195 @@
+// blog article: https://devsday.ru/blog/details/99539
+
+Signals and fine-grained reactivity are very popular right now. 
+
+-----------------------------------------------------------------------------------------
+Signal: a value with a stateChange Function that can be called from any place its needed
+------------------------------------------------------------------------------------------
+synchronous: with a function call
+asynchronous: with a notification
+
+In the last month, both 
+- Preact and 
+- Qwik 
+  announced support for fine-grained reactivity with signals. 
+
+Previously, both frameworks had React-like rendering strategies. Now, they will have 
+- a rendering strategy more similar to SolidJS, with signals feeding precise updates into the DOM, 
+
+no rerender necessary
+-------------------------------------
+with no need for components to rerender. This is what enables SolidJS to have performance almost 
+as fast as imperative vanilla JS.
+
+Reactivity is for code organization
+-------------------------------------
+However, if you're used to React, it's easy to focus too much on the performance aspect, and miss 
+the real 
+- point of reactivity: better code organization. 
+
+We could always directly update DOM nodes in event handlers if we were just trying to achieve 
+optimal performance. 
+But reactivity increases developer productivity by allowing 
+- code to be declarative and 
+- easier to understand.
+
+Reactivity enables a thing to declare its own behavior, instead of being controlled by other code 
+scattered across callbacks or handlers. It's a better separation of concerns. Hence the famous 
+React hook examples with code highlighted according to the feature it managed, and hooks 
+(which are reactive) grouping the same colors together.
+
+Component class vs hooks
+
+Image Source: Jonathan Wieben
+-------------------------------
+This could be better. If the useState and useEffect were abstracted into a custom hook, the component 
+could be completely declarative.
+
+Synchronization is not enough
+Everyone is excited about synchronization, because it's the most common reactivity, and easiest to 
+implement. 
+
+But async reactivity provides just as much benefit to code quality as sync reactivity. 
+If you're familiar with RxJS or TanStack Query, you know what I'm talking about. Here's an example 
+from an article I wrote for Angular:
+
+Async reactivity
+------------------------------------------------
+Asynchronous reactivity is difficult to support
+So if asynchronous reactivity enables this awesome separation of concerns, 
+why are people saying signals make RxJS unnecessary?
+
+The problem is, async reactivity is complex to implement. So you're not going to see a primitive show up 
+that handles all asynchronous behavior without extra utilities created on top. 
+
+Basically, synchronous 
+reactivity is the map operator from RxJS. That's easy. That's like what Solid has, and Svelte, 
+and what Angular is working on, etc. But async reactivity is ALL the other 113 operators of RxJS. So, 
+async reactivity improves code organization just as much as synchronous reactivity, but a lot more work 
+needs to be done to support it.
+
+Out of the box, you can do this in SolidJS:
+--------------------------------------------
+const x = createSignal(1);
+const y = () => x() * 2;
+
+That's easy. But how do you declare that y is x but debounced by 2 seconds? That requires a setTimeout 
+and an imperative update, so y is no longer declarative. To make it declarative, you have to abstract 
+that behavior into a useDebounce hook. That takes work.
+
+RxJS is a great temporary solution for any framework
+There are 114 RxJS operators. Yes, most of them are rarely useful. But I've found situations perfect for 
+30+ of them. If you want declarative code and you need to create an async feature today, you need something 
+like RxJS to handle the async stuff.
+
+In the future, it will probably be different. You can re-implement everything in RxJS using hooks for each 
+framework and most likely come up with something more efficient.
+
+But for now, RxJS is extremely useful. It already has many async utilities that not even a mature framework 
+like React has. As you write declaratively with RxJS, you structure your code in a way that will be easy 
+to refactor into a custom hooks solution later on.
+
+Current state of RxJS compatibility in frameworks
+So. RxJS compatibility is huge for developers who have already learned to appreciate declarative code. 
+That's why I keep talking about it, and that's why I am working on a proof of concept for Qwik.
+
+All the frameworks have various levels of support for RxJS. This is what my experience has been:
+
+RxJS compatibility in frameworks
+
+Svelte
+Apparently RxJS compatibility in Svelte was mostly a happy accident, since Svelte stores have an API 
+almost identical to observables.
+
+SolidJS
+SolidJS is quite good, with utilities written in SolidJS itself to support using RxJS with signals. 
+However, when converting observables into signals, a subscription is immediately created, which slightly 
+reduces the power of RxJS. But it seems like Ryan Carniato is revisiting this.
+
+Angular
+Angular's support is the most disappointing to me personally. I have the most experience with it. 
+The best thing Angular itself provides is an async pipe, which doesn't take advantage of 
+
+RxJS's potential for fine-grained reactivity, 
+simply flagging the component as requiring change detection when a value arrives at the template. 
+And the syntax of the async pipe is awkward. 
+I recommend using RxAngular for both better performance and syntax.
+
+On the positive side, the overall Angular ecosystem is very RxJS-friendly, which is awesome.
+
+However, despite Angular developers already being familiar with RxJS, the Angular team is working 
+on a new, less capable reactive primitive. 
+
+It's basically going to do the job of the map RxJS operator. 
+
+Why would they do this? My guess is that Angular is feeling insecure about its past few years 
+being rated poorly in developer satisfaction, and that the team sees RxJS itself as a culprit, 
+
+Angular's poor RxJs integration - Angular hides the possibilities of RxJs
+------------------------------------------------------------------------------
+rather than Angular's poor integration with it. But some of the most popular and longest-ignored 
+issues on GitHub were for better RxJS integration.
+
+Many Angular developers in fact dislike RxJS, and it seems as though the Angular team thinks they 
+dislike it for its specific syntax, and not for the reasons I believe, that 1. 
+
+- RxJs integration with Angular sucks, and 2. 
+- they don't want to override their imperative coding habits.
+
+Whatever the reason, I do not believe RxJS's syntax is the problem.
+
+// Signals
+// Potential new reactive primitive
+const [x, setX] = createState(1);
+const y = computed(() => $(x) * 2);
+
+// RxJS map operator used alone (equivalent, no pipe needed)
+const x$ = new BehaviorSubject(1);
+const y$ = map(x => x * 2)(x$);
+
+Do you think a developer would love one and hate the other? I don't.
+
+Angular has had the best opportunity to take advantage of RxJS, and has dropped the ball the hardest. 
+I'm afraid Angular is going to wander through a reactivity desert for a long time before it finally 
+gets around to improving its RxJS integration.
+
+I'm sorry I sound so bitter in this section, but I and many others feel like we waited years and were 
+promised a better RxJS experience only for Angular to now turn its back on one of its only uniquely good parts. RxJS is actually part of Angular, and it feels like they're going to abandon it with as little care as they put into including it in the first place. I hope I'm wrong.
+
+Svelte
+---------------------
+And for some reason, the Angular team is currently "inspired by" 
+- Svelte stores, which are basically a less-capable version of BehaviorSubject. 
+
+Instead, they should be inspired by the fact that 
+Svelte accidentally has better support for a library that Angular's core depends on than Angular does.
+
+React
+--------------------
+React has the most declarative async alternatives to RxJS, so while RxJS in React isn't a great experience, 
+it isn't needed as much either. TanStack Query and other custom hook libraries go a long way in React. 
+It would still be nice to have a single library with custom hook patterns as well thought out as RxJS. 
+Hopefully TanStack Query will gradually evolve into something as thorough and consistent as RxJS, 
+but it's already pretty awesome.
+
+Qwik
+---------------------
+Qwik is an amazing framework, but it has virtually no compatibility with RxJS, since RxJS can't 
+be serialized.
+
+I'll be writing an article and posting a video about my Qwik + RxJS integration soon. 
+
+I'm on my 2nd iteration, and it's complicated. I'm putting subscription data into Qwik stores 
+so it can be serialized. 
+
+It seems like it's going to work. It's some runtime overhead that might make it slightly less efficient. 
+But, it allows you to organize your code declaratively, so when a more efficient solution is available, 
+minimal refactoring is required.
+
+I love Qwik, but I'm never returning to an imperative coding style. For most websites, spaghetti code 
+is far worse for business than a few kilobytes of JavaScript.
+
+I want the best of both worlds.
+
+Conclusion
+RxJS rocks. Use it.

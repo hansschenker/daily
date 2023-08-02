@@ -1,0 +1,79 @@
+
+
+import { createCanvasElement, render } from './canvas';
+import { generateApples, generateSnake, move, nextDirection,
+         eat, checkSnakeCollision, compareObjects } from './functions';
+import { SNAKE_Body, APPLE_COUNT, POINTS_PER_APPLE, GROW_PER_APPLE,
+         SPEED, DIRECTIONS, INITIAL_DIRECTION } from './constants';
+
+const canvas = createCanvasElement();
+const ctx = canvas.getContext('2d');
+document.body.appendChild(canvas);
+
+// ticks
+const tick$ = interval(SPEED);
+
+// keys
+const keyDown$ = fromEvent(document.body, 'keydown');
+
+// directions from keys
+const direction$ = keyDown$
+  .pipe(
+    map((e: any) => DIRECTIONS[e.keyCode]),
+    filter(Boolean),
+    startWith(INITIAL_DIRECTION),
+    scan(nextDirection),
+    distinctUntilChanged()
+  );
+
+// snake body
+const increaseBody$ = new BehaviorSubject(0);
+const snakeBody$ = increaseBody$
+  .pipe(
+    scan((snakeBody, grow) => snakeBody + grow, SNAKE_Body)
+  );
+
+// snake head and body when tick combine direction and snakeBody
+const snakeMoves$ = tick$
+  .pipe(
+    withLatestFrom(
+      direction$,
+      snakeBody$,
+      (_, direction, snakeBody) => ({ direction, snakeBody })
+    ),
+    scan(move, generateSnake(SNAKE_Body))
+  );
+
+const applesCount$ = snakeMoves$
+  .pipe(
+    scan(eat, generateApples(APPLE_COUNT)),
+    distinctUntilChanged(compareObjects),
+    share()
+  );
+
+const applesEaten$ = applesCount$
+  .pipe(
+    skip(1),
+    map(_ => GROW_PER_APPLE)
+  )
+  .subscribe(v => increaseBody$.next(v));
+
+const score$ = increaseBody$
+  .pipe(
+    skip(1),
+    startWith(0),
+    scan((score, _) => score + POINTS_PER_APPLE)
+  );
+
+const scene$ = combineLatest(
+  snakeMoves$, applesCount$, score$,
+  (snake, apples, score) => ({ snake, apples, score })
+);
+
+const game$ = tick$
+  .pipe(
+    withLatestFrom(scene$, (_, scene) => scene),
+    takeWhile(scene => checkSnakeCollision(scene.snake))
+  );
+
+game$.subscribe(scene => render(ctx, scene));

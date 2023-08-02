@@ -1,0 +1,33 @@
+Non nullable Types
+------------------
+Prior to TypeScript 2.0, the type checker considered null and undefined to be valid values of every type. 
+Basically, null and undefined could be assigned to anything. 
+
+That included primitive types such as strings, numbers, and booleans:
+
+Let's take the number type as an example. 
+Its domain not only includes all IEEE 754 floating point numbers, 
+but the two special values null and undefined as well:
+
+The same was true for objects, array, and function types. 
+There was no way to express via the type system that a specific variable was meant to be non-nullable. 
+Luckily, TypeScript 2.0 fixes that problem.
+
+#Strict Null Checking
+{
+  "compilerOptions": {
+    "strictNullChecks": true
+    // ...
+  }
+}
+In strict null checking mode, null and undefined are no longer assignable to every type. 
+Both null and undefined now have their own types, each with only one value:
+
+Since types are non-nullable by default when strict null checking is enabled, we need to explicitly opt into nullability and tell 
+the type checker which variables we want to be nullable. We do this by constructing a union type containing the null or undefined types:
+
+Non-nullable types are a fundamental and valuable addition to TypeScript's type system. 
+They allow for precise modeling of which variables and properties are nullable. 
+A property access or function call is only allowed after a type guard has determined it to be safe, 
+thus preventing many nullability errors at compile-time.
+

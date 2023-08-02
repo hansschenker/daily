@@ -1,0 +1,709 @@
+
+
+
+Control Flow based Type Analysis
+--------------------------------
+With TypeScript 2.0, the type checker analyses all possible flows of control in statements and expressions 
+to produce the most specific type possible (the narrowed type) at any given location for a local variable 
+or parameter that is declared to have a union type.
+
+Previously, the type analysis performed for type guards was limited to if statements and ?: conditional expressions 
+and didn't include effects of assignments 
+and control flow constructs such as return and break statements. With this PR, 
+
+the type checker 
+analyses all possible flows of control in statements and expressions to produce the most 
+specific type possible (the narrowed type) at any given location for a local variable or 
+parameter that is declared to have a union type.
+
+Some examples:
+--------------------------------------------
+function foo(x: string | number | boolean) {
+    if (typeof x === "string") {
+        x; // type of x is string here
+        x = 1;
+        x; // type of x is number here
+    }
+    x; // type of x is number | boolean here
+}
+
+function bar(x: string | number) {
+    if (typeof x === "number") {
+        return;
+    }
+    x; // type of x is string here
+}
+Control flow based type analysis is particuarly relevant in --strictNullChecks 
+mode because nullable types are represented using union types:
+
+function test(x: string | null) {
+    if (x === null) {
+        return;
+    }
+    x; // type of x is string in remainder of function
+}
+Furthermore, in --strictNullChecks mode, control flow based type analysis includes 
+definite assignment analysis for local variables of types that don't permit the value undefined.
+
+function mumble(check: boolean) {
+    let x: number; // Type doesn't permit undefined
+    x; // Error, x is undefined
+    if (check) {
+        x = 1;
+        x; // Ok
+    }
+    x; // Error, x is possibly undefined
+    x = 2;
+    x; // Ok
+}
+The narrowed type of a local variable or parameter at a given source code location is computed 
+by starting with the initial type of the variable and then following each possible code path 
+that leads to the given location, narrowing the type of the variable as appropriate based on type guards and assignments.
+
+The initial type of local variable is undefined.
+-------------------------------------------------
+The initial type of a parameter is the declared type of the parameter.
+The initial type of an outer local variable or a global variable is the declared type of that variable.
+A type guard narrows the type of a variable in the code path that follows the type guard.
+An assignment (including an initializer in a declaration) of a value of type S to a variable of type T 
+changes the type of that variable to T narrowed by S in the code path that follows the assignment.
+When multiple code paths lead to a particular location, the narrowed type of a given variable at that 
+location is the union type of the narrowed types of the variable in those code paths.
+The type T narrowed by S is computed as follows:
+
+If T is not a union type, the result is T.
+If T is a union type, the result is the union of each constituent type in T to which S is assignable.
+
+Discriminated union types
+------------------------------------------------------------------------------------------------------------------------------------
+This PR implements support for discriminated union types, inspired by suggestions in #186 and #1003. Specifically, we now support type guards that narrow union types based on tests of a discriminant property and furthermore extend that capability to switch statements. Some examples:
+
+interface Square {
+    kind: "square";
+    size: number;
+}
+
+interface Rectangle {
+    kind: "rectangle";
+    width: number;
+    height: number;
+}
+
+interface Circle {
+    kind: "circle";
+    radius: number;
+}
+
+type Shape = Square | Rectangle | Circle;
+
+function area(s: Shape) {
+    // In the following switch statement, the type of s is narrowed in each case clause
+    // according to the value of the discriminant property, thus allowing the other properties
+    // of that variant to be accessed without a type assertion.
+    switch (s.kind) {
+        case "square": return s.size * s.size;
+        case "rectangle": return s.width * s.height;
+        case "circle": return Math.PI * s.radius * s.radius;
+    }
+}
+
+function test1(s: Shape) {
+    if (s.kind === "square") {
+        s;  // Square
+    }
+    else {
+        s;  // Rectangle | Circle
+    }
+}
+
+function test2(s: Shape) {
+    if (s.kind === "square" || s.kind === "rectangle") {
+        return;
+    }
+    s;  // Circle
+}
+
+A discriminant property (string literal or union of string literal type)
+-------------------------------------------------------------------------
+ type guard is an expression of the form x.p == v, x.p === v, x.p != v, or x.p !== v, 
+where p and v are a property and an expression of a string literal type or a union of string literal types. 
+The discriminant property type guard narrows the type of x to those constituent types of x that have 
+a discriminant property p with one of the possible values of v.
+
+Note that we currently only support discriminant properties of string literal types. We intend to later 
+add support for boolean and numeric literal types.
+
+Type guards using discriminant properties of string literal types
+
+Narrow type in case/default sections in switch on discriminant property
+
+No implicit returns following exhaustive switch statements
+
+Narrow non-union types to ensure consistent results
+
+Mapped Types
+---------------------------------------------------------------------------------------------------------------------------------------
+This PR introduces Mapped Types, a new kind of object type that maps a type representing property names over 
+a property declaration template. In combination with index types and indexed access types (#11929), 
+mapped types enable a number of interesting and useful type transformations. In particular, 
+mapped types enable more accurate typing of intrinsic functions such as Object.assign and 
+Object.freeze as well as APIs that map or transform shapes of objects.
+
+A mapped type takes one of the forms
+
+{ [ P in K ] : T }
+{ [ P in K ] ? : T }
+{ readonly [ P in K ] : T }
+{ readonly [ P in K ] ? : T }
+where P is an identifier, K is a type that must be assignable to string, and T is some type that 
+can use P as a type parameter. A mapped type resolves to an object type with a set of properties 
+onstructed by introducing a type parameter P and iterating it over the constituent types in K, for 
+each such P declaring a property or index signature with the type given by T (which possibly 
+references P as a type parameter). When P is a string literal type, a property with that name is 
+introduced. Otherwise, when P is type string, an index signature is introduced.
+
+type Item = { a: string, b: number, c: boolean };
+
+type T1 = { [P in "x" | "y"]: number };  // { x: number, y: number }
+type T2 = { [P in "x" | "y"]: P };  // { x: "x", y: "y" }
+type T3 = { [P in "a" | "b"]: Item[P] };  // { a: string, b: number }
+type T4 = { [P in keyof Item]: Date };  // { a: Date, b: Date, c: Date }
+type T5 = { [P in keyof Item]: Item[P] };  // { a: string, b: number, c: boolean }
+type T6 = { readonly [P in keyof Item]: Item[P] };  // { readonly a: string, readonly b: number, readonly c: boolean }
+type T7 = { [P in keyof Item]: Array<Item[P]> };  // { a: string[], b: number[], c: boolean[] }
+Type relationships involving mapped types are described in #12351. For information on type 
+inference involving mapped types, see #12528 and #12589. For information on preservation of 
+property modifiers with mapped types, see #12563.
+
+The following four mapped types are predefined in lib.d.ts as of #12276:
+
+// Make all properties in T optional
+type Partial<T> = {
+    [P in keyof T]?: T[P];
+};
+
+// Make all properties in T readonly
+type Readonly<T> = {
+    readonly [P in keyof T]: T[P];
+};
+
+// From T pick a set of properties K
+type Pick<T, K extends keyof T> = {
+    [P in K]: T[P];
+}
+
+// Construct a type with a set of properties K of type T
+type Record<K extends string, T> = {
+    [P in K]: T;
+}
+Some functions that use the above types:
+
+function assign<T>(obj: T, props: Partial<T>): void;
+function freeze<T>(obj: T): Readonly<T>;
+function pick<T, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K>;
+function mapObject<K extends string, T, U>(obj: Record<K, T>, f: (x: T) => U): Record<K, U>;
+And some code that uses the functions:
+
+interface Shape {
+    name: string;
+    width: number;
+    height: number;
+    visible: boolean;
+}
+
+function f1(s1: Shape, s2: Shape) {
+    assign(s1, { name: "circle" });
+    assign(s2, { width: 10, height: 20 });
+}
+
+function f2(shape: Shape) {
+    const frozen = freeze(shape);
+    frozen.name = "circle";  // Error, name is read-only
+}
+
+function f3(shape: Shape) {
+    const x = pick(shape, "name", "visible");  // { name: string, visible: boolean }
+}
+
+function f4() {
+    const rec = { foo: "hello", bar: "world", baz: "bye" };
+    const lengths = mapObject(rec, s => s.length);  // { foo: number, bar: number, baz: number }
+}
+The mapObject example above shows how type inference can be used for mapped types. When inferring 
+from an object type S to a mapped type { [P in K]: T }, 
+keyof S is inferred for K and S[keyof S] is inferred for T. 
+In other words, a literal union type of all property names in S is inferred for K 
+and a union of all property types in S is inferred for T.
+
+Another common pattern:
+
+// A proxy for a given type
+type Proxy<T> = {
+    get(): T;
+    set(value: T): void;
+}
+
+// Proxify all properties in T
+type Proxify<T> = {
+    [P in keyof T]: Proxy<T[P]>;
+}
+
+function proxify<T>(obj: T): Proxify<T> {
+    // Wrap proxies around properties of obj
+}
+
+function f5(shape: Shape) {
+    const p = proxify(shape);
+    let name = p.name.get();
+    p.visible.set(false);
+}
+
+Mixins
+--------------------------------------------------------------------------------------------------------------------------------------
+his PR expands upon #13604 to add support for mixin classes and constructors. The PR includes type system support 
+for the ECMAScript 2015 mixin class pattern described here and here as well as rules for combining mixin construct 
+signatures with regular construct signatures in intersection types.
+
+In the following, the term mixin constructor type refers to a type that has a single construct signature with a 
+single rest argument of type any[] and an object-like return type. For example, given an object-like type X, 
+new (...args: any[]) => X is a mixin constructor type with an instance type X.
+
+A mixin class is a class declaration or expression that extends an expression of a type parameter type. 
+The following rules apply to mixin class declarations:
+
+
+The type parameter type of the extends expression must be constrained to a mixin constructor type.
+The constructor of a mixin class (if any) must have a single rest parameter of type any[] and must use 
+the spread operator to pass those parameters as arguments in a super(...args) call.
+Given an expression Base of a parametric type T with a constraint X, a mixin class class C extends Base {...} 
+is processed as if Base had type X and the resulting type is the intersection typeof C & T. In other words, 
+a mixin class is represented as an intersection between the mixin class constructor type and the parametric 
+base class constructor type.
+
+When obtaining the construct signatures of an intersection type that contains mixin constructor types, 
+the mixin construct signatures are discarded and their instance types are mixed into the return types 
+of the other construct signatures in the intersection type. For example, the intersection 
+type { new(...args: any[]) => A } & { new(s: string) => B } has a single construct signature new(s: string) => A & B.
+
+Putting all of the above rules together in an example:
+
+class Point {
+    constructor(public x: number, public y: number) {}
+}
+
+class Person {
+    constructor(public name: string) {}
+}
+
+type Constructor<T> = new(...args: any[]) => T;
+
+function Tagged<T extends Constructor<{}>>(Base: T) {
+    return class extends Base {
+        _tag: string;
+        constructor(...args: any[]) {
+            super(...args);
+            this._tag = "";
+        }
+    }
+}
+
+const TaggedPoint = Tagged(Point);
+
+let point = new TaggedPoint(10, 20);
+point._tag = "hello";
+
+class Customer extends Tagged(Person) {
+    accountBalance: number;
+}
+
+let customer = new Customer("Joe");
+customer._tag = "test";
+customer.accountBalance = 0;
+Effectively, a mixin class declaration is required to pass its constructor arguments through 
+to the abstract base class constructor, and the result is an intersection of the declared 
+class constructor and the base class constructor. For example, adding explicit type annotations to the code above:
+
+interface Tagged {
+    _tag: string;
+}
+
+function Tagged<T extends Constructor<{}>>(Base: T): Constructor<Tagged> & T {
+    return class extends Base {
+        _tag: string;
+        constructor(...args: any[]) {
+            super(...args);
+            this._tag = "";
+        }
+    }
+}
+
+const TaggedPoint: Constructor<Tagged> & typeof Point = Tagged(Point);
+
+let point: Tagged & Point = new TaggedPoint(10, 20);
+point._tag = "hello";
+The type of TaggedPoint is an intersection of two constructor types, Constructor<Tagged> and typeof Point. 
+Since Constructor<Tagged> is a mixin constructor type, its construct signature is "mixed into" the constructor for Point. 
+Thus, TaggedPoint has a single construct signature with the same parameter list as Point but with the return type Tagged & Point.
+
+Mixin classes can constrain the types of classes they can mix into by specifying a construct signature return 
+type in the constraint for the type parameter. For example, the following WithLocation function implements 
+a subclass factory that adds a getLocation method to any class that satisfies the Point interface
+ (i.e. that has x and y properties of type number).
+
+interface Point {
+    x: number;
+    y: number;
+}
+
+const WithLocation = <T extends Constructor<Point>>(Base: T) =>
+    class extends Base {
+        getLocation(): [number, number] {
+            return [this.x, this.y];
+        }
+    }
+
+
+Conditional Types
+---------------------------------------------------------------------------------------------------------------------------------------
+This PR introduces conditional types which add the ability to express non-uniform type mappings.
+ A conditional type selects one of two possible types based on a condition expressed as a type relationship test:
+
+T extends U ? X : Y
+The type above means when T is assignable to U the type is X, otherwise the type is Y. Evaluation of a 
+conditional type is deferred when evaluation of the condition depends on type variables in T or U, 
+but is resolved to either X or Y when the condition depends on no type variables.
+
+An example:
+
+type TypeName<T> =
+    T extends string ? "string" :
+    T extends number ? "number" :
+    T extends boolean ? "boolean" :
+    T extends undefined ? "undefined" :
+    T extends Function ? "function" :
+    "object";
+
+type T0 = TypeName<string>;  // "string"
+type T1 = TypeName<"a">;  // "string"
+type T2 = TypeName<true>;  // "boolean"
+type T3 = TypeName<() => void>;  // "function"
+type T4 = TypeName<string[]>;  // "object"
+Conditional types in which the checked type is a naked type parameter are called distributive conditional types. 
+Distributive conditional types are automatically distributed over union types during instantiation. For example, 
+an instantiation of T extends U ? X : Y with the type argument A | B | C for T is 
+resolved as (A extends U ? X : Y) | (B extends U ? X : Y) | (C extends U ? X : Y).
+
+type T10 = TypeName<string | (() => void)>;  // "string" | "function"
+type T12 = TypeName<string | string[] | undefined>;  // "string" | "object" | "undefined"
+type T11 = TypeName<string[] | number[]>;  // "object"
+In instantiations of a distributive conditional type T extends U ? X : Y, references to T within the conditional type 
+are resolved to individual constituents of the union type (i.e. T refers to the individual constituents 
+after the conditional type is distributed over the union type). Furthermore, references to T within X have 
+an additional type parameter constraint U (i.e. T is considered assignable to U within X).
+
+type BoxedValue<T> = { value: T };
+type BoxedArray<T> = { array: T[] };
+type Boxed<T> = T extends any[] ? BoxedArray<T[number]> : BoxedValue<T>;
+
+type T20 = Boxed<string>;  // BoxedValue<string>;
+type T21 = Boxed<number[]>;  // BoxedArray<number>;
+type T22 = Boxed<string | number[]>;  // BoxedValue<string> | BoxedArray<number>;
+Notice that T has the additional constraint any[] within the true branch of Boxed<T> and it is therefore possible 
+to refer to the element type of the array as T[number]. Also, notice how the conditional type is distributed 
+over the union type in the last example.
+
+The distributive property of conditional types can conveniently be used to filter union types:
+
+type Diff<T, U> = T extends U ? never : T;  // Remove types from T that are assignable to U
+type Filter<T, U> = T extends U ? T : never;  // Remove types from T that are not assignable to U
+
+type T30 = Diff<"a" | "b" | "c" | "d", "a" | "c" | "f">;  // "b" | "d"
+type T31 = Filter<"a" | "b" | "c" | "d", "a" | "c" | "f">;  // "a" | "c"
+type T32 = Diff<string | number | (() => void), Function>;  // string | number
+type T33 = Filter<string | number | (() => void), Function>;  // () => void
+
+type NonNullable<T> = Diff<T, null | undefined>;  // Remove null and undefined from T
+
+type T34 = NonNullable<string | number | undefined>;  // string | number
+type T35 = NonNullable<string | string[] | null | undefined>;  // string | string[]
+
+function f1<T>(x: T, y: NonNullable<T>) {
+    x = y;  // Ok
+    y = x;  // Error
+}
+
+function f2<T extends string | undefined>(x: T, y: NonNullable<T>) {
+    x = y;  // Ok
+    y = x;  // Error
+    let s1: string = x;  // Error
+    let s2: string = y;  // Ok
+}
+Conditional types are particularly useful when combined with mapped types:
+
+type FunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T];
+type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>;
+
+type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T];
+type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
+
+interface Part {
+    id: number;
+    name: string;
+    subparts: Part[];
+    updatePart(newName: string): void;
+}
+
+type T40 = FunctionPropertyNames<Part>;  // "updatePart"
+type T41 = NonFunctionPropertyNames<Part>;  // "id" | "name" | "subparts"
+type T42 = FunctionProperties<Part>;  // { updatePart(newName: string): void }
+type T43 = NonFunctionProperties<Part>;  // { id: number, name: string, subparts: Part[] }
+Combining all of the above to create a DeepReadonly<T> type that recursively makes all properties of an 
+object read-only and removes all function properties (i.e. methods):
+
+type DeepReadonly<T> =
+    T extends any[] ? DeepReadonlyArray<T[number]> :
+    T extends object ? DeepReadonlyObject<T> :
+    T;
+
+interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
+
+type DeepReadonlyObject<T> = {
+    readonly [P in NonFunctionPropertyNames<T>]: DeepReadonly<T[P]>;
+};
+
+function f10(part: DeepReadonly<Part>) {
+    let name: string = part.name;
+    let id: number = part.subparts[0].id;
+    part.id = part.id;  // Error
+    part.subparts[0] = part.subparts[0];  // Error
+    part.subparts[0].id = part.subparts[0].id;  // Error
+    part.updatePart("hello");  // Error
+}
+Similar to union and intersection types, conditional types are not permitted to reference themselves 
+recursively (however, indirect references through interface types or object literal types are allowed, 
+as illustrated by the DeepReadonly<T> example above). For example the following is an error:
+
+type ElementType<T> = T extends any[] ? ElementType<T[number]> : T;  // Error
+For further examples see the tests associated with the PR.
+
+EDIT: See #21496 for type inference in conditional types.
+
+Daniel Rosenwasser on blog msdn
+-------------------------------------------------------------------------------------------
+Conditional types are a new construct in TypeScript that allow us to choose types based on other types. They take the form
+
+A extends B ? C : D
+where A, B, C, and D are all types. You should read that as “when the type A is assignable to B, then this type is C; 
+otherwise, it’s D. If you’ve used conditional syntax in JavaScript, this will feel familiar to you.
+
+Let’s take two specific examples:
+
+interface Animal {
+    live(): void;
+}
+interface Dog extends Animal {
+    woof(): void;
+}
+
+// Has type 'number'
+type Foo = Dog extends Animal ? number : string;
+
+// Has type 'string'
+type Bar = RegExp extends Dog ? number : string;
+You might wonder why this is immediately useful. We can tell that Foo will be number, and Bar will be string, 
+so we might as well write that out explicitly. But the real power of conditional types comes from using them with generics.
+
+For example, let’s take the following function:
+
+interface Id { id: number, /* other fields */ }
+interface Name { name: string, /* other fields */ }
+
+declare function createLabel(id: number): Id;
+declare function createLabel(name: string): Name;
+declare function createLabel(name: string | number): Id | Name;
+These overloads for createLabel describe a single JavaScript function that makes a choice based on the types of its inputs. Note two things:
+
+If a library has to make the same sort of choice over and over throughout its API, this becomes cumbersome.
+We have to create three overloads: one for each case when we’re sure of the type, and one for the most general case. 
+For every other case we’d have to handle, the number of overloads would grow exponentially.
+Instead, we can use a conditional type to smoosh both of our overloads down to one, and create 
+a type alias so that we can reuse that logic.
+
+type IdOrName<T extends number | string> =
+    T extends number ? Id : Name;
+
+declare function createLabel<T extends number | string>(idOrName: T):
+    T extends number ? Id : Name;
+
+let a = createLabel("typescript");   // Name
+let b = createLabel(2.8);            // Id
+let c = createLabel("" as any);      // Id | Name
+let d = createLabel("" as never);    // never
+Just like how JavaScript can make decisions at runtime based on the characteristics of a value, 
+conditional types let TypeScript make decisions in the type system based on the characteristics of other types.
+
+As another example, we could also write a type called Flatten that flattens array types to their element types, 
+but leaves them alone otherwise:
+
+// If we have an array, get the type when we index with a 'number'.
+// Otherwise, leave the type alone.
+type Flatten<T> = T extends any[] ? T[number] : T;
+Inferring within conditional types
+Conditional types also provide us with a way to infer from types we compare against in the true branch using the infer keyword. 
+For example, we could have inferred the element type in Flatten instead of fetching it out manually:
+
+// We also could also have used '(infer U)[]' instead of 'Array<infer U>'
+type Flatten<T> = T extends Array<infer U> ? U : T;
+Here, we’ve declaratively introduced a new generic type variable named U instead of specifying how to retrieve 
+the element type of T. This frees us from having to think about how to get the types we’re interested in.
+
+Distributing on unions with conditionals
+When conditional types act on a single type parameter, they distribute across unions. So in the following example, 
+Bar has the type string[] | number[] because Foo is applied to the union type string | number.
+
+type Foo<T> = T extends any ? T[] : never;
+
+/**
+ * Foo distributes on 'string | number' to the type
+ *
+ *    (string extends any ? string[] : never) |
+ *    (number extends any ? number[] : never)
+ * 
+ * which boils down to
+ *
+ *    string[] | number[]
+ */
+type Bar = Foo<string | number>;
+In case you ever need to avoid distributing on unions, you can surround each side of the extends keyword with square brackets:
+
+type Foo<T> = [T] extends [any] ? T[] : never;
+
+// Boils down to Array<string | number>
+type Bar = Foo<string | number>;
+While conditional types can be a little intimidating at first, we believe they’ll bring a ton of flexibility 
+for moments when you need to push the type system a little further to get accurate types.
+
+New built-in helpers
+TypeScript 2.8 provides several new type aliases in lib.d.ts that take advantage of conditional types:
+
+// These are all now built into lib.d.ts!
+
+/**
+ * Exclude from T those types that are assignable to U
+ */
+type Exclude<T, U> = T extends U ? never : T;
+
+/**
+ * Extract from T those types that are assignable to U
+ */
+type Extract<T, U> = T extends U ? T : never;
+
+/**
+ * Exclude null and undefined from T
+ */
+type NonNullable<T> = T extends null | undefined ? never : T;
+
+/**
+ * Obtain the return type of a function type
+ */
+type ReturnType<T extends (...args: any[]) => any> = T extends (...args: any[]) => infer R ? R : any;
+
+/**
+ * Obtain the return type of a constructor function type
+ */
+type InstanceType<T extends new (...args: any[]) => any> = T extends new (...args: any[]) => infer R ? R : any;
+While NonNullable, ReturnType, and InstanceType are relatively self-explanatory, Exclude and Extract are a bit more interesting.
+
+Extract selects types from its first argument that are assignable to its second argument:
+
+// string[] | number[]
+type Foo = Extract<boolean | string[] | number[], any[]>;
+Exclude does the opposite; it removes types from its first argument that are not assignable to its second:
+
+// boolean
+type Bar = Exclude<boolean | string[] | number[], any[]>;
+Declaration-only emit
+Thanks to a pull request from Manoj Patel, TypeScript now features an --emitDeclarationOnly flag which can 
+be used for cases when you have an alternative build step for emitting JavaScript files, but need to emit declaration files separately. 
+Under this mode no JavaScript files nor sourcemap files will be generated; just .d.ts files that can be used for library consumers.
+
+One use-case for this is when using alternate compilers for TypeScript such as Babel 7. For an example of repositories 
+taking advantage of this flag, check out urql from Formidable Labs, or take a look at our Babel starter repo.
+
+@jsx pragma comments
+Typically, users of JSX expect to have their JSX tags rewritten to React.createElement. However, if you’re using libraries 
+that have a React-like factory API, such as Preact, Stencil, Inferno, Cycle, and others, you might want to tweak that emit slightly.
+
+Previously, TypeScript only allowed users to control the emit for JSX at a global level using the jsxFactory option 
+(as well as the deprecated reactNamespace option). However, if you needed to mix any of these libraries in the 
+same application, you’d have been out of luck using JSX for both.
+
+Luckily, TypeScript 2.8 now allows you to set your JSX factory on a file-by-file basis by adding an
+ // @jsx comment at the top of your file. If you’ve used the same functionality in Babel, this should look slightly familiar.
+
+/** @jsx dom */
+import { dom } from "./renderer"
+<h></h>
+The above sample imports a function named dom, and uses the jsx pragma to select dom as the factory for all 
+JSX expressions in the file. TypeScript 2.8 will rewrite it to the following when compiling to CommonJS and ES5:
+
+var renderer_1 = require("./renderer");
+renderer_1.dom("h", null);
+JSX is resolved via the JSX Factory
+Currently, when TypeScript uses JSX, it looks up a global JSX namespace to look up certain types (e.g. “what’s the 
+type of a JSX component?”). In TypeScript 2.8, the compiler will try to look up the JSX namespace based on the 
+location of your JSX factory. For example, if your JSX factory is React.createElement, TypeScript will try to
+first resolve React.JSX, and then resolve JSX from within the current scope.
+
+This can be helpful when mixing and matching different libraries (e.g. React and Preact) or different versions 
+of a specific library (e.g. React 14 and React 16), as placing the JSX namespace in the global scope can cause issues.
+
+Going forward, we recommend that new JSX-oriented libraries avoid placing JSX in the global scope, and instead export 
+it from the same location as the respective factory function. However, for backward compatibility, TypeScript 
+will continue falling back to the global scope when necessary.
+
+Granular control on mapped type modifiers
+TypeScript’s mapped object types are an incredibly powerful construct. One handy feature is that they allow users 
+to create new types that have modifiers set for all their properties. For example, the following type creates 
+a new type based on T and where every property in T becomes readonly and optional (?).
+
+// Creates a type with all the properties in T,
+// but marked both readonly and optional.
+type ReadonlyAndPartial<T> = {
+    readonly [P in keyof T]?: T[P]
+}
+So mapped object types can add modifiers, but up until this point, there was no way to remove modifiers from T.
+
+TypeScript 2.8 provides a new syntax for removing modifiers in mapped types with the - operator, and a new more 
+explicit syntax for adding modifiers with the + operator. For example,
+
+type Mutable<T> = {
+    -readonly [P in keyof T]: T[P]
+}
+
+interface Foo {
+    readonly abc: number;
+    def?: string;
+}
+
+// 'abc' is no longer read-only, but 'def' is still optional.
+type TotallyMutableFoo = Mutable<Foo>
+In the above, Mutable removes readonly from each property of the type that it maps over.
+
+Similarly, TypeScript now provides a new Required type in lib.d.ts that removes optionality from each property:
+
+/**
+ * Make all properties in T required
+ */
+type Required<T> = {
+    [P in keyof T]-?: T[P];
+}
+The + operator can be handy when you want to call out that a mapped type is adding modifiers. For example, 
+our ReadonlyAndPartial from above could be defined as follows:
+
+type ReadonlyAndPartial<T> = {
+    +readonly [P in keyof T]+?: T[P];
+}
+Organize imports
+TypeScript’s language service now provides functionality to organize imports. This feature will remove any 
+unused imports, sort existing imports by file paths, and sort named imports as well.

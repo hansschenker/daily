@@ -1,0 +1,256 @@
+NgRx State - Objects that can be serialized (JSON.stringify, JSON.parse)
+---------------------------------------------------------------------
+ NgRx State is a tree that can be serialised to JSON
+ Data is added to the state tree by composing state in reducers.
+
+Reducer - is a transition function, that takes the previous state and returns the next state
+-----------
+
+
+*** Selectors - pure functions that return slices of state (stored procedures)
+----------------------------------------------------------------------
+Selectors are pure functions used for obtaining slices of store state. 
+@ngrx/store provides a few helper functions for optimizing this selection. 
+Selectors provide many features when selecting slices of state:
+
+Portability
+Memoization
+Composition
+Testability
+Type Safety
+
+When using the createSelector and createFeatureSelector functions @ngrx/store 
+keeps track of the latest arguments in which your selector function was invoked. 
+Because selectors are pure functions, 
+the last result can be returned when the arguments match without reinvoking your selector function. 
+This can provide performance benefits, particularly with selectors that perform expensive computation. 
+This practice is known as memoization.
+
+
+createSelector
+------------------
+
+type Selector<T, V> = (state: T) => V;
+
+interface MemoizedSelector<State, Result, ProjectorFn = DefaultProjectorFn<Result>> extends Selector {
+  projector: ProjectorFn
+  setResult: (result?: Result) => void
+  clearResult: () => void
+  release(): void
+}
+
+type DefaultProjectorFn<T> = (...args: any[]) => T;
+
+
+simple getter Selectors
+--------------------------
+
+
+compound Selectors:
+-------------------
+
+
+
+
+
+createReducer
+-----------------------
+Reducers are pure functions that are responsible for state changes.
+
+Here’s the interface that describes the shape of a reducer:
+
+export interface ActionReducer<T, V extends Action = Action> {
+  (state: T | undefined, action: V): T;
+}
+<>
+As you can see, a reducer takes 2 parameters: the current state and the current action that has been dispatched.
+
+
+
+
+
+createAction - creates a type property which strongly types an action,  used by Effects ofType
+----------------------------------------------------------------------------------------------
+
+function defineType<T extends string>(
+  type: T,
+  creator: Creator
+): ActionCreator<T> {
+  return Object.defineProperty(creator, 'type', {
+    value: type,
+    writable: false,
+  });
+}
+
+
+
+The createAction function comes with 3 overloads:
+
+export declare interface TypedAction<T extends string> extends Action {
+  readonly type: T;
+}
+
+export type ActionCreator<
+  T extends string = string,
+  C extends Creator = Creator
+> = C & TypedAction<T>;
+
+export function createAction<T extends string>(
+  type: T
+): ActionCreator<T, () => TypedAction<T>>;
+export function createAction<T extends string, P extends object>(
+  type: T,
+  config: Props<P> & NotAllowedCheck<P>
+): ActionCreator<T, (props: P & NotAllowedCheck<P>) => P & TypedAction<T>>;
+export function createAction<
+  T extends string,
+  P extends any[],
+  R extends object
+>(
+  type: T,
+  creator: Creator<P, R> & NotAllowedCheck<R>
+): FunctionWithParametersType<P, R & TypedAction<T>> & TypedAction<T>;
+
+
+
+
+Actions can be created in 3 ways:
+
+simple action with not payload, just a type (string)
+-----------------------------------------------------------------------------------------
+const action = createAction('[Entity] simple action');
+call:
+----
+action();
+
+export function createAction<T extends string>(
+  type: T
+): ActionCreator<T, () => TypedAction<T>>;
+
+We can deduce from the above snippet that the return type will be a function which will 
+return an object with a property type.
+
+Here’s the type guard which reveals that:
+
+export function createAction<T extends string, C extends Creator>(
+  type: T,
+  config?: { _as: 'props' } | C
+): ActionCreator<T> {
+  
+  const as = config ? config._as : 'empty';
+  
+  switch (as) {
+    case 'empty':
+      return defineType(type, () => ({ type }));
+    /* ... */
+  }
+}
+
+where defineType will attach the property type to the function(in this case () => ({ type })).
+-----------------------------------------------------------------------------------------
+
+
+action as object with type {} and function ()
+props<{ object type with properties}>()
+----------------------------------------------------
+const action = createAction('[Entity] simple action',                 // type
+                            props<{ name: string, age: number, }>()); // object payload
+call it with an object:
+action({ name: 'andrei', age: 18 });
+
+
+What props<T>() does is to return an object with a predefined key(_as: 'props') 
+and with a key of type T which is useful for type inference.
+
+export function props<P extends object>(): Props<P> {
+  return { _as: 'props', _p: undefined! };
+}
+
+export interface Props<T> {
+  _as: 'props';
+  _p: T;
+}
+<>
+This is how the overload looks:
+
+export function createAction<T extends string, P extends object>(
+  type: T,
+  config: Props<P> & NotAllowedCheck<P>
+): ActionCreator<T, (props: P & NotAllowedCheck<P>) => P & TypedAction<T>>
+
+
+config will be an instance of props<P>(), which allows P to be inferred and to be used in (props: P & NotAllowedCheck<P>) => P & TypedAction<T>>.
+
+ActionCreator<T, (props: P & NotAllowedCheck<P>) => P & TypedAction<T>> will be a function that can be called with one argument(an object), whose type will be P(inferred from props<P>()) and whose return type will be an object that contains all the properties of P(P is an object) and the type property(TypedAction<T>).
+
+Here’s how createAction establishes this:
+
+export function createAction<T extends string, C extends Creator>(
+  type: T,
+  config?: { _as: 'props' } | C
+): ActionCreator<T> {
+  if (typeof config === 'function') {
+  /* ... */
+  // `config._as` - returned from `props()`
+  const as = config ? config._as : 'empty';
+  
+  switch (as) {
+    /* ... */
+    case 'props':
+      return defineType(type, (props: object) => ({
+        ...props,
+        type,
+      }));
+    /* ... */
+  }
+}
+
+
+
+
+--------------------------------------------------------------------------------------------
+
+action explicit with a type and a function
+--------------------------------------------------------
+const action = createAction('[User create]',                                                 // type
+                            (u: User, prefix: string) => ({ name: `${prefix}${u.name}` }) ); // function
+const u: User = { /* ... */ };
+call
+---------------
+action(u, '---');
+
+export function createAction<
+  T extends string,
+  P extends any[],
+  R extends object
+>(
+  type: T,
+  creator: Creator<P, R> & NotAllowedCheck<R>
+): FunctionWithParametersType<P, R & TypedAction<T>> & TypedAction<T>;
+
+Creator<P, R> is simply a function takes up a parameter of type P and returns an object of type R. 
+This will allow us to infer the P and R types. NotAllowedCheck<R> makes sure that the creator is 
+not an existing action or an array. It must be a function that receives some arguments and based on them, 
+it returns an object that represents the action's data.
+
+FunctionWithParametersType<P, R & TypedAction<T>> & TypedAction<T>; means that the return type must 
+be a function whose arguments are of type P(inferred from Creator<P, R>), 
+which returns an object of type R(also inferred from Creator<P, R>) and has a property type.
+
+export function createAction<T extends string, C extends Creator>(
+  type: T,
+  config?: { _as: 'props' } | C
+): ActionCreator<T> {
+  if (typeof config === 'function') {
+    return defineType(type, (...args: any[]) => ({
+      // `config(...args)` will return an object
+      ...config(...args),
+      type, // The `type` property is always returned
+    }));
+  }
+
+  /* ... */
+}
+
+createEffect
+------------------------

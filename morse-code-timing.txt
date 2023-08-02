@@ -1,0 +1,88 @@
+The Basics
+The timing in Morse code is based around the length of one "dit" (or "dot" if you like). 
+From the dit length we can derive the length of a "dah" (or "dash") and the various pauses:
+
+Dit: 1 unit
+Dah: 3 units
+Intra-character space (the gap between dits and dahs within a character): 1 unit
+Inter-character space (the gap between the characters of a word): 3 units
+Word space (the gap between two words): 7 units
+Words per Minute
+Proficiency in Morse code is measured in how many words per minute someone can send or receive. 
+This seems a tricky concept given that you can send more short words per minute than long ones. 
+The work-around is to standardise on the word "PARIS" as the standard word, so if Morse is being 
+sent at 20 words per minute (or "20 wpm") then the word "PARIS" (or, more precisely "PARIS " with a space on the end) 
+could be sent 20 times in a minute.
+
+The neat thing about "PARIS " is that it's a nice even 50 units long. It translates to ".--. .- .-. .. .../" so there are:
+
+10 dits: 10 units;
+4 dahs: 12 units;
+9 intra-character spaces: 9 units;
+4 inter-character spaces: 12 units;
+1 word space: 7 units.
+A grand total of  units.
+
+Given this (and the fact that there are 60 seconds in a minute) we can therefore make a formula to find the length of a dit,  
+in seconds for a given wpm speed, :
+
+It's clear that this makes sense: we know that for 1 wpm (i.e. ) you must fit 50 dits into a minute and the formula says . 
+As the speed () goes up, the length of  goes down (they are "inversely proportional") which also makes sense.
+
+Farnsworth Timing
+People learning Morse code often use what is called "Farnsworth" timing to make recognising the sound patterns easier. 
+Rather than slowing down the whole sound, it is better to keep the character sounds at a moderately fast speed and just 
+increase the gaps between the characters and words to give more recognition time. The speed of the characters 
+are determined by the normal WPM speed () but the Farnsworth speed () determines the actual number of words per minute. That is:
+
+Dit: 1 unit (or )
+Dah: 3 units (or )
+Intra-character space: 1 unit (or )
+Inter-character space: 3 Farnsworth-units (or )
+Word space: longer than 7 Farnsworth-units (or )
+where one Farnsworth-unit is longer than the basic unit. How to calculate 
+the inter-character space and the word space though?
+
+Going back to the breakdown of "PARIS " above, we can see that given the characters stay at the  speed, 
+the part that we need to stretch out is the 4 inter-character spaces and the 1 word space (19 units) and 
+the part that needs to stay at the same speed is 31 standard  units.
+
+The length of a dit is therefore the same as before (see ):
+
+For the length of the word "PARIS " we use the slower Farnsworth words per minute speed, or . 
+One word ("PARIS ") should take this many seconds:
+
+The time for the 31 standard units in "PARIS " should be this many seconds:
+
+Subtracting  from  leaves the amount of seconds for the inter-character spaces and the word space:
+
+There are 19 Farnsworth units, so each one takes this many seconds:
+
+Using  we can then look at the ratio of 
+
+Substituting  into :
+
+It's easy to check that if  then, using  we see  which makes sense.
+
+Alternatively, we can substitute  into  to get an expression for  in terms of the two speeds:
+
+We can check that if  then  works out the same as .
+
+Although this derivation is a little different, you will find it comes out the same as the equations 
+described by Jon Booom (KE3Z) in an ARRL article which Ronald L. pointed me to and which is about 
+as definitive as I can find. ARRL is the (USA) national association for Amateur Radio.
+
+I am a husband, father and foster carer
+
+a principal research engineer at the IT Innovation Centre
+
+a founder of SPYDERISK
+
+an owner of a holiday home, a salsa teacher
+
+and in my spare time I write and maintain this web site
+
+Morse Code World logo
+© Copyright Stephen C. Phillips, 2015-2022
+Cookies │ Licences │ Donate
+

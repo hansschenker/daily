@@ -1,0 +1,69 @@
+Since an Observable is the Producer (you can wrap any data source inside an Observable)
+and the Observer is the Consumer
+Netflix is cold Observable : Production is started by the Consumer
+Cinema is hot Observable:  Production is started by a Provider and the Consumer assists or not a running Production!
+
+ben lesh - medium blog - hot cold
+
+Pipe doesn't do much other than pass the observable instance to whatever 
+operator functions ((source: Observable<T>) => Observable<R>)) you pass to it
+
+So I began using RxJS as an orchestration layer to consume information 
+from different remote services and feeds
+
+Language Integrated Query (LINQ) introduces the monad as a first-class citizen in C#. Query Comprehension Syntax is a syntax for monads.2
+
+They are monads because, other than satisfying the monad laws, each monad is a generic type with a specific purpose, paired with a bind function that implements sequential composition over that type, while preserving its purpose.
+
+We can understand how bind represents sequential composition by following this logic:
+
+The bind function SelectMany(M<T> source, Func<T, M<R>> selector)has two parameters.
+The source parameter is of the type M<T>. Think of M as the monadic type, which contains values of type T. Monadic types are generic types. 
+(This is what is meant by “amplification” or “embellishment”.)
+The selector function projects a value of type T into M<R>, which is the monadic type M containing values of type R.
+M<T> represents a computation of values of type T. More precisely, M<T> represents an antecedent computation, because a value of T 
+must be computed before it can be passed to selector.
+The selector function represents a subsequent computation, because it accepts a value of type T and returns M<R>. And just like M<T>, 
+M<R> represents a computation of values of type R.
+Both M<T> and M<R> are of the monadic type M, although they may contain different types. M<R> can be used as the source parameter in 
+a subsequent bind operation.
+The bind operator can be chained together across may projections over the monadic type M, such that M<T> goes to M<R> goes to M<Q>, 
+and so on. Each projection through bind is a linear step in a larger computation.
+Therefore, the bind function sequentially composes antecedent computations with subsequent computations, while preserving the purpose 
+of the monadic type.
+However, the cardinality of M may be greater than 1, depending on the actual type of M. Containing more than one T means having more 
+than one M<R> because each T will be projected into an instance of M<R>.
+The bind operator flattens M<M<R>> into a single M<R> to ensure that its result is a single container of the monadic type M. 
+Flattening preserves sequential composition regardless of the cardinality of M.
+For example, IEnumerable<T> represents a lazily-computed, synchronous sequence of values of type T. That’s its purpose, which 
+SelectMany must preserve. As the source for SelectMany, IEnumerable<T> represents an antecedent computation of values of type T, 
+because each T must be computed before it can be projected. SelectMany iterates the source, invoking the selector function for 
+each value of type T, and projecting it into IEnumerable<R>. IEnumerable<R> represents a subsequent computation, because it can 
+be subsequently iterated to generate values of type R. To continue the computation sequentially, IEnumerable<R> can be used as 
+the source for another call to SelectMany. Therefore, SelectMany implements sequential composition.
+
+IObservable<T> represents a lazily-computed, asynchronous sequence of values of type T. It’s similar to IEnumerable<T>, except 
+asynchronous. And how do we consume an asynchronous sequence? Not by foreach, but by passing in a continuation (IObserver<T>). 
+The SelectMany operator for IObservable<T> subscribes to the source with its own IObserver<T>. Sequential composition is implemented 
+by awaiting values pushed into the IObserver<T> and then pushing them as input into a subsequent computation, represented 
+by IObservable<R>. As far as sequential composition goes, it doesn’t actually matter that IObservable<T> is asynchronous, 
+because going from T to R remains sequential.
+
+IObservable<T> is asynchronous because in order to get data out of it, you must pass in a function (a continuation) to be invoked later. 
+It’s the so-called, “continuation passing style”, or CPS for short. Thus, IObservable<T> is the continuation monad.
+
+The bind operator enables us to write sequential composition in a declarative style. SelectMany sequentially composes two parts of our 
+query, while hiding the imperative- or CPS-style mechanisms that are required to read values from the monadic type. We can think of a
+ monadic type as a container of values, and bind lets us compose them without having to explicitly specify how to extract their values. 
+We don’t have to use foreach for enumerables or call Subscribe for observables, until we want to leave the monad. That’s why we use 
+foreach and Subscribe only at the ends of our LINQ queries.
+
+This pattern works with more than just sequences. There are many types of monads; e.g., the “Maybe” monad implements null propagation, 
+as Wes Dyer describes here, while introducing monads. There’s a State monad that represents mutability in a pure functional language 
+like Haskell, an I/O monad that represents input and output, also in Haskell, there’s the Reader monad for computing within an environment, 
+similar to having global or static fields (you guessed it: Haskell), among others.
+
+Monads provide a declarative programming model, but note the relation to imperative-style code. Two consecutive from clauses in a LINQ 
+query is compiled into a single call to SelectMany. It’s like having a semicolon at the end of each line. The first from expression is 
+evaluated, and then the second from expression is evaluated, with the value of the previous expression still in scope.
+

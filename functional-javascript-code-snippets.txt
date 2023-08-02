@@ -1,0 +1,199 @@
+
+Before in javascript when I wanted to access the head 
+and tail of an array in a functional way I did:
+
+function head(l) {
+   return l[0];
+}
+
+function tail(l) {
+   return l.slice(1);
+}
+
+Now with ES2015 I can just use destructuring and it comes out of the box:
+
+l = [1, 2, 3, 4];
+[hd, ...tl] = l;
+
+console.log(hd) // 1
+console.log(tl) // [2, 3, 4]
+
+let isArray = (data) => {
+  return (Object.prototype.toString.call(data) === "[object Array]");  
+}
+
+Destructuring
+One of my favourite ES6 features is destructuring. It allows you to extract data from one variable to another by using structure. For arrays this means for example:
+var [ first, second ] = [ 1, 2, 3, 4 ];
+// first: 1
+// second: 2
+There’s more you can do, like skip some members of the array on the right-hand side of the operation.
+var [ first, , third, fourth ] = [ 1, 2, 3, 4 ];
+// first: 1
+// third: 3
+// fourth: 4
+This is actually quite easily back-ported to the equivalent ES5
+var arr = [ 1, 2, 3, 4 ];
+var first = arr[0];
+var second = arr[1];
+// etc ...
+Rest
+This is where ES6 features become more interesting. With destructuring we can also assign what is called the rest of the array. We indicate rest with the ... notation.
+var [ first, ...notFirst ] = [ 1, 2, 3, 4 ];
+// first: 1
+// notFirst: [ 2, 3, 4 ]
+Naming conventions lead to code that is more akin to the following:
+var [ first, second, ...rest ] = [ 1, 2, 3, 4 ]
+// first: 1
+// second: 2
+// rest: [ 3, 4 ]
+The rest operator has some interesting properties:
+var [ first, ...rest ] = [ 1 ]
+// first: 1
+// rest: []
+It always returns an array. Which means even in defensive JavaScript land, it’s ok to do things like check .length of rest without guards.
+The equivalent in ES5 (and below) is to use theArray.slice function.
+var arr = [ 1, 2, 3, 4 ];
+var first = arr[0];
+var rest = arr.slice(1);
+// first: 1
+// rest: [ 2, 3, 4 ]
+Two things to note here:
+the ES5 version is more verbose
+the ES5 version is more imperative, we tell JavaScript how to do something instead of telling it what we want.
+Now I also think that the structure-matching version (with rest) is more readable.
+Parameter destructuring
+We can use destructuring on the parameters of a function definition:
+function something([ first, ...rest ]) {
+  return {
+    first: first,
+    rest: rest
+  };
+}
+var result = something([1, 2, 3]);
+// result: { first: 1, rest: [ 2,3 ] }
+Equivalent ES5:
+function something(arr){
+  var first = arr[0];
+  var rest = arr.slice(1);
+  return {
+    first: first,
+    rest: rest
+  };
+}
+Again it’s more verbose and more imperative.
+Spread
+Spread uses the same notation as rest: .... What it does is quite different.
+var arr = [ 1, 2, 3 ];
+var newArr = [ ...arr ];
+// newArr: [ 1, 2, 3]
+ES5 equivalent:
+var arr = [ 1, 2, 3 ];
+var newArr = [].concat(arr);
+Things to note, the contents of the array are copied. So newArr is not a reference to arr.
+
+We can also do things like appending or prepending an array.
+var arr = [ 1, 2, 3] ;
+var withPrepend = [ ...arr, 3, 2, 1];
+var withAppend = [ 3, 2, 1, ...arr ];
+// withPrepend: [ 1, 2, 3, 3, 2, 1]
+// withAppend: [ 3, 2, 1, 1, 2, 3 ]
+
+Functional Programming: lists & recursion
+----------------------------------------------
+In functional programming when we run functions recursively over lists we like to model the list as a head and a tail.
+The head is the first element of the list, the tail is the list composed of the list minus the head.
+
+arr = [ 1, 2, 3 ]
+// head(arr): 1
+// tail(arr): [ 2, 3 ]
+In ES6 we can do this just by naming the variable appropriately with destructuring and rest:
+var [ head, ...tail ] = [ 1, 2, 3 ];
+// head: 1
+// tail: [ 2, 3 ]
+We can also trivially implement the head and tail functions using ES6:
+function head([ head, ...tail ]) { 
+  return head;
+}
+function tail([ head, ...tail ]) {
+  return tail;
+}
+
+// or with arrow function syntax
+var head = ([ head, ...tail ]) => head;
+var tail = ([ head, ...tail ]) => tail;
+
+(Tail) Recursion
+We can implement functions that operate over arrays (or lists as they tend to be 
+called in functional programming) using parameter destructuring and recursion.
+For example, map can be implemented in the following manner:
+Map is a function that takes a list and a function and returns a list containing the result 
+of a function application to each element of the list.
+
+function map([ head, ...tail ], fn) {
+  if(head === undefined && !tail.length) return [];
+  if(tail.length === 0){
+    return [ fn(head) ];
+  }
+  return [ fn(head) ].concat(map(tail, fn));
+}
+
+The tail.length === 0 checks whether there is still a tail to recurse over.
+ Otherwise, the recursion stops there.
+This is not necessarily the most efficient version of map both in terms of 
+memory usage and speed but it’s a good illustration of ES6.
+We can further simplify it by replacing concat with the spread operator 
+and using a single return statement with a ternary operator.
+Very ES6 map
+Our ES6 recursive/destructuring map can be simplified to:
+
+Map implementation using ES6, destructuring and recursion
+Or if we want to abuse ES6 and allow ourselves to forget that we’re actually doing JavaScript:
+
+Map implementation using ES6, arrow function, destructuring and recursion
+ES5 equivalent
+
+Map implementation using ES5 and recursion
+All the features add up and while recursive map in ES6 is essentially 
+a one-liner, in ES5 it’s a clunky, long, hard to read function.
+Reimplementing list manipulation functions
+Now you can have a go at reimplementing filter, reduce and join using the above techniques.
+Solutions below the fold :).
+ES6 allows us to write code in a functional style more tersely and effectively.
+Give some 💚 to this post if you liked it and to follow for more JavaScript-related things.
+You can find me on Twitter(at)hugo__df, on GitHub as HugoDF, there are more JavaScript gists here.
+Recursive list operations in ES6 with rest/spread and destructuring
+
+Filter implementation using ES6, destructuring and recursion
+
+Reduce implementation using ES6, destructuring and recursion
+
+Join implementation using ES6, destructuring and recursion
+Hacker Noon is how hackers start their afternoons. We’re a part of 
+
+function map([ head, ...tail ], fn) {
+  if (head === undefined && !tail.length) return [];
+  return tail.length ? [ fn(head), ...(map(tail, fn)) ] : [ fn(head) ];
+}
+
+var map = ([ head, ... tail ], fn) => 
+  ( (head !== undefined && tail.length) ? ( tail.length ? [ fn(head), ...(map(tail, fn)) ] : [ fn(head) ] ) : []);
+
+function filter([ head, ...tail ], fn) {
+  const newHead = fn(head) ? [ head ] : [];
+  return tail.length ? [ ...newHead, ...(filter(tail, fn)) ] : newHead;
+}
+
+function reduce([ head, ...tail ], fn, initial) {
+  if(head === undefined && tail.length === 0) return initial;
+  if(!initial) {
+    const [ newHead, ...newTail] = tail;
+    return reduce(newTail, fn, fn(head, newHead));
+  }
+  return tail.length ? reduce(tail, fn, fn(initial, head)) : [ fn(initial, head) ];
+}
+
+function join([ head, ...tail ], separator = ',') {
+  if (head === undefined && !tail.length) return '';
+  return tail.length ? head + separator + join(tail, separator) : head;
+}

@@ -1,0 +1,1419 @@
+Educative.io - Typescript Masterclass - Milosz Piechocki
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+Generic functions
+------------------------------------------------------------------------------
+function map<T, R>( 
+  items: T[],
+  mappFn: (item: T) => R ): R[] {
+/* ... */
+}
+
+interface Person { name: string; age: number;  } 
+const persons: Person[] = [{ name: 'John', age: 35 }]
+
+                  T      , R      items,   mappFn
+const names = map<Person, string>(persons, person => person.name)
+
+
+
+Generic Function Example: reduce
+------------------------------------------------------------------------------
+sum with reduce
+---------------
+const sum = [1, 2, 3, 4, 5].reduce((sum, el) => sum + el, 0); 
+console.log(sum);
+
+interface Person { 
+    name: string; 
+    age: number; 
+}
+const persons: Person[] = [ 
+    { name: 'John', age: 30 }, 
+    { name: 'Alice', age: 45 }, 
+];
+transform with reduce
+----------------------
+
+const ageByPerson = persons.reduce((result, person) => ({ 
+    ...result,                  // intermediant result
+    [person.name]: person.age   // add current person's age
+}), {});                        // start with any empty set
+
+console.log(ageByPerson);
+
+reducer function
+-----------------
+Our reduce  will be a function that accepts three arguments:
+
+- array  		the array to be reduced 
+
+- reducer  		a function that accepts an element of the array and 
+
+- result 		the partial calculated based on elements processed so far 
+
+- initialResult 	a value that will be passed to the reducer  before any 
+                   	array elements have been processed
+
+
+Typing reduce
+-----------------------
+
+function reduce<T, R>( 
+    array: T[],
+    reducer: (acc: R, el: T) => R, 
+    initialState: R
+): R {
+    let acc = initialState; 
+    for (const element of array) {
+        acc = reducer(acc, element); 
+    }
+    return acc; 
+}
+const total = reduce<number, number>([1, 2, 3, 4, 5], (sum, el) => sum + el, 0); 
+
+const ageByName = reduce<Person, Record<string, number>>(
+    persons,
+    (state, person) => ({ 
+        ...state,
+        [person.name]: person.age 
+    }),
+    {} 
+);
+
+
+
+
+
+
+
+Function Types
+ -fn as value
+ -fn as callback
+ -fn as higher-order-function
+
+assign fn to a constant and check type with editor type definition popup
+-----------------
+const add = (x: number, y: number) => x + y;
+            (parameter types)      => return type
+            (number, number)       => number
+
+define functions using the classic function syntax
+-------------------
+function add(x: number, y: number) {
+    return x + y;
+}
+function sub(x: number, y: number) {
+    return x - y;
+}
+function mult(x: number, y: number) {
+    return x * y;
+}
+function div(x: number, y: number) {
+    return x / y;
+}
+
+const operation: (x: number, y: number) => number = sub = add = mult = div
+
+Callbacks
+-----------------------------
+function fetchTitles(
+    count: number,
+    onSuccess: (titles: string[]) => void
+) { /* ... */ }
+
+This type annotation carries a lot of information; it says that a list of fetched titles will be provided to this callback 
+and that the return value of the callback will be ignored
+
+Higher-order functions#
+------------------------------
+A function that accepts callbacks is an example of a higher-order function.
+
+A higher-order function is such a function that:
+ - Has a parameter that has a function type
+ - OR, it’s return type is a function type
+
+const getWelcomeFunction = (language: string) => {
+    const hello = language === 'PL' ? 'Witaj' : 'Hello';
+    return (name: string) => `${hello}, ${name}`;
+}
+
+const welcomeInPl = getWelcomeFunction('PL');
+const welcomeInEn = getWelcomeFunction('EN');
+
+The getWelcomeFunction takes a language code string and 
+ - returns a function that will greet you in a specific language
+
+Generic Functions
+----------------------------------
+
+function map(items, mappingFunction) {
+  const results = [];
+  for (let item of items) {
+    results.push(mappingFunction(item));
+  }
+  return results;
+}
+
+const persons = [
+  { name: 'John' },
+  { name: 'Alice' },
+];
+console.log(map(persons, person => person.name));
+
+map works with all types
+----------------------
+What makes map so cool is that it works with any kind of array!
+
+Map is a generic function, it works with any data type
+--------------
+function map<T, R>(items: T[], mapFn: (item: T) => R): R[] 
+
+const  map<T, R> = (items: T[], mapFn: (item: T) => R): R[] 
+
+const names = map<Person, string>(persons, person => person.name)
+
+RxJs Observable - is just a container which does not care about the types it is carying
+(could be numbers, strings, objects, any data type)
+---------------------------------------------------------------------------------------
+In RxJs, most operators are generic functions. They care about the input being Observable,
+but they’re not interested in the type of values being emitted by the observable.
+
+
+Generic Functions Example - Typing `reduce`
+--------------------------------------------
+reduce is a generic, higher-order function
+The reduce() method reduces all the elements in an array into a single output value. 
+
+The output value can be a number, object, or string. reduce() method has two arguments. 
+The first one is a callback function and the second one is the initial value.
+
+
+arr.reduce(
+ callback(accumulator, currentValue[,index[,array]])[, initialValue])
+
+arr.reduce(
+ callbackFn(accumulator, currentValue)
+)
+
+Callback function
+-------------------
+The callback function is executed on each element of the array. 
+The return value of the callback function is accumulated result and provided as an argument 
+in the next call to the callback function. The callback function takes four arguments.
+
+Accumulator
+------------------
+The accumulator accumulates return value of the callback function.
+
+Current Value
+------------------
+The current element of the array is processed.
+
+Current Index
+------------------
+The index of the current element of the array is processed.
+
+Source Array
+------------------
+The array reduce() was called upon.
+The Current Index and Source Array are optional.
+
+Initial value
+------------------
+If the initial value is specified, the accumulator is set 
+- initialValue as the initial element. 
+Otherwise, the accumulator is set as the 
+- first element of the array as the initial element.
+arr.reduce(callback(accumulator, currentValue[,index[,array]])[, initialValue])
+
+
+const ageByPerson = 
+  persons.reduce((result, person) => ({ ...result,[person.name]: person.age}), {});
+
+const personsWithAge = persons.map( p => ({ [p.name]: p.age })
+
+
+Generic typed Reducer
+-----------------------
+function reduce<T,R>(array: T[], reducer: (result: R, el: T) => R, initial: R): R 
+{
+    let result = initial;
+    for (const element of array) {
+        result = reducer(result, element);
+    }
+    return result;
+}
+
+const total = reduce<number, number>([1, 2, 3, 4, 5], (sum, el) => sum + el, 0);
+
+const ageByName = reduce<Person, Record<string, number>>(
+    persons, 
+    (result, person) => ({
+        ...result,
+        [person.name]: person.age
+    }),
+    {}
+);
+
+
+
+
+
+
+
+
+
+
+Generics
+----------------------------------------------------------------------------------------------------------------------------
+interface FormField<T> {
+    value?: T;
+    defaultValue: T;
+    isValid: boolean;
+}
+
+interface FormField<T> {
+    value?: T;
+    defaultValue: T;
+    isValid: boolean;
+}
+
+// Very specialized. Only works with `FormField<string>`.
+function getStringFieldValue(field: FormField<string>): string {
+    if (!field.isValid || field.value === undefined) {
+        // Thanks to the specialization, the compiler knows the exact type of `field.defaultValue`.
+        return field.defaultValue.toLowerCase();
+    }
+    return field.value;
+}
+
+// Generic. Can be called with any `FormField`.
+----------------------------------------------------
+function getFieldValue<T>(field: FormField<T>): T {
+    if (!field.isValid || field.value === undefined) {
+        // On the other hand, we don't know anything about the type of `field.defaultValue`.
+        return field.defaultValue;
+    }
+    return field.value;
+}
+
+interface FormField<T extends string | number | boolean> {
+    value?: T;
+    defaultValue: T;
+    isValid: boolean;
+}
+
+// Type 'T' does not satisfy the constraint 'string | number | boolean'
+function getFieldValue<T>(field: FormField<T>): T { /* ... */ }
+
+interface Person {
+    name: string;
+    age: number;
+}
+
+type PersonKeys = keyof Person; // ‘name’ | ‘age’
+
+function get<T, K extends keyof T>(object: T, key: K): T[K] {
+    return object[key];
+}
+
+declare const person: Person;
+get(person, 'name'); // ? No errors
+get(person, 'foo'); // 
+
+
+// `K extends keyof T` is type constraint that limits possible values of K 
+// to string literal types representing names of T properties
+function pick<T, K extends keyof T>(array: T[], key: K): (T[K])[] {
+    const results: T[K][] = [];
+    for (let element of array) {
+        results.push(element[key]);
+    }
+    return results;
+}
+
+Type constructor is a function (not a regular function, a mathematical function) that takPartial takes a type and returns a type with the same properties as the source, but each one optional.
+
+ReturnType takes a function type and returns the return type of that function.
+es a type 
+and returns a new type (based on the original type).
+In the world of types, type constructors are functions that take some types and return other types.
+
+In the world of types, type constructors are functions that take some types and return other types.
+NonNullable<T> is a function that takes a type and returns the same type 
+with null and undefined removed from the domain
+
+Partial takes a type and returns a type with the same properties as the source, but each one optional.
+
+ReturnType takes a function type and returns the return type of that function.
+type X1 = NonNullable<string | undefined>; // X1 = string
+
+type X2 = Partial<{ name: string; age: number; }>; // X2 = { name?: string; age?: number;}
+
+function square(x: number): number { return x * x; }
+type X3 = ReturnType<typeof square>; // X3 = number
+
+generic interfaces are very much like functions that transform types.
+
+interface Person {
+  id: string;
+  name: string;
+  birthYear: number;
+}
+ 
+function getIds(persons: Person[]) {
+    return persons.map(person => person.id);
+}
+function getIds<T extends Record<'id', string>>(elements: T[]) {
+  return elements.map(el => el.id);
+}
+
+Pointfree style #
+We can do this by taking advantage of a functional programming technique called pointfree style. 
+Ramda is a nice library that will let us compose this function from other functions: map and prop.
+
+import * as R from 'ramda';
+ 
+const getIds = R.map(R.prop('id'));
+
+const getIds = R.map<Record<'id', string>, string>(R.prop('id'));
+
+<T>(list: readonly Record<"id", T>[]) => T[]
+
+R.map(R.prop('id')) is an example of a situation when we 
+pass a generic function as an argument to another generic function.
+
+Before version 3.4 of TypeScript, the type of parameters of the 
+inner function type was not propagated to the result type of the call.
+
+For example, in RxJS it is possible to compose new operators from existing ones using 
+the pipe function (as opposed to the pipe method). TypeScript 3.4 will certainly improve typing in such scenarios.
+
+Other examples include Redux (compose for middleware) and Reselect.
+
+Composing Types
+---------------------------------------------------------------------------------------------------------------
+This is the most important chapter of this course. It will teach you how to create new types from existing types.
+
+
+composing types with union and intersection operations. 
+- Union types are ubiquitous in TypeScript so it’s important to thoroughly understand them.
+- discriminated unions. It’s a powerful mechanism that can be used 
+  to express business rules in the type system. Next, we’ll talk about 
+- state machines, a very useful state management technique that can be implemented using discriminated unions. 
+- discriminated unions and subtyping to see when to use which technique.
+
+Composing Simple union types #
+-------------------------------------------------------------
+Union type is very often used with either null or undefined.
+
+const sayHello = (name: string | undefined) => { /* ... */ };
+
+Composing Object Types
+--------------------------------------------------------------
+interface Foo {
+    foo: string;
+    xyz: string;
+}
+
+interface Bar {
+    bar: string;
+    xyz: string;
+}
+
+const sayHello = (obj: Foo | Bar) => { /* ... */ };
+
+sayHello({ foo: "foo", xyz: "xyz" });
+sayHello({ bar: "bar", xyz: "xyz" });
+
+In set theory, union and intersection are names of operations on sets. The 
+------------------------------------------------------------------
+- union of two sets is a set that contains all elements from both sets. The 
+- intersection of two sets is a set that only contains elements that are present in both sets.
+
+- Union type A | B represents a set that is a union of the set of values associated with 
+type A and the set of values associated with type B.
+
+- Intersection type A & B represents a set that is an intersection of the set of values 
+associated with type A and the set of values associated with type B.
+
+class Counter extends Component<CounterProps> { /* ... */ }
+
+Inside the class, you can access the properties via this.props. However, the type of this.props 
+is not simply CounterProps, but:
+
+Readonly<CounterProps> & Readonly<{ children?: ReactNode; }>
+The reason for this is that React components can accept children elements:
+
+<Counter><span>Hello</span></Counter>
+The children element trees are accessible to the component via the children prop. 
+The type of this.props reflects that. It’s an intersection of (read-only) CounterProps 
+and a (read-only) object type with an optional children property.
+
+In terms of sets, it’s an intersection of the set of objects that have properties as defined in CounterProps 
+and the set of objects that have the optional children property. 
+The result is a set of objects that have 
+------------------------------------------------------------------------------------
+- all the properties of CounterProps 
+- and the optional children property.
+
+Discriminated Union Types
+--------------------------------------------------------------------------------------------------------------
+This lesson introduces the concept of discriminated union types.
+
+Representing choice with optional properties
+
+hanks to this mechanism you can write code that is type-safe beyond your imagination. 
+Discriminated unions let you enforce some business logic rules at compile-time.
+
+E-commerce application use case:
+Imagine implementing an e-commerce application. When the customer registers on the app, 
+they need to provide some contact details. One of the acceptance criteria says:
+
+Business rule:
+Customer needs to provide either email or phone number.
+
+interface Customer {
+  name: string;
+  email?: string;
+  phone?: number;
+}
+You will learn that the object is invalid at runtime
+When using strictNullChecks, you’ll need to write if statements every time you want to access email or phone
+You might forget to call the validation function
+
+solution to this problem with discriminated union:
+-----------------------------------------------------
+Instead of having two optional properties in Customer type, let’s 
+create a new Contact type that is a union of two interfaces. 
+One union member has a 
+. non-optional email property and the other has a 
+- non-optional phone property.
+
+These two union members follow a special convention. 
+They both have a string literal 
+- property called kind. 
+
+property: discriminator: typeof string
+--------------------------------------------------
+The type of that property is different in both members. 
+This property is called a discriminator. It encodes type information into the object so that 
+it is available at runtime. Thanks to this, 
+TypeScript can figure out which union member you’re dealing with by looking at the kind property.
+
+interface EmailContact {
+    kind: 'email';
+    email: string;
+}
+
+interface PhoneContact {
+    kind: 'phone';
+    phone: number;
+}
+  
+type Contact = EmailContact | PhoneContact;
+
+interface Customer {
+    name: string;
+    contact: Contact;
+}
+
+function printCustomerContact({ contact }: Customer) {
+    if (contact.kind === 'email') {
+        // Type of `contact` is `EmailContact`!
+        console.log(contact.email);
+    } else {
+        // Type of `contact` is `PhoneContact`!
+        console.log(contact.phone);
+    }
+}
+
+The type of contact.kind (outside of the if) is 'email' | 'phone'. 
+
+Contact type can be written in a much terser way as it’s not necessary to create standalone PhoneContact 
+and EmailContact types - they can be inlined.
+
+type Contact =
+    | { kind: 'email', email: string }
+    | { kind: 'phone', phone: number };
+
+The first | has been added only for formatting purposes. 
+It’s allowed by TypeScript syntax and is a common convention to use when defining multi-line unions.
+
+Using enums can help you avoid magic strings if that’s an issue for you. 
+One advantage of this approach is that renaming discriminating values becomes much easier.
+
+const enum ContactType { Phone, Email };
+ 
+type Contact =
+    | { type: ContactType.Email, email: string }
+    | { type: ContactType.Phone, phone: number };
+
+Multiple discriminating properties #
+---------------------------------------------------------------
+Interestingly, a discriminator does not have to be a single property. 
+A group of literal properties can also act as a discriminator! 
+In such a case, every combination of values marks a different member of the union type.
+
+type Foo =
+  | { kind: 'A', type: 'X', abc: string }
+  | { kind: 'A', type: 'Y', xyz: string }
+  | { kind: 'B', type: 'X', rty: string }
+
+declare const foo: Foo;
+
+if (foo.kind === 'A' && foo.type === 'X') {
+  console.log(foo.abc);
+}
+
+Algebraic data types #
+-------------------------------------------------------------------------
+Discriminated unions are not unique to TypeScript. Statically-typed functional languages 
+often make heavy use of algebraic data types. You can find an example from Haskell compared 
+with a TypeScript equivalent below.
+
+data Tree = Empty
+            | Leaf Int
+            | Node Tree Tree
+type Tree = 
+      | { type: 'empty' }
+      | { type: 'leaf', value: number }
+      | { type: 'node', left: Tree, right: Tree };
+
+Complex Domain Modeling
+--------------------------------------------------------------------------
+Create types for the following domain:
+
+- Users place 
+- orders for 
+- products. 
+
+Users have contact information, 
+----------------------------------------
+user:
+- email or 
+- postal addresses, and at least one is required. 
+
+Orders should include 
+--------------------------------------
+product:
+- product price, 
+- product name, 
+- product quantity, 
+order:
+- oder payment date, 
+- order paid amount, 
+- order sending date, and 
+- order delivery date.
+
+type Customer = {
+  name: string;
+  contactInfo: ContactInfo;
+};
+
+type ContactInfo =
+  | { kind: "emailOnly"; email: string }
+  | { kind: "postalOnly"; address: string }
+  | { kind: "emailAndPostal"; email: string; address: string };
+
+type PaidOrderData = { paymentDate: Date; amount: number };
+type SentOrderData = { sendingDate: Date };
+type DeliveredOrderData = { deliveryDate: Date };
+
+type OrderState =
+  | { kind: "new" }
+  | { kind: "paid"; paidData: PaidOrderData }
+  | { kind: "sent"; paidData: PaidOrderData; sentData: SentOrderData }
+  | {
+      kind: "delivered";
+      data: PaidOrderData;
+      sentData: SentOrderData;
+      deliveredData: DeliveredOrderData;
+    };
+
+type Order = {
+  customer: Customer;
+  state: OrderState;
+  productName: string;
+  price: number;
+  quantity: number;
+};
+
+State Machines
+---------------------------------------------------------------------------------------------
+This lesson talks about state machines, a concept closely related to discriminated unions.
+
+Classic example of a state machine representing a turnstile. 
+Turnstile has two states: 
+- locked and 
+- unlocked. You can unlock it by inserting a coin. 
+
+A state machine is a directed graph where nodes represent all possible states of a view 
+or of the whole app, and where edges represent possible transitions between the states.
+
+If you push it, it's locked again. Pushing a locked turnstile doesn't affect the state. 
+So doesn't inserting a coin into an unlocked turnstile.
+
+Example: Data fetching workflow #
+---------------------------------------------------------------------------
+One very common task in web applications is loading data from the backend. 
+Let’s build a state machine that represents this workflow. The solution will be based on Redux architecture.
+
+Workfow use case: User rquests server data
+----------------------------------------------------------
+- user data request: 	 clicking on a button. 
+- user cancel request:	 When data is being fetched, a 
+- server success response: loading indicator should be shown. 
+- client data receive:	 Data fetching can be successful, in which case it will show the fetched data. 
+- server error response: It can also fail, in which case it will show an error.
+
+There are four states:
+--------------------------------------------------------------------
+empty 		- fetching has not started yet or has been canceled
+loading 	- fetching is in progress
+withData 	- fetching was successful
+error 		- fetching failed
+
+Let’s create a discriminated union that represents all of the possible states. 
+------------------------------------------------------------------------------
+Next, let’s look at all possible actions that can result in state transitions. 
+Finally, we’ll build a reducer which describes all of the possible transitions.
+
+type State =
+    | { type: 'empty' }
+    | { type: 'loading' }
+    | { type: 'withData', data: string[] }
+    | { type: 'error', errorMessage: string };
+
+type Action =
+    | { type: 'dataRequested' }
+    | { type: 'dataFetchingSucceeded', data: string[] }
+    | { type: 'dataFetchingFailed', errorMessage: string }
+    | { type: 'dataFetchingCancelled' };
+
+function reducer(prevState: State, action: Action): State {
+    switch (prevState.type) {
+        case 'loading':
+            switch (action.type) {
+                case 'dataFetchingSucceeded':
+                    return { type: 'withData', data: action.data };
+                case 'dataFetchingCancelled':
+                    return { type: 'empty' };
+                case 'dataFetchingFailed':
+                    return { type: 'error', errorMessage: action.errorMessage };
+                case 'dataRequested':
+                    return prevState;
+            }
+        case 'empty':
+        case 'error':
+        case 'withData':
+            switch (action.type) {
+                case 'dataRequested':
+                    return { type: 'loading' };
+                case 'dataFetchingCancelled':
+                case 'dataFetchingFailed':
+                case 'dataFetchingSucceeded':
+                    return prevState;
+            }
+    }
+}
+
+---------------------------------------------------------------------------------------
+
+locked to unlocked  turn style sample
+--------------------------------------------------------
+function reducer(prevState: State, action: Action): State {
+    switch (prevState.type) {
+        case 'dataPartiallyLoaded':
+        case 'loading':
+            switch (action.type) {
+                case 'dataFetchingInProgress':
+                    return { type: 'dataPartiallyLoaded', data: action.data };
+                case 'dataFetchingSucceeded':
+                    return { type: 'withData', data: action.data };
+                case 'dataFetchingCancelled':
+                    return { type: 'empty' };
+                case 'dataFetchingFailed':
+                    return { type: 'error', errorMessage: action.errorMessage };
+                case 'dataRequested':
+                    return prevState;
+            }
+        case 'empty':
+        case 'error':
+        case 'withData':
+            switch (action.type) {
+                case 'dataRequested':
+                    return { type: 'loading' };
+                case 'dataFetchingCancelled':
+                case 'dataFetchingFailed':
+                case 'dataFetchingSucceeded':
+                case 'dataFetchingInProgress':
+                    return prevState;
+            }
+    }
+}
+--------------------------------------------------------------------------------
+
+Discriminated Unions vs Subtyping
+---------------------------------------------------------------------------------
+Subtyping is a form of type polymorphism that is very popular in Object-Oriented Programming. 
+If you’re familiar with OOP languages such as Java or C#, then you very likely know it already.
+
+Subtyping offers an alternative to Algebraic Data Types (discriminated unions). In this lesson, 
+I’d like to compare these two approaches.
+
+Defining types #
+Let’s go back to the example of a discriminated union representing a binary tree. It could, 
+for example, be a tree of product categories in an e-commerce web application.
+
+type Tree = 
+      | { type: 'empty' }
+      | { type: 'leaf', value: number }
+      | { type: 'node', left: Tree, right: Tree };
+
+A tree can either be:
+---------------------------------------------------
+- a node with references to left and right subtrees
+- a leaf containing a numerical value
+- empty
+
+We can represent the same data structure using the OOP approach. 
+We define an abstract class Tree and three concrete classes extending from Tree.
+
+abstract class Tree {}
+ 
+class Empty extends Tree { }
+ 
+class Leaf extends Tree {
+  constructor(private value: number) {
+    super();
+  }
+}
+ 
+class Node extends Tree {
+  constructor(
+    private left: Tree,
+    private right: Tree,
+  ) {
+    super();
+  }
+}
+
+Adding an operation #
+------------------------------------------------------------------------------
+Now, let’s say that we want to create a textual representation of the tree. 
+Let’s see how the implementation would look in both approaches.
+
+type Tree = 
+      | { type: 'empty' }
+      | { type: 'leaf', value: number }
+      | { type: 'node', left: Tree, right: Tree };
+
+function toString(tree: Tree): string {
+    switch (tree.type) {
+        case 'empty':
+            return 'Empty';
+        case 'leaf':
+            return `Leaf(${tree.value})`;
+        case 'node':
+            return `Node(${toString(tree.left)}, ${toString(tree.right)}})`;
+    }
+}
+
+As you can see, the OOP approach is very different. Instead of defining a standalone function, 
+we’ve added an abstract method to the Tree abstract class. 
+By doing that, we declare that all implementations of Tree have to implement this method. 
+What’s more, when calling toString on a Tree object, the correct implementation will be chosen at runtime 
+based on its concrete type. There is no switch statement. 
+Instead, we’re taking advantage of polymorphism in JavaScript.
+
+Each concrete class provides its own implementation of toString. 
+The implementations are very similar to those used in specific case statements in the previous approach, 
+except they refer to this instead of the function argument.
+
+Comparison #
+-----------------------------------------------------------------------------------------------
+Abstract class - polymorphism:
+-------------------------------
+As you can see, both approaches can be used to achieve the same result. However, there are a few major differences. 
+First, the OOP approach is much more verbose. As you can see, much more code had to be written to achieve the same result.
+
+The most important difference is how these two approaches cope with change. Imagine that we want to support 
+a new operation on the Tree (e.g., sum that returns the sum of all nodes in the tree). 
+In OOP approach, we need to modify every concrete class extending from Tree. 
+This can be difficult, especially if we don’t own all of these classes. 
+
+ADT: discriminated union
+------------------------------
+In the ADT approach, all we need to do is write another standalone function with a switch statement.
+
+On the other hand, imagine that we want to add a new type of tree node (e.g., NodeWithValue). 
+As a consequence, we need to modify all Tree operations. In the OOP approach, 
+all we need to do is create a new subclass (NodeWithValue) and implement all abstract methods. 
+However, in the ADT approach, we have to add a new case to every switch statement that switches 
+over the discriminator property. It might be tricky, especially if we don’t own all of the operations.
+
+As you can see, both approaches react to change differently. 
+I personally prefer the ADT approach, since it’s terser and 
+more in line with the functional programming paradigm.
+
+Advanced Types: mapped types, condtional types, type gards
+------------------------------------------------------------
+programming with types
+
+Conditional Types -  CT
+-------------------------------------------------------------
+
+Type constructor: builds new types from old ones
+
+CT are type constructors that create a type based on a condition.
+
+CT: constructor is in the form of conditional expression: condition ? true : false
+
+isString<T> = T extends string ? true : false
+
+type NonNullable<T> = T extends null | undefined ? never : T
+
+never type: has no value, it is not possible to create an instance of never
+            never is similair to the empty set
+
+Built-in Conditional Types
+-----------------------------------------------------------------------------------------------------
+Exclude, Omit, Extract
+
+Exclude: removes all members that are assignable to U.
+type MyExclude<T,U> = T extends U? never : T;
+
+Exclude: very useful in combination with keyof operator
+
+Generics
+---------
+interface FormField<T> {
+    value?: T;
+    defaultValue: T;
+    isValid: boolean;
+}
+interface FormField<T> {
+    value?: T;
+    defaultValue: T;
+    isValid: boolean;
+}
+interface FormField<T extends string | number | boolean> {
+    value?: T;
+    defaultValue: T;
+    isValid: boolean;
+}
+
+// Type 'T' does not satisfy the constraint 'string | number | boolean'
+function getFieldValue<T extends string | number>(field: FormField<T>): T {
+    return field.value ?? field.defaultValue;
+}
+// Very specialized. Only works with `FormField<string>`.
+function getStringFieldValue(field: FormField<string>): string {
+    if (!field.isValid || field.value === undefined) {
+        // Thanks to the specialization, the compiler knows the exact type of `field.defaultValue`.
+        return field.defaultValue.toLowerCase();
+    }
+    return field.value;
+}
+
+interface Person {
+    name: string;
+    age: number;
+}
+
+type PersonKeys = keyof Person; // ‘name’ | ‘age’
+
+function get<T, K extends keyof T>(object: T, key: K): T[K] {
+    return object[key];
+}
+
+declare const person: Person;
+get(person, 'name'); // ? No errors
+get(person, 'foo'); // ?? Error!
+
+
+// Generic. Can be called with any `FormField`.
+function getFieldValue<T>(field: FormField<T>): T {
+    if (!field.isValid || field.value === undefined) {
+        // On the other hand, we don't know anything about the type of `field.defaultValue`.
+        return field.defaultValue;
+    }
+    return field.value;
+}
+
+ 
+// `K extends keyof T` is type constraint that limits possible values of K 
+// to string literal types representing names of T properties
+function pick<T, K extends keyof T>(array: T[], key: K): (T[K])[] {
+    const results: T[K][] = [];
+    for (let element of array) {
+        results.push(element[key]);
+    }
+    return results;
+}
+
+Type Constructors
+--------------------------
+
+- world of values
+- world of types
+In the world of types, type constructors are functions that take some types and return other types.
+
+This lesson explains theoretical foundations of generic types and gives you a glimpse into category theory. 
+It provides a mental model that will prove useful in the next chapters.
+
+Type constructor is a function (not a regular function, a mathematical function) 
+that takes a type and returns a new type (based on the original type).
+
+Notice that a generic interface with only one type argument is exactly that. For example, 
+the FormField type from the previous lesson is a function with one type argument, T. 
+It takes a type (e.g. string) and returns a new type (FormField<string>
+ or { value?: string; defaultValue: string; isValid: boolean; }).
+
+
+NonNullable<T>
+-----------------
+There are a few other interesting type constructors built into TypeScript. 
+
+For example, NonNullable<T> is a function that takes a type 
+and returns the same type with null and undefined removed from the domain.
+
+Partial
+............
+Partial takes a type and returns a type with the same properties as the source, but each one optional.
+
+ReturnType
+-----------
+ReturnType takes a function type and returns the return type of that function.
+
+type X1 = NonNullable<string | undefined>; // X1 = string
+
+type X2 = Partial<{ name: string; age: number; }>; // X2 = { name?: string; age?: number;}
+
+function square(x: number): number { return x * x; }
+type X3 = ReturnType<typeof square>; // X3 = number
+
+
+Type Argument Propagation
+------------------------
+
+ Imagine that you’re fetching a collection of objects from some backend service and you need to map this collection to an array of identifiers.
+
+interface Person {
+  id: string;
+  name: string;
+  birthYear: number;
+}
+
+function getIds(persons: Person[]) {
+    return persons.map(person => person.id);
+}
+
+function getIds<T extends Record<'id', string>>(elements: T[]) {
+  return elements.map(el => el.id);
+}
+
+Pointfree style#
+-------------------
+We can do this by taking advantage of a functional programming technique called pointfree style. 
+Ramda is a nice library that will let us compose this function from other functions: map and prop.
+
+import * as R from 'ramda';
+
+const getIds = R.map(R.prop('id'));
+
+const getIds = R.map<Record<'id', string>, string>(R.prop('id'));
+
+This is where propagated generic type arguments come in. In TypeScript 3.4 the type of 
+getIds will correctly infer to <T>(list: readonly Record<"id", T>[]) => T[]. Success!
+
+ow that we know what propagated generic type arguments are about, let’s decipher the name.
+
+R.map(R.prop('id')) is an example of a situation when we pass 
+a generic function as an argument to another generic function.
+
+Before version 3.4 of TypeScript, the type of parameters of 
+the inner function type was not propagated to the result type of the call.
+
+keep in mind that some popular libraries rely on function composition and partial application 
+and will benefit from this change.
+
+			*** Type Composition ***
+----------------------------------------------------------------------------------------------------------------------------------------
+- composing types with union and intersection operations
+- we introduce the topic of discriminated unions
+can be used to express business rules in the type system.
+- we’ll talk about state machines ( useful state management technique that can be implemented using discriminated unions
+
+Foo or Bar: or  -> Union
+--------------
+Foo | Bar is a type that has either all required properties of Foo OR all required properties of Bar. 
+
+interface Foo {
+    foo: string;
+    xyz: string;
+}
+
+interface Bar {
+    bar: string;
+    xyz: string;
+}
+
+const sayHello = (obj: Foo | Bar) => { /* ... */ };
+
+sayHello({ foo: "foo", xyz: "xyz" });
+sayHello({ bar: "bar", xyz: "xyz" });
+
+Union
+---------
+Foo | Bar represents a union of the set of objects having foo and xyz properties 
+and the set of objects having bar and xyz. Objects belonging to such sets all have the xyz property. 
+Some of them have foo property and others have bar property.
+
+
+
+
+intersection: and
+--------------------------------
+const sayHello = (obj: Foo & Bar) => { /* ... */ };
+
+sayHello({ foo: "foo", bar: "bar", xyz: "xyz" });
+
+Union type A | B represents a set that is a union of the set of 
+values associated with type A and the set of values associated with type B.
+
+Intersection type A & B represents a set that is an intersection of the set of 
+values associated with type A and the set of values associated with type B.
+
+Intersection
+-------------
+Foo & Bar represents an intersection of the set of objects having foo and xyz properties 
+and the set of objects having bar and xyz. In other words, the set contains objects that 
+belong to the sets represented by both Foo and Bar. Only objects 
+that have all three properties (foo, bar and xyz) belong to the intersection.
+
+Discriminated Union Types
+-----------------------------
+Creating discriminated unions is an extremely powerful way of composing types. 
+Thanks to this mechanism you can write code that is type-safe beyond your imagination. 
+Discriminated unions let you enforce some business logic rules at compile-time.
+
+Use case for Union Types (Ecommerce Custoner Contact Data: optional email or phone
+------------------------------------------------------------------------------------
+ implementing an e-commerce application. When the customer registers on the app, 
+they need to provide some contact details. One of the acceptance criteria says:
+
+Customer needs to provide either email or phone number.
+
+interface Customer {
+  name: string;
+  email?: string;
+  phone?: number;
+}
+
+This solution has one major drawback. It’s possible to create a Customer with neither email nor phone provided. 
+In other words, it’s possible to create a Customer object that violates the business requirement
+
+Discriminated unions to the rescue#
+---------------------------------------
+Instead of having two optional properties in Customer type, let’s create a new Contact type that is a union of two interfaces. 
+One union member has a non-optional email property and the other has a non-optional phone property.
+
+discriminator
+--------------
+These two union members follow a special convention. They both have a string literal property called kind. 
+The type of that property is different in both members. This property is called a discriminator. 
+
+interface EmailContact {
+    kind: 'email';
+    email: string;
+}
+
+interface PhoneContact {
+    kind: 'phone';
+    phone: number;
+}
+  
+type Contact = EmailContact | PhoneContact;
+
+interface Customer {
+    name: string;
+    contact: Contact;
+}
+
+function printCustomerContact({ contact }: Customer) {
+    if (contact.kind === 'email') {
+        // Type of `contact` is `EmailContact`!
+        console.log(contact.email);
+    } else {
+        // Type of `contact` is `PhoneContact`!
+        console.log(contact.phone);
+    }
+}
+
+type Contact =
+    | { kind: 'email', email: string }
+    | { kind: 'phone', phone: number };
+
+const enum ContactType { Phone, Email };
+
+type Contact =
+    | { type: ContactType.Email, email: string }
+    | { type: ContactType.Phone, phone: number };
+
+type Foo =
+  | { kind: 'A', type: 'X', abc: string }
+  | { kind: 'A', type: 'Y', xyz: string }
+  | { kind: 'B', type: 'X', rty: string }
+
+declare const foo: Foo;
+
+if (foo.kind === 'A' && foo.type === 'X') {
+  console.log(foo.abc);
+}
+
+Algebraic data types: Algebra of Types (Union, Intersection)
+------------------------------------------------------------
+
+Discriminated unions are not unique to TypeScript. Statically-typed functional languages often 
+make heavy use of algebraic data types. You can find an example from Haskell compared with a TypeScript equivalent below.
+
+data Tree = Empty
+            | Leaf Int
+            | Node Tree Tree
+type Tree = 
+      | { type: 'empty' }
+      | { type: 'leaf', value: number }
+      | { type: 'node', left: Tree, right: Tree };
+
+
+Precise domain modeling#
+-----------------------------------------------------------
+
+Use case - business requriement
+---------------------------
+
+Users place orders for products. 
+
+Users have contact information, 
+- email or postal addresses, 
+- and at least one is required. 
+
+Orders should include 
+- price, 
+- product name, 
+- quantity, 
+- payment date, 
+- paid amount, 
+- sending date, and 
+- delivery date.
+
+type Order = {
+  productName: string;
+  price: number;
+  quantity: number;
+};
+
+type Customer = {
+  name: string;
+  contactInfo: ContactInfo;
+};
+
+type ContactInfo =
+  | { kind: "emailOnly"; email: string }
+  | { kind: "postalOnly"; address: string }
+  | { kind: "emailAndPostal"; email: string; address: string };
+
+type PaidOrderData = { paymentDate: Date; amount: number };
+type SentOrderData = { sendingDate: Date };
+type DeliveredOrderData = { deliveryDate: Date };
+
+type OrderState =
+  | { kind: "new" }
+  | { kind: "paid"; paidData: PaidOrderData }
+  | { kind: "sent"; paidData: PaidOrderData; sentData: SentOrderData }
+  | {
+      kind: "delivered";
+      data: PaidOrderData;
+      sentData: SentOrderData;
+      deliveredData: DeliveredOrderData;
+    };
+
+type Order = {
+  customer: Customer;
+  state: OrderState;
+  productName: string;
+  price: number;
+  quantity: number;
+};
+
+State Machines
+---------------
+a State Machine 
+- has a defined number of possibles states
+- has always an initial state and a final state
+- can only be in one defined state at a time
+
+A state machine is a directed graph where nodes represent all possible states of a view or of the whole app, 
+and where edges represent possible transitions between the states.
+
+Data fetching workflow
+----------------------
+
+fetching has four defined states:
+------------------------------------
+empty 		- fetching has not started yet or has been canceled
+loading 	- fetching is in progress
+withData 	- fetching was successful
+error 		- fetching failed
+
+type State =
+    | { type: 'empty' }
+    | { type: 'loading' }
+    | { type: 'withData', data: string[] }
+    | { type: 'error', errorMessage: string };
+
+type Action =
+    | { type: 'dataFetchingRequested' }
+    | { type: 'dataFetchingSucceeded', data: string[] }
+    | { type: 'dataFetchingFailed', errorMessage: string }
+    | { type: 'dataFetchingCancelled' };
+
+reducer switchces on State first and then on Action:
+------------------------------------------------------------
+For each state, we defined what happens when a certain action is triggered.
+data fetching workflow is very clear when represented using a state machine. 
+It’s a type-safe approach that helps you break down the complexity in a very structured way
+
+function reducer(prevState: State, action: Action): State {
+    switch (prevState.type) {
+        case 'loading':
+            switch (action.type) {
+                case 'dataFetchingSucceeded':
+                    return { type: 'withData', data: action.data };
+                case 'dataFetchingCancelled':
+                    return { type: 'empty' };
+                case 'dataFetchingFailed':
+                    return { type: 'error', errorMessage: action.errorMessage };
+                case 'dataRequested':
+                    return prevState;
+            }
+        case 'empty':
+        case 'error':
+        case 'withData':
+            switch (action.type) {
+                case 'dataFetchingRequested':
+                    return { type: 'loading' };
+                case 'dataFetchingCancelled':
+                case 'dataFetchingFailed':
+                case 'dataFetchingSucceeded':
+                    return prevState;
+            }
+    }
+}
+
+
+Turnstile sample: 2 possible states: locked - unlocked
+--------------------------------------------------------
+
+states
+-------
+type TurnstileState = 'Locked' | 'Unlocked';
+
+actions
+--------
+type TurnstileAction = 'Push' | 'InsertCoin';
+
+function reducer(state: TurnstileState, action: TurnstileAction) {
+  switch (state) {
+    case 'Locked':
+      switch (action) {
+        case 'Push': return 'Locked';
+        case 'InsertCoin': return 'Unlocked';    
+      }
+    case 'Unlocked':
+      switch (action) {
+        case 'Push': return 'Locked';
+        case 'InsertCoin': return 'Unlocked';
+      }
+  }
+}
+
+
+Discriminated Unions vs Subtyping
+-----------------------------------------------------------------------------------------------
+Subtyping is a form of type polymorphism that is very popular in Object-Oriented Programming.
+
+FP
+---------------
+type Tree = 
+      | { type: 'empty' }
+      | { type: 'leaf', value: number }
+      | { type: 'node', left: Tree, right: Tree };
+
+function toString(tree: Tree): string {
+    switch (tree.type) {
+        case 'empty':
+            return 'Empty';
+        case 'leaf':
+            return `Leaf(${tree.value})`;
+        case 'node':
+            return `Node(${toString(tree.left)}, ${toString(tree.right)}})`;
+    }
+}
+
+OOP
+------
+abstract class Tree {
+    abstract toString(): string;
+}
+
+class Empty extends Tree {
+    toString() {
+        return `Empty`;
+    }
+}
+
+class Leaf extends Tree {
+  constructor(private value: number) {
+    super();
+  }
+
+  toString() {
+      return `Leaf(${this.value})`;
+  }
+}
+
+class Node extends Tree {
+  constructor(
+    private left: Tree,
+    private right: Tree,
+  ) {
+    super();
+  }
+
+  toString() {
+      return `Node(${this.left.toString()}, ${this.right.toString()}})`;
+  }
+}
+
+Comparison
+-----------------
+The most important difference is how these two approaches cope with change. 
+Imagine that we want to support a new operation on the Tree (e.g., sum that returns the sum of all nodes in the tree). 
+In OOP approach, we need to modify every concrete class extending from Tree. 
+This can be difficult, especially if we don’t own all of these classes. 
+
+In the Algebraic Data Types (ADT) approach, all we need to do is 
+write another standalone function with a switch statement.
+
+On the other hand, imagine that we want to add a new type of tree node (e.g., NodeWithValue). 
+As a consequence, we need to modify all Tree operations. In the OOP approach, all we need to do 
+is create a new subclass (NodeWithValue) and implement all abstract methods. However, 
+
+in the ADT approach, we have to add a new case to every switch statement that switches over the discriminator property. 
+It might be tricky, especially if we don’t own all of the operations.
+

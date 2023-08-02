@@ -1,0 +1,119 @@
+typescript-types-learning.txt
+
+typescript-types-links.txt
+typescript-types-ryan-dobler.txt
+typescript-types-vs-interfaces.txt
+typescript-types.txt
+hans-youtube-typescript-types.txt
+
+
+Typescript Types
+------------------
+
+Types - are sets of values
+---------------------------------------------------------------------------------------------------------------
+- sets of values or a value space 
+  (string space - the set of all string characters, 
+   number space - the set of all floating point numbers, 
+   boolean space - the set of true and false)
+
+- each type has a certain number of inhabitants: 
+  boolean - 2, 
+  string - infinite, 
+  number - infinte, 
+  literal - 1 (number or string)
+
+- set operations on types
+  union (or): 		A | B (can be a Banana or can be an Orange)
+  a union is representing possible options: Doctor | Engineer)
+
+  intersection (and): 	Fly & Swim ( must be able to fly and swim: Duck)
+ 
+- type narrowing or filtering types:
+
+  simple types: 
+    - typeof name === "string"
+    - in operator:
+	if ('size' in shape) {
+  	  return shape.size * shape.size
+ 	}
+ 	if ('width' in shape) {
+          return shape.width * shape.height
+ 	} 
+
+  object types: 
+    - write a condition wich leads to a never type
+    - discriminated union: type="circle", type="square"
+
+
+
+
+
+Type level - Typescript Types
+---------------------------------------------------------------------------------------------------------------
+
+
+Value level - Javascript Types
+---------------------------------------------------------------------------------------------------------------
+
+Typescript - creating Types
+---------------------------------------------------------------------------------------------------------------
+
+TypeScript’s type system is very powerful because it allows 
+- expressing types in terms of other types in the form of type alias: 
+  type Person = {name:string, age:number}
+
+The simplest form of this idea is 
+- generics, Operation<T> ,we actually have a wide variety of type operators available to use. 
+- express types in terms of values that we already have. type Person = {name:string, age:number}
+
+By combining various type operators, we can express complex operations and values in a succinct, maintainable way. 
+
+type operators: 
+-----------------------------------------------------------------------------
+- keyof Type Operator 		Using the keyof operator to create new types
+- typeof Type Operator 		Using the typeof operator to create new types
+- indexed Access Types  	Using Type['a'] syntax to access a subset of a type
+- extends			Conditional Types - Types which act like filter function for types
+- keyof looping throug a type	Mapping mapping each property in an existing type to 
+                                type PersonKeys = keyof Person (result union literal "name" | "age" , 
+
+- Template Literal Types 	Mapped types which change properties via template literal strings
+
+Generics - Types which take parameters
+-------------------------------------------------------------------------
+
+
+Keyof Type Operator - 		Using the keyof operator to create new types by looping through type properties
+				returning back a union of literals which are inferred from type properties
+-------------------------------------------------------------------------
+type Person = { name: string, age:number}
+type PersonKeys = keyof Person // 'name' | 'age'
+
+Typeof Type Operator - Using the typeof operator to create new types
+-------------------------------------------------------------------------
+
+
+Indexed Access Types - Using Type['a'] syntax to access a subset of a type
+-------------------------------------------------------------------------
+
+
+Conditional Types - Types which act like if statements in the type system
+-------------------------------------------------------------------------
+- conditional types helps us in three situations the first one is to
+   1 - make a decision based on an inferred type so for example if something is string then we want the the type number
+   2 - if we have a Union to iterate over the members of the Union and perform some sort of transformation on them and 
+   3 - it helps us to extract certain parts from another type 
+
+
+Mapped Types - Creating types by mapping each property in an existing type
+-------------------------------------------------------------------------
+
+
+Template Literal Types - Mapped types which change properties via template literal strings
+-------------------------------------------------------------------------
+
+
+
+Typescript - transforming Types with Conditional Types
+---------------------------------------------------------------------------------------------------------------

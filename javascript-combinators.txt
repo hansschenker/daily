@@ -1,0 +1,203 @@
+Power of functional programming in JavaScript Part 2 - Combinators
+
+PAWEL GED
+
+Vue.js Developer
+
+Power of functional programming in JavaScript Part 2 - Combinators - Image
+This is a second part of our series of articles devoted to power of functional programming in JavaScript. Check this article to expand your knowledge on Combinators.
+
+Introduction to Combinators
+Combinators are higher-level function that allows you to combine functions, variables, or other combinators. Usually, they do not contain declarations of their own variables or business logic. They are the only ones to flush the control in a function program.
+
+In this article, I will try to cover a few of them:
+
+Tap
+Currying
+Pipe/Compose
+Fork
+Alternation
+Sequence
+Tap
+A combinator is very useful for functions that return nothing. It takes the function to which the parameter goes and then it is returned.
+
+Declaration
+
+const tap = (fn) => (value) => {
+    fn(value);
+    return value;
+};
+
+Imperative example
+
+const [items, setItems] = useState(() => [])
+
+axios
+    .get('http://localhost')
+    .then({ data } => {
+     setItems(data)
+     console.log(data)
+         onLoadData(data)
+    }).then(...) // returns undefined - the data in the promise has been modified
+
+Declarative example
+
+const [items, setItems] = useState(() => [])
+
+axios
+    .get('http://localhost')
+    .then(({ data }) => data)
+  .then(tap(setItems))     // (data) => { setItems(data); return data }
+    .then(tap(console.log))  // one then = one function = one responsibility
+    .then(tap(onLoadData))
+    .then(...)               // still access to original data
+                                                     // easy on maintain open/close principle
+
+Currying
+It splits the arguments of a function and makes it possible to call them sequentially.
+
+Declaration
+
+const curry = (fn) => {
+    const curried = (...args) => {
+        if (fn.length !== args.length){
+            return curried.bind(null, ...args)
+        }
+        return fn(...args);
+    };
+
+    return curried
+};
+
+Example
+
+const sum = (a, b, c) => a + b + c
+
+const currySum = curry(sum) 
+/* 
+  possible calls 
+  currySum(a)(b)(c), 
+  currySum(a)(b,c),
+  currySum(a,b)(c),
+  currySum(a,b,c)
+*/
+
+currySum(1)         // (b, c) => 1 + a + b or (b) => (c) => 1 + a + b
+currySum(5)(10)     // (c) => 5 + 10 + b
+currySum(5, 10)     // (c) => 5 + 10 + b
+currySum(5)(10)(20) // 35
+currySum(5, 10)(20) // 35
+currySum(5)(10, 20) // 35
+
+const divideBy = curry((a, b) => b / a)
+const multiplyBy = curry((a, b) => a * b)
+
+const divideByTwo = divideBy(2)
+divideByTwo(10) // returns 5
+
+const multiplyByFive = multiplyBy(5)
+multiplyByFive(10) // returns 50
+Pipe/Compose
+Through composition, it is possible to pass data from one function to another. It is important that the functions take the same number of arguments. The difference between pipe and compose is that the first one executes the function from first to the last, and compose calls them from the end.
+
+Declaration
+
+const pipe = (...fns) => (value, ...args) =>
+    fns.reduce((v, f, i) =>
+        i === 0
+                        ? f(v, ...args)
+            : f(v),
+        value);
+
+const compose = (...fns) => (value, ...args) =>
+    fns.reduceRight((v, f, i) =>
+            i === (fns.length - 1)
+                ? f(v, ...args)
+                : f(v),
+        value);    
+
+Imperative example
+
+const sine = (val) => Math.sin(val * Math.PI / 180) // not readable
+sine(90) // returns 1
+Declarative example
+
+const sine = pipe(
+   multiplyBy(Math.PI) // ↓ val * Math.PI
+   divideBy(180),      // ↓ val * Math.PI / 180
+   Math.sin,           // ↓ Math.sin(val * Math.PI / 180)
+)
+
+const sine = compose(
+   Math.sin,           // ↑ Math.sin(val * Math.PI / 180)
+   divideBy(180),      // ↑ val * Math.PI / 180
+   multiplyBy(Math.PI) // ↑ val * Math.PI
+)
+      
+sine(90) // returns 1
+
+Fork
+The fork combiner is useful in situations where you want to process a value in two ways and combine the result.
+
+Declaration
+
+const fork = (join, fn1, fn2) => (value) => join(fn1(value), fn2(value));
+
+Example
+
+const length = (array) => array.length
+const sum = (array) => array.reduce((a, b) => a + b, 0)
+const divide = (a, b) => a / b
+
+const arithmeticAverage = fork(divide, sum, length)
+
+arithmeticAverage([5, 3, 2, 8, 4, 2]) // returns 4
+
+Alternation
+This combinator takes two functions and returns the result of the first if true. Otherwise, it returns the result of the second function.
+
+Declaration
+
+const alt = (fn, orFn) => (value) => fn(value) || orFn(value)
+Example
+
+const users = [{
+    uuid: '123e4567-e89b-12d3-a456-426655440000',
+  name: 'William'
+}]
+
+const findUser = ({ uuid: searchesUuid }) =>
+   users.find(({ uuid }) => uuid === searchesUuid)
+
+const newUser = data => ({ ...data, uuid: uuid() // create new uuid })
+
+const findOrCreate = alt(findUser, newUser)
+
+findOrCreate({ uuid: '123e4567-e89b-12d3-a456-426655440000' }) // returns William object
+findOrCreate({ name: 'John' }) // returns John object with new uuid
+
+Sequence
+It accepts many independent functions and passes the same parameter to each of them. Typically, these functions do not return any value.
+
+Declaration
+
+const seq = (...fns) => (val) => fns.forEach(fn => fn(val))
+
+
+Example
+
+const appendUser = (id) => ({ name }) => {
+    document.getElementById(id).innerHTML = name
+}
+
+const printUserContact = pipe(
+    findOrCreate,             // returns user
+    seq(
+        appendUser('#contact'), // user => void
+        console.log,            // user => void
+        onContactUpdate         // user => void
+    )
+)
+
+printUserContact(userData)
+

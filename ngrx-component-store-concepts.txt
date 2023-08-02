@@ -1,0 +1,526 @@
+NgRx Component-Store
+--------------------------------
+
+alternative to reactive push-based "Service with a Subject"
+-----------------------------------------------------------
+ComponentStore is a stand-alone library that helps to manage local/component state. 
+It's an alternative to reactive push-based "Service with a Subject" approach.
+
+Key Concepts:tied to the life-cycle of a particular component 
+---------------------------------------------------------------
+Local state has to be initialized, but it can be done lazily.
+Local state is typically tied to the life-cycle of a particular component 
+and is cleaned up when that component is destroyed.
+
+Updates imperatively or by providing an Observable
+---------------------------------------------------------------
+Users of ComponentStore can update the state through setState or updater, 
+either imperatively or by providing an Observable.
+Users of ComponentStore can read the state through select or a top-level state$. 
+Selectors are very performant.
+
+Effects: feeding back data both imperatively or reactively
+---------------------------------------------------------------
+Users of ComponentStore may start side-effects with effect, both sync and async, 
+and feed the data both imperatively or reactively.
+The details about initialization, writing and reading from state, and side-effects management 
+can be found in the corresponding sections of the Architecture.
+
+Initializatiion
+-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------
+Initialization
+---------------------------------------------------------------------------------------------------------------------------------
+ComponentStore can be initialized in 2 ways:
+
+through the constructor - it would have the initial state
+by calling setState and passing an object that matches the state interface.
+Initialization through the constructor
+Initializing through the constructor makes the state immediately available to the ComponentStore consumers.
+
+movie.store.ts
+----------------
+export interface MoviesState {
+  movies: Movie[];
+}
+-----------------------
+@Injectable()
+export class MoviesStore extends ComponentStore<MoviesState> {
+  
+  constructor() {
+    super({movies: []});
+  }
+}
+--------------------------------------------------------------------------------------------------------------------------------
+Write State, Update State
+---------------------------------------------------------------------------------------------------------------------------------
+Updating state
+ComponentStore can be updated in 3 ways:
+
+by calling 
+- setState.(whole state)
+- patchState.(partial state)
+
+by creating an updater and passing inputs through it.
+updater method
+The updater method describes HOW the state changes. It takes a pure function with the 
+current state and the value as arguments, and should return the new state, updated immutably.
+
+There could be many updaters within a ComponentStore. They are analogous to "CASE" 
+statements or on() functions in @ngrx/store reducer.
+
+Using the updater method allows developers to extract business logic out of components into services, 
+which makes components easier to read and test.y
+
+------------------ updater function addMovie
+
+@Injectable()
+export class MoviesStore extends ComponentStore<MoviesState> {
+  
+  constructor() {
+    super({movies: []});
+  }
+
+  // updater function is state and action payload combined
+  readonly addMovie = this.updater((state, movie: Movie) => ({
+    movies: [...state.movies, movie],
+  }));
+}
+
+
+-----------
+@Component({
+  template: `
+    <button (click)="add('New Movie')">Add a Movie</button>
+  `,
+  providers: [MoviesStore],
+})
+export class MoviesPageComponent {
+
+  constructor(private readonly moviesStore: MoviesStore) {}
+
+  add(movie: string) {
+    this.moviesStore.addMovie({ name: movie, id: generateId() });
+  }
+}
+--------------------
+setState method
+The setState method can be called by either providing the object of state type or as a callback.
+
+When the object is provided it resets the entire state to the provided value. 
+This is also how lazy initialization is performed.
+
+The callback approach allows developers to change the state partially.
+----------------
+@Component({
+  template: `...`,
+  providers: [ComponentStore],
+})
+export class MoviesPageComponent implements OnInit {
+  constructor(
+    private readonly componentStore: ComponentStore<MoviesState>
+  ) {}
+
+  ngOnInit() {
+    this.componentStore.setState({movies: []});
+  }
+
+  resetMovies() {
+    //    resets the State to empty array 👇
+    this.componentStore.setState({movies: []});
+  }
+
+  addMovie(movie: Movie) {
+    this.componentStore.setState((state) => {
+      return {
+        ...state,
+        movies: [...state.movies, movie],
+      };
+    });
+  }
+}
+------------------------------
+patchState method
+The patchState method can be called by providing a partial state Observable, object, or a partial updater callback.
+When the partial state is provided it patches the state with the provided value.
+
+When the partial updater is provided it patches the state with the value returned from the callback.
+
+Note: The state has to be initialized before any of patchState calls, otherwise "not initialized" error will be thrown.
+
+----------------------
+interface MoviesState {
+  movies: Movie[];
+  selectedMovieId: string | null;
+}
+
+@Component({
+  template: `...`,
+  providers: [ComponentStore],
+})
+export class MoviesPageComponent implements OnInit {
+  constructor(
+    private readonly componentStore: ComponentStore<MoviesState>
+  ) {}
+
+  ngOnInit() {
+    this.componentStore.setState({movies: [], selectedMovieId: null});
+  }
+
+  updateSelectedMovie(selectedMovieId: string) {
+    this.componentStore.patchState({selectedMovieId});
+  }
+
+  addMovie(movie: Movie) {
+    this.componentStore.patchState((state) => ({
+      movies: [...state.movies, movie]
+    }));
+  }
+}
+................
+
+----------------------------------------------------------------------------------------------------------------------------------
+Reading State
+----------------------------------------------------------------------------------------------------------------------------------
+Reading state
+select method
+Reading state is done with the select method, which takes a projector that describes 
+HOW the state is retrieved and/or transformed. Selectors emit new values when those values "change" - 
+the new value is no longer distinct by comparison from the previous value.
+
+Another performance benefit of selectors is that they are "shared" - they multicast the value to each subscriber.
+
+-------------------
+export interface MoviesState {
+  movies: Movie[];
+}
+
+@Injectable()
+export class MoviesStore extends ComponentStore<MoviesState> {
+  
+  constructor() {
+    super({movies:[]});
+  }
+
+  readonly movies$: Observable<Movie[]> = this.select(state => state.movies);
+}
+------------------------
+@Component({
+  template: `
+    <li *ngFor="let movie of (movies$ | async)">
+      {{ movie.name }}
+    </li>
+  `,
+  providers: [MoviesStore],
+})
+
+export class MoviesPageComponent {
+  movies$ = this.moviesStore.movies$;
+
+  constructor(private readonly moviesStore: MoviesStore) {}
+}
+------------------------
+
+Combining Selectors
+-----------------------------------------------------
+Combining selectors
+Selectors can be used to combine other Selectors or Observables.
+
+export interface MoviesState {
+  movies: Movie[];
+  userPreferredMoviesIds: string[];
+}
+
+@Injectable()
+export class MoviesStore extends ComponentStore<MoviesState> {
+  
+  constructor() {
+    super({movies:[], userPreferredMoviesIds:[]});
+  }
+
+  readonly movies$ = this.select(state => state.movies);
+  readonly userPreferredMovieIds$ = this.select(state => state.userPreferredMoviesIds);
+
+  readonly userPreferredMovies$ = this.select(
+        this.movies$,
+        this.userPreferredMovieIds$,
+        (movies, ids) => movies.filter(movie => ids.includes(movie.id))
+  );
+}
+------------------------------------------------------------
+
+Debouncing 
+Debounce selectors
+Selectors are synchronous by default, meaning that they emit the value immediately when subscribed to, 
+and on every state change. Sometimes the preferred behavior would be to wait (or debounce) until 
+the state "settles" (meaning all the changes within the current microtask occur) and only then 
+emit the final value. In many cases, this would be the most performant way to read data from the 
+ComponentStore, however its behavior might be surprising sometimes, as it won't emit a value until later on. 
+This makes it harder to test such selectors.
+
+Adding the debounce to a selector is done by passing {debounce: true} as the last argument.
+
+----------------
+@Injectable()
+export class MoviesStore extends ComponentStore<MoviesState> {
+  
+  constructor(private movieService: MovieService) {
+    super({movies: [], moviesPerPage: 10, currentPageIndex: 0});
+ 
+    // 👇 effect is triggered whenever debounced data is changed
+    this.fetchMovies(this.fetchMoviesData$);
+  }
+
+  // Updates how many movies per page should be displayed
+  readonly updateMoviesPerPage = this.updater((state, moviesPerPage: number) => ({
+    ...state,
+    moviesPerPage, // updates with new value
+  }));
+
+  // Updates which page of movies that the user is currently on
+  readonly updateCurrentPageIndex = this.updater((state, currentPageIndex: number) => ({
+    ...state,
+    currentPageIndex, // updates with new page index
+  }));
+
+  readonly moviesPerPage$ = this.select(state => state.moviesPerPage);
+
+  readonly currentPageIndex$ = this.select(state => state.currentPageIndex);
+
+  private readonly fetchMoviesData$ = this.select(
+    moviesPerPage$,
+    currentPageIndex$,
+    (moviesPerPage, currentPageIndex) => ({moviesPerPage, currentPageIndex}),
+    {debounce: true}, // 👈 setting this selector to debounce
+  );
+  
+
+  private readonly fetchMovies = this.effect(Selecting from global @ngrx/store
+ComponentStore is an independent library, however it can easily consume data from @ngrx/store or 
+from any other global state management library.
+    (moviePageData$: Observable<{moviesPerPage: number; currentPageIndex: number}>) => {
+      return moviePageData$.pipe(
+        concatMap(({moviesPerPage, currentPageIndex}) => {
+          return this.movieService
+            .loadMovies(moviesPerPage, currentPageIndex)
+            .pipe(tap((results) => this.updateMovieResults(results)));
+        }),
+      );
+    },
+  );
+}
+---------------------
+
+-------------------------------------------------------------------------------------------------------------------------------
+Selecting from global @ngrx/store
+-------------------------------------------------------------------------------------------------------------------------------
+
+ComponentStore is an independent library, however it can easily consume data from @ngrx/store or 
+from any other global state management library.
+
+------------------
+private readonly fetchMoviesData$ = this.select(
+  this.store.select(getUserId), // 👈 store.select returns an Observable, which is easily mixed within selector
+  moviesPerPage$,
+  currentPageIndex$,
+  (userId, moviesPerPage, currentPageIndex) => ({userId, moviesPerPage, currentPageIndex}),
+);
+---------------
+
+get method
+While a selector provides a reactive way to read the state from ComponentStore via Observable, sometimes 
+an imperative read is needed. One of such use cases is accessing the state within an effects and that's where get method could be used.
+
+The get method is ComponentStore-private, meaning it's accessible only within the ComponentStore. 
+It's done to discourage frequent imperative reads from the state as the NgRx team is in a consensus 
+that such reads promote further potentially harmful architectural decisions.
+
+--------------------------------------------------------------------------------------------------------------------------------------
+Effects
+----------------------------------------------------------------------------------------------------------------------------------------
+Effects
+Effects are designed to extract any side-effects (such as Network calls) from components and handle potential race conditions.
+
+Key Concepts
+Effects isolate side effects from components, allowing for more pure components that select state and 
+trigger updates and/or effects in ComponentStore(s).
+Effects are Observables listening for the inputs and piping them through the "prescription".
+Those inputs can either be values or Observables of values.
+Effects perform tasks, which are synchronous or asynchronous.
+effect method
+The effect method takes a callback with an Observable of values, that describes HOW new incoming values 
+should be handled. Each new call of the effect would push the value into that Observable.
+
+--------------------------
+@Injectable()
+export class MoviesStore extends ComponentStore<MoviesState> {
+  
+  constructor(private readonly moviesService: MoviesService) {
+    super({movies: []});
+  }
+
+  // Each new call of getMovie(id) pushed that id into movieId$ stream.
+  readonly getMovie = this.effect((movieId$: Observable<string>) => {
+    return movieId$.pipe(
+      // 👇 Handle race condition with the proper choice of the flattening operator.
+      switchMap((id) => this.moviesService.fetchMovie(id).pipe(
+        //👇 Act on the result within inner pipe.
+        tap({
+          next: (movie) => this.addMovie(movie),
+          error: (e) => this.logError(e),
+        }),
+        // 👇 Handle potential error within inner pipe.
+        catchError(() => EMPTY),
+      )),
+    );
+  });
+
+  readonly addMovie = this.updater((state, movie: Movie) => ({
+    movies: [...state.movies, movie],
+  }));
+
+  selectMovie(movieId: string) {
+    return this.select((state) => state.movies.find(m => m.id === movieId));
+  }
+}
+-------------------------------
+
+The getMovie effect could then be used within a component.
+
+----------------
+@Component({
+  template: `...`,
+  // ❗️MoviesStore is provided higher up the component tree
+})
+export class MovieComponent {
+  movie$: Observable<Movie>;
+
+  @Input()
+  set movieId(value: string) {
+    // calls effect with value. 👇 Notice it's a single string value.
+    this.moviesStore.getMovie(value);
+    this.movie$ = this.moviesStore.selectMovie(value);
+  }
+
+  constructor(private readonly moviesStore: MoviesStore) {}
+
+}
+----------------------
+
+tapResponse
+An easy way to handle the response in ComponentStore effects in a safe way, without additional
+ boilerplate is to use the tapResponse operator. It enforces that the error case is handled and that 
+the effect would still be running should an error occur. It is essentially a simple wrapper around two operators:
+
+tap that handles success and error
+catchError(() => EMPTY) that ensures that the effect continues to run after the error.
+
+--------------------
+readonly getMovie = this.effect((movieId$: Observable<string>) => {
+  return movieId$.pipe(
+    // 👇 Handle race condition with the proper choice of the flattening operator.
+    switchMap((id) => this.moviesService.fetchMovie(id).pipe(
+      //👇 Act on the result within inner pipe.
+      tapResponse(
+        (movie) => this.addMovie(movie),
+        (error: HttpErrorResponse) => this.logError(error),
+      ),
+    )),
+  );
+});
+-------------------------
+
+Detailed installation instructions can be found on the Installation page.
+
+@ngrx/store or @ngrx/component-store?
+The Global Store and Component Store are designed to solve different problems and can be used independently 
+from each other. The detailed comparison can be found at Store vs ComponentStore section.
+
+---------------------------
+
+---------------------------------------------------------------------------------------------------------------------------
+Comparison of ComponentStore and Store
+--------------------------------------------------------------------------------------------------------------------------
+Both ComponentStore and Store are designed to manage the state in an Angular application, however they are 
+addressing different problems. These libraries are independent of each other, and, depending on many factors, 
+one or the other or even both in tandem would be recommended.
+
+Among the factors that would influence which of the libraries (or both) should be used are the following:
+
+Size of the application. How many components does it have?
+
+Interconnection of the app. Are these components tied together, or are they independent groups of components sub-trees?
+
+Depth of component tree. How many levels of depth does the component tree have?
+
+State ownership. Could there be a clear separation of state ownership at different nodes of the components tree?
+
+State lifespan. Is the state needed throughout the lifespan of the application, or only when some pages are displayed 
+and we want to automatically clean it up when the user navigates somewhere else?
+
+Business Requirements. How well are all of the business requirements understood and finalized before the implementation 
+of the app starts? Would it be changing frequently?
+
+Lifespan of the app. Is this a short-lived Minimum Viable Product (MVP) that would be discarded, a solution that won't 
+need much support or changes once it's released, or is it a long-term product that would be constantly changing, based 
+on changing business needs?
+
+Backend APIs. Does the team have influence over backend(s) and the APIs that they provide?
+
+The longer the lifespan of the app and the larger it is, the greater the need to separate how the data is retrieved and 
+how components are displaying it. That drives earlier separation of "Data Transfer Objects" (aka "Network Models") - 
+the models used to communicate with backend(s) - and "View Models" - the models used by components in the templates.
+
+ComponentStore is responsible for managing smaller, more local state. While it's possible to have multiple ComponentStores, 
+one has to have a clear understanding of state ownership of each one of them.
+
+Benefits and Trade-offs
+ComponentStore and Global Store have many benefits, some of which are listed in the introduction. They help organize state, 
+make migrations to new APIs easier, encapsulate changes and side-effects, make our components smaller, easier to test and 
+more performant, but they are also introducing code complexity with indirections.
+
+Note: It's important to understand what the cost is and why we are adding it.
+
+Both of them bring push-based architecture, which is the first indirection. The developer can no longer get the result of 
+a service method call, instead they would be listening for Observable values exposed by that service. The benefit, on the 
+other side, is that the developer no longer has to worry what is changing the state - all the component needs to know is 
+that something has changed it. If the component wants to change the state itself, it sends the message about it (either 
+dispatches an Action in Store, or calls ComponentStore's updater or effect).
+
+Actions are the second indirection. They are present in the Global Store only. There are many benefits of this indirection, such as:
+
+ability to trigger multiple effects/reducers at the same time
+greater scalability
+useful DevTools
+ComponentStore doesn't have that indirection, however it also loses the above-mentioned benefits.
+
+The scale of state that it works with has to be smaller, which brings another set of benefits, such as:
+
+ComponentStore that is tied to the specific node in the components tree, will be automatically cleaned up when that node is destroyed
+state is fully self-contained with each ComponentStore, and thus allows to have multiple independent instances of the same component
+provides simpler state management to small/medium sized apps
+The difference between the benefits and trade-offs of Stores make Global Store better suited for managing global shared state, 
+where ComponentStore shines managing more local, encapsulated state, as well as component UI state.
+
+Depending on the needs of the application, the developer might choose Store or ComponentStore, or, in cases of the larger apps, 
+both Store and ComponentStore.
+
+State ownership
+The Global Store works with the single immutable object, that contains all of the shared state throughout the application. 
+There are multiple reducers, each one responsible for a particular slice of state.
+
+Each ComponentStore is fully responsible for its own state. There could be many different ComponentStores, but each one
+ should store its own distinct state
+
+File structure
+ComponentStore is focused on a smaller part of the state, and thus should contain not only the state itself, but also every 
+"prescription" of how it could be changed. All "updaters" and "effects" should be part of the ComponentStore, responsible 
+for the specific state.
+
+It makes ComponentStore less scalable - if there are too many updaters and effects in a single class, then it quickly 
+becomes unreadable.
+
+Shared selectors should also be part of the ComponentStore, however downstream components might have their component-specific 
+details, such as aggregating all the info needed for their "View Model". In such cases, it's acceptable to create 
+ComponentStore<object> that won't be managing state and would contain a number of selectors.
+

@@ -1,0 +1,246 @@
+function App() {
+  const [query, setQuery] = React.useState('European history');
+  const [list, setList] = React.useState(null);
+
+  const search = (e) => {
+    e.preventDefault();
+    searchYouTube(query).then(setList);
+  };
+
+  return (
+    <div className="app">
+      <form onSubmit={search}>
+        <input autoFocus value={query} onChange={e => setQuery(e.target.value)} />
+        <button>Search YouTube</button>
+      </form>
+      {list &&
+        (list.length === 0
+          ? <p>No results</p>
+          : (
+            <ul className="items">
+              {list.map(item => (
+                <li className="item" key={item.id}>
+                  <div>
+                    <b><a href={item.link}>{item.title}</a></b>
+                    <p>{item.description}</p>
+                  </div>
+                  <ul className="meta">
+                    <li>By: <a href={item.author.ref}>{item.author.name}</a></li>
+                    <li>Views: {item.views}</li>
+                    <li>Duration: {item.duration}</li>
+                    <li>Uploaded: {item.uploaded_at}</li>
+                  </ul>
+                  <img alt="" src={item.thumbnail} />
+                </li>
+              ))}
+            </ul>
+          )
+        )
+      }
+    </div>
+  );
+}
+--------------------------
+
+
+https://youtu.be/iUISLveqaII
+
+Playlist search
+---------------
+
+    export interface Medium {
+        url: string;
+        width: number;
+        height: number;
+    }
+
+    export interface Thumbnails {
+        medium: Medium;
+    }
+
+    export interface Localized {
+        title: string;
+        description: string;
+    }
+
+    export interface Snippet {
+        publishedAt: string;
+        channelId: string;
+        title: string;
+        description: string;
+        thumbnails: Thumbnails;
+        channelTitle: string;
+        defaultLanguage: string;
+        localized: Localized;
+    }
+
+    export interface Status {
+        privacyStatus: string;
+    }
+
+    export interface ContentDetails {
+        itemCount: number;
+    }
+
+    export interface Player {
+        embedHtml: string;
+    }
+
+    export interface Medium2 {
+        title: string;
+        description: string;
+    }
+
+    export interface Localizations {
+        medium: Medium2;
+    }
+
+    export interface PlaylistsSearch{
+        kind: string;
+        etag: string;
+        id: string;
+        snippet: Snippet;
+        status: Status;
+        contentDetails: ContentDetails;
+        player: Player;
+        localizations: Localizations;
+    }
+
+}
+
+PlaylistItems Search
+-------------------
+    export interface Medium {
+        url: string;
+        width: number;
+        height: number;
+    }
+
+    export interface Thumbnails {
+        medium: Medium;
+    }
+
+    export interface ResourceId {
+        kind: string;
+        videoId: string;
+    }
+
+    export interface Snippet {
+        publishedAt: string;
+        channelId: string;
+        title: string;
+        description: string;
+        thumbnails: Thumbnails;
+        channelTitle: string;
+        videoOwnerChannelTitle: string;
+        videoOwnerChannelId: string;
+        playlistId: string;
+        position: number;
+        resourceId: ResourceId;
+    }
+
+    export interface ContentDetails {
+        videoId: string;
+        startAt: string;
+        endAt: string;
+        note: string;
+        videoPublishedAt: string;
+    }
+
+    export interface Status {
+        privacyStatus: string;
+    }
+
+    export interface PlaylistItemSearch{
+        kind: string;
+        etag: string;
+        id: string;
+        snippet: Snippet;
+        contentDetails: ContentDetails;
+        status: Status;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------
+video search
+---------------------
+{
+  "kind": "youtube#searchResult",
+  "etag": "etag",
+  "id": {
+    "kind": "test",
+    "videoId": "test",
+    "channelId": "test",
+    "playlistId": "test"
+  },
+  "snippet": {
+    "publishedAt": "14.01.2022",
+    "channelId": "test",
+    "description": "test",
+    "thumbnails": {
+      "medium":{
+        "url": "test",
+        "width": 100,
+        "height": 100
+      }
+    },
+    "channelTitle": "test",
+    "liveBroadcastContent": "test"
+  }
+}
+
+types
+-----
+    export interface Id {
+        kind: "test",;
+        videoId: "test",;
+        channelId: "test",;
+        playlistId: "test",;
+    }
+
+    export interface Medium {
+        url: "test",;
+        width: number;
+        height: number;
+    }
+
+    export interface Thumbnails {
+        medium: Medium;
+    }
+
+    export interface Snippet {
+        publishedAt: "test",;
+        channelId: "test",;
+        description: "test",;
+        thumbnails: Thumbnails;
+        channelTitle: "test",;
+        liveBroadcastContent: "test",;
+    }
+
+    export interface RootObject {
+        kind: "test",;
+        etag: "test",;
+        id: Id;
+        snippet: Snippet;
+    }
+
+}
+
+
+-----------------------------------

@@ -1,0 +1,130 @@
+google calendarid "events": ioqt4l8g1fe2cp6e6cu3cujoig@group.calendar.google.com 
+
+google calendar api with javascript 
+quickstart:https://developers.google.com/calendar/quickstart/js 
+google calendar api with ngrx, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\buddhasoft\mentarea-front 
+google calendar api quickstart, https://developers.google.com/calendar/quickstart/js 
+
+google api, https://developers.google.com/api-client-library/javascript/samples/samples#authorizing-and-making-authorized-requests 
+https://developers.google.com/api-client-library/javascript/samples/samples 
+https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/gapi.client.calendar/gapi.client.calendar-tests.ts 
+use google api explorer, "https://developers.google.com/apis-explorer/#s/calendar/v3/calendar.events.list?calendarId=ioqt4l8g1fe2cp6e6cu3cujoig%2540group.calendar.google.com&fields=description%252Citems&_h=4&" 
+
+use typescript with gapi
+--------------------------------------
+npm install --save @types/gapi
+npm install --save @types/gapi.auth2
+// not necessary with types installed! declare var gapi: any //gapi with promises, https://developers.google.com/api-client-library/javascript/features/promises 
+gapi auth, https://developers.google.com/identity/sign-in/web/reference 
+
+<script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+
+gapi auth2 with promises
+------------------------------------------
+gapi.auth2.authorize({
+  client_id: 'CLIENT_ID.apps.googleusercontent.com',
+  scope: 'email profile openid',
+  response_type: 'id_token permission'
+}, function(response) {
+  if (response.error) {
+    // An error happened!
+    return;
+  }
+  // The user authorized the application for the scopes requested.
+  var accessToken = response.access_token;
+  var idToken = response.id_token;
+  // You can also now use gapi.client to perform authenticated requests.
+});
+google calendar api, wcplanner, http://cs.wellesley.edu/~mashups/pages/ 
+
+
+json to type script: event response
+------------------------------------------------------------------------
+declare module namespace {
+
+    export interface Creator {
+        email: string;
+        displayName: string;
+    }
+
+    export interface Organizer {
+        email: string;
+        displayName: string;
+        self: boolean;
+    }
+
+    export interface Start {
+        dateTime: Date;
+    }
+
+    export interface End {
+        dateTime: Date;
+    }
+
+    export interface Override {
+        method: string;
+        minutes: number;
+    }
+
+    export interface Reminders {
+        useDefault: boolean;
+        overrides: Override[];
+    }
+
+    export interface Item {
+        kind: string;
+        etag: string;
+        id: string;
+        status: string;
+        htmlLink: string;
+        created: Date;
+        updated: Date;
+        summary: string;
+        description: string;
+        location: string;
+        creator: Creator;
+        organizer: Organizer;
+        start: Start;
+        end: End;
+        iCalUID: string;
+        sequence: number;
+        reminders: Reminders;
+    }
+
+    export interface RootObject {
+        kind: string;
+        etag: string;
+        summary: string;
+        description: string;
+        updated: Date;
+        timeZone: string;
+        accessRole: string;
+        defaultReminders: any[];
+        nextSyncToken: string;
+        items: Item[];
+    }
+
+}
+
+scopes
+------------------------------------------------------------
+https://www.googleapis.com/auth/calendar
+
+https://www.googleapis.com/auth/calendar.readonly
+gcal cli, https://github.com/toniov/gcal-cli 
+google calendar with node, https://github.com/nealfennimore/google-api-node-express 
+schedule shell commands with google caledar events, https://github.com/toniov/gcalcron 
+google api with firebase auth, https://github.com/vanderlin/google-api-firebase-boilerplate 
+gcal article on medium, https://medium.com/@antonioval/google-calendar-programmatic-event-listing-and-bulk-insert-made-easy-505fa281e9ed 
+google api firebase auth article on medium, https://medium.com/@vanderlin/google-api-firebase-auth-1b18416b4e74 
+tutsplus.com, reginald dawson, code google calendar api 
+google calendar api for node , https://developers.google.com/calendar/quickstart/nodejs 
+Advanced API Security: Securing APIs with OAuth 2.0, OpenID Connect, JWS ... von Prabath Siriwardena 
+book:Getting Started with OAuth 2.0: Programming Clients for Secure Web API ... von Ryan Boyd 
+
+google calendar api doc
+---------------------------------------------------------------------------------------------------------------------------------
+RESTful calls (node, js)
+client libraries (browser, javascript)
+api explorer: https://developers.google.com/apis-explorer/#s/calendar/v3/
+api explorer calendar event list: https://developers.google.com/apis-explorer/#s/calendar/v3/calendar.events.list

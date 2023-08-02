@@ -1,0 +1,45 @@
+netanel basal gist:
+
+@Component({
+  selector: 'app-alert',
+  templateUrl: './alert.component.html'
+})
+export class AlertComponent implements OnChanges {
+  @Input() type: string;
+  @Input() disabled: boolean;
+
+  @Output() dismiss = new EventEmitter();
+
+  ngOnChanges(changes: SimpleChanges) {
+    // NOT TYPED
+  }
+
+  close() {
+    this.dismiss.emit();
+  }
+
+}
+
+
+
+type MarkFunctionProperties<Component> = {
+  [Key in keyof Component]: Component[Key] extends Function ? never : Key;
+}
+
+
+
+type ExcludeFunctionPropertyNames<T> = MarkFunctionProperties<T>[keyof T];
+
+type ExcludeFunctions<T> = Pick<T, ExcludeFunctionPropertyNames<T>>;
+
+
+
+export type NgChanges<Component, Props = ExcludeFunctions<Component>> = {
+  [Key in keyof Props]: {
+    previousValue: Props[Key];
+    currentValue: Props[Key];
+    firstChange: boolean;
+    isFirstChange(): boolean;
+  }
+}
+

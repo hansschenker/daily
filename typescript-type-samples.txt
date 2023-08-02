@@ -1,0 +1,27 @@
+type Reducer<S, A> = (prevState: S, action: A) => S
+
+// using 3 (!) mapped types
+type WithRequired1<T, K extends keyof T> = Omit<T, K> &
+  Required<Pick<T, K>>
+
+// reduced to 1 mapped type
+// it makes the required properties not-optional and non-nullable
+type WithRequired2<T, K extends keyof T> = T & { [_ in K]: {} };
+
+// if we only want to make the required properties non-optional then we can use this
+type WithRequired3<T, K extends keyof T> = T & { [_ in K]: unknown };
+
+type Foo = {
+  a: () => void,
+  b?: () => void,
+  c?: () => void
+}
+
+const obj = {
+  a() {},
+} satisfies WithRequired3<Foo, 'c'>
+
+const obj2 = {
+  a() {},
+  c() {}
+} satisfies WithRequired3<Foo, 'c'>

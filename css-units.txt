@@ -1,0 +1,63 @@
+CSS Units: em, rem, px, %, vh, vw,
+---------------------------------------------------------------------------------------------------------------
+
+em units:
+--------------------------
+- font-size property 				- relative to parent ,
+- other properties 				- relative to current element 
+  (margin, padding, width, height, max-width, ...) 
+
+relative to parent:
+---------------------------
+.parent {
+  font-size: 18px;
+}
+.child {
+  font-size: 1.5em;
+}
+ 
+font-size: 27px (1.5 * 18px = 27px)
+
+relative to current (owning) Element:
+-------------------------------------
+
+.parent {
+  font-size: 18px;
+}
+.child {
+  font-size: 1.5em;
+  padding: 2em 1em;
+}
+ 
+padding top and bottom on .child:	 54px (2em * 27px)
+padding left and right on .child: 	 27px (1em * 27px)
+
+
+em compounding effect (multiplying font-size down the dom tree with .child class)
+--------------------------------------------------------------
+.parent {
+  font-size: 15px;
+}
+.child {
+  font-size: 2em;
+}
+ 
+But let’s use it in our markup like this:
+
+<div class="parent">
+  I'm 15px
+  <div class="child">
+  I'm 30px, as expected
+    <div class="child">
+    I'm 60px, trouble starts!
+      <div class="child">
+      I'm 120px, now we're really in trouble!
+      </div>
+    </div>
+  </div>
+</div>
+
+
+rem units 
+---------------------------
+- sizes will always be 				- relative to the font-size of the root html element.

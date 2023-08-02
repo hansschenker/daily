@@ -1,0 +1,83 @@
+debug operator (angularuniversity- rxjs-course)
+-------------------------------------------------
+import {Observable} from 'rxjs';
+import {tap} from 'rxjs/operators';
+
+export enum RxJsLoggingLevel {
+    TRACE,
+    DEBUG,
+    INFO,
+    ERROR
+}
+
+let rxjsLoggingLevel = RxJsLoggingLevel.INFO;
+
+export function setRxJsLoggingLevel(level: RxJsLoggingLevel) {
+    rxjsLoggingLevel = level;
+}
+
+
+export const debug = (level: number, message:string) =>
+    (source: Observable<any>) => source
+        .pipe(
+            tap(val => {
+
+                if (level >= rxjsLoggingLevel) {
+                    console.log(message + ': ', val);
+                }
+            })
+        );
+----------------------------------------------------------------
+
+combine operator (ben lesh)
+-------------------------------------------------------------------
+
+function combine(...sources: ObservableInput<any>[]): Observable<any> {
+  return merge(
+    ...(sources.map((source, index) => from(source).pipe(map((value) => ({ value, index })))) as any) ).pipe(
+    //@ts-ignore
+    scan((values, { value, index }) => {
+      values[index] = value;
+      return Array.from(values);
+    }, new Array(sources.length))
+  );
+}
+
+//  combine(
+//   interval(1000).pipe(
+//       map((v) => `A:${v}`),
+//       take(3)
+//       ),
+//   interval(3000).pipe(
+//       map((v)  => `B:${v}` ),
+//       take(3)
+//       )
+//  ).subscribe((data) => ( console.log(JSON.stringify(data, null, 2))
+//  ))
+
+ngrx component-store
+------------------------
+/**
+
+ * It enforces that the error case is handled and that the effect would still be
+ * running should an error occur.
+ *
+ * Takes an optional third argument for a `complete` callback.
+ *
+ * ```typescript
+ * readonly dismissedAlerts = this.effect<Alert>(alert$ => {
+ *  return alert$.pipe(
+ *      concatMap(
+ *          (alert) => this.alertsService.dismissAlert(alert).pipe(
+ *              tapResponse(
+ *                 (dismissedAlert) => this.alertDismissed(dismissedAlert),
+ *                 (error: { message: string }) => this.logError(error.message),
+ *              ))));
+ *   });
+ * ```
+ */
+-----------------------------------------------------------------------------------
+export declare function tapResponse<T, E = unknown>(
+nextFn: (next: T) => void, 
+errorFn: (error: E) => void, 
+completeFn?: () => void): (source: Observable<T>) => Observable<T>;

@@ -1,0 +1,82 @@
+api-key:
+AIzaSyAZ2o2puH8Ue2BwoEvOqNwHChXzOAAD1WI
+
+channel-id:
+UCYlW9EuQnlNRtEYqVtpfbDw
+
+http - get playlist for my channel
+---------------------------------------
+GET https://youtube.googleapis.com/youtube/v3/playlists?part=snippet&channelId=UCYlW9EuQnlNRtEYqVtpfbDw&maxResults=5&key=AIzaSyAZ2o2puH8Ue2BwoEvOqNwHChXzOAAD1WI HTTP/1.1
+
+Authorization: Bearer [YOUR_ACCESS_TOKEN]
+Accept: application/json
+
+
+typescript typings
+------------------------
+declare module namespace {
+
+    export interface PageInfo {
+        totalResults: number;
+        resultsPerPage: number;
+    }
+
+    export interface Id {
+        kind: string;
+        videoId: string;
+        playlistId: string;
+    }
+
+    export interface Video{
+        url: string;
+        width: number;
+        height: number;
+    }
+
+    export interface Medium {
+        url: string;
+        width: number;
+        height: number;
+    }
+
+    export interface High {
+        url: string;
+        width: number;
+        height: number;
+    }
+
+    export interface Thumbnails {
+        default: Video;
+        medium: Medium;
+        high: High;
+    }
+
+    export interface Snippet {
+        publishedAt: Date;
+        channelId: string;
+        title: string;
+        description: string;
+        thumbnails: Thumbnails;
+        channelTitle: string;
+        liveBroadcastContent: string;
+        publishTime: Date;
+    }
+
+    export interface Item {
+        kind: string;
+        etag: string;
+        id: Id;
+        snippet: Snippet;
+    }
+
+    export interface RootObject {
+        kind: string;
+        etag: string;
+        nextPageToken: string;
+        regionCode: string;
+        pageInfo: PageInfo;
+        items: Item[];
+    }
+
+}
+

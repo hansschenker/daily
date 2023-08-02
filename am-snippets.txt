@@ -1,0 +1,27 @@
+Form Controls
+---------------------------------------------------------------------------------------------------------------------------------------------
+simple autocomplete:
+-------------------
+
+<mat-form-field>
+  <input type="text" matInput [formControl]="myControl">
+</mat-form-field>
+
+autocomplete panel:
+----------------------
+<mat-autocomplete>
+  <mat-option *ngFor="let option of options" [value]="option">
+    {{ option }}
+  </mat-option>
+</mat-autocomplete>
+
+link input to options (template variable #auto)
+----------------------
+<mat-form-field>
+  <input type="text" matInput [formControl]="myControl" [matAutocomplete]="auto">
+</mat-form-field>
+
+<mat-autocomplete #auto="matAutocomplete">
+  <mat-option *ngFor="let option of options" [value]="option">{{option}}</mat-option>
+</mat-autocomplete>
+

@@ -1,0 +1,72 @@
+I’ve written a thoughtful answer to the question about AngularJS best practices on Quora. I think it is worth sharing here,
+
+AngularJS is a JavaScript framework for building client-side web applications.
+
+AngularJS is especially useful while building Data-Driven, CRUD, Single Page Applications – let’s explore that a bit-
+
+Single Page Applications are web app which fits in a single web page, to provide fluid user experiences like a desktop or native smartphone application.
+Gmail, Google Maps web applications are perfect examples of Single Page Apps.
+
+AngularJS provides powerful tools to build SPAs.
+
+Data-driven, CRUD (Create Read Update Delete ) Apps –
+
+Irrespective of the capabilities of the modern web ecosystem, most of the web apps remain Line of Business, RDBMS based, CRUD operations-driven Information Management Systems –
+
+A typical example would be an HRMS or a CMS.
+
+Now, such kind of apps are the sweet spot of AngularJS – if you’re building one of such apps, AngularJS is the best choice for you, to build a client-side application!
+
+Architectural Considerations
+The Backend
+The backend web application should be a service-oriented, RESTful one.
+Read here – Representational State Transfer (REST)
+
+Also, it should achieve the Richardson Maturity Model Level 2 for the REST architecture.
+
+In simplest terms, it means, every backend functionality should be accessible via web services, which are stateless, and should be represented as interactive resources over HTTP via URIs and proper verbs.
+
+The Frontend
+I recommend using yeoman/generator-angular for generating AngularJS application and further code generation, as it follows some of the best practices about how one should structure the application and manage the development workflow.
+
+I will explain the responsibilities of various components of AngularJS apps –
+
+
+Views / Templates –
+In AngularJS, templates contain HTML markup along with templating syntax for DECLARATIVELY adding data-driven dynamism to the web app.
+
+Controllers –
+Just like any other MVC framework, Controllers in Angular are glue to the whole application.
+Controllers hold “Models” which are representative of application’s domain models.
+These models are bound to the declared models in the template.
+Templates are bound to a controller via “scope”.
+
+Services and Factories –
+Services in Angular are application domain models experts.
+These are connected to your backend models and holds the capabilities of performing operations on models.
+In simple terms, all your API calls are written in Services or Factories.
+
+Routes, like traditional routing, can be used to manage the state of the client app & the template-controller bindings.
+
+Controllers use Services to perform “behaviors”.
+But the core business logic of operation on data in the backend is written in services
+
+Directives –
+One of the most powerful features of AngularJS –
+Directives provide an extension to HTML markup-
+You can create self-managed, autonomous “components” which can be reused throughout the web applications by creating a directive!
+A directive has it’s scope, controller, linking function among many other things!
+
+You can also use directives to create a domain-specific language!
+
+For example,
+When you’re building a typical “Login” functionality for your client-side app,
+You’ll create an Angular service called AuthenticationService or UserService. You’ll write the API call for actual login/authentication checking via backend.
+
+Now, you’ll create a template “LoginView”, declare you model “User” binding it to the inputs.
+
+Now, you’ll create AuthenticationController, bind it with “LoginView” in which you’ll initialize the “user” model, and write behavior around it.
+Your controller will use “AuthenticationService” to check whether credentials are correct.
+The necessary behavior like redirection or showing error messages is the responsibility of the controller.
+
+There are many other concepts that would be helpful in the long run, but I think starting from this basic architectural understanding would set the right mental framework for architecting the web app and optimize your development process and reusability of the code.

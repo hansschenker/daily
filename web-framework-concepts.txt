@@ -1,0 +1,397 @@
+State
+Effects
+Memoization
+Templating and rendering
+
+static State
+-------------------------------------------------------------------------
+State is just the data powering your application. It may be on a global level, 
+for a larger part of the application, or for a single component. Let us take a 
+simple counter as an example. The count it keeps is the state. 
+
+We can read the state and write to it to increase the count.
+
+The simplest representation is usually a variable containing the data that our state consists of:
+
+let count = 0;
+const increment = () => { count++; };
+const button = document.createElement('button');
+button.textContent = count;
+button.addEventListener('click', increment);
+document.body.appendChild(button);
+
+------------------
+observable state - manage state reactivley
+
+state reactively. There are three parts to the solution, and at least one of them or a mix is employed:
+
+Observables / Signals
+Reconciliation of immutable updates
+Transpilation
+Observables / Signals
+Observables are basically structures that allow to read via a function that subscribes the readers. The subscribers are then re-run on update:
+const state = (initialValue) => ({
+  _value: initialValue,
+  get: function() {
+    /* subscribe */;
+    return this._value; 
+  },
+  set: function(value) {
+    this._value = value;
+    /* re-run subscribers */;
+  }
+});
+
+early reactive web frameworks
+-----------------------------
+One of the first uses of this concept was in knockout, which used the same function 
+with and without arguments for write/read access.
+
+This pattern is currently seeing a revival as signals, for example in Solid.js and preact signals, 
+
+but the same pattern is used 
+under the hood of 
+- Vue and 
+- Svelte. 
+- Angular ,RxJS, which powers the reactive layer of Angular, 
+
+is an extension of this principle beyond simple state, but one could argue that its ability to model complexity 
+is a whole arsenal of guns aimed at your feet. 
+
+- Solid.js also comes with further abstractions of these signals in the form of 
+  - stores - objects that can be manipulated through a setter and 
+  - mutables - objects that can be used like normal JS objects or the state in Vue to handle nested state objects.
+
+
+Immutable state
+--------------------
+Reconciliation of immutable states
+Immutability means that if the property of an object changes, the whole object reference must change, 
+so a simple comparison of references can easily detect if there are changes, which is what the reconciler does.
+
+const state1 = {
+  todos: [{ text: 'understand immutability', complete: false }],
+  currentText: ''
+};
+
+// updating the current text:
+const state2 = {
+  todos: state1.todos,
+  currentText: 'understand reconciliation'
+};
+
+// adding a to-do:
+const state3 = {
+  todos: [
+    state.todos[0],
+    { text: 'understand reconciliation', complete: true }
+  ],
+  currentText: ''
+};
+
+// this breaks immutability:
+state3.currentText = 'I am not immutable!';
+
+As you can see, references of unchanged items are re-used. 
+If the reconciler detects different object references, it runs all components using 
+the state (props, memos, effects, context) again. Since the read access is passive, 
+this requires the manual specification of dependencies to reactive values.
+
+Obviously, you are not defining state that way. You either construct it 
+- from existing properties 
+- or use a so-called reducer. A reducer is a function that takes one state and returns another one
+
+Vdom - or the diffing algorithm
+----------------------------------
+This pattern is used by react and preact. It lends itself to being used with a vDOM, 
+which we will explore later when templating is described.
+
+Not every framework uses its vDOM to make the state fully reactive.
+
+Mithril.JS, for example, updates from state changes after the events set in the component; 
+otherwise you have to trigger m.redraw() manually.
+
+Transpilation
+----------------------------------
+Transpilation is a build step that rewrites our code to make it run on older browsers or give it extra abilities; 
+in this case, the technique is employed to change a simple variable into a part of a reactive system.
+
+Svelte is based on a transpiler that also powers their reactive system from seemingly 
+simple variable declaration and access.
+
+As an aside, Solid.js uses transpilation, but not for its state, only for the templating.
+
+Effects - side effects - make state change visible in view
+---------------------------------------------------------
+Effects
+In most cases, we need to do more with our reactive state than deriving from it and render it into the DOM. 
+
+We have to manage side effects, which are all things that happen due to state changes beyond updates to 
+the view (though some frameworks like Solid.js treat view changes as effects as well).
+
+Remember the first example from state where the subscription handling was intentionally left out? Let us 
+fill this in to handle effects as a reaction to updates:
+
+const context = [];
+
+const state = (initialValue) => ({
+  _subscribers: new Set(),
+  _value: initialValue,
+  get: function() {
+    const current = context.at(-1);
+    if (current) { this._subscribers.add(current); }
+    return this._value;
+  },
+  set: function(value) {
+    if (this._value === value) { return; }
+    this._value = value;
+    this._subscribers.forEach(sub => sub());
+  }
+});
+
+const effect = (fn) => {
+  const execute = () => {
+    context.push(execute);
+    try { fn(); } finally { context.pop(); }
+  };
+  execute();
+};
+
+This is basically a simplification of the reactive state in preact signals or Solid.js 
+without error handling and state mutation pattern 
+(using a function that receives the previous value and returns the next), 
+but that would be easy to add.
+
+It allows us to make the previous example reactive:
+---------------------------------------------------
+
+const count = state(0);
+const increment = () => count.set(count.get() + 1);
+
+const button = document.createElement('button');
+
+effect(() => {
+  button.textContent = count.get();
+});
+
+button.addEventListener('click', increment);
+document.body.appendChild(button);
+
+
+Try out the above two code blocks in an empty page using your developer tools.
+In most cases, the frameworks allow for different timings to 
+let the effects run before, during or after rendering the DOM.
+
+Memoization
+-------------------------------------
+Memoization means caching of values computed from state, to be updated when the state 
+it is derived from changes. It is basically an effect that returns a derived state.
+
+In frameworks that re-run their component functions, like react and preact, 
+this allows to opt out parts of the components again when the state it depends on does not change.
+
+For other frameworks, it is the opposite: it allows you to opt in parts of the component to reactive updates, 
+while caching the previous computation.
+
+For our simple reactive system, memo looks like this
+
+const memo = (fn) => {
+  let memoized;
+  effect(() => {
+    if (memoized) {
+      memoized.set(fn());
+    } else {
+      memoized = state(fn());
+    }
+  });
+  return memoized.get;
+};
+
+Templating and rendering
+--------------------------------------------
+Now that we have state in pure, derived and cached form, we want to show it to the user. 
+In our example, we used the DOM directly to add a button and update its text content.
+
+To be more developer-friendly, almost all modern frameworks support some domain-specific language 
+to write something similar to the desired output inside your code. 
+Even though there are different flavors, like .jsx, .vue or .svelte files, 
+it all comes down to a representation of the DOM in code that resembles HTML, so that basically
+
+<div>Hello, World</div>
+
+// in your JS
+// becomes in your HTML:
+
+<div>Hello, World</div>
+
+"Where do I put my state?" you may ask. Excellent question. 
+In most cases, {} are used to express dynamic content, both in attributes and around nodes.
+
+The most used templating language extension to JS is undoubtedly JSX. For react, it is 
+compiled to plain JavaScript in a way that allows it to create a virtual representation of the DOM, 
+an internal view state called virtual document object model or vDOM for short.
+
+This is based on the premise that creating objects is much, much faster than accessing the DOM, 
+so if you can replace the latter with the current, you save time. However, 
+if you either have numerous DOM changes in any case or create countless objects for no changes, 
+the benefits of this solution are easily turned into a disadvantage that has to be circumvented through memoization.
+
+// original code
+<div>Hello, {name}</div>
+
+// transpiled to js
+createElement("div", null, "Hello, ", name);
+
+// executed js
+{
+  "$$typeof": Symbol(react.element),
+  "type": "div",
+  "key": null,
+  "ref": null,
+  "props": {
+    "children": "Hello, World"
+  },
+  "_owner": null
+}
+
+// rendered vdom
+/* HTMLDivElement */<div>Hello, World</div>
+
+JSX is not limited to react, though. Solid, for example, uses its transpiler to change the code more drastically:
+
+// 1. original code
+<div>Hello, {name()}</div>
+
+// 2. transpiled to js
+const _tmpl$ = /*#__PURE__*/_$template(`<div>Hello, </div>`, 2);
+(() => {
+  const _el$ = _tmpl$.cloneNode(true),
+    _el$2 = _el$.firstChild;
+  _$insert(_el$, name, null);
+  return _el$;
+})();
+
+// 3. executed js code
+/* HTMLDivElement */<div>Hello, World</div>
+
+While the transpiled code may look daunting at first, it is rather simple to explain what happens here. 
+First, the template with all the static parts is created, then it is cloned to create a new instance of 
+its contents and the dynamic parts are added and wired to update on state changes.
+
+Svelte goes even further and transpiles not only the templates, but also the state.
+// 1. original code
+<script>
+let name = 'World';
+setTimeout(() => { name = 'you'; }, 1000);
+</script>
+
+<div>Hello, {name}</div>
+
+// 2. transpiled to js
+/* generated by Svelte v3.55.0 */
+import {
+        SvelteComponent,
+        append,
+        detach,
+        element,
+        init,
+        insert,
+        noop,
+        safe_not_equal,
+        set_data,
+        text
+} from "svelte/internal";
+
+function create_fragment(ctx) {
+        let div;
+        let t0;
+        let t1;
+
+        return {
+                c() {
+                        div = element("div");
+                        t0 = text("Hello, ");
+                        t1 = text(/*name*/ ctx[0]);
+                },
+                m(target, anchor) {
+                        insert(target, div, anchor);
+                        append(div, t0);
+                        append(div, t1);
+                },
+                p(ctx, [dirty]) {
+                        if (dirty & /*name*/ 1) set_data(t1, /*name*/ ctx[0]);
+                },
+                i: noop,
+                o: noop,
+                d(detaching) {
+                        if (detaching) detach(div);
+                }
+        };
+}
+
+function instance($$self, $$props, $$invalidate) {
+        let name = 'World';
+
+        setTimeout(
+                () => {
+                        $$invalidate(0, name = 'you');
+                },
+                1000
+        );
+
+        return [name];
+}
+
+class Component extends SvelteComponent {
+        constructor(options) {
+                super();
+                init(this, options, instance, create_fragment, safe_not_equal, {});
+        }
+}
+
+export default Component;
+
+// 3. executed JS code
+/* HTMLDivElement */<div>Hello, World</div>
+There are exceptions. In Mithril.js, for example, while it is possible to use JSX, you are encouraged to write JS:
+// 1. original JS code
+const Hello = {
+  name: 'World',
+  oninit: () => setTimeout(() => {
+    Hello.name = 'you';
+    m.redraw();
+  }, 1000),
+  view: () => m('div', 'Hello, ' + Hello.name + '!')
+};
+
+// 2. executed JS code
+/* HTMLDivElement */<div>Hello, World</div>
+While most people will find the developer experience lacking, others prefer full control over their code. 
+Depending on which issue they aim to solve, the lack of a transpilation step might even be beneficial.
+
+Many other frameworks allow for usage without transpilation, though it is rarely recommended like that.
+
+
+And what framework or library should I learn now?"
+------------------------------------------------
+I have some good news and some bad news for you.
+
+The bad news is: there is no silver bullet. No framework will be much better than all others in every single aspect. 
+Each one of them has their advantages and compromises. React has its hook rules, Angular a lack of simple signals, 
+Vue and Svelte don't scale too well, Solid.js forbids destructuring and Mithril.js is not really reactive, just to name a few.
+
+The good news is: there is no wrong choice – at least, unless the requirements of a project are really limited, 
+be it in terms of bundle size or performance. Every framework will do its job. Some may require working around 
+their design decisions, which might slow you down a bit, but you should be able to get a working result in any case.
+
+That being said, going without a framework might be a viable choice, too. Many projects are spoiled by overuse 
+of JavaScript, when static pages with a sprinkle of interactivity would have done the job as well.
+
+Now that you know the concepts that are applied by these frameworks and libraries, choose those which are the 
+best fit for your current task. Do not be afraid to switch frameworks in your next project. It is not necessary 
+to learn all of them.
+
+If you try a new framework, one of the things I found most helpful is to connect to its community, 
+be it on social media, discord, github or elsewhere. They can tell you which approaches are idiomatic 
+for their framework, which will help you to get better solutions faster
+

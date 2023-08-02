@@ -1,0 +1,1523 @@
+ngrx-feature, ng g feature auth/state/auth -a -c -m auth -r ../../app-store/index.ts -f  
+
+state management
+---------------
+
+store is a state tree
+is a database in the frontend
+
+state 
+- single source of truth for application
+- state is readonly
+- state change made by reducers
+
+state change in
+- ui (state change in ui element)
+- router (state change in url)
+- app data local (crud app data)
+- app data server (server response)
+
+data flow
+--------------------------------------------------------
+action:
+-------
+every state change ui/router/server triggers an action
+
+service
+-------
+does the http requests
+a service is called by an effect
+
+effect:
+-------
+io operations like a server request are side effects.
+a sideeffect is triggered by an action, does something and
+dispatches an action back into actions
+
+reducer:
+--------
+the action triggers all reducers to run
+
+state:
+-----
+the reducer which handles the action will make a copy
+of the old state and add the new state to it
+
+selector
+----------
+the ui component subscribes to state in which it is
+interested with a selector function
+
+
+
+Error state
+loading
+loaded
+
+
+ngrx install
+----------------------
+@ngrx/schematics
+store, effects, entity, store-devtools, router-store
+
+json-server
+-----------
+db.json
+json-server -w db.json
+
+angular app
+--------------------------------------------------
+ng new ngrx-experts --routing --style=scss --prefix=hs
+
+app components:
+----------------
+app, home, customers/customer-add, /customer-edit, /customer-list
+
+
+
+RouterModule.forChild
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ngRx libraries: ngrx/core, ngrx/store, ngrx/router-store, ngrx/store-devtools, ngrx/effects, ngrx/entity
+
+NgRx provides
+--------------------------------
+state management, 		@ngrx/store
+isolation of side effects,	@ngrx/effects 	
+entity collection management, 	@ngrx/entity
+router bindings, 		@ngrx/router-store
+code generation, 		@ngrx/schematics
+and developer tools 		@ngrx/store-devtools
+
+--------------
+Library -Parts: 
+-------------
+store, 		single source of truth, in the form of a single object (think frontend database)
+		is an obserable<state> and immutable (new state is added, old state stays untouched)
+		contains slices of state, slice of state is a object literal, (table in db)
+		is a hierarchical object (1 root state, n feature states) 
+
+action, 	is a object with with a type property and an obtional payload: { type , payload}
+		type is required and of type string
+
+actions		is like a message bus
+		reducers listen to actions (message bus)
+		effects listen to actions (message bus)
+
+state, 		is an argument of the action and is the actual state, payload is of type any
+
+selector	is a observable of slice of state
+
+entity		reducer helper for crud actions
+
+reducer fn	the fn is immuatable, it copies the old state and adds the new state			
+		return copy of old state + add new state
+		reducer fn must have an initial state (not null)
+
+event		dispatch action
+
+router		dispatch an action
+
+a pure function	returns always the same result for the same parameter
+
+effect		dispatch an action
+		models side effect, communication with outside world is considerd as a side effect
+
+outside world	io operations are considered as side effects
+		server request, web sockets, offline storage, local storage, time functions ( with every
+		time request you get a new time value), these are considered as not pure function
+
+		server request is a side effect, and so wrapped in effect which listens outside world actions
+		handles them and dispatches an action back into the app inside world
+
+app		app = fn(state)
+feature		feature fn(slice-of-state)
+
+components	displays only state, as long as you give the component the same state, it will
+		always display the same result, you do not handle side effects in componets
+		components select state and display that state	
+		components are a pure representation of state
+ Volume in Laufwerk C: hat keine Bezeichnung.
+ Volumeseriennummer: 2E3B-BECD
+
+ Verzeichnis von c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx
+
+17.01.2019  09:36    <DIR>          .
+17.01.2019  09:36    <DIR>          ..
+09.11.2018  09:28    <DIR>          adrian-faciu-javascriptjabber
+03.12.2018  13:37    <DIR>          alain-chautard-lynda
+29.09.2018  09:19    <DIR>          alex-okrushko-angularindepth.com
+14.11.2018  07:18    <DIR>          anders-skarby-jest-yt
+01.11.2018  07:16    <DIR>          angular-schule
+26.09.2018  10:39    <DIR>          angulardeveloper.io
+15.01.2019  17:32    <DIR>          angularfirebase
+12.12.2018  10:45    <DIR>          ashnita-bali-ngbe-2018
+04.10.2018  09:47    <DIR>          auth0
+23.11.2018  19:14    <DIR>          auth0-blog
+23.11.2018  12:08    <DIR>          brandon-roberts-mike-rayan-angularconnect-2017
+03.12.2018  13:28    <DIR>          brandon-roberts-ngrx-team
+13.01.2019  11:20    <DIR>          brian-love-login-signup
+03.01.2019  11:59    <DIR>          briebug
+02.10.2018  08:12    <DIR>          concretepage.com-arvin-rai
+26.09.2018  15:55    <DIR>          customer-crud-angulardeveloper
+14.11.2018  17:17    <DIR>          deborah-kurata-ngrx-getting-started-2018
+24.10.2018  15:16    <DIR>          duncan-hunter
+17.01.2019  08:51    <DIR>          eric-wang-ngrx-generator
+29.09.2018  08:16    <DIR>          farata-yakov-fain
+01.12.2018  16:03    <DIR>          gregor-woiwode
+03.01.2019  17:55    <DIR>          hans
+04.01.2019  11:26    <DIR>          james-spivey-briebug
+08.12.2018  07:17    <DIR>          jesse-sanders
+21.11.2018  15:40    <DIR>          justin-austin-ngair-router-store
+12.12.2018  15:44    <DIR>          kelvin-mai-yt
+14.11.2018  07:35    <DIR>          kelvin-may
+10.12.2018  14:07    <DIR>          loiane-groner
+13.01.2019  11:12    <DIR>          lukas-rubbelke
+05.12.2018  08:57    <DIR>          lukas-ruebbelke-egghead
+08.12.2018  07:48    <DIR>          manfred-steyer
+30.11.2018  11:14    <DIR>          martin-hober-ngarhuis
+26.09.2018  14:16    <DIR>          michael-herman
+08.12.2018  07:29    <DIR>          michael-hladkey-biophoton
+17.01.2019  09:36                 0 ngrx-experts.txt
+16.10.2018  10:38    <DIR>          nir-kaufman
+23.11.2018  18:15    <DIR>          rupesh-tiwari-roopkt-ngrx-team
+14.01.2019  14:11    <DIR>          samir-medjoub
+13.12.2018  07:47    <DIR>          sandi-barr
+09.11.2018  17:24    <DIR>          thomas-burleson-nx
+29.09.2018  09:34    <DIR>          tim-deschryver-ngrx-team
+29.09.2018  09:03    <DIR>          todd-motto
+29.09.2018  09:40    <DIR>          tomas-trajan-zuerich
+10.01.2019  11:49    <DIR>          Tomasz-Ducin-playing-ngrx
+16.11.2018  12:12    <DIR>          trademe-craig-spence-nea-zealand
+20.11.2018  10:05    <DIR>          udemy-ngrx-in-depth-angularuniversity
+05.12.2018  17:21    <DIR>          viktor-savkin
+               1 Datei(en),              0 Bytes
+              48 Verzeichnis(se),    334'397'440 Bytes frei
+Generates and/or modifies files based on a schematic.
+
+usage: ng generate feature <name> [options]
+
+arguments:
+  schematic
+    The schematic or collection:schematic to generate.
+  name
+    The name of the feature.
+
+generate angular feature module and angular container component
+-------------------------------------------------------------
+> ng g m links --routing
+module
+------------------------------------------------
+CREATE src/app/links/links-routing.module.ts (249 bytes)
+CREATE src/app/links/links.module.ts (276 bytes)
+
+container
+-------------------------------------------------------
+> ng g c links -m links
+CREATE src/app/links/links.component.html (20 bytes)
+CREATE src/app/links/links.component.spec.ts (621 bytes)
+CREATE src/app/links/links.component.ts (266 bytes)
+CREATE src/app/links/links.component.scss (0 bytes)
+UPDATE src/app/links/links.module.ts (342 bytes)
+
+generate ngrx feature with api and create functions
+----------------------------------------------------------------------------
+ng g feature links/state/links -a -c -m links -r=../../app-store/index.ts -f --spec false
+
+options:
+  --api (-a)
+    Specifies if api success and failure actions, reducer, and effects should be generated as part of this feature.
+ --creators (-c)
+    Specifies if the actions, reducers, and effects should be created using creator functions
+  --force (-f)
+    When true, forces overwriting of existing files.
+  --module (-m)
+    Specifies the declaring module.
+  --project (-p)
+    The name of the project.
+  --reducers (-r)
+    Specifies the reducers file.
+  --spec
+    Specifies if a spec file is generated.
+
+Help for schematic feature
+
+arguments:
+  name
+    The name of the feature.
+
+options:
+  --api (-a)
+    Specifies if api success and failure actions, reducer, and effects should be generated as part of this feature.
+  --creators (-c)
+    Specifies if the actions, reducers, and effects should be created using creator functions
+  --flat
+    Flag to indicate if a dir is created.
+  --group (-g)
+    Group actions, reducers and effects within relative subfolders
+  --module (-m)
+    Specifies the declaring module.
+  --project (-p)
+    The name of the project.
+  --reducers (-r)
+    Specifies the reducers file.
+  --spec
+    Specifies if a spec file is generated.ngrx
+---
+// install ngrx libs: store, effects, router-store, dev-tools
+ngrxi
+
+// add store
+ng add @ngrx/store
+
+// add effects
+ng add @ngrx/effects
+
+// add dev-tools
+ng add @ngrx/store
+
+// add dev-tools
+ng add @ngrx/store-devtools
+
+// add router-store
+ng add @ngrx/router-store
+
+// create auth module
+ngma
+
+// create normal module
+ng g m [name] --routing --spec alse
+
+// create eature
+ng g feature auth/auth -a -c -m auth -r ../reducers/index.ts --spec falsengrx-feature, ng g feature auth/state/auth -a -c -m auth -r ../../app-store/index.ts -f  
+Angular CRUD Customers with NgRx
+
+state management
+---------------
+
+store is a state tree
+is a database in the frontend
+
+state 
+- single source of truth for application
+- state is readonly
+- state change made by reducers
+
+state change in
+- ui (state change in ui element)
+- router (state change in url)
+- app data local (crud app data)
+- app data server (server response)
+
+data flow
+--------------------------------------------------------
+action:
+-------
+every state change ui/router/server triggers an action
+
+service
+-------
+does the http requests
+a service is called by an effect
+
+effect:
+-------
+io operations like a server request are side effects.
+a sideeffect is triggered by an action, does something and
+dispatches an action back into actions
+
+reducer:
+--------
+the action triggers all reducers to run
+
+state:
+-----
+the reducer which handles the action will make a copy
+of the old state and add the new state to it
+
+selector
+----------
+the ui component subscribes to state in which it is
+interested with a selector function
+
+
+
+Error state
+loading
+loaded
+
+
+ngrx install
+----------------------
+@ngrx/schematics
+store, effects, entity, store-devtools, router-store
+
+json-server
+-----------
+db.json
+json-server -w db.json
+
+angular app
+--------------------------------------------------
+ng new ngrx-experts --routing --style=scss --prefix=hs
+
+app components:
+----------------
+app, home, customers/customer-add, /customer-edit, /customer-list
+
+
+
+RouterModule.forChild
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ngRx libraries: ngrx/core, ngrx/store, ngrx/router-store, ngrx/store-devtools, ngrx/effects, ngrx/entity
+
+NgRx provides
+--------------------------------
+state management, 		@ngrx/store
+isolation of side effects,	@ngrx/effects 	
+entity collection management, 	@ngrx/entity
+router bindings, 		@ngrx/router-store
+code generation, 		@ngrx/schematics
+and developer tools 		@ngrx/store-devtools
+
+--------------
+Library -Parts: 
+-------------
+store, 		single source of truth, in the form of a single object (think frontend database)
+		is an obserable<state> and immutable (new state is added, old state stays untouched)
+		contains slices of state, slice of state is a object literal, (table in db)
+		is a hierarchical object (1 root state, n feature states) 
+
+action, 	is a object with with a type property and an obtional payload: { type , payload}
+		type is required and of type string
+
+actions		is like a message bus
+		reducers listen to actions (message bus)
+		effects listen to actions (message bus)
+
+state, 		is an argument of the action and is the actual state, payload is of type any
+
+selector	is a observable of slice of state
+
+entity		reducer helper for crud actions
+
+reducer fn	the fn is immuatable, it copies the old state and adds the new state			
+		return copy of old state + add new state
+		reducer fn must have an initial state (not null)
+
+event		dispatch action
+
+router		dispatch an action
+
+a pure function	returns always the same result for the same parameter
+
+effect		dispatch an action
+		models side effect, communication with outside world is considerd as a side effect
+
+outside world	io operations are considered as side effects
+		server request, web sockets, offline storage, local storage, time functions ( with every
+		time request you get a new time value), these are considered as not pure function
+
+		server request is a side effect, and so wrapped in effect which listens outside world actions
+		handles them and dispatches an action back into the app inside world
+
+app		app = fn(state)
+feature		feature fn(slice-of-state)
+
+components	displays only state, as long as you give the component the same state, it will
+		always display the same result, you do not handle side effects in componets
+		components select state and display that state	
+		components are a pure representation of state
+ Volume in Laufwerk C: hat keine Bezeichnung.
+ Volumeseriennummer: 2E3B-BECD
+
+ Verzeichnis von c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx
+
+17.01.2019  09:36    <DIR>          .
+17.01.2019  09:36    <DIR>          ..
+09.11.2018  09:28    <DIR>          adrian-faciu-javascriptjabber
+03.12.2018  13:37    <DIR>          alain-chautard-lynda
+29.09.2018  09:19    <DIR>          alex-okrushko-angularindepth.com
+14.11.2018  07:18    <DIR>          anders-skarby-jest-yt
+01.11.2018  07:16    <DIR>          angular-schule
+26.09.2018  10:39    <DIR>          angulardeveloper.io
+15.01.2019  17:32    <DIR>          angularfirebase
+12.12.2018  10:45    <DIR>          ashnita-bali-ngbe-2018
+04.10.2018  09:47    <DIR>          auth0
+23.11.2018  19:14    <DIR>          auth0-blog
+23.11.2018  12:08    <DIR>          brandon-roberts-mike-rayan-angularconnect-2017
+03.12.2018  13:28    <DIR>          brandon-roberts-ngrx-team
+13.01.2019  11:20    <DIR>          brian-love-login-signup
+03.01.2019  11:59    <DIR>          briebug
+02.10.2018  08:12    <DIR>          concretepage.com-arvin-rai
+26.09.2018  15:55    <DIR>          customer-crud-angulardeveloper
+14.11.2018  17:17    <DIR>          deborah-kurata-ngrx-getting-started-2018
+24.10.2018  15:16    <DIR>          duncan-hunter
+17.01.2019  08:51    <DIR>          eric-wang-ngrx-generator
+29.09.2018  08:16    <DIR>          farata-yakov-fain
+01.12.2018  16:03    <DIR>          gregor-woiwode
+03.01.2019  17:55    <DIR>          hans
+04.01.2019  11:26    <DIR>          james-spivey-briebug
+08.12.2018  07:17    <DIR>          jesse-sanders
+21.11.2018  15:40    <DIR>          justin-austin-ngair-router-store
+12.12.2018  15:44    <DIR>          kelvin-mai-yt
+14.11.2018  07:35    <DIR>          kelvin-may
+10.12.2018  14:07    <DIR>          loiane-groner
+13.01.2019  11:12    <DIR>          lukas-rubbelke
+05.12.2018  08:57    <DIR>          lukas-ruebbelke-egghead
+08.12.2018  07:48    <DIR>          manfred-steyer
+30.11.2018  11:14    <DIR>          martin-hober-ngarhuis
+26.09.2018  14:16    <DIR>          michael-herman
+08.12.2018  07:29    <DIR>          michael-hladkey-biophoton
+17.01.2019  09:36                 0 ngrx-experts.txt
+16.10.2018  10:38    <DIR>          nir-kaufman
+23.11.2018  18:15    <DIR>          rupesh-tiwari-roopkt-ngrx-team
+14.01.2019  14:11    <DIR>          samir-medjoub
+13.12.2018  07:47    <DIR>          sandi-barr
+09.11.2018  17:24    <DIR>          thomas-burleson-nx
+29.09.2018  09:34    <DIR>          tim-deschryver-ngrx-team
+29.09.2018  09:03    <DIR>          todd-motto
+29.09.2018  09:40    <DIR>          tomas-trajan-zuerich
+10.01.2019  11:49    <DIR>          Tomasz-Ducin-playing-ngrx
+16.11.2018  12:12    <DIR>          trademe-craig-spence-nea-zealand
+20.11.2018  10:05    <DIR>          udemy-ngrx-in-depth-angularuniversity
+05.12.2018  17:21    <DIR>          viktor-savkin
+               1 Datei(en),              0 Bytes
+              48 Verzeichnis(se),    334'397'440 Bytes frei
+Generates and/or modifies files based on a schematic.
+
+usage: ng generate feature <name> [options]
+
+arguments:
+  schematic
+    The schematic or collection:schematic to generate.
+  name
+    The name of the feature.
+
+generate angular feature module and angular container component
+-------------------------------------------------------------
+> ng g m links --routing
+module
+------------------------------------------------
+CREATE src/app/links/links-routing.module.ts (249 bytes)
+CREATE src/app/links/links.module.ts (276 bytes)
+
+container
+-------------------------------------------------------
+> ng g c links -m links
+CREATE src/app/links/links.component.html (20 bytes)
+CREATE src/app/links/links.component.spec.ts (621 bytes)
+CREATE src/app/links/links.component.ts (266 bytes)
+CREATE src/app/links/links.component.scss (0 bytes)
+UPDATE src/app/links/links.module.ts (342 bytes)
+
+generate ngrx feature with api and create functions
+----------------------------------------------------------------------------
+ng g feature links/state/links -a -c -m links -r=../../app-store/index.ts
+
+options:
+  --api (-a)
+    Specifies if api success and failure actions, reducer, and effects should be generated as part of this feature.
+
+  --creators (-c)
+    Specifies if the actions, reducers, and effects should be created using creator functions
+  --defaults
+    When true, disables interactive input prompts for options with a default.
+  --dry-run (-d)
+    When true, runs through and reports activity without writing out results.
+  --flat
+    Flag to indicate if a dir is created.
+  --force (-f)
+    When true, forces overwriting of existing files.
+  --group (-g)
+    Group actions, reducers and effects within relative subfolders
+  --help
+    Shows a help message for this command in the console.
+  --interactive
+    When false, disables interactive input prompts.
+  --module (-m)
+    Specifies the declaring module.
+  --project (-p)
+    The name of the project.
+  --reducers (-r)
+    Specifies the reducers file.
+  --spec
+    Specifies if a spec file is generated.
+
+Help for schematic feature
+
+arguments:
+  name
+    The name of the feature.
+
+options:
+  --api (-a)
+    Specifies if api success and failure actions, reducer, and effects should be generated as part of this feature.
+  --creators (-c)
+    Specifies if the actions, reducers, and effects should be created using creator functions
+  --flat
+    Flag to indicate if a dir is created.
+  --group (-g)
+    Group actions, reducers and effects within relative subfolders
+  --module (-m)
+    Specifies the declaring module.
+  --project (-p)
+    The name of the project.
+  --reducers (-r)
+    Specifies the reducers file.
+  --spec
+    Specifies if a spec file is generated.ngrx
+---
+// install ngrx libs: store, effects, router-store, dev-tools
+ngrxi
+
+// add store
+ng add @ngrx/store
+
+// add effects
+ng add @ngrx/effects
+
+// add dev-tools
+ng add @ngrx/store
+
+// add dev-tools
+ng add @ngrx/store-devtools
+
+// add router-store
+ng add @ngrx/router-store
+
+// create auth module
+ngma
+
+// create normal module
+ng g m [name] --routing --spec alse
+
+// create eature
+ng g feature auth/auth -a -c -m auth -r ../reducers/index.ts --spec falsengrx-feature, ng g feature auth/state/auth -a -c -m auth -r ../../app-store/index.ts -f  
+Angular CRUD Customers with NgRx
+
+state management
+---------------
+
+store is a state tree
+is a database in the frontend
+
+state 
+- single source of truth for application
+- state is readonly
+- state change made by reducers
+
+state chan
+store install:
+---------------------------------------------------------------------------------------------------------------
+
+ng add @ngrx/store --statePath store --stateInterface AppState -m app 
+-----------------------------------------------------------------------------------------------------------------
+Optional ng add flags
+
+path - 		path to the module that you wish to add the import for the StoreModule to.
+
+project - 	name of the project defined in your angular.json to help locating the module to add the StoreModule to.
+
+module - 	name of file containing the module that you wish to add the import for the StoreModule to. 
+		Can also include the relative path to the file. For example, src/app/app.module.ts;
+		minimal - flag to only provide minimal setup for the root state management. 
+		Only registers StoreModule.forRoot() in the provided module with an empty object, and default runtime checks.
+
+statePath - 	The file path to create the state in. By default, this is reducers.
+
+stateInterface 	The type literal of the defined interface for the state. By default, this is State.
+
+
+store create:
+-----------------------------------------------------------------------------------------------------------------------
+
+ng generate store State --root --statePath store --stateInterface AppState -m app 
+
+
+
+store-devtools
+--------------------------------------------------------------------------------------------------------------------
+install options
+
+path		 path to the module that you wish to add the import for the StoreDevtoolsModule to.
+project		 name of the project defined in your angular.json to help locating the module to add the StoreDevtoolsModule to.
+module		 name of file containing the module that you wish to add the import for the StoreDevtoolsModule to. 
+maxAge		(>1) | 0 - maximum allowed actions to be stored in the history tree. The oldest actions are removed once maxAge is reached. 
+		It's critical for performance. 0 is infinite. Default is 25 for performance reasons.
+
+ng add @ngrx/store-devtools
+
+
+
+feature
+-------------
+create feature
+-------------
+ng generate feature user/User -r ../store/index.ts -c -api --spec false
+
+options
+----------------
+
+Provide the project name where the feature files will be created.
+
+--project
+
+Alias: -p
+Type: string
+Use creator functions for actions, reducers, and effects.
+
+--creators
+
+Alias: -c
+Type: boolean
+Default: false
+Nest the effects file within a folder based on the feature name.
+
+--flat
+
+Type: boolean
+Default: true
+Group the actions, effects and reducers files within their respective folders.
+
+--group
+
+Alias: -g
+Type: boolean
+Default: false
+Provide the path to a file containing an Angular Module and the feature reducer will be added to its imports array using StoreModule.forFeature.
+
+--module
+
+Alias: -m
+Type: string
+Provide the path to a reducers file containing a state interface and a object map of action reducers. 
+The generated feature interface will be imported added to the first defined interface within the file. 
+The feature reducer will be imported and added to the first defined object with an ActionReducerMap type.
+
+--reducers
+
+Alias: -r
+Type: string
+Specifies if api success and failure actions, reducer, and effects should be generated as part of this feature.
+
+--api
+
+Alias: -a
+Type: boolean
+Default: false
+Generate spec files associated with the feature files.
+
+--spec
+
+Type: boolean
+Default: true
+
+
+
+
+
+entity
+--------
+install entity
+ng add @ngrx/entity
+
+
+create entity
+---------------
+ng generate entity user/entity/User -r ../../store/index.ts -c -m user --spec false
+
+
+effects
+---------
+install options:
+
+path		 path to the module that you wish to add the import for the EffectsModule to.
+flat		 Indicate if a directoy is to be created to hold your effects file
+spec		 Specifies if a spec file is generated.
+project		name of the project defined in your angular.json to help locating the module to add the EffectsModule to.
+module		name of file containing the module that you wish to add the import for the EffectsModule to. 
+minimal		Only provide minimal setup for the root effects setup. Only registers EffectsModule.forRoot() in the provided module with an empty array.
+group		Group effects file within effects folder
+
+ng add @ngrx/effects
+
+
+
+
+store-devtools
+---------------
+
+
+
+
+
+ngrx
+---
+// install ngrx libs: store, effects, entities, router-store, dev-tools, schematics
+ngrxi
+
+// add store
+ng add @ngrx/store
+
+// add effects
+ng add @ngrx/effects
+
+
+// add entities
+ng add @ngrx/entities
+
+// add dev-tools
+ng add @ngrx/store
+
+// add dev-tools
+ng add @ngrx/store-devtools
+
+// add router-store
+ng add @ngrx/router-store
+
+// create auth module
+ngma
+
+// create normal module
+ng g m [name] --routing --spec alse
+
+// create eature
+ng g feature auth/auth -a -c -m auth -r ../reducers/index.ts --spec false
+set @ngrx/schematics as default schematics
+------------------------------------------
+ngrxi
+
+root store
+------------
+ng generate store AppState --root --statePath store --m app
+
+root effects
+----------------
+ng g effect store/app --root -m=app
+
+
+generate feature
+-----------------------------
+module:
+ng g m auth --routing
+
+service:
+ng g s auth/auth -m auth
+
+container:
+ng g c auth -m auth
+
+component:
+ng g c auth/signup -m auth
+
+ngrx feature:
+ng generate feature auth/Auth  -m auth --reducers ../store/index.ts
+
+app container html
+------------------------------------------------------------------
+<ul>
+  <li><a  routerLink="home">Home</a></li>
+  <li><a  routerLink="auth">Auth</a></li>
+</ul>
+
+app container css
+----------------------------------------
+
+app routing with lazy loaded feature module
+---------------------------------------------
+const routes: Routes = [
+  { path: "", pathMatch: "full", redirectTo: "home" },
+  { path: "home", component: HomeComponent },
+  { path: "auth", loadChildren: "./auth/#AuthModule" }
+];
+
+
+
+feature routing (lazy loaded)
+--------------------------------
+
+
+feature container html with router outlet (auth.component.html)
+----------------------------------------------------------------
+<ul>
+  <li><a  routerLink="signin">Signin</a></li>
+  <li><a  routerLink="signup">Signup</a></li>
+</ul>
+<router-outlet></router-outlet>
+
+feature container css
+---------------------------------------------------
+
+ï»¿https://github.com/JavascriptMick/ng2-state-talk 
+mike ryan, rob wormald, ngrx creators 
+ngrx talk, "https://www.youtube.com/watch?v=pjwVq8B-ZAw&t=2123s" 
+oren farhi, ng-rx expert  
+ngrx youtube-player, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\oren-farhi\echoes-ng2  
+angular ngrx book, oren fahri  
+angular 2 article collection, http://ngdoc.io/  
+tomas trajan, ngrx material template, github.com/tomastrajan 
+todd motto, ultimate-angular, final project , https://platform.ultimateangular.com/courses/angular-pro/lectures/3015157 
+ngrx platform docs, https://github.com/ngrx/platform/tree/master/docs 
+ngrx tutorial, ultimateangular 
+eric wang, ngrx generator, https://ericwangblog.github.io/Generate-Your-Ngrx/ 
+angularfirebase, ngrx feature and entities, https://angularfirebase.com/lessons/ngrx-entity-feature-modules-tutorial/ 
+ngHouston- NgRx - Mike Ryan and Robert Brandon, rx store, actions, reducers, effects, entities, schematics 
+mike ryan, robert brandon on github, codesequence 
+mike ryan rx workshop ngconf 2017, https://github.com/CodeSequence/ngrx-workshop 
+ngrx material starter tomas trajan, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\tomas-trajan\angular-ngrx-material-starter 
+ngrx expert, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\vaslan-vatsaev\angular-contacts-app-example 
+use ngrx/codegen, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\ngrx-platform\platform\modules\codegen\src 
+yarn run codegen 
+angular expert biophoton, angular vienna, fellow of manfred steyer, :\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\biophoton 
+brian love, ngrx auth, http://brianflove.com/2017/04/10/angular-reactive-authentication/ 
+
+ngrx experts
+---------------------
+todd motto
+brian troncone
+mike ryan
+duncan hunter, ngrx gitbook, ngrx play by play pluralsight
+Loiane Groner, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\Loiane-Groner-Brazil\angular-ngrx-example
+oren eini, echo player, ngrx book
+biophton, manfred steyer fellow for workshops
+brian love, briebug
+angularfirebase.com
+christoffer noring
+netanel basal
+nextzy.me
+brecht billiet, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\brecht-billiet\reactive_apps_workshop, old but with auth
+kwinten pisman, strongbrew
+gion kunz
+
+oasis
+rangle.io
+briebug
+
+noman hasan, ngrx todo, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\noman-hasan-todo 
+ngrx sample, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\tui2tone-medium-blog.nextzy.me 
+mike ryan, ngrx workshop ngconf 2017 video, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\mike-ryan\ngrx-workshop 
+
+Mike Ryan: step by step Books Collection (ngrx entities medium article)
+------------------------------------------------------------------------------------------------------------------------------------
+
+1 The first step to writing a reducer that manages this collection is to create an entity adapter:
+
+import { createEntityAdapter } from '@ngrx/entity';
+const bookAdapter = createEntityAdapter<Book>();
+
+2 medium article serie, c:\Users\Folio\web\frontend\javascript\frameworks\angular\Akshay-Nihalaney-RealWorld-App-Medium-Serie 
+safaribooksonline, architecting angular applications with redux, https://www.safaribooksonline.com/library/view/architecting-angular-applications/9781787122406/1396b08f-7d17-4695-9e15-523a697fed29.xhtml 
+bo vandersteene, ngrx pagination, nx-breadcrumbs, https://github.com/bovandersteene 
+ngrx with entities sample, contacts, https://github.com/avatsaev/angular-contacts-app-example 
+google calendar api with ngrx, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\buddhasoft\mentarea-front 
+github ngrx google calendar api sample: https://github.com/buddhasoft/mentarea-front 
+ngrx medium article on ngrx actioncreators, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\christian-janker-action-creators\loading-sample 
+ngrx sample course angular-university, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\hans\angular-university\angular-ngrx-course 
+ngrx sample wes grimes, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\wes-grimes-entities 
+wes grimes, ngrx best practices sample, c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\wes-grimes-entities\angular-ngrx-chuck-norris 
+ionic ngrx firebase sample, https://github.com/tja4472/ionic-angular-angularfire-ngrx-basic 
+angular reactive auth with ngrs, https://brianflove.com/2017/04/10/angular-reactive-authentication/ 
+ngrx samples, https://github.com/tja4472 
+ngrx artcles on medium, https://medium.com/@bencabanes 
+ngrx course on yt, https://github.com/angulardeveloper-io/ngrx-store-app.git, angulardeveleper.io 
+
+ngrx experts on angularindepth.com: A big thank you to Nate Lapinski, Max Wizard K, Alex Okrushko and Todd Palmer for reviewing this post.NgRx Best Practices 
+----------------------
+
+01a install
+............
+root sate
+rate RootStoreModule using the Angular CLI:
+ng g module root-store —-flat false —-module app.module.ts
+2. Generate RootState interface to represent the entire state of your application using the Angular CLI:
+
+ng g interface root-store/root-state
+
+01b feaature module
+-------------------
+ng g module root-store/my-feature-store --flat false --module root-store/root-store.module.ts
+
+02 actions
+---------
+import { Action } from '@ngrx/store';
+import { MyModel } from '../../models';
+
+export enum ActionTypes {
+  LOAD_REQUEST = '[My Feature] Load Request',
+  LOAD_FAILURE = '[My Feature] Load Failure',
+  LOAD_SUCCESS = '[My Feature] Load Success'
+}
+
+export class LoadRequestAction implements Action {
+  readonly type = ActionTypes.LOAD_REQUEST;
+}
+
+export class LoadFailureAction implements Action {
+  readonly type = ActionTypes.LOAD_FAILURE;
+  constructor(public payload: { error: string }) {}
+}
+
+export class LoadSuccessAction implements Action {
+  readonly type = ActionTypes.LOAD_SUCCESS;
+  constructor(public payload: { items: MyModel[] }) {}
+}
+
+export type Actions = LoadRequestAction | LoadFailureAction | LoadSuccessAction;
+
+
+NgRx Entities 
+
+model		Create a model.
+entity state	Create an entity state based on the model.
+entity adapter	Create an entity adapter.
+initial state	Create the initial state.
+reducer		Create the reducer and 
+selectors	create entity queries for the store
+app state	set up the state in the StoreModule. 
+ Volume in Laufwerk C: hat keine Bezeichnung.
+ Volumeseriennummer: 2E3B-BECD
+
+ Verzeichnis von c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx\hans
+
+06.08.2018  15:27    <DIR>          .
+06.08.2018  15:27    <DIR>          ..
+11.06.2018  14:49    <DIR>          af-auth
+13.04.2018  15:04    <DIR>          angular-contacts-app-example
+13.04.2018  14:51    <DIR>          angular-login-hide-navbar
+13.04.2018  15:51    <DIR>          angular-ngrx-socket-frontend
+07.08.2018  10:28    <DIR>          angular-university
+06.08.2018  15:32    <DIR>          angulartraining-alain-chautard
+23.03.2018  19:00    <DIR>          books-schematics
+04.06.2018  16:22    <DIR>          brandon-roberts-ngconf2018
+09.07.2018  13:37    <DIR>          deborah-kurata
+01.06.2018  16:55    <DIR>          fb-courses
+09.05.2018  08:19    <DIR>          fb-events
+13.04.2018  15:52    <DIR>          firestore-notes
+17.05.2018  08:23    <DIR>          gregonnet
+24.07.2018  14:34    <DIR>          labs
+03.05.2018  08:18    <DIR>          lars-gyrup-aarhus
+18.04.2018  10:21    <DIR>          michael-hladky-biophoton
+29.05.2018  09:35    <DIR>          michael-hladky-biophoton-manfred-steyer
+13.04.2018  14:26    <DIR>          ng-shortcuts-with-redux
+13.04.2018  14:46    <DIR>          ngx-breadcrumb
+13.04.2018  14:42    <DIR>          rbo-collection-pagination
+29.05.2018  10:21    <DIR>          reactive-prog-w-angular-ngrx
+29.05.2018  09:49    <DIR>          rxjs-workshop-angular
+04.04.2018  14:39    <DIR>          users-chris-norring
+               0 Datei(en),              0 Bytes
+              25 Verzeichnis(se),    529'276'928 Bytes frei
+ Volume in Laufwerk C: hat keine Bezeichnung.
+ Volumeseriennummer: 2E3B-BECD
+
+ Verzeichnis von c:\Users\Folio\web\frontend\javascript\frameworks\angular-ngrx
+
+08.08.2018  12:56    <DIR>          .
+08.08.2018  12:56    <DIR>          ..
+01.06.2018  06:48    <DIR>          adam-pasternack-angular-ngrx-academy
+18.06.2018  07:06    <DIR>          adam-pasternak
+23.05.2018  08:20    <DIR>          alyssa-nicoll
+31.07.2018  07:31    <DIR>          angular-schule-ferdinand-walcher
+15.06.2018  09:04    <DIR>          angular-university
+15.06.2018  14:32    <DIR>          biophoton-michael-hladkey
+07.08.2018  13:18    <DIR>          brandon-roberts
+01.06.2018  07:54    <DIR>          brian-love
+31.05.2018  15:04    <DIR>          briebug
+09.05.2018  07:05    <DIR>          buddhasoft
+06.06.2018  13:36    <DIR>          christian-janker-action-creators
+14.07.2018  11:30    <DIR>          christoffer-noring
+20.04.2018  10:45    <DIR>          david-east
+02.05.2018  14:23    <DIR>          deborah-kurata
+17.07.2018  10:07    <DIR>          deniz-coskun-digital-oasis
+17.07.2018  10:05    <DIR>          denizcoskun-nutrition-db
+08.05.2018  17:23    <DIR>          duncan-hunter
+01.07.2018  07:34    <DIR>          fabio-guelfi-portuges
+10.07.2018  07:00    <DIR>          fernando-herrera-udemy
+08.05.2018  10:57    <DIR>          gerard-sans-with-entities-sample
+13.03.2018  09:41    <DIR>          gion-kunz
+18.05.2018  09:56    <DIR>          github-ng-practice
+06.08.2018  15:27    <DIR>          hans
+15.06.2018  08:24    <DIR>          iproduct-uni-sofia
+15.06.2018  06:45    <DIR>          jesse-sanders
+19.04.2018  16:45    <DIR>          jesse-sanders-ngconf2018-tour-of-heros
+08.05.2018  10:26    <DIR>          jest-app
+15.03.2018  11:59    <DIR>          john-pappa
+05.06.2018  08:27    <DIR>          jorge-bratt
+04.12.2017  09:36    <DIR>          justin-schwartzenberger
+15.05.2018  08:19    <DIR>          kwinten-pisman-strongbrew.io
+23.03.2018  16:24    <DIR>          Loiane-Groner-Brazil
+07.05.2018  13:35    <DIR>          martin-hobert-ngarhus
+14.05.2018  19:37    <DIR>          michael-herman
+30.05.2018  18:38    <DIR>          michael-herman-galvanic-js-teacher
+04.07.2018  07:48    <DIR>          Michal-Szczepaniak-airberlin
+30.05.2018  13:50    <DIR>          mike-hartington-ionic-team
+19.04.2017  17:28    <DIR>          mike-ryan
+09.04.2018  09:47    <DIR>          nate-kidwell-yt
+22.03.2018  17:37    <DIR>          netanel-basal
+18.04.2018  18:17    <DIR>          ngrx-ngconf-2018
+23.03.2018  15:46    <DIR>          ngrx-platform
+08.02.2018  14:12    <DIR>          ngrx-tetris
+20.05.2017  11:44    <DIR>          ngrx-workshop-ng2017
+08.08.2018  12:58    <DIR>          nir-kaufmann
+26.05.2018  15:48    <DIR>          nir-kaufmann-angularnyc
+23.03.2018  18:33    <DIR>          noman-hasan-todo
+06.04.2018  16:49    <DIR>          noman-hassan-todo-medium
+13.07.2018  10:40    <DIR>          norman-hassan-todo
+07.05.2018  13:50    <DIR>          oleg-rovenskyi
+30.05.2017  10:01    <DIR>          oren-farhi
+23.03.2018  14:41    <DIR>          orizens-oren-eini
+02.05.2018  08:25    <DIR>          paul-spears-angularcamp
+26.05.2018  16:31    <DIR>          peter-smith-angularnyc
+20.10.2017  07:20    <DIR>          platform
+20.12.2016  17:46    <DIR>          rob-wormald
+17.04.2017  07:36    <DIR>          rxjs-goodparts
+17.03.2018  16:52    <DIR>          schematics
+06.07.2018  13:29    <DIR>          step-by-step
+09.04.2018  13:39    <DIR>          thoughtram-pascal-precht
+19.06.2018  15:14    <DIR>          todd-motto
+15.06.2018  08:57    <DIR>          todd-motto-workshop
+19.05.2018  11:10    <DIR>          tomas-trajan
+22.03.2018  16:01    <DIR>          tui2tone-medium-blog.nextzy.me
+23.03.2018  14:36    <DIR>          ultimate-angular
+27.12.2017  20:23    <DIR>          victor-savkin
+24.07.2018  13:45    <DIR>          vitali-bobrov-ngrx-heroes
+15.06.2018  06:48    <DIR>          vitaly-bobrov
+14.06.2018  16:46    <DIR>          wes-grimes-entities
+30.03.2018  17:38    <DIR>          yakov-fain
+               0 Datei(en),              0 Bytes
+              72 Verzeichnis(se),    528'236'544 Bytes frei
+npm i -S @ngrx/store @ngrx/effects @ngrx/router-store @ngrx/entity @ngrx/db jest && npm i -D @ngrx/store-devtools
+
+1. Generate RootStoreModule using the Angular CLI:
+--------------------------------------------------
+ng g module app-store —-flat false -m=app
+
+2. Generate RootState interface to represent the entire state of your application using the Angular CLI:
+-------------------------------------------------------------------------------------------------------
+ng g interface root-store/root-state
+
+3. Feature Module
+----------------------
+ng g module root-store/trainings-store --flat false --module root-store/root-store.module.ts
+
+
+
+
+
+ngrx schematics commands 
+-----------------------------------------------------------------------------------------------------------------------------
+usage: ng generate store <name> [options]
+
+-----------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--module (-m)
+    Allows specification of the declaring module.
+  
+--root 
+    Flag to setup the root state or feature state.
+  
+--spec 
+    Specifies if a spec file is generated.
+  
+--state-interface (-si)
+    Specifies the interface for the state.
+  
+--state-path 
+    undefined
+usage: 
+
+root store
+-----------
+ng g store AppState --root --flat=false --state-path=state/store --state-interface=AppState -m=app
+
+ng generate action <name> [options]
+
+-------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group actions file within 'actions' folder
+  
+--spec 
+    Specifies if a spec file is generated.
+usage: 
+
+ng generate container <name> [options]
+
+----------------------------------------------------
+options:
+  
+--change-detection (-c)
+    Specifies the change detection strategy.
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--export 
+    Specifies if declaring module exports the component.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--inline-style (-s)
+    Specifies if the style will be in the ts file.
+  
+--inline-template (-t)
+    Specifies if the template will be in the ts file.
+  
+--module (-m)
+    Allows specification of the declaring module.
+  
+--prefix (-p)
+    The prefix to apply to generated selectors.
+  
+--selector 
+    The selector to use for the component.
+  
+--skip-import 
+    Flag to skip the module import.
+  
+--spec 
+    Specifies if a spec file is generated.
+  
+--state 
+    Specifies the path to the state exports.
+  
+--state-interface 
+    Specifies the interface for the state.
+  
+--styleext 
+    The file extension to be used for style files.
+ 
+ --view-encapsulation (-v)
+    Specifies the view encapsulation strategy.
+usage: 
+
+ng g container users --state=UsersState --state-interface=Users -c
+
+ng generate effect <name> [options]
+
+----------------------------------------------------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--feature 
+    Flag to indicate if part of a feature schematic.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group effects file within 'effects' folder
+  
+--module (-m)
+    Allows specification of the declaring module.
+  
+--root 
+    Flag to indicate whether the effects are registered as root.
+  
+--spec 
+    Specifies if a spec file is generated.
+usage: 
+
+root effects:
+-------------
+ng g effect state/effects --root  --flat=false --state-path=store --module=app.module.ts
+
+
+
+ng generate entity <name> [options]
+
+------------------------------------------------------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group actions, reducers and effects within relative subfolders
+  
+--module (-m)
+    Specifies the declaring module.
+  
+--reducers (-r)
+    Specifies the reducers file.
+  
+--spec 
+    Specifies if a spec file is generated.
+usage: 
+
+ng generate feature <name> [options]
+
+----------------------------------------------------------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group actions, reducers and effects within relative subfolders
+  
+--module (-m)
+    Specifies the declaring module.
+  
+--reducers (-r)
+    Specifies the reducers file.
+  
+--spec 
+    Specifies if a spec file is generated.
+usage: 
+
+ng g m threads
+ng g feature thread --reducers=store/index.ts -m=threads/threads
+ng g feature link --reducers=store/index.ts -m=links/links
+
+ng g entity threads/thread --reducers=state/store/index.ts -m=threads/threads
+ng g entity links/link --reducers=store/index.ts -m=links/links
+
+ng g effect threads/thread --feature=thread -m=threads/threads
+ng g store ThreadState --flat=false --state-path=threads/store --state-interface=ThreadState -m=threads/threads
+
+ng g store threads
+--state-interface (-si)
+    Specifies the interface for the state.
+  
+--state-path 
+
+
+
+ng generate reducer <name> [options]
+-------------------------------------------------------------------------------------
+options:
+  
+--dryRun (-d)
+    Run through without making any changes.
+  
+--feature 
+    Flag to indicate if part of a feature schematic.
+  
+--flat 
+    Flag to indicate if a dir is created.
+  
+--force (-f)
+    Forces overwriting of files.
+  
+--group (-g)
+    Group reducer file within 'reducers' folder
+  
+--module (-m)
+    Specifies the declaring module.
+  
+--reducers (-r)
+    Specifies the reducers file.
+  
+--spec 
+    Specifies if a spec file is generated.
+conemu ngrx commands: 
+
+ngrxalle = ngrxi + ngrxsmi + ngrxsme
+
+----------------------------------------------------------------------------------
+ngrxi:		install ngrx and set schematics collection ton @ngrx/schematics
+----------------------------------------------------------------------------------
+npm install @ngrx/schematics --save-dev && ng config cli.defaultCollection @ngrx/schematics
+
+-----------------------------------------------------------------------------------------
+ngrxsmi, 	install root store and effects in app
+-----------------------------------------------------------------------------------------
+ng g store AppState --root --module app.module.ts && ng g effect App --root --module app.module.ts
+
+ngrxsmf, 	create angular module and ngrx feature module with inputed name in singular
+ngrxsme		create angular module and ngrx entity with inputed name in singular
+
+
+------------------------------------------------
+***selectors*** create entity selectors inside module directory
+--------------------------------------------------
+todo sample:
+------------
+import { createFeatureSelector, createSelector } from "@ngrx/store";
+import * as fromTodo from "./entity/todo.reducer";
+
+export const selectTodoState = createFeatureSelector<fromTodo.State>("Todo");
+export const getSelectedTodoId = (state: fromTodo.State) =>
+  state.selectedTodoId;
+export const selectTodoIds = createSelector(
+  selectTodoState,
+  fromTodo.selectIds
+);
+export const selectTodoEntities = createSelector(
+  selectTodoState,
+  fromTodo.selectEntities
+);
+export const selectAllTodos = createSelector(
+  selectTodoState,
+  fromTodo.selectAll
+);
+export const selectTodoTotal = createSelector(
+  selectTodoState,
+  fromTodo.selectTotal
+);
+export const selectCurrentTodoId = createSelector(
+  selectTodoState,
+  fromTodo.getSelectedTodoId
+);
+export const selectCurrentTodo = createSelector(
+  selectTodoEntities,
+  selectCurrentTodoId,
+  (entities, id) => entities[id]
+); 
+
+
+generate selectors from cli in module directory
+-------------------------------------------------
+echo "import { createFeatureSelector, createSelector } from "@ngrx/store";import * as from$* from "./entity/$*.reducer";export const select$*State = createFeatureSelector<from$*.State>("$*");export const getSelected$*Id = (state: from$*.State) =>state.selected$*Id;export const select$*Ids = createSelector(select$*State,from$*.selectIds);export const select$*Entities = createSelector(select$*State,from$*.selectEntities);export const selectAll$*s = createSelector(select$*State,from$*.selectAll);export const select$*Total = createSelector(select$*State,from$*.selectTotal);export const selectCurrent$*Id = createSelector(select$*State,from$*.getSelected$*Id);export const selectCurrent$* = createSelector(select$*Entities,selectCurrent$*Id,(entities, id) => entities[id]);" >> $*.selectors.ts 
+// sample
+
+
+++++
+---------------------------------------------------------------------
+***update reducer for selectors***
+---------------------------------------------------------------------
+export const getSelectedUserId = (state: State) => state.selectedUserId;
+
+// get the selectors
+const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
+
+---------------------------------------------------------------------------
+***entities*** inside feature directory create entity directory with entities and effect
+---------------------------------------------------------------------------
+ng g entity state/entity/$* -m=../../$*s  --reducers ../../../store/index.ts && ng g effect state/entity/$* -m=$*s --reducers ../../../store/index.ts
+ng g entity state/entity/link -m=../../links  --reducers ../../../store/index.ts && ng g effect state/entity/link -m=links --reducers ../../../store/index.ts
+
+ngn <appname>
+
+ngrx install: 			ngrxi
+------------------
+npm install @ngrx/schematics --save-dev &&   @ngrx/schematics
+
+root store and app.effects:	
+----------------------------
+ng g store Store --state-path store --root --state-interface AppState -m app
+ng g effect App --root --m app.module.ts
+
+angular feature module: ngm <modulename in singular>
+----------------------
+ngm product
+
+or generate ngrx container with reference to store
+----------------------------------------------------
+ng generate container products -f --state state/product.reducer.ts --stateInterface ProductState
+
+
+*************ngrx entities inside!!! feature directory
+--------------------------------------------------------------------------------------
+ng g entity state/link -m ../links -r ../../store/index.ts
+
+
+add the following in reducer file
+-------------------------------------------------------------------------------
+*1 state: selectedProductId: number | null;
+
+*2 initialState: selectedProductId: null;
+
+*3 export const getSelectedProductId = (state: State) => state.selectedProductId;
+
+
+-----------------------------------------------------------------------------
+01 ngn <appname>
+02 ngrxi
+03 ng g store Store --state-path store --root -m app.module.ts
+04 ng g effect App --root --m app.module.ts
+05 ngm <entity>
+06 ng g entity <name-pl>/entity -m ../<name-pl> -r ../store/index.ts
+06 ng g effect --feature <name> -m <name-pls>
+06 update reducer for *1 *2 *3
+07 go into feature entity directory: echo "import { createFeatureSelector, createSelector } from "@ngrx/store"; import * as fromArticle from "./Article.reducer"; export const selectArticleState = createFeatureSelector<fromArticle.State>("Article"); export const getSelectedArticleId = (state: fromArticle.State) => state.selectedId; export const selectArticleIds = createSelector(selectArticleState,fromArticle.selectIds); export const selectArticleEntities = createSelector(selectArticleState,fromArticle.selectEntities);export const selectAllArticles = createSelector(selectArticleState,fromArticle.selectAll); export const selectArticleTotal = createSelector(selectArticleState,fromArticle.selectTotal); export const selectCurrentArticleId = createSelector(selectArticleState,fromArticle.getSelectedId);export const selectCurrentArticle = createSelector(selectArticleEntities,selectCurrentId,(entities, id) => entities[id]);" >> article.selectors.ts
+08 correction for selector files

@@ -1,0 +1,73 @@
+What is a Monad
+------------------------
+Reactive programming is oriented around data flows and propagation of value change
+
+A stream is nothing more than a sequence of events over time
+
+The concept of a stream can be applied to any data point that holds a value
+
+The hardest part of asynchronous code is dealing with latency and wait time
+
+RxJS brings this notion of continuous sequences of events over time as a first-class citizen
+
+Producers are the sources of your data. A stream must always have a producer of data, 
+which will be the starting point for any logic that you’ll perform in RxJS
+
+- A monad is a container with a of, map, bind and apply function
+  Functor , Applicative, Monad
+  functors are containers that can wrap data and expose a mapping method that allows 
+  you to immutably apply transformations on this data
+
+- A monad is an algebraic data type that follows a certain interface or protocol
+
+- A monad is an abstraction from functional programming that represents a computation 
+  - that wraps a value in a context 
+  - and defines a way to chain together computations 
+  - while maintaining the wrapping
+
+- Monads have been used in various programming languages, such as Haskell, Scala, and F#, 
+ - to handle side effects, 
+ - sequencing, and 
+ - other computational patterns in a more controlled and composable way
+
+
+- A unit function used to place (lift) a value into the monad container. 
+  You could also find it as from() or return().
+
+- A mapping function that lifts regular functions that work over these values, 
+  returning back a new instance of (generally) 
+  the same type containing the newly computed value.
+
+- A flatMap() also known as (bind()) that lifts a monad-returning function 
+  to work over the value in the container 
+  and flatten its result into a single structure.
+
+- A Monad adds additional logic (the extended “behavior”) that characterizes 
+  each monad uniquely depending on the problem it tries to solve
+
+- A Monad encapsulates a side effect (error, i/o, asynchronous computation,...)
+
+- A Monad is a Software Pattern (abstract explanation of how to solve a special problem)
+
+- The Observable monad, has built-in logic that allows you to thread together 
+  a sequence of asynchronous computations as if you we’re mapping regular synchronous functions
+  - This monad not only allows you to perform regular IO as I did previously, 
+    but also asynchronous IO, as it makes the notion of time a first-class citizen — 
+    this is that “extra behavior”
+- The unit function of an Observable:also called static factory operator is interval()
+
+- Observable is just a specialized form of IO — the AsyncIO monad ?— 
+  with a whole arsenal of timer and async operators built-in to it
+
+- Iterators are used to traverse containers of data in a structure-agnostic way or 
+  independent of the underlying data structure 
+
+
+- The term higher-order observable originates from the notion of a higher-order function, 
+  which can receive other functions as parameters. 
+  In this case, we mean observables that receive other observables as arguments.
+
+
+
+
+

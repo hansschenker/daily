@@ -1,0 +1,249 @@
+A fruitful approach to problem analysis is to try to 
+- identify a general case of the problem.
+
+main difference impertativ prog to functional prog
+the association of names and values
+
+Imperativ
+--------------
+Traditional programming languages are based around the idea of a variable 
+as a changeable association between a name and values
+
+said to be imperative because they consist of sequences of commands:
+values to be passed from command to command
+
+Mutability
+--------
+
+In imperative languages, the same name may be associated 
+with different values.
+g
+
+Globabl Variables
+-----------------
+are changed during program execution
+
+
+Order of Execution matters
+---------------------------
+In imperative languages, the order in which commands are carried out is 
+usualy crucial
+if 
+the order in which commands are carried out is changed then the 
+behaviour of the whole program may change
+
+Main Data Structures Objects and Arrays
+
+
+Functional
+-------------------------------------------------------------------------------------------------------------------------------------
+ Calculus and recursive function theory are the backbones 
+of functional programming but they have wider applications throughout 
+computing
+
+Functional languages are based on structured function cals. A 
+functional program is an expression consisting of a function cal which 
+cals other functions in turn: 
+
+<function1>(<function2>(<function3> ) ) 
+
+composition
+-----------
+Thus, each function receives values from and passes new values back to 
+the caling function. This is known as function composition or nesting. 
+
+Immutable
+-----------
+
+In functional languages, because there is no 
+assignment
+
+
+A calculus 
+--------------------------------------------------------------------------------------------------------------
+The A calculus is a surprisingly simple yet powerful system. It is based on 
+function abstraction, to generalize expressions through the introduction 
+of names, and function application, to evaluate generalized expressions 
+by giving names particular values. 
+
+The A calculus has a number of properties which suit it well for 
+describing programming languages. Firstly, only 
+- abstraction and 
+- applica￾tion are needed to develop representations for arbitrary programming 
+
+A calculus can be treated as a universal 
+machine code for programming languages
+
+
+
+In functional languages, names are only introduced as the formal 
+parameters of functions and given values by function cals with actual 
+parameters. Once a formal parameter is associated with an actual 
+parameter value there is no way for it to be associated with a new value
+
+In functional languages, a name is only ever associated 
+with one value.
+
+
+Order of Execution does not matter
+----------------------------------
+the values 
+associated with names never change. Thus, there are no side effects and 
+function calls cannot change the values associated with common names
+
+In functional languages, there is no fixed execution order
+
+this execution order independence is one of the strengths of 
+functional languages and has led to their use in a wide variety of formal 
+and practical applications
+
+In functional languages, new values are associated with new 
+names through recursive function call nesting.
+
+Main Data Structures
+--------------------------------
+Tuples and Lists (nested sequence of tuples)
+
+Indeed, in LISP (LISt Programming) the same 
+representation is used for functions and data structures.
+
+This ability to represent entire data structures has a number of 
+advantages. It provides a standard format for displaying structures which 
+greatly simplifies program debugging and final output as there is no need to 
+write special printing subprograms for each distinct type of structure
+
+No Global Variables
+--------------------------------------
+
+Instead, entire data structures are passed 
+explicitly as actual parameters to functions for substructure changes and 
+the entire changed structure is then passed back again to the calling 
+function
+
+structure manipulation by functions is always eXplicit in the function 
+definitions and calls
+
+Functions as values - Higher Order Functions
+                    - Functions are first class citizens
+----------------------------------------------------------
+Functional languages allow functions to be treated as 
+values. 
+
+fp roots
+---------
+Functional programming has its roots in mathematical logic
+first modern 
+formalizations were by Hamilton, De Morgan and Boole in the mid 
+nineteenth century. Within their works we now distinguish the proposi￾tional calculus and the predicate calculus. 
+
+Propositional calculus
+------------------------
+is a system with true and false as basic values 
+and with and, or, not and so on as basic operations
+
+Within propositional calculus:
+
+- it is possible to prove whether or not 
+- an arbitrary expression is a theorem (always true), 
+- by starting with axioms (elementary expressions which are always true), 
+- and applying rules of inference to 
+- construct new theorems from axioms and existing theorems.
+
+It is also used to describe digital electronics 
+where on and off signals are represented as true and false respectively, and 
+electronic circuits are represented as logical expressions
+
+Predicate calculus 
+---------------------
+extends propositional calculus to enable expres￾sions involving 
+- non-logical values like numbers, sets or strings
+This is 
+achieved through the introduction of predicates
+
+formal approaches to computability
+--------------------------------------------------------------------
+In 1936, three distinct formal 
+approaches to computability were proposed: 
+- Turing’s Turing machines, 
+- Kleene’s recursive function theory (based on Hilbert’s work from 1925) 
+- and Church’s Alonso calculus.
+
+Each is wel defined in terms of a simple set of 
+primitive operations and a simple set of rules for structuring operations; 
+most important, each has a proof theory
+
+any of these systems may be used to describe 
+computer languages
+
+computer languages may be used to 
+describe and hence implement any of these systems
+
+
+
+SUMMARY 
+-----------------------
+- Imperative languages are based on assignment sequences whereas 
+- functional languages are based on nested function calls. 
+- In imperative languages, the same name may be associated with several values, whereas 
+- in functional languages a name is only associated with one value. 
+- Imperative languages have fixed evaluation orders whereas 
+- functio￾nal languages need not. 
+- In imperative languages, new values may be associated with the 
+  same name through command repetition whereas 
+- in functional languages new names are associated with new values through 
+  recursive function call nesting. 
+- Functional languages provide explicit data structure represen￾tations. 
+- In functional languages, functions are values. 
+- Functional languages originate in 
+  - mathematical logic and 
+  - the theory of computing, 
+  - in recursive function theory and Lambda calculus.
+
+Lambda Calculus is Abstraction and Application
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+Abstraction
+-------------------------
+Abstraction is central to problem solving and programming. It involves 
+generalization from concrete instances of a problem so that a general 
+solution may be formulated. A general, abstract solution may then be used 
+in turn to solve particular, concrete instances of the problem.
+
+10 cents 11 items
+
+10*11 10 
+Here we are carrying out the concrete operation of multiplication on the 
+concrete values 10 and 11. We can see that as the number of items changes 
+so the formula for the total cost changes at the place where the number of 
+items appears. We can abstract over the number of items in the formula by 
+introducing a name to stand for a general number of items, say items: 
+
+10*items 
+
+REPLACE items lN 10*items
+
+Here, we have abstracted over two operands in the formula. To evaluate 
+the abstraction, we need to supply two values. For example, 12 items at 32 
+cents will have total cost: 
+REPLACE cost WITH 32 IN 
+REPLACE items WITH 12 IN cost*items 
+which is: 
+REPLACE items WITH 12 IN 32*items 
+which is: 
+32*12 
+
+
+Lambda calculus - Expressions
+------------------------------
+The A calculus is a system for manipulating A expressions. 
+
+- a name: 			expression may be a name to identify an abstraction point, 
+- a function: 			to introduce an abstraction or 
+- a function application: 	to specialize an abstraction: 
+
+<expression> ::= <name> ] <function> I <application> 
+
+- A name may be any sequence of non-blank characters, for example: 
+- <function> ::= A<name>.<body> 
+
+

@@ -1,0 +1,284 @@
+retry
+retryWhen
+customRetry
+repeat
+repeatWhen
+longpolling
+
+retryWhen retryWhen errors occur
+-------------------------------------------------------------------------------------------------------------------------
+const { of } = rxjs;
+const { tap, retryWhen, delay } = rxjs.operators;
+
+const server = {
+  responseStatus: '500',
+  carsData: [
+    {
+      id: 1,
+      name: 'Porsche 911'
+    },
+    {
+      id: 2,
+      name: 'Ferrari F40'
+    }
+  ],
+  getData() {
+    return of(this.carsData).pipe(
+      tap(() => {
+        if (!this.responseStatus.startsWith('2')) {
+          throw this.responseStatus;
+        }
+      })
+    );
+  }
+};
+
+const carsData$ = server.getData().pipe(
+  retryWhen(errors =>
+  ---------------------------------------------------------------------------------  retryWhen errors occur
+    errors.pipe(
+      delay(1000),
+      tap(errorStatus => {
+        if (!errorStatus.startsWith('5')) {
+          throw errorStatus;
+        }
+
+        console.log('Retrying...');
+      })
+    )
+  )
+);
+
+carsData$.subscribe({
+  next: console.log,
+  error: errorStatus => console.log('Error: ' + errorStatus)
+});
+
+const isAuthenticated = () => Math.random() < 0.5;
+
+setTimeout(() => (server.responseStatus = isAuthenticated() ? '200' : '403'), 6000);
+
+----------------------------------------------------------------------------------------------- retryWhen --------------------------------------------------------------------
+
+repeatWhen a notifier signals (here a document click)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+import { of, fromEvent } from 'rxjs';
+import { repeatWhen } from 'rxjs/operators';
+
+const source = of('Repeat message');
+const documentClick$ = fromEvent(document, 'click');
+
+source.pipe(repeatWhen(() => documentClick$)
+       ------------------------------------     notifier functions
+).subscribe(data => console.log(data))
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+repeat n times
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+import { of } from 'rxjs';
+import { repeat, delay } from 'rxjs/operators';
+
+const source = of('Repeat message');
+const example = source.pipe(repeat(3));
+example.subscribe(x => console.log(x));
+
+// Results
+// Repeat message
+// Repeat message
+// Repeat message
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+retry n times when an error occurs
+----------------------------------------------------------------------------------------------------------------------------------------------
+Returns an Observable that mirrors the source Observable with the exception of an error. 
+If the source Observable calls error, this method will resubscribe to the source Observable 
+for a maximum of count resubscriptions (given as a number parameter) rather than propagating the error call.
+
+
+Long polling dog images online (ajax) every 5 secs (exhaustMap () => timer) started and stopped with a button click
+------------------------------------------------------------------------------------------------------------------
+import './style.css';
+console.clear();
+
+// begin lesson code
+import { fromEvent, timer } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
+import {
+  takeUntil,
+  pluck,
+  mergeMapTo,
+  exhaustMap,
+  tap,
+  finalize,
+  switchMapTo
+} from 'rxjs/operators';
+
+// elms
+const startButton = document.getElementById('start');
+const stopButton = document.getElementById('stop');
+const pollingStatus = document.getElementById('polling-status');
+const dogImage: any = document.getElementById('dog');
+
+// streams
+const startClick$ = fromEvent(startButton, 'click');
+const stopClick$ = fromEvent(stopButton, 'click');
+
+startClick$
+  .pipe(
+    /*
+     * Every start click we will map to an interval which
+     * emits every 5 seconds to request a new image.
+     * Since we do not want multiple polls active at once,
+     * we'll use exhaustMap to ignore any emissions
+     * while the inner interval is running.
+     */
+    exhaustMap(() =>
+      timer(0, 5000).pipe(
+        tap(() => (pollingStatus.innerHTML = 'Active')),
+        switchMapTo(
+          ajax.getJSON('https://random.dog/woof.json').pipe(pluck('url'))
+        ),
+        /*
+         * Cancel the poll when stop click stream emits
+         */
+        takeUntil(stopClick$),
+        /*
+         * We'll use finalize to update the status to stopped
+         * each time the inner observable completes.
+         */
+        finalize(() => (pollingStatus.innerHTML = 'Stopped'))
+      )
+    )
+  )
+  .subscribe(url => (dogImage.src = url));
+
+
+/********************
+ * Have a question, comment, or just want to chat about RxJS?
+ * Ping me on Ultimate Courses slack or on 
+ * Twitter https://twitter.com/btroncone
+ * I look forward to hearing from you!
+ * For additional RxJS info and operator examples check out
+ * Learn RxJS (https://www.learnrxjs.io) and
+ * the Ultimate Course RxJS blog!
+ * (https://ultimatecourses.com/blog/category/rxjs)
+ ********************/
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+customRetry with retryDelay retryMax retryStatusCodes
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+import './style.css';
+console.clear();
+
+// begin lesson code
+import { fromEvent, throwError, timer, range, of, Observable } from 'rxjs';
+import { takeUntil, finalize, zip, mergeMap, retryWhen, mergeMapTo, catchError } from 'rxjs/operators';
+
+// streams
+const click$ = fromEvent(document, 'click');
+
+export const genericRetryStrategy = ({
+  retryAttempts = 3,
+  scalingDuration = 1000,
+  excludedStatusCodes = []
+}: {
+  retryAttempts?: number;
+  scalingDuration?: number;
+  excludedStatusCodes?: number[];
+} = {}) => (obs: Observable<any>) => {
+  return obs.pipe(
+    retryWhen(attempts => {
+      return attempts.pipe(
+        mergeMap((error, i) => {
+          const attemptNumber = i + 1;
+          if (
+            attemptNumber > retryAttempts ||
+            excludedStatusCodes.find(e => e === error.status)
+          ) {
+            console.log('Giving up!');
+            return throwError(error);
+          }
+          console.log(
+            `Attempt ${attemptNumber}: retrying in ${attemptNumber *
+            scalingDuration}ms`
+          );
+          return timer(attemptNumber * scalingDuration);
+        })
+      );
+    })
+  );
+};
+
+/* 
+ * Instead of dragging all of the retry logic around,
+ * we can extract it into a customizable function
+ * that can be used throughout our application.
+ */
+// click$.pipe(
+//   mergeMapTo(throwError({
+//     status: 400,
+//     message: 'Server error'
+//   }).pipe(
+//       retryWhen(attempts => {
+//         return attempts.pipe(
+//           mergeMap((error, i) => {
+//             const attemptNumber = i + 1;
+//             if (
+//               attemptNumber > 3 ||
+//               [404, 500].find(e => e === error.status)
+//             ) {
+//               console.log('Giving up!');
+//               return throwError(error);
+//             }
+//             console.log(
+//               `Attempt ${attemptNumber}: retrying in ${attemptNumber *
+//               1000}ms`
+//             );
+//             return timer(attemptNumber * 1000);
+//           })
+//         );
+//       }),
+//       catchError(err => of(err.message))
+//     )
+//   )
+// ).subscribe(console.log);
+
+// simulate network request with error
+click$.pipe(
+  mergeMapTo(throwError({
+    status: 500,
+    message: 'Server error'
+  }).pipe(
+    genericRetryStrategy({
+      retryAttempts: 4,
+      scalingDuration: 2000
+    }),
+    // you may want different catching strategy depending on page
+    catchError(err => of(err.message))
+  ))
+).subscribe(console.log);
+
+/********************
+ * Have a question, comment, or just want to chat about RxJS?
+ * Ping me on Ultimate Courses slack or on
+ * Twitter https://twitter.com/btroncone
+ * I look forward to hearing from you!
+ * For additional RxJS info and operator examples check out
+ * Learn RxJS (https://www.learnrxjs.io) and
+ * the Ultimate Course RxJS blog!
+ * (https://ultimatecourses.com/blog/category/rxjs)
+ ********************/
+
+function wrapWithLoadingScreen<T>(obs$: Observable<T>): Observable<T> {
+  return of(null).pipe(
+    tap(() => console.log("show loading screen")),
+    switchMap(() => obs$),
+    tap(
+      () => {},
+      () => console.log("hide loading screen"),
+      () => console.log("hide loading screen")
+    ),
+  );
+}

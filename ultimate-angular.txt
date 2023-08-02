@@ -1,0 +1,34 @@
+Property-Binding und Event-Binding
+
+Oneway Dataflow:
+------------------------------------
+Property-Binding: Data down
+Event-Binding: Data up
+
+Template:
+------------------------------------
+[prop]="someprop" - property binding
+(remove)="onRemoveHandler($event)"
+
+Controller Class
+-----------------------------------
+@Input() someprop
+@Output() remove: EventEmitter<any>
+
+onRemoveHandler(event){
+  // do something with event
+  remove.emit(event)
+} 
+
+
+Smart Component and Presentational Component
+----------------------------------------------
+Smart Component passes Data down to Child Components with @Input()
+Presentational Component (Child Component) passes Data up with @Output() and EventEmitter
+
+NgModule
+
+
+Feature Module: Passenger Dashboard
+
+

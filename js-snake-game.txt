@@ -1,0 +1,190 @@
+snake.js
+---------------------
+import { getDirection } from "./direction.js"
+
+export const SNAKE_SPEED = 5
+const snakeBody = [{ x: 11, y: 11 }]
+let newSegments = 0
+
+export function update() {
+  addSegments()
+
+  const currDirection = getDirection()
+  for (let i = snakeBody.length - 2; i >= 0; i--) {
+    snakeBody[i + 1] = { ...snakeBody[i] }
+  }
+
+  snakeBody[0].x += currDirection.x
+  snakeBody[0].y += currDirection.y
+}
+
+export function draw(gameBoard) {
+  snakeBody.forEach(segment => {
+    const snakeElement = document.createElement('div')
+    snakeElement.style.gridRowStart = segment.y
+    snakeElement.style.gridColumnStart = segment.x
+    snakeElement.classList.add('snake')
+    gameBoard.appendChild(snakeElement)
+  })
+}
+
+export function expandSnake(amount) {
+  newSegments += amount
+}
+
+export function onSnake(position, { ignoreHead = false } = {}) {
+  return snake.some((segment, index) => {
+    if (ignoreHead && index === 0) return false
+    return equalPositions(segment, position)
+  })
+}
+
+export function getSnakeHead() {
+  return snake[0]
+}
+
+export function snakeBitItself() {
+  return onSnake(snake[0], { ignoreHead: true })
+}
+
+function equalPositions(pos1, pos2) {
+  return pos1.x === pos2.x && pos1.y === pos2.y
+}
+
+function addSegments() {
+  for (let i = 0; i < newSegments; i++) {
+    snakeBody.push({ ...snakeBody[snakeBody.length - 1] })
+  }
+
+  newSegments = 0
+}
+----------------------------------------------------------------
+game
+-----------------------------------------------------------------
+import { update as updateSnake, draw as drawSnake, SNAKE_SPEED, getSnakeHead, snakeBitItself } from './snake.js'
+import { update as updateFood, draw as drawFood } from './food.js'
+import { outsideGrid } from './grid.js'
+
+let lastRenderTime = 0
+let gameOver = false
+const gameBoard = document.getElementById('game-board')
+
+function main(currentTime) {
+  if (gameOver) {
+    if (confirm('You lost. Press ok to restart.')) {
+      window.location = '/'
+    }
+    return
+  }
+
+
+  window.requestAnimationFrame(main)
+  const secondsSinceLastRender = (currentTime - lastRenderTime) / 1000
+  if (secondsSinceLastRender < 1 / SNAKE_SPEED) return
+
+
+  lastRenderTime = currentTime
+
+  update()
+  draw()
+}
+
+window.requestAnimationFrame(main)
+
+function update() {
+  updateSnake()
+  updateFood()
+  checkDeath()
+}
+
+function draw() {
+  gameBoard.innerHTML = ''
+  drawSnake(gameBoard)
+  drawFood(gameBoard)
+}
+
+function checkDeath() {
+  gameOver = outsideGrid(getSnakeHead()) || snakeBitItself()
+}
+------------------------------------------------------------------------
+grid
+-------------------------------------------------------------------------
+const GRID_SIZE = 21
+
+export function randomGridPosition() {
+  return {
+    x: Math.floor(Math.random() * GRID_SIZE) + 1,
+    y: Math.floor(Math.random() * GRID_SIZE) + 1
+  }
+}
+
+export function outsideGrid(position) {
+  return (
+    position.x < 1 || position.x > GRID_SIZE ||
+    position.y < 1 || position.y > GRID_SIZE
+  )
+}
+----------------------------------------------------------------------------
+food
+----------------------------------------------------------------------------
+import { onSnake, expandSnake } from './snake.js'
+import { randomGridPosition } from './grid.js'
+
+let food = getRandomFoodPosition()
+const EXPANSION_RATE = 5
+
+export function update() {
+  if (onSnake(food)) {
+    expandSnake(EXPANSION_RATE)
+    food = getRandomFoodPosition()
+  }
+}
+
+export function draw(gameBoard) {
+  const foodElement = document.createElement('div')
+  foodElement.style.gridRowStart = food.y
+  foodElement.style.gridColumnStart = food.x
+  foodElement.classList.add('food')
+  gameBoard.appendChild(foodElement)
+}
+
+function getRandomFoodPosition() {
+  let newFoodPosition
+  while (newFoodPosition == null || onSnake(newFoodPosition)) {
+    newFoodPosition = randomGridPosition()
+  }
+  return newFoodPosition
+}
+---------------------------------------------------------------------------------------
+input - direction
+-------------------------------------------------------------------------------------
+let currDirection = { x: 0, y: 0 }
+let prevDirection = { x: 0, y: 0 }
+
+window.addEventListener('keydown', e => {
+  switch (e.key) {
+    case 'ArrowUp':
+      if c!== 0) break
+      currDirection = { x: 0, y: -1 }
+      break
+    case 'ArrowDown':
+      if (prevDirection.y !== 0) break
+      currDirection = { x: 0, y: 1 }
+      break
+    case 'ArrowLeft':
+      if (prevDirection.x !== 0) break
+      currDirection = { x: -1, y: 0 }
+      break
+    case 'ArrowRight':
+      if (prevDirection.x !== 0) break
+      currDirection = { x: 1, y: 0 }
+      break
+  }
+})
+
+export function getDirection() {
+  prevDirection = currDirection
+  return currDirection
+}
+-----------------------------------------------------------------------------
+	

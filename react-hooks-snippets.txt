@@ -1,0 +1,138 @@
+generic useReducer
+-----------------------------------------------------------------
+import { useReducer } from "react";
+
+function stateReducer<T>(state: T, action: Partial<T>): T {
+  return { ...state, ...action };
+}
+
+export function useStateReducer<T>(initialState: T) {
+  return useReducer<React.Reducer<T, Partial<T>>>(stateReducer, initialState);
+}
+
+----------------------------------------------------------------------------------
+
+data bind text input
+const { useState } = React;
+
+const App = () => {
+  const [value, setValue] = useState('Hello World');
+  const handleChange = (e) => setValue(e.target.value);
+  return (
+    <div>
+      <input type="text" value={value} onChange={handleChange} />
+      <p>{value}</p>
+    </div>
+  );
+};
+
+ReactDOM.render(<App />, document.getElementById('app'));
+
+-----------------------------------------------------------------------------------------
+React-Use-State-Reducer
+A hook to avoid multiple declaration of const [xLoading, setXLoading] = useState(false)
+
+Sample
+npm i react-use-state-reducer
+
+import React from "react";
+import useStateReducer from "react-use-state-reducer";
+ 
+export default function App() {
+  const [state, dispatch] = useStateReducer({
+    init: true,
+    fetch: false
+  });
+ 
+  React.useEffect(() => {
+    // /!\ Don't do that at home !! `setTimeout` had issues with React/hooks : https://medium.com/javascript-in-plain-english/usetimeout-react-hook-3cc58b94af1f
+    setTimeout(() => dispatch(false, "init"), 1000);
+  }, [dispatch]);
+ 
+  if (state["init"]) {
+    return <span>Initializing</span>;
+  }
+ 
+  return (
+    <div>
+      <span>{state["fetch"] ? "fetching" : "fetched"}</span>
+      <span>{state[undefined]}</span>
+      <button onClick={() => dispatch(true, "fetch")}>Start fetch</button>
+      <button onClick={() => dispatch(false, "fetch")}>Stop fetch</button>
+    </div>
+  );
+}
+ 
+ 
+ReactDOM.render(<App />, document.getElementById("root"));
+-----------------------------------------------------------------------------------------
+interface Place{
+  city:string,
+  country:string
+}
+const initialState:Place = {
+  city: 'Rosebud',
+  country: 'USA'
+};
+function reducer(state:Place, action):Partial<Place> {
+  switch (action.type) {
+    case 'city':
+      return { city: action.payload };
+    case 'country':
+      return { country: action.payload };
+  }
+}
+function PlaceForm() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+return (
+    <form>
+      <input type="text" name="city"  onChange={(event) => {
+          dispatch({ type: 'city',payload: event.target.value})
+        }} 
+        value={state.city} />
+      <input  type="text"  name="country"   onChange={(event) => {
+          dispatch({type: 'country', payload: event.target.value })
+        }}
+ 
+        value={state.country} />
+   </form>
+  );
+}
+--------------------------------------------------------------------------------------------------
+/** kent c dodds - github react-hooks
+ *
+ * @param {String} key The key to set in localStorage for this value
+ * @param {Object} defaultValue The value to use if it is not already in localStorage
+ * @param {{serialize: Function, deserialize: Function}} options 
+ * The serialize and deserialize functions to use (defaults to JSON.stringify and JSON.parse respectively)
+ */
+
+function useLocalStorageState(
+  key,
+  defaultValue = '',
+  {serialize = JSON.stringify, deserialize = JSON.parse} = {},
+) {
+  const [state, setState] = React.useState(() => {
+    const valueInLocalStorage = window.localStorage.getItem(key)
+    if (valueInLocalStorage) {
+      return deserialize(valueInLocalStorage)
+    }
+    return typeof defaultValue === 'function' ? defaultValue() : defaultValue
+  })
+
+  const prevKeyRef = React.useRef(key)
+
+  React.useEffect(() => {
+    const prevKey = prevKeyRef.current
+    if (prevKey !== key) {
+      window.localStorage.removeItem(prevKey)
+    }
+    prevKeyRef.current = key
+    window.localStorage.setItem(key, serialize(state))
+  }, [key, state, serialize])
+
+  return [state, setState]
+}
+
+export {useLocalStorageState}
+------------------------------------

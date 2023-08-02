@@ -1,0 +1,665 @@
+rxjs observable is a monad, louis atenico
+------------------------------------------
+interface Monad {
+    of(a): Monad<a>
+    map(a -> b): Monad<b>
+    flatMap(a -> M<b>): Monad<b>
+}
+
+Maybe is a monad
+-----------------------------------------------------
+interface MaybeObserver<T> {
+    void onSubscribe(Disposable d);
+    void onSuccess(T value);
+    void onError(Throwable error);
+    void onComplete();
+}
+
+Eiter is a monad
+-----------------------------------------------------
+"use strict"
+var R = require("ramda");
+var Sequelize = require("sequelize");
+var Either = require("fantasy-eithers");
+var Left = Either.Left
+var Right = Either.Right
+var Observable = require("rx").Observable;
+var rx = require("rx");
+var EitherHelpers = require("fantasy-contrib-either")
+
+Either.fromNullable = (v, e) => {
+  if (v === null || v === undefined){
+    return Left(e)
+  } else {
+    return Right(v)
+  }
+}
+
+Either.fromTryCatch = (f) => {
+  try {
+    return Right(f())
+  } catch (e) {
+    return Left(e)
+  }
+}
+
+Either.fromTryCatch1 = (f, args) => {
+  try {
+    return Right(f(args))
+  } catch (e) {
+    return Left(e)
+  }
+}
+
+Observable.of = Observable.just;
+Observable.prototype.chain = Observable.prototype.flatMap;
+
+let ObservableEither = Either.EitherT(Observable);
+
+ObservableEither.pure = function(x){
+  return ObservableEither(x);
+}
+
+Either.prototype.liftOE = function(){
+  return ObservableEither.pure(Observable.just(this));
+}
+
+Observable.prototype.liftOE = function(){
+  return ObservableEither.pure(this.map((v) => Right(v)));
+}
+
+Either.prototype.flatMap = Either.prototype.chain
+ObservableEither.prototype.flatMap = ObservableEither.prototype.chain
+
+Promise.prototype.liftOE = function(errorDescription){
+  return ObservableEither.pure(Observable.fromPromise(this).flatMap((v) => {
+    if (v instanceof Array){
+      return Observable.from(v).map((v) => Right(v))
+    } else {
+      return Observable.just(Either.fromNullable(v, errorDescription))
+    }
+  }).catch((e) => Observable.just(Left(e))))
+}
+Sequelize.Promise.prototype.liftOE = Promise.prototype.liftOE;
+ObservableEither.prototype.reduce = function(f, seed){
+  return ObservableEither.pure(this.run.reduce(f, seed))
+}
+
+ObservableEither.prototype.allRight = function(){
+  return this.reduce((prev, e) => {
+    let prevTrue = EitherHelpers.isRight(prev);
+    let eTrue = EitherHelpers.isRight(e);
+    if (prevTrue && eTrue){
+      return Right(true)
+    } else {
+      return Left(false)
+    }
+  }, ObservableEither.of(true))
+}
+
+ObservableEither.prototype.filter = function(f){
+  return this.flatMap((e) => {
+    if (f(e)){
+      return ObservableEither.of(e)
+    } else {
+      return Observable.empty().liftOE()
+    }
+  })
+}
+
+ObservableEither.prototype.zip = function(other, f){
+  return this.flatMap((e1) => {
+    return other.map((e2) => {
+      console.log(e1);
+      console.log(e2);
+      return f(e1, e2)
+    })
+  })
+}
+
+Sequelize.Model.prototype.tryTo = function(){
+  let method = R.take(1, arguments);
+  let methodArgsAndError = R.drop(1, arguments);
+  let methodArgs = R.dropLast(1, methodArgsAndError);
+  let error = R.takeLast(1, methodArgsAndError)[0];
+  try {
+    return this[method].call(this, ...methodArgs).liftOE(error);
+  } catch (e) {
+    return Left(e).liftOE()
+  }
+}
+
+module.exports = {
+  ObservableEither: ObservableEither
+}
+
+"use strict"
+var m = require("monet");
+var MonadT = m.MonadT;
+var IO = m.IO;
+var Observable = require("rx").Observable;
+
+class IOObs {
+  constructor(ioObservable){
+    this.value = ioObservable;
+  }
+
+  static of(x){
+    return new IOObs(IO(() => Observable.just(x)))
+  }
+
+  map(fn){
+    var newIOObs = this.value.map((observable) => observable.map(fn));
+    return new IOObs(newIOObs)
+  }
+
+  bind(fn){
+    var newIOObs = this.value.map((observableT) => {
+      return observableT.flatMap((t) => fn(t).run())
+    })
+    return new IOObs(newIOObs);
+  }
+}
+
+var f = function(i){
+  var inner = function(j){
+    return Observable.just(j+1); // Or you can do your async IO and return a promise or Observable,
+                                 //see https://github.com/Reactive-Extensions/RxJS/blob/master/doc/api/core/operators/selectmany.md
+  };
+  var innerAsIO = inner.io1()(i);
+  return innerAsIO;
+}
+
+var o = Observable.just(42);
+var ioObservable = new IOObs(IO(() => o));
+var newO = ioObservable.bind(f);
+var newOO = ioObservable.map((i) => i+2);
+newO.value.run().subscribeOnNext(console.log)
+newOO.value.run().subscribeOnNext(console.log)
+
+
+
+// fake api
+-------------------------------------------------------------------------------------------------------
+const fakeApi$ = of(Math.random()).pipe(
+  delay(2000),
+);
+
+// store a reference to the subject
+const triggerApi$ = new Subject();
+
+// apply behavior
+const api$ = triggerApi$.pipe(
+  switchMap(
+    () => {
+      console.log('switching to api call');
+
+      // delegate to api call
+      return fakeApi$;
+    }
+  )
+);
+
+// activate (handle result)
+api$.subscribe((result) => {
+  console.log('api result', result);
+});
+
+// some outside triggers
+
+import { MonoTypeOperatorFunction, Observable } from 'rxjs';
+
+repeatLatestWhen<T>
+-------------------------------------------------------------------------------------------------------
+/**
+ * @param notifier when emits value, will trigger the last value repetition
+ */
+export function repeatLatestWhen<T>(notifier: Observable<any>): MonoTypeOperatorFunction<T> {
+  return (source: Observable<T>) => new Observable(subscriber => {
+    let latestValue: T;
+    let hasLatestValue = false;
+
+    const subscription = source.subscribe({
+      next: value => {
+        latestValue = value;
+        hasLatestValue = true;
+        subscriber.next(value);
+      },
+      error: err => subscriber.error(err),
+      complete: () => subscriber.complete()
+    });
+
+    const repeatSubscription = notifier.subscribe(() => {
+      if (!hasLatestValue || subscription.closed) {
+        return;
+      }
+
+      subscriber.next(latestValue);
+    });
+
+    return () => {
+      latestValue = null;
+      subscription.unsubscribe();
+      repeatSubscription.unsubscribe();
+    };
+  });
+}
+It makes sure that:
+
+the normal notifications are passed as usual.
+
+repeats would only occur only if a value has already been received, 
+AND the subscription is still alive.
+
+when unsubscribed, it would 
+- unsubscribe from the repeat subscription as well.
+- set the latestValue to null, to not hold on to the latest value reference and cause it not to be GC`ed.
+
+const repeatLatestWhen = <T>(notifier$: Observable<any>) =>
+  (source: Observable<T>) =>
+    combineLatest([
+      source,
+      notifier$.pipe(startWith(null)),
+    ]).pipe(
+      map(([val]) => val),
+    );
+
+-------------------------------------------------------------------------------------------
+
+Notification - observeOn, materialize, dematerialize
+---------------------------------------------------------------------------------------------
+
+Represents a push-based event or value that an Observable can emit. This class is particularly useful 
+for operators that manage notifications, like materialize, dematerialize, observeOn, and others. 
+Besides wrapping the actual delivered value, it also annotates it with metadata of, 
+for instance, what type of push message it is (next, error, or complete).
+
+See:
+materialize
+dematerialize
+observeOn
+
+observeOn
+---------------------------------------------------------------------------------------------------------
+Ensure a specific scheduler is used, from outside of an Observable.
+observeOn is an operator that accepts a scheduler as a first parameter, which will be used to 
+reschedule notifications emitted by the source Observable. It might be useful, if you do not have control 
+over internal scheduler of a given Observable, but want to control when its values are emitted nevertheless.
+
+Ensure values in subscribe are called just before browser repaint.
+const intervals = Rx.Observable.interval(10); // Intervals are scheduled
+                                              // with async scheduler by default...
+
+intervals
+.observeOn(Rx.Scheduler.animationFrame)       // ...but we will observe on animationFrame
+.subscribe(val => {                           // scheduler to ensure smooth animation.
+  someDiv.style.height = val + 'px';
+});
+
+materialize
+------------------------------------------------------------------------------------------------------------
+public materialize(): Observable<Notification<T>>source
+Represents all of the notifications from the source Observable as next emissions marked with their original types within Notification objects.
+
+Wraps next, error and complete emissions in Notification objects, emitted as next on the output Observable.
+
+
+
+materialize returns an Observable that emits a next notification for each next, error, or complete emission 
+of the source Observable. When the source Observable emits complete, the output Observable will emit next 
+as a Notification of type "complete", and then it will emit complete as well. When the source Observable emits error, 
+the output will emit next as a Notification of type "error", and then complete.
+
+This operator is useful for producing metadata of the source Observable, to be consumed as next emissions. 
+Use it in conjunction with dematerialize.
+
+Return:
+Observable<Notification<T>>	
+An Observable that emits Notification objects that wrap the original emissions from the source Observable with metadata.
+
+Example:
+Convert a faulty Observable to an Observable of Notifications
+
+var letters = Rx.Observable.of('a', 'b', 13, 'd');
+var upperCase = letters.map(x => x.toUpperCase());
+var materialized = upperCase.materialize();
+materialized.subscribe(x => console.log(x));
+
+// Results in the following:
+// - Notification {kind: "N", value: "A", error: undefined, hasValue: true}
+// - Notification {kind: "N", value: "B", error: undefined, hasValue: true}
+// - Notification {kind: "E", value: undefined, error: TypeError:
+//   x.toUpperCase is not a function at MapSubscriber.letters.map.x
+//   [as project] (http://1…, hasValue: false}
+
+alexander poshtaruk
+, forkJoinWithProgress
+---------------------------------------------------------------------------------------------------------------------------------------------
+import {defer, forkJoin, Observable, of, Subject} from 'rxjs';
+import {finalize, tap} from 'rxjs/operators';
+
+export function forkJoinWithProgress(arrayOfObservables: any[]): Observable<any[]> {
+
+    return defer(() => {
+        let counter: number = 0;
+        const percent$: Subject<number> = new Subject();
+
+        const modilefiedObservablesList: Observable<any>[] = arrayOfObservables.map(
+            (item, index) => item.pipe(
+                finalize(() => {
+                    const percentValue: number = ++counter * 100 / arrayOfObservables.length;
+                    percent$.next(percentValue);
+                })));
+
+        const finalResult$: Observable<any[]> = forkJoin(modilefiedObservablesList).pipe(
+            tap(() => {
+                    percent$.next(100);
+                    percent$.complete();
+                }));
+
+        return of([finalResult$, percent$.asObservable()]);
+    });
+
+}
+--------------------------------------------------------------------------
+
+alexander poshtaruk, finalizeWithValues
+--------------------------------------------------------------------------------------------------------------------------------------------
+import {defer, Observable} from 'rxjs';
+import {finalize, tap} from 'rxjs/operators';
+
+// finalizeWithValue - provides (unlike original finalize from rxjs) source$'s last emitted value (if any) in format {value: <lastValue>}
+// If source$ completes with noe emitted value - provide undefined.
+// Author - Benlesh, taken here: https://github.com/ReactiveX/rxjs/issues/4803#issuecomment-496711335
+
+export function finalizeWithValue<T>(callback: (value: T|any) => void): (source: Observable<any>) => Observable<T> {
+  return (source: Observable<T>): Observable<any> => defer(() => {
+    let lastValue: T;
+    return source.pipe(
+      tap(value => lastValue = value),
+      finalize(() => callback(lastValue ? {value: lastValue} : lastValue)),
+    );
+  });
+}
+-----------------------------------------------------------------------------------------------------------------------------------------------
+timeRange
+-----------------
+import {concat, merge, Observable, of} from 'rxjs';
+import {delay} from 'rxjs/operators';
+
+// timeRange - Function to create Observable that will emit values with specified delays
+// Params:
+// range - array of objects with special structure [{value: <some value>, delay: <delayInMs>},...]
+// isRelative - if true = next emissions is scheduled only after previous is complete (so delays are summarized)
+// if false - all values are scheduled at once (delay values are absolute in relation to the moment of subscription)
+//
+// Usage
+// timeRange([
+//   {value: 15, delay: 1500}, // 1500ms
+//   {value: 15, delay: 2500} // 2500ms
+// ])
+//
+// timeRange([
+//   {value: 15, delay: 1500}, // 1500ms
+//   {value: 15, delay: 2500} // 1500+2500
+// ], true);
+
+export function timeRange(range: any[], isRelative: boolean = false): Observable<any> {
+  const obsArray: Observable<any>[] = range.map(item => of(item.value).pipe(delay(item.delay)));
+  return isRelative ? concat(...obsArray) : merge(...obsArray);
+}
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+rxjs store: john lindquist
+---------------------------------------------------------------------------------------------------------------------------------------
+declare module "dispatcher" {
+    import { Subject } from 'rxjs/Subject';
+    export class Dispatcher<T> extends Subject<T> {
+        dispatch(action: T): void;
+    }
+}
+declare module "store-backend" {
+    import 'rxjs/add/operator/let';
+    import 'rxjs/add/operator/scan';
+    import { Dispatcher } from "dispatcher";
+    import { Middleware, Reducer } from "interfaces";
+    export const ActionTypes: {
+        INIT: string;
+    };
+    export class StoreBackend {
+        protected _dispatcher: Dispatcher<any>;
+        protected _reducer: Reducer<any>;
+        protected _initialState: any;
+        protected _preMiddleware: Middleware;
+        protected _postMiddleware: Middleware;
+        constructor(_dispatcher: Dispatcher<any>, _reducer: Reducer<any>, _initialState: any, _preMiddleware?: Middleware, _postMiddleware?: Middleware);
+        protected _init(): void;
+        connect(nextCallbackFn: (state: any) => void): void;
+        replaceReducer(reducer: Reducer<any>): void;
+    }
+}
+declare module "store" {
+    import { Observable } from 'rxjs/Observable';
+    import { BehaviorSubject } from 'rxjs/subject/BehaviorSubject';
+    import 'rxjs/add/operator/map';
+    import 'rxjs/add/operator/distinctUntilChanged';
+    import { Action, Reducer } from "interfaces";
+    import { StoreBackend } from "store-backend";
+    import { Dispatcher } from "dispatcher";
+    export class Store<T> extends BehaviorSubject<T> {
+        private _dispatcher;
+        private _backend;
+        constructor(_dispatcher: Dispatcher<Action>, _backend: StoreBackend, initialState?: T);
+        select<R>(keyOrSelector: ((state: T) => R) | string | number | symbol): Observable<R>;
+        getState(): any;
+        dispatch(action: Action): void;
+        next(action: any): void;
+        error(error?: any): void;
+        replaceReducer<V>(reducer: Reducer<V>): void;
+    }
+}
+declare module "interfaces" {
+    import { Observable } from 'rxjs/Observable';
+    export interface Action {
+        type: string;
+        payload?: any;
+    }
+    export interface Reducer<T> {
+        (state: T, action: Action): T;
+    }
+    export interface Middleware {
+        (observable: Observable<any>): Observable<any>;
+    }
+}
+declare module "utils" {
+    import { Reducer } from "interfaces";
+    export function combineReducers(reducers: any): Reducer<any>;
+    export const compose: (...funcs: any[]) => (...args: any[]) => any;
+}
+declare module "ng2" {
+    import { Provider } from 'angular2/core';
+    import { Middleware } from "interfaces";
+    export const PRE_MIDDLEWARE: any;
+    export const POST_MIDDLEWARE: any;
+    export const RESOLVED_PRE_MIDDLEWARE: any;
+    export const RESOLVED_POST_MIDDLEWARE: any;
+    export const REDUCER: any;
+    export const INITIAL_STATE: any;
+    export function provideStore(reducer: any, initialState?: any): any[];
+    export function usePreMiddleware(...middleware: Array<Middleware | Provider>): any[];
+    export function usePostMiddleware(...middleware: Array<Middleware | Provider>): any[];
+    export function createMiddleware(useFactory: (...deps: any[]) => Middleware, deps?: any[]): Provider;
+    export function provideMiddlewareForToken(token: any, _middleware: any[]): Provider[];
+}
+declare module "@ngrx/store" {
+    export * from "interfaces";
+    export * from "store";
+    export * from "utils";
+    export * from "dispatcher";
+    export * from "store-backend";
+    export * from "ng2";
+}
+
+
+rxjs convienience operators:
+----------------------------------
+startWith -> concatMap
+concatMap -> mergeMap
+
+import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
+import { isEqual, isNull, isUndefined } from 'lodash';
+import { Observable, OperatorFunction, defer, empty, of, merge } from 'rxjs';
+import { distinctUntilChanged, filter, map, shareReplay } from 'rxjs/operators';
+
+/**
+ * Convenience RxJS operator that filters out undefined & null and modifies the downstream type
+ * appropriately.
+ */
+export function exists<T>(): OperatorFunction<T | undefined | null, T> {
+  return filter(
+    (v: T | undefined | null): v is T => !isUndefined(v) && !isNull(v),
+  );
+}
+
+/**
+ * Get an observable for the latest value of a control including its initial value.
+ *
+ * @param source The AbstractControl itself or its ancestor in the hierarchy.
+ * @param path If included, the path from source to the control. If not included, then source is
+ * used directly.
+ */
+export function toValueOfControl<T>(
+  source: AbstractControl,
+  path?: string | (string | number)[],
+): Observable<T> {
+  const control = path ? source.get(path) : source;
+  if (!control) {
+    return empty();
+  }
+  // startWith evaluates immediately, but we need to get the value of the control at subscription
+  // time. Deferring allows us to get the updated value.
+  return merge(control.valueChanges, defer(() => of(control.value))).pipe(
+    distinctUntilChanged(isEqual),
+    shareReplay(1),
+  );
+}
+
+/**
+ * Get an observable for the latest raw value of a control including its initial raw value.
+ *
+ * @param source The AbstractControl itself or its ancestor in the hierarchy.
+ * @param path If included, the path from source to the control. If not included, then source is
+ * used directly.
+ */
+export function toRawValueOfControl<T>(
+  source: AbstractControl,
+  path?: string | (string | number)[],
+): Observable<T> {
+  const control = path ? source.get(path) : source;
+  if (!control) {
+    return empty();
+  }
+  if (isFormGroup(control) || isFormArray(control)) {
+    // startWith evaluates immediately, but we need to get the value of the control at
+    // subscription time. Deferring allows us to get the updated value.
+    return merge(control.valueChanges, defer(() => of(control.getRawValue()))).pipe(
+      // get the raw value that contains all of the children, even the disabled ones
+      map(_value => control.getRawValue()),
+      distinctUntilChanged(isEqual),
+      shareReplay(1),
+    );
+  } else {
+    // a FormControl doesn't distinguish between value and rawValue, so just use the other function.
+    return toValueOfControl(control);
+  }
+}
+
+/**
+ * An RxJS operator that emits true if the source string starts with any of the given prefixes.
+ * @param prefixes Array of string prefixes.
+ */
+export function startsWith(prefixes: string[]) {
+  return map<string, boolean>(type => prefixes.some(pre => type.startsWith(pre)));
+}
+
+function isFormGroup(control: AbstractControl): control is FormGroup {
+  return control instanceof FormGroup;
+}
+
+function isFormArray(control: AbstractControl): control is FormArray {
+  return control instanceof FormArray;
+}
+
+/**
+ * An RxJS operator for the common shareReplay use-case where
+ * refCount = true and bufferSize = 1. Equivalent to shareReplay(1) in older
+ * versions of rxjs.
+ */
+export function shareReplay1<T>() {
+  return shareReplay<T>({ refCount: true, bufferSize: 1 });
+}
+
+diff operator - Drew Wiens
+----------------------------------
+import { map, toPairs, fromPairs, differenceWith, isEqual } from 'lodash';
+import { OperatorFunction, pipe } from 'rxjs';
+import { pairwise } from 'rxjs/operators';
+
+/**
+ * RxJS operator that emits an object containing only the key-value pairs that changed. Does not
+ * emit anything until at least two values have been received.
+ */
+export function diff<T extends Record<string, any>>(): OperatorFunction<T, Partial<T>> {
+  return pipe(
+    map(toPairs),
+    pairwise(),
+    map(([prev, next]) => fromPairs(differenceWith(next, prev, isEqual)) as Partial<T>),
+  );
+}
+
+
+pausable opertor
+-----------------------------------------------------------------------------------------------------------
+
+class PausableObservable<T> extends Observable<T> {
+  private pauser: BehaviorSubject<boolean>;
+
+  pause(){
+    this.pauser.next(true);
+  }
+
+  resume(){
+    this.pauser.next(false);
+  }
+}
+
+function pausable() {
+  return function pauseFn<T>(source: Observable<T>): PausableObservable<T> {
+    const pausableProto = PausableObservable.prototype;
+
+    const pauser = new BehaviorSubject(false);
+    const newSource = pauser.pipe(
+      switchMap(paused => paused ? NEVER : source.pipe(materialize())),
+      dematerialize()
+    )
+
+    const pausable = Object.create(newSource, {
+      pause: { value: pausableProto.pause },
+      resume: { value: pausableProto.resume },
+      pauser: { value: pauser }
+    });
+    return pausable as PausableObservable<T>;
+  };
+}
+
+-----------------------------------------------------
+const counter$ = Observable
+  .merge(
+    Observable.fromEvent(upButton, "click").map(1),
+    Observable.fromEvent(downButton, "click").map(-1)
+  )
+  .startWith(0)
+  .scan((prev, x) => prev + x);
+
+counter$.subscribe(renderMyComponent);
+------------------------------------

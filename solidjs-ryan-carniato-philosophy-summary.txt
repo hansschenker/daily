@@ -1,0 +1,30 @@
+- State Tree and Component Tree are two separate concerns
+------------------------------------------------------------------------------
+- State Tree and Component Tree are two separate concern which should not be coupled
+  Problem React: Component Lifecycle and State update are tighly coupled
+                 Component rerenders when state changes
+
+Computations not Components
+------------------------------------------------------------------------------
+- Components are for code organization not for State management
+  components are essential building blocks that allow our programs to be modular
+
+- use functions as building blocks for the framework not classes
+------------------------------------------------------------------------------
+  - functions are leightweight
+
+  - functions capture closures
+
+  - wrap any reactive computation in a function and rerun that function when its dependencies update
+
+  - automatic rerunning of a function happens whenever the 
+    - function gets called in a tracking scope, 
+      - such as a JSX expression or 
+      - API calls that build "computations" (createEffect, createMemo, etc.).
+
+- functions for state update
+  - signal is a getter and setter function with a value
+  - computed is deriving state from a signal
+  - effect runs when a signal value changes
+
+-  signal is a synchronous computation of a single value,

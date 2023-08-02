@@ -1,0 +1,299 @@
+solid - synchronous synchronization
+      - templating and UI
+      - no real sense of time
+      - createMemo -> computation is cached (does not need to run again)
+                   -> we can ensure topological sorting.. ie no diamond problem
+
+signal is a primitive like promise
+----------------------------------
+- createSignal is state - read (observer) 
+                        - write (observable) for a single value
+
+- what is the difference between useState and createSignal
+
+export function createSignal(value) {
+  const read = () => value
+  const write = (next) => value => next
+  return [read, write]
+}
+
+// better naming for createSignal
+export function stateChange(value) {
+  const read = () => value
+  const write = (next) => value => next
+  return [read, write]
+}
+
+// better naming for createEffect(() => console.log(x3()))
+                     update(() => x3())
+
+Keep in mind the point of this sort of system is synchronous synchronization. 
+Things like templating and UI. No real sense of time. If wrapped with `createMemo` nodes computation 
+is cached and we can ensure topological sorting.. ie no diamond problem
+
+
+
+
+on Apr 19, 2021
+Maintainer
+The main reason for createEffect is to handle stuff after render like interactions with the DOM. I don't see any problem with this. The only place where I feel there are some gaps are that I haven't really figured out how to make Observables play into stuff like Suspense. Promises are easy since you know they are single purpose. I'm unclear if we wired observables in how to determine when we should consider things stale.
+
+I mean yes... but that's true of anything right. I tend to not use createEffect because I want to not block rendering, but simply because that use case is where I tend to use it. If anything, if there are recalculations involved I'd rather do it in createComputed so that we can get those changes in before render to avoid sort of ping ponging. Like if createEffect ever set state you would be doing double renders. While not a pattern I recommend there are places and in those you'd probably want to use the more immediate createComputed.
+
+In general don't view these observables the same as createEffect. Effects are the result of computations in the reactive system that are then output to the outside. The way you are using Observables always will end up setting a signal which is at the start, not the end of this process. These are more like events or actions.
+
+As far as Solid is concerned this part is locked:
+updateSignal -> update Memos(Computeds) -> update render -> update Effects
+
+What triggers the the signals though can be a number of things. They can be the Computeds (which make a bit of a cycle before we do rendering), maybe they can be effects although I don't recommend that. But for the most part they are Async returns (promise resolutions) and user events. So I just view this as matter of how soon you move from the imperative handlers to the reactive system. The simplest event handler is setting a signal. But usually it involves some imperative transformation and setting a signal. RxJS fits nicely as a way of bridging that gap in a declarative way.
+
+So I see it more as pushing the signal setting to the end of the transformation change instead of the beginning. In the synchronous case if this was pure Solid it would be the createMemos doing the work. What RxJS does nicely here is model async transformations outside of Solid's reactive system in a way that is more traceable. For shallow things it isn't worth it since a simple map is basically what Solid's primitives are good for. But for more involved this then this then this sort of flows Rx is definitely a more compact way of doing this. I've considered adding generator based flows etc.. But I haven't really worked out the details. The nice thing about streams is they have completion (ie their own sense of time) so they fit nicely into that. Where Solid's signals basically exist for all time. You can turn off the equality check on Solid's signals to basically mimic a simple behavior but there is still no concept of complete.
+
+You must be logged in to vote
+2 replies
+@jorroll
+Comment options
+jorroll
+on Apr 20, 2021
+Author
+Thanks so much for all this information! Your reply has actually answered a few questions I've had (e.g. it was unclear, exactly, what createComputed was for until now).
+
+As far as Solid is concerned this part is locked:
+updateSignal -> update Memos(Computeds) -> update render -> update Effects
+
+That's a really helpful diagram! That really helps explain what createEffect is useful for. It was already clear that, for non-observable folks, they would need to use createEffect or createMemo just to achieve some level of reactivity, but it wasn't clear where createEffect fit in for folks using observables. I imagine it would also be possible for someone to create an rxjs scheduler which would delay work until during the createEffect callback.
+
+What RxJS does nicely here is model async transformations outside of Solid's reactive system in a way that is more traceable. For shallow things it isn't worth it since a simple map is basically what Solid's primitives are good for.
+
+I see your point, but to the extent that I can eliminate learning new things, and continue using things I'm familiar with, I want to do that. So at the moment, to the extent that I can replace a Solidjs signal with an observable I'm probably going to do that -- even if I don't need to. And you've made a library which is flexible enough that this can happen, which is really great! I feel like this quality is making learning Solidjs a breeze!
+
+Given the similarities between an observable and a signal, it's not clear why Solidjs doesn't support the use of observables directly? I can see how signals "act like" static values for people who aren't familiar with stream based programming (i.e. I assume signals are more accessible to most people than observables), but it seems like this library could automatically transform an observable value embedded inside JSX into a signal? Which would open the door to projects using either signals or observables, whichever they prefer. Hopefully this would make tracking Suspense for observables easy (if an observable is embedded inside JSX and hasn't emitted a value, the component would be suspended. Once a value is emitted, the component is unsuspended.). Which segues to...
+
+I don't see any problem with this. The only place where I feel there are some gaps are that I haven't really figured out how to make Observables play into stuff like Suspense...I'm unclear if we wired observables in how to determine when we should consider things stale.
+
+Your word-choice of "stale" throws me off, since I thought suspense only applied to "pending" data (not stale data), but ignoring that: I maintain a small Angular library for managing loading state, and my experience there suggests that an observable can be considered "loading" until it's first emission. For example, in Solidjs you could provide a markLoading hook that accepts an observable and marks the component as suspended until the first observable emission. I imagine this would satisfy the vast majority of observable-loading use cases.
+
+For example, say you have UserService#getUser(): Observable<User>. This service relies on ApolloClient under the hood. The first time you call getUser() it needs to load data from an api and takes a bit to emit. After that, data is loaded synchronously from a cache.
+
+@jorroll
+Comment options
+jorroll
+on Apr 20, 2021
+Author
+Some pseudo code using RXJS to detect if an Observable is "pending":
+
+declare let observableValue: Observable<unknown>;
+
+const subscription = observableValue.pipe(take(1)).subscribe();
+const pending = !subscription.closed;
+
+Yeah and you might be surprised but I started with observables. I had used signals in Knockout previously and had hopes of unifying things. The problem was I kept coming back to signals. First off generally I wanted my observables Hot, so using BehaviorSubjects everywhere. And that was fine other than by far the biggest advantage of fine-grained reactive is the automatic dependency tracking in terms of templating. It maps to regular expressions. I can write:
+
+<div title={`This message is for ${firstName()} ${lastName()}`}>Hi</div>
+Now I've seen less granular rendering systems basically treat the whole thing as a combineLatest but I want to plug streams into individual bindings. So this is a bit awkward unless all mapping is done outside of the template and we are binding to just the observable coming in. I started down a path of augmenting BehaviorSubjects to be auto-trackable and found I was doing excessive toBehavior subjects everywhere because sometimes you want to auto-track intermediate values too.
+
+That all being said I have considered being able to map them to signals in a sneakier compiler way. Like maybe using some sort of naming convention like $. I think TS would choke a lot though if I did that. But I could collect all observables used in the JSX templates that are named as such and convert them into signals in local scope and bind to those instead. Maybe the solution is a pseudo helper function that would signal the change and make TS shut up. like $(observable). Still this would only work in templates and couldn't play nice inside of Solid's primitive's like effects since I'm only going to compile what is in scope.
+
+Suspense is an interesting topic in a synchronous system like you find like Solid's async has no meaning so Suspense isn't simply not having a value (as that isn't a real state) as much as intentionally marking that node as pending. And we we do that by using promise factory to pend while the promise is pending. For simple Suspense we are just talking about showing a loading state. Where things get more interesting is Concurrent rendering and Transitions. For instance when a page first loads I have to show the fallback data because I have nothing to show. This is well understood. However, when I navigate to the next page I don't need to recede back to that fallback. With transitions enabled any changed that happens within one gets held from view until all async operations have completed. Although the held page is marked as stale allowing for updates to reflect that. In essence we show the current page while the next page is rendering and loading off screen, and more so we can still apply updates to the in view page without changes in the future branch being seen or clashing.
+
+So the part I'm less clear about with Observables is knowing if we should enter transitions. Promises are separate discrete happenings so it is pretty simple to attach these to the transition and then they finish. I imagine there is a good way to do this I just wasn't sure if I provided my resources an observable instead of a promise factory how to handle it. I actually think feeding promises into resources for async might be one of the best and most logical interopt points. Maybe it would make sense to wait for the observable in these cases to complete and view each load as a full stream? Any thoughts.
+
+You must be logged in to vote
+1 reply
+@jorroll
+Comment options
+jorroll
+on Apr 21, 2021
+Author
+So this is a bit awkward unless all mapping is done outside of the template and we are binding to just the observable coming in.
+
+Thankfully I chewed on your response for a bit before writing up an answer, because I think I'm now understanding your concerns. Initially, I was envisioning that something like the following:
+
+<div title={`This message is for ${firstName()} ${lastName()}`}>Hi</div>
+Would be written by a dev using observables as:
+
+declare const firstName: Observable<string>;
+declare const lastName: Observable<string>;
+
+<div title={combineLatest([firstName, lastName]).pipe(map(([f, l]) => `This message is for ${f} ${l}`))}>Hi</div>
+But I realize that, in order for this to work, div#title in JSX would need to typed to accept observable values, otherwise typescript will complain. Letting everything accept an observable value in the JSX seems like it might be fine (I'm not sure how involved updating all the type definitions would be, so forgive me if actually it would be a large undertaking).
+
+More broadly though, the benefit of this change does seem small. It's already really easy to convert an observable to a signal, it's not obvious that the effort involved in having the compiler do this automatically would be worthwhile. You can already do this:
+
+/** Converting an observable to a signal */
+export function toSignal<T>(
+  input: Observable<T>,
+  defaultValue?: T,
+  cleanup$ = onCleanup$(),
+) {
+  const [value, setValue] = createSignal(defaultValue as T);
+
+  input.pipe(takeUntil(cleanup$)).subscribe(setValue);
+
+  return [value, setValue] as const;
+}
+
+/** Returns an observable that emits once when a component is cleaned up */
+export function onCleanup$() {
+  const obs = new Subject<void>();
+
+  onCleanup(() => {
+    obs.next();
+    obs.complete();
+  });
+
+  return obs.asObservable();
+}
+declare const firstName: Observable<string>;
+declare const lastName: Observable<string>;
+
+const [message] = toSignal(
+  combineLatest([firstName, lastName]).pipe(
+    map(([f, l]) => `This message is for ${f} ${l}`)
+  ),
+);
+
+<div title={message()}>Hi</div>
+That all being said I have considered being able to map them to signals in a sneakier compiler way. Like maybe using some sort of naming convention like (observable). Still this would only work in templates and couldn't play nice inside of Solid's primitive's like effects since I'm only going to compile what is in scope.
+
+Ya I see your points, though I think it might be fine if it only worked within templates. But more importantly, it seems like any changes to increase support for observables would be non-breaking, and so for this reason I don't see any rush to do anything here at the moment. Again, it's already really easy to convert back and forth between observables and signals, so I think any changes would just be quality-of-life improvements.
+
+So the part I'm less clear about with Observables is knowing if we should enter transitions. Promises are separate discrete happenings so it is pretty simple to attach these to the transition and then they finish. I imagine there is a good way to do this I just wasn't sure if I provided my resources an observable instead of a promise factory how to handle it. I actually think feeding promises into resources for async might be one of the best and most logical interopt points.
+
+Did you mean "I actually think feeding observables into resources for async..." ? Promises are already used this way, correct?
+
+I haven't explored Solid's transition API at all yet, so I can't contribute much to a discussion at this point. If/when I get there, and if I have any ideas for improvement I'll definitely open a new discussion item for it.
+
+Maybe it would make sense to wait for the observable in these cases to complete and view each load as a full stream? Any thoughts.
+
+Hmm. This doesn't seem great. If someone is performing a REST request, and they decide to cast the promise to an observable because they like using observables (which certainly happens), then the observable will complete when the request finishes pending and what you describe makes sense (the observable is basically a promise at that point anyway). But I think a more common scenario would be a service (e.g. ApolloClient) which returns data as an observable and re-emits whenever the data changes. In this case the observable will never complete. So what you could do is take(1) and wait for that to complete (and it would often complete synchronously, since in many cases the data will be retrieved from a cache instead of a server). A user can already largely do this though via observable.pipe(take(1)).toPromise(). The downside of this approach is that it will always be asynchronous and never synchronous. I'm not sure that that matters in the context of transitions though.
+
+The examples for createResource show it being used for data fetching. It's worth noting that, if a service is returning observables, I would expect the service to be handling it's own data fetching. As such, I'd just convert the observable returned from the service to a signal and there's no need for createResource.
+
+Comment options
+
+jorroll
+on Apr 21, 2021
+Author
+This discussion actually reminds me of another question: it's unclear how props changes are handled. My tentative assumption is that, if a prop changes then the component function is called again and the component is re-rendered. Is this correct? Props don't appear to be signals, so there doesn't appear to be a way of casting props to an observable.
+
+An example of when this matter would be something like the following:
+
+export const MyForm: Component<{ control?: FormControl }> = (props) => {
+  const control = props.control || new FormControl('defaultValue');
+
+  const [value] = toSignal(control.observe('value'));
+
+  return (
+    <div>
+      <label for="test-control">My input</label>
+      <input name="test-control" type="text" oninput={e => control.setValue(e.currentTarget.value)} />
+    </div>
+  );
+};
+If props.control changes and the component function is called again, everything works. Else, I'm guessing this will bug out.
+
+You must be logged in to vote
+5 replies
+@jorroll
+Comment options
+jorroll
+on Apr 21, 2021
+Author
+(it doesn't appear as though the docs answer this question)
+
+@ryansolid
+Comment options
+ryansolid
+on Apr 21, 2021
+Maintainer
+The answer should be in here: https://github.com/ryansolid/solid/blob/main/documentation/components.md#props. Basically components never re-render on the whole. The props are always lazy evaluated.
+
+The props are maybe signals in that they are just getters around potentially dynamic expressions. In this way I don't need to make that distinction. The consumer doesn't need to worry about any other than passing a value (although I wrap it for lazy evaluation) and the author can assume it can be reactive if they want it to be. This is a little strange to those looking for reactivity but it is very natural to those that are not. So there are some helpers to deal with merging(setting defaults) and splitting props to retain reactivity. You could also manually wrap that decision in a createMemo (or a function if it is single use).
+
+@jorroll
+Comment options
+jorroll
+on Apr 21, 2021
+Author
+Edit: I wrote this before I saw your reply just now
+
+Similarly, I also wonder how useContext() changes are handled. What if I had a component like so:
+
+export const MyForm: Component<{}> = (props) => {
+  const control = useContext(ControlContainer) || new FormControl('defaultValue');
+
+  const [value] = toSignal(control.observe('value'));
+
+  return (
+    <div>
+      <label for="test-control">My input</label>
+      <input name="test-control" type="text" oninput={e => control.setValue(e.currentTarget.value)} />
+    </div>
+  );
+};
+What would happen if the context is changed? Is the component function called again?
+
+@ryansolid
+Comment options
+ryansolid
+on Apr 21, 2021
+Maintainer
+This discussion might be helpful: #408
+
+I find a lot of people have this question but they ask it in a different way. Still finding the right way to explain this to everyone.
+
+@jorroll
+Comment options
+jorroll
+on Apr 21, 2021
+Author
+The answer should be in here: https://github.com/ryansolid/solid/blob/main/documentation/components.md#props. Basically components never re-render on the whole. The props are always lazy evaluated.
+
+So I read that, but it doesn't seem to answer my question. If I change the code to
+
+export const MyForm: Component<{ control?: FormControl }> = (props) => {
+  const control = mergeProps({ control: new FormControl('defaultValue') }, props);
+
+  const [value] = toSignal(control.observe('value'));
+
+  return (
+    <div>
+      <label for="test-control">My input</label>
+      <input name="test-control" type="text" oninput={e => control.setValue(e.currentTarget.value)} />
+    </div>
+  );
+};
+It's not clear that there is any difference. Even in this scenario, control is not typed as a signal. Unless the compiler is doing some magic under the scenes, the value signal created in const [value] = toSignal(control.observe('value')) will only ever be subscribed to the original control.
+
+Comment options
+
+jorroll
+on Apr 21, 2021
+Author
+Re: @ryansolid
+
+You could also manually wrap that decision in a createMemo (or a function if it is single use).
+
+So if I'm understanding this correctly, I can observe a specific property on a component via
+
+export const MyForm: Component<{ control?: FormControl }> = (props) => {
+  const controlSignal = createMemo(() => props.control || new FormControl('defaultValue'));
+  const controlObservable = observable(controlSignal);
+
+  const [value] = toSignal(
+    toRXJS(controlObservable).pipe(
+      switchMap(c => c.observe('value'))
+    )
+  );
+
+  return (
+    <div>
+      <label for="test-control">My input</label>
+      <input name="test-control" type="text" oninput={e => controlSignal().setValue(e.currentTarget.value)} />
+    </div>
+  );
+};
+Is this correct? It makes me wonder if const controlObservable = observable(props.control); works, but I can test that myself easily enough.
+
+In my case, the confusion is definitely stemming from the fact that props are typed as a plain object, yet apparently they are reactive. If props were typed as signals (i.e. props.control()) that would eliminate the confusion (for me at least).

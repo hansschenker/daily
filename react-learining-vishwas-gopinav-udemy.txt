@@ -1,0 +1,69 @@
+Intro
+-------
+
+
+
+Advanced
+-----------
+fragment,		<></>, creates no dom node, lets you group sibling components without creating an extra dom node
+PureComponent,		shouldComponentUpdate(shallow comparison for prop and state)
+			use immutable state coding
+			Parent pure , children also pure
+React.memo()		v16.6, creates a Higher Order Component, is the same as PureComponent for normal Component
+React.createRef,        access DOM Nodes, sample input element - focus element, or get input.value 
+			this.input = React.createRef, {ref=this.inputRef} in html, in code, this.ref.current.focus , this.ref.current.value
+React.callbackRef,      direct access to DOM Node
+
+Forwarding Refs,        parent direct ref child compoent: parent: this.inputRef = React.createRef()
+			1 ForwardRef Component in Parent Component with {ref=this.inputRef}
+React.forwardRef(c),	const FRInput = React.forwardRef((props, parentRef) => { jsx , ref={parentRef}} )
+Portals,		render children to DOM that is outside the root element
+			possibility to create multiple apps inside index.html
+React.createPortal(jsx, node) in index.html, "root", and "another-root"
+
+ErrorBoundary,          create fallback UI for Error, componentDidCatch(error, info), static getDerivedErrorFromComponent(error)
+			only erroring component should be affected
+			
+Higher Order Component, acts like higher order function , hof takes in a component as input and returns an updated component
+			const newC = hoc(originalC)
+HOC convention		"with" prefix
+			pattern for sharing common functionality
+
+Render Props,           pattern for sharing code,
+Parent (state,logic)	sharing a prop named render which is a function
+Child (render state)    component has its own render function
+                        counter sample
+			counter (parent contains logic for counting: state and inc)
+			Counter render= {(count, inc) => <Click2 count={count} inc={inc} />
+			Counter render= {(count, inc) => <Hover2 count={count} inc={inc} />
+			clickCounter (this.props.render(this.state.count, this.incrementCount) and 
+                        hoverCounter(this.props.render(this.state.count, this.incrementCount)
+
+Context			prop without prop drilling
+			triggers rerender of all children
+			1 create context (context has provider and consumer)
+			2 provide a context value
+			3 consume the context value
+
+			UserProvider value="Vishwas"
+			  ComponentC
+			UserProvider
+
+			ComponentF
+			  UserConsumer
+			    {username => {return <div> Hello {username}</div>}}
+			  UserConsumer
+
+Http			get and post requests
+			fetch and send
+			use axios (npm package)
+
+Http get		import axios from 'axiox'
+			axios.get('api').then(res => this.setState(posts: res.data)
+				        .catch(err => console.log(err)
+
+
+Http post		axios.post('api', post)
+
+axios,                  when used with redux
+			maybe use axios-redux-middleware, https://github.com/svrcekmichal/redux-axios-middleware

@@ -1,0 +1,100 @@
+What is FLIP?
+FLIP is a mnemonic device and technique first coined by Paul Lewis, which stands for 
+First, Last, Invert, Play. 
+His article contains an excellent explanation of the technique, but I’ll outline it here:
+
+First: 	before anything happens, record the current (i.e., first) 
+	position and dimensions of the element that will transition. 
+	You can use element.getBoundingClientRect() for this, as will be shown below.
+	-> current position and dimension of the element to be flipped
+
+Last: 	execute the code that causes the transition to instantaneously happen, 
+	and record the final (i.e., last) position and dimensions of the element.*
+	-> record final position and dimensions after transition has happened.
+
+Invert: since the element is in the last position, we want to create the illusion 
+	that it’s in the first position, by using transform to modify its position and dimensions. 
+	This takes a little math, but it’s not too difficult.
+	-> use transform to modify its positon and dimensions to give the illusion that last p is first p
+
+Play: 	with the element inverted (and pretending to be in the first position), 
+	we can move it back to its last position by setting its transform to none.
+	-> set transform to none to move element back to its original first position.
+
+----------------------------------------------------------------------------------------------------------
+First: 	get the initial dimensions
+
+Last: 	get dimensions after change
+
+Invert: calculate deltas to move element to its original position
+
+Play: 	animate from original position to final position
+----------------------------------------------------------------------------------------------------------
+There are two important things to note:
+
+If the element’s size changed, you can transform scale in order to “resize” 
+it with no performance penalty; however, make sure to set transformOrigin 
+to 'top left' since that’s where we based our delta calculations.
+We’re using the Web Animations API to animate the element here, 
+but you’re free to use any other animation engine, 
+such as 
+- GSAP, 
+- Anime, 
+- Velocity, 
+- Just-Animate, 
+- Mo.js and more.
+
+Below is how these steps can be implemented with the Web Animations API:
+
+
+const elm = document.querySelector('.some-element');
+
+// First: get the current bounds
+const first = elm.getBoundingClientRect();
+
+// execute the script that causes layout change
+doSomething();
+
+// Last: get the final bounds
+const last = elm.getBoundingClientRect();
+
+// Invert: determine the delta between the 
+// first and last bounds to invert the element
+const deltaX = first.left - last.left;
+const deltaY = first.top - last.top;
+const deltaW = first.width / last.width;
+const deltaH = first.height / last.height;
+
+// Play: animate the final element from its first bounds
+// to its last bounds (which is no transform)
+elm.animate([{
+  transformOrigin: 'top left',
+  transform: `
+    translate(${deltaX}px, ${deltaY}px)
+    scale(${deltaW}, ${deltaH})
+  `
+}, {
+  transformOrigin: 'top left',
+  transform: 'none'
+}], {
+  duration: 300,
+  easing: 'ease-in-out',
+  fill: 'both'
+});
+
+
+const firstElm = document.querySelector('.first-element');
+
+// First: get the bounds and then hide the element (if necessary)
+const first = firstElm.getBoundingClientRect();
+firstElm.style.setProperty('visibility', 'hidden');
+
+// execute the script that causes view change
+doSomething();
+
+// Last: get the bounds of the element that just appeared
+const lastElm = document.querySelector('.last-element');
+const last = lastElm.getBoundingClientRect();
+
+// continue with the other steps, just as before.
+// remember: you're animating the lastElm, not the firstElm.

@@ -1,0 +1,368 @@
+we now can think of state as being in a "predictable container" 
+that only changes as a reaction to these "events".
+
+The bad part is using a single immutable atom for the whole UI 
+and *synchronously* updating it when literally anything changes. 
+People like this because it’s conceptually simple, 
+but it’s a huge architectural constraint to impose on a UI.
+
+Redux
+---------------------------------
+state + action = newState
+
+For state machines:
+---------------------------------
+state + event = newState + effects
+
+function userReducer(state, event) {
+  // Return the next state, which is
+  // determined based on the current `state`
+  // and the received `event` object
+
+  // This nextState may contain a "finite"
+  // state value, as well as "extended"
+  // state values.
+
+  // It may also contain side-effects
+  // to be executed by some interpreter.
+  return nextState;
+}
+
+A reducer can be used to implement a finite state machine, 
+but most reducers are not modeled as finite state machines. 
+Let's change that by learning some of the differences 
+between Redux and state machines.
+
+The states of an object represent the lifecycle
+of that object
+
+Person 
+ state			context
+ ----------             ----------
+ birth			birthdate, weather on that day...
+ childhood              first walking steps date
+ youth			first fall in love date
+ adult			marriage date
+ old age		death of life partner
+ death                  death location
+
+interface User {
+  name: string;
+  avatar: string;
+}
+
+type UserState = 
+  | { status: 'idle'; user: null; error: null; }
+  | { status: 'loading'; user: null; error: null; }
+  | { status: 'success'; user: User; error: null; }
+  | { status: 'failure'; user: null; error: string; }
+
+
+Difference: events vs. actions
+In state machine terminology, an "action" is a side-effect 
+that occurs as the result of a transition:
+
+When an event instance is dispatched, the state machine responds by performing actions, 
+such as changing a variable, 
+performing I/O, 
+invoking a function, 
+generating another event instance, 
+or changing to another state.
+
+This isn't the only reason that using the term "action" to describe something 
+that causes a state transition is confusing; "action" also suggests something 
+that needs to be done (i.e., a command), rather than something that just happened (i.e., an event).
+
+An event describes something that occurred. Events trigger state transitions.
+An action describes a side-effect that should occur as a response to a state transition.
+
+Model Actions as Events, Not Setters
+Redux does not care what the contents of the action.type field are - 
+it just has to be defined. It is legal to write action types in present tense ("users/update"), 
+past tense ("users/updated"), described as an event ("upload/progress"), 
+or treated as a "setter" ("users/setUserName"). It is up to you to determine 
+what a given action means in your application, and how you model those actions.
+
+Another fundamental part of how state machines work are transitions. 
+A transition describes how one finite state transitions to another finite state due to an event. 
+This can be represented using boxes and arrows:
+
+However, the way that developers tend to model reducers is by determining the next state solely on the received event:
+function userReducer(state, event) {
+  switch (event.type) {
+    case 'FETCH':
+      // go to some 'loading' state
+    case 'RESOLVE':
+      // go to some 'success' state
+    case 'REJECT':
+      // go to some 'error' state
+    default:
+      return state;
+  }
+}
+
+The problem with managing state this way is that it does not prevent impossible transitions. 
+Have you ever seen a screen that briefly displays an error, and then shows some success view? 
+If you haven't, browse Reddit, and do the following steps:
+
+Search for anything.
+Click on the "Posts" tab while the search is happening.
+Say "aha!" and wait a couple seconds.
+In step 3, you'll probably see something like this (visible at the time of publishing this article):
+
+You can even split this up into individual "finite state" reducers, to make things cleaner:
+function idleUserReducer(state, event) {
+  switch (event.type) {
+    case 'FETCH':
+      // go to some 'loading' state
+
+      // ...
+    }
+    default:
+      return state;
+  }
+}
+
+function userReducer(state, event) {
+  switch (state.status) {
+    case 'idle':
+      return idleUserReducer(state, event);
+    // ...
+  }
+}
+
+¯\_(ツ)_/¯  \_(^_^)_/
+
+With extended/UML state machines (also known as statecharts), these side-effects are known as actions 
+(and will be referred to as actions for the rest of this post) and are declaratively modeled. 
+Actions are the direct result of a transition:
+
+When an event instance is dispatched, the state machine responds by performing actions, 
+such as changing a variable, performing I/O, invoking 
+a function, generating another event instance, or changing to another state.
+
+This means that when an event changes state, actions (effects) may be executed as a result, 
+even if the state stays the same (known as a "self-transition"). Just like Newton said:
+
+For every action, there is an equal and opposite reaction.
+
+Source: Newton's Third Law of Motion
+
+Actions never occur spontaneously, without cause; not in software, not in hardware, 
+not in real life, never. There is always a cause for an action to occur, 
+and with state machines, that cause is a state transition, due to a received event.
+
+
+Statecharts distinguish how actions are determined in three possible ways:
+
+Entry actions are effects that are executed whenever a specific finite state is entered
+Exit actions are effects that are executed whenever a specific finite state is exited
+Transition actions are effects that are executed whenever a specific transition between two finite states is taken.
+
+So how can this be solved? It may seem weird, but just like you can use a property to specify finite state, 
+you can also use a property to specify actions that should be executed in a declarative way:
+// ...
+case 'FETCH':
+  return {
+    ...state,
+
+    // finite state
+    status: 'loading',
+
+    // actions (effects) to execute
+    actions: [
+      { type: 'fetchUser', id: 42 }
+    ]
+  }
+// ...
+Now, your reducer will return useful information that answers the question, 
+"what side-effects (actions) should be executed as a result of this state transition?" 
+The answer is clear and colocated right in your app state: read the actions property 
+for a declarative description of the actions to be executed, and execute them:
+// pretend the state came from a Redux React hook
+const { actions } = state;
+
+useEffect(() => {
+  actions.forEach(action => {
+    if (action.type === 'fetchUser') {
+      fetch(`/api/user/${action.id}`)
+        .then(res => res.json())
+        .then(data => {
+           dispatch({ type: 'RESOLVE', user: data });
+        })
+    }
+    // ... etc. for other action implementations
+  });
+}, [actions]);
+Having side-effects modeled declaratively in some state.actions property (or similar) has some great benefits, 
+such as in predicting/testing or being able to trace when actions will or have been executed, as well 
+as being able to customize the implementation details of executing those actions. For instance, 
+the fetchUser action can be changed to read from a cache instead, all without changing any of the logic in the reducer.
+
+o clarify, state machines do not distinguish between sync and async data flows, because there is no difference. 
+This is such an important realization to make, because not only does it simplify the idea of data flow, but it also models how things work in real life:
+
+A state transition (triggered by a received event) always occurs in "zero-time"; that is, states synchronously transition.
+Events can be received at any time.
+There is no such thing as an asynchronous transition. For example, modeling data fetching doesn't look like this:
+idle . . . . . . . . . . . . success
+Instead, it looks like this:
+idle --(FETCH)--> loading --(RESOLVE)--> success
+Everything is the result of some event triggering a state transition. Middleware obscures this fact. 
+If you're curious how async cancellation can be handled in a synchronous state transition manner, 
+here's a couple of guiding points for a potential implementation:
+
+A cancellation intent is an event (e.g., { type: 'CANCEL' })
+Cancelling an in-flight request is an action (i.e., side-effect)
+"Canceled" is a state, whether it's a specific state (e.g., canceled) 
+or a state where a request shouldn't be active (e.g., idle)
+
+Finite states also make clear what events can do, depending on which state it's in, 
+as well as what all the possible states are in an application. Additionally,
+ they can map one-to-one to views in user interfaces.
+
+But most importantly, state machines are present in all of the software that you write, 
+and they have been for over half a century. Making finite state machines explicit brings 
+clarity and robustness to complex app logic, and it is possible to implement 
+them in any libraries that you use (or even no library at all).
+
+In the next post, we'll talk about how the Redux atomic global store is also half of a pattern, 
+the challenges it presents, and how it compares to another well-known model of computation (the Actor model).
+
+Local vs. global state
+The first of Redux's three principles is that there is essentially a single source of truth for your whole application state:
+
+The state of your whole application is stored in an object tree within a single store.
+
+Source: Redux's three principles: single source of truth
+
+The primary reason for this is that it makes many things easier, such as sharing data, rehydrating state, 
+"time-travel debugging", etc. But it suffers from a fundamental disconnect: there is no such thing 
+as a single source of truth in any non-trivial application. 
+All applications, even front-end apps, are distributed at some level:
+
+
+The Actor Model - the cause against global state
+------------------------------------------------------------------------------
+So how can we address this global state problem? To answer that, we need to go back in time a little bit and 
+take some inspiration from another old, well-established model: the actor model.
+
+The actor model is a surprisingly simple model that can be extended slightly beyond its original purpose (concurrent computation). 
+In short, an actor is an entity that can do three things:
+
+
+It can receive messages (events)
+It can change its state/behavior as a reaction to a received message, including spawning other actors
+It can send messages to other actors
+If you thought "hmm... so a Redux store is sort of an actor", congratulations, you already have a basic grasp of the model! 
+A Redux store, which is based on some single combined-reducer thing:
+
+✅ Can receive events
+✅ Changes its state (and thus its behavior, if you're doing it right) as a reaction to those events
+❌ Can't send messages to other stores (there's only one store) or between reducers (dispatching only happens outside-in)
+
+Reducers and actors
+So how do reducers and actors fit together? Simply put, a reducer describes the behavior of an individual actor:
+
+Events are sent to a reducer
+A reducer's state/behavior can change due to a received event
+A reducer can spawn actors and/or send messages to other actors (via executed declarative actions)
+This isn't a cutting-edge, groundbreaking model; in fact, you've probably been using the actor model 
+(to some extent) without even knowing it! Consider a simple input component:
+const MyInput = ({ onChange, disabled }) => {
+  const [value, setValue] = useState('');
+
+  return (
+    <input
+      disabled={disabled}
+      value={value}
+      onChange={e => setValue(e.target.value)}
+      onBlur={() => onChange(value)}
+    />
+  );
+}
+This component, in an implicit way, is sort of like an actor!
+
+It "receives events" using React's slightly awkward parent-to-child communication mechanism - prop updates
+It changes state/behavior when an event is "received", such as when the disabled prop changes to true (which you can interpret as some event)
+It can send events to other "actors", such as sending a "change" event to the parent by calling the onChange callback 
+(again, using React's slightly awkward child-to-parent communication mechanism)
+In theory, it can "spawn" other "actors" by rendering different components, each with their own local state.
+Reducers make the behavior and business logic more explicit, especially when "implicit events" become concrete, dispatched events:
+const inputReducer = (state, event) => {
+  /* ... */
+};
+
+const MyInput = ({ onChange, disabled }) => {
+  const [state, dispatch] = useReducer(inputReducer, {
+    value: '',
+    effects: []
+  });
+
+  // Transform prop changes into events
+  useEffect(() => {
+    dispatch({ type: 'DISABLED', value: disabled });
+  }, [disabled]);
+
+  // Execute declarative effects
+  useEffect(() => {
+    state.effects.forEach(effect => {
+      if (effect.type === 'notifyChange') {
+        // "Send" a message back up to the parent "actor"
+        onChange(state.value);
+      }
+    });
+  }, [state.effects]);
+
+  return (
+    <input
+      disabled={disabled}
+      value={state.value}
+      onChange={e => dispatch({
+        type: 'CHANGE', value: e.target.value
+      })}
+      onBlur={() => dispatch({ type: 'BLUR' })}
+    />
+  );
+}
+
+There are other libraries that embrace the idea of "state locality", such as MobX and XState. For React specifically, 
+there is Recoil for "distributed" state and the built-in useReducer hook that feels a lot like a local Redux, 
+specifically for your component. For declarative effects, I created useEffectReducer which looks and feels 
+just like useReducer, but also gives you a way to manage effects.
+
+That will give you the best performance, as that "subscribable" object will seldom/never change. If that feels a bit boilerplatey for you and performance is not a huge concern, you can combine useContext and useReducer with not too much effort:
+const CartContext = createContext();
+
+const cartReducer = (state, event) => {
+  // reducer logic
+  // try using a state machine here! they're pretty neat
+
+  return state;
+};
+
+const initialCartState = {
+  // ...
+};
+
+const CartContextProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(cartReducer, initialCartState);
+
+  return <CartContext.Provider value={[state, dispatch]}>
+    {children}
+  </CartContext.Provider>;
+};
+
+export const useCartContext = () => {
+  return useContext(CartContext);
+};
+And then use it in your components:
+const CartView = () => {
+  const [state, dispatch] = useCartContext();
+
+  // ...
+};
+
+Not too bad, right? In general, this is not a problem that can be solved in Redux without 
+going against-the-grain, since Redux is fundamentally a single, atomic global store
+

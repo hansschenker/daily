@@ -1,0 +1,1697 @@
+Extracts from Github book: xgrommx.github.io/rx-book
+-----------------------------------------------------
+
+The Reactive Extensions for JavaScript unifies both the world of Promises, 
+callbacks as well as evented data such as DOM Input, Web Workers, Web Sockets. 
+Once we have unified these , this enables rich composition.
+
+Event buses or your typical click events are really an asynchronous event stream, 
+on which you can observe and do some side effects. Reactive is that idea on steroids. 
+You are able to create data streams of anything, not just from click and hover events. 
+Streams are cheap and ubiquitous, anything can be a stream: variables, user inputs, 
+properties, caches, data structures, etc. For example, imagine your Twitter feed would 
+be a data stream in the same fashion that click events are. You can listen to that stream 
+and react accordingly.
+
+A stream is a sequence of ongoing events ordered in time. It can emit three different things: 
+a value (of some type), an error, or a "completed" signal. Consider that the "completed" 
+takes place, for instance, when the current window or view containing that button is closed.
+
+We capture these emitted events only asynchronously, by defining a function that will execute 
+when a value is emitted, another function when an error is emitted, and another function when 
+'completed' is emitted. Sometimes these last two can be omitted and you can just focus on 
+defining the function for values. The "listening" to the stream is called subscribing. 
+The functions we are defining are observers. The stream is the subject (or "observable") being observed. 
+This is precisely the Observer Design Pattern.
+
+Reactive Programming raises the level of abstraction of your code so you can focus on the 
+interdependence of events that define the business logic, rather than having to constantly 
+fiddle with a large amount of implementation details. Code in RP will likely be more concise.
+
+The benefit is more evident in modern webapps and mobile apps that are highly interactive with a 
+multitude of UI events related to data events. 10 years ago, interaction with web pages was basically 
+about submitting a long form to the backend and performing simple rendering to the frontend. 
+Apps have evolved to be more real-time: modifying a single form field can automatically trigger a 
+save to the backend, "likes" to some content can be reflected in real time to other connected users, 
+and so forth.
+
+Apps nowadays have an abundancy of real-time events of every kind that enable a highly interactive 
+experience to the user. We need tools for properly dealing with that, and Reactive Programming is an answer.
+
+Thinking in RP, with examples
+Let's dive into the real stuff. A real-world example with a step-by-step guide on how to think in RP.
+ No synthetic examples, no half-explained . By the end of this tutorial we will have produced 
+real functioning code, while knowing why we did each thing.
+
+I picked JavaScript and RxJS as the tools for this, for a reason: JavaScript is the most familiar 
+language out there at the moment, and the Rx* library family is widely available for many languages 
+and platforms (.NET, Java, Scala, Clojure, JavaScript, Ruby, Python, C++, Objective-C/Cocoa, Groovy, etc). 
+So whatever your tools are, you can concretely benefit by following this tutorial.
+
+RxJs Contract
+--------------------
+
+The RxJS Contract
+Assume the RxJS Grammar
+Messages sent to instances of the Observer object follow the following grammar: 
+onNext* (onCompleted | onError)?
+
+This grammar allows observable sequences to send any amount (0 or more) of onNext messages to 
+the subscribed observer instance, optionally followed by a single success (onCompleted) or failure 
+(onError) message.
+
+The single message indicating that an observable sequence has finished ensures that consumers of 
+the observable sequence can deterministically establish that it is safe to perform cleanup operations.
+
+A single failure further ensures that abort semantics can be maintained for operators that work on 
+multiple observable sequences.
+
+
+What are the Reactive Extensions for JavaScript (RxJS)?
+---------------------------------------------------------
+The Reactive Extensions for JavaScript (RxJS) is a library for composing asynchronous 
+and event-based programs using observable sequences and LINQ-style query operators. 
+Using RxJS, developers represent asynchronous data streams with Observables, query asynchronous 
+data streams using LINQ operators, and parameterize the concurrency in the asynchronous data streams 
+using Schedulers. Simply put, Rx = Observables + LINQ + Schedulers.
+
+Whether you are authoring a web-based application or server-side applications with Node.js, you have 
+to deal with asynchronous and event-based programming constantly. Web applications and Node.js 
+applications have I/O operations and computationally expensive tasks that might take a long time 
+to complete and potentially block the main thread. Furthermore, handling exceptions, cancellation, 
+and synchronization is difficult and error-prone.
+
+Using RxJS, you can represent multiple asynchronous data streams (that come from diverse sources, 
+e.g., stock quote, tweets, computer events, web service requests, etc.), and subscribe to the 
+event stream using the Observer object. The Observable object notifies the subscribed Observer object 
+whenever an event occurs.
+
+Because observable sequences are data streams, you can query them using standard query operators 
+implemented by the Observable extension methods. Thus you can filter, project, aggregate, 
+compose and perform time-based operations on multiple events easily by using these standard query operators.
+ In addition, there are a number of other reactive stream specific operators that allow powerful queries 
+to be written. Cancellation, exceptions, and synchronization are also handled gracefully by using 
+the extension methods provided by Rx.
+
+RxJS complements and interoperates smoothly with both synchronous data streams such as Arrays, 
+Sets and Maps and single-value asynchronous computations such as Promises as the following diagram shows:
+
+Single return value	Mutiple return values
+Pull/Synchronous/Interactive	Object	Iterables (Array | Set | Map | Object)
+Push/Asynchronous/Reactive	Promise	Observable
+Pushing vs. Pulling Data
+
+In interactive programming, the application actively polls a data source for more information by 
+retrieving data from a sequence that represents the source. Such behavior is represented by the 
+iterator pattern of JavaScript Arrays, Objects, Sets, Maps, etc. In interactive programming, one 
+must get the next item by either getting an item by an index in an Array, or through ES6 iterators.
+
+The application is active in the data retrieval process: it decides about the pace of the retrieval 
+by calling next at its own convenience. This enumeration pattern is synchronous, which means your 
+application might be blocked while polling the data source. Such pulling pattern is similar to visiting 
+your library and checking out a book. After you are done with the book, you pay another visit to check
+ out another one.
+
+On the other hand, in reactive programming, the application is offered more information by subscribing 
+to a data stream (called observable sequence in RxJS), and any update is handed to it from the source. 
+The application is passive in the data retrieval process: apart from subscribing to the observable source, 
+it does not actively poll the source, but merely react to the data being pushed to it. When the event 
+has completed, the source will send a notice to the subscriber. In this way, your application will not 
+be blocked by waiting for the source to update. This is the push pattern employed by Reactive Extensions 
+for JavaScript. This is similar to joining a book club in which you register your interest in a 
+particular genre, and books that match your interest are automatically sent to you as they are published.
+ You do not need to stand in a line to acquire something that you want. Employing a push pattern is 
+especially helpful in heavy UI environment in which the UI thread cannot be blocked while the application 
+is waiting for some events, which is essential in JavaScript environments which has its own set of 
+asynchronous requirements. In summary, by using RxJS, you can make your application more responsive.
+
+The push model implemented by Rx is represented by the observable pattern of Observable/Observer. 
+The Observable will notify all the observers automatically of any state changes. To register an interest
+ through a subscription, you use the subscribe method of Observable, which takes on an Observer and 
+returns a Disposable object. This gives you the ability to track your subscription and be able to 
+dispose the subscription. You can essentially treat the observable sequence (such as a sequence of
+ mouseover events) as if it were a normal collection. RxJS�s built-in query implementation over 
+bservable sequences allows developers to compose complex event processing queries over push-based 
+sequences such as events, callbacks, Promises, HTML5 Geolocation APIs, and much much more.. For more
+ information on these two interfaces, see Exploring The Major  in RxJS.
+
+This topic describes the major Reactive Extensions for JavaScript (Rx) objects used to represent 
+observable sequences and subscribe to them.
+
+The Observable / Observer objects are available in the core distribution of RxJS.
+
+Observable / Observer
+Rx exposes asynchronous and event-based data sources as push-based, observable sequences abstracted 
+by the Observable object in the core distribution of RxJS. It represents a data source that can be 
+observed, meaning that it can send data to anyone who is interested.
+
+As described in What is RxJS, the other half of the push model is represented by the Observer object, 
+which represents an observer who registers an interest through a subscription. Items are subsequently 
+handed to the observer from the observable sequence to which it subscribes.
+
+In order to receive notifications from an observable collection, you use the subscribe method of 
+Observable to hand it an Observer object. In return for this observer, the subscribe method returns a 
+Disposable object that acts as a handle for the subscription. This allows you to clean up the subscription
+ after you are done. Calling dispose on this object detaches the observer from the source so that 
+notifications are no longer delivered. As you can infer, in RxJS you do not need to explicitly unsubscribe
+ from an event as in the common JavaScript event model.
+
+Observers support three publication events, reflected by the object's methods. The onNext can be 
+called zero or more times, when the observable data source has data available. For example, an 
+observable data source used for mouse move events can send out an event object every time the mouse 
+has moved. The other two methods are used to indicate completion or errors.
+
+The following lists the Observable / Observer objects in addition to the Disposable object.
+
+Creating and Subscribing to Simple Observable Sequences
+-----------------------------------------------------------
+
+You do not need to implement the Observable class manually to create an observable sequence. 
+Similarly, you do not need to implement Observer either to subscribe to a sequence. 
+
+By installing the Reactive Extension libraries, you can take advantage of 
+- the Observable type which provides many operators for you 
+  to create a simple sequence with zero, one or more elements. 
+
+In addition, RxJS provides an overloaded subscribe method which allows you to pass in 
+- onNext, 
+- onError and 
+- onCompleted function handlers.
+
+When an observer subscribes to an observable sequence, the subscribe method may be using asynchronous 
+behavior behind the scenes depending on the operator. Therefore, the subscribe call is asynchronous in 
+that the caller is not blocked until the observation of the sequence completes. This will be covered in
+ more details in the Using Schedulers topic.
+
+Notice that the subscribe method returns a Disposable, so that you can unsubscribe to a sequence and 
+dispose of it easily. When you invoke the dispose method on the observable sequence, the observer will 
+stop listening to the observable for data. Normally, you do not need to explicitly call dispose unless 
+you need to unsubscribe early, or when the source observable sequence has a longer life span than the 
+observer. Subscriptions in Rx are designed for fire-and-forget scenarios without the usage of a finalizer.
+ Note that the default behavior of the Observable operators is to dispose of the subscription as soon as
+ possible (i.e, when an onCompleted or onError messages is published). For example, the code will 
+subscribe x to both sequences a and b. If a throws an error, x will immediately be unsubscribed from b.
+
+var x = Rx.Observable.zip(a, b, (a1, b1) => a1 + b1).subscribe();
+
+for functional reactive programming.
+
+Bridging to Events
+---------------------------------------------------------------------------------------------------
+ programming.
+Bridging to Events
+RxJS provides factory methods for you to bridge with existing asynchronous sources in the DOM or Node.js 
+so that you can employ the rich composing, filtering and resource management features provided by RxJS 
+on any kind of data streams. This topic examines the fromEvent and fromEventPattern operator that allows
+ "importing" a DOM or custom event into RxJS as an observable sequence. Every time an event is raised, 
+an onNext message will be delivered to the observable sequence. You can then manipulate event data just 
+like any other observable sequences.
+
+RxJS does not aim at replacing existing asynchronous programming models such as promises or callbacks. 
+However, when you attempt to compose events, RxJS’s factory methods will provide you the convenience 
+that cannot be found in the current programming model. This is especially true for resource maintenance
+ (e.g., when to unsubscribe) and filtering (e.g., choosing what kind of data to receive). In this topic 
+and the ones that follow, you can examine how these RxJS features can assist you in asynchronous programming.
+
+Natively, RxJS supports a number of libraries and hooks into them such as jQuery, Zepto.js, AngularJS, 
+Ember.js and Backbone.js for using their event system. This behavior, however, can be overridden to only 
+use native bindings only. By default, RxJS also has hooks for Node.js EventEmitter events natively supported.
+
+Converting a DOM event to a RxJS Observable Sequence
+The following sample creates a simple DOM event handler for the mouse move event, and prints out the 
+mouse’s location on the page.
+
+var result = document.getElementById('result');
+
+document.addEventListener('mousemove', e => result.innerHTML = e.clientX + ', ' + e.clientY, false);
+To import an event into RxJS, you can use the fromEvent operator, and provide the event arguments that 
+will be raised by the event being bridged. It then converts the given event into an observable sequence.
+
+In the following example, we convert the mousemove event stream of the DOM into an observable sequence. 
+Every time a mouse-move event is fired, the subscriber will receive an onNext notification. We can then 
+examine the event arguments value of such notification and get the location of the mouse-move.
+
+var result = document.getElementById('result');
+
+var source = Rx.Observable.fromEvent(document, 'mousemove');
+
+var subscription = source.subscribe(e => result.innerHTML = e.clientX + ', ' + e.clientY);
+Notice that in this sample, move becomes an observable sequence in which we can manipulate further. 
+The Querying Observable Sequences topic will show you how you can project this sequence into a collection 
+of Points type and filter its content, so that your application will only receive values that satisfy a 
+certain criteria.
+
+Bridging to Callbacks
+---------------------------------------------------------------------------------------------------
+gramming.
+Bridging to Callbacks
+Besides events, other asynchronous data sources exist in the the web and server-side world. One of them 
+is the the simple callback pattern which is frequently used in Node.js. In this design pattern, the arguments 
+are passed to the function, and then a callback is usually the last parameter, which when executed, passes 
+control to the inner scope with the data. Node.js has a standard way of doing callbacks in which the the 
+callback is called with the Error object first if there is an error, else null, and then the additional 
+parameters from the callback.
+
+Converting Callbacks to Observable Sequences
+Many asynchronous methods in Node.js and the many JavaScript APIs are written in such a way that it has 
+a callback as the last parameter. These standard callbacks are executed with the data passed to it once 
+it is available. We can use the Rx.Observable.fromCallback to wrap these kinds of callbacks. Note that 
+this does not cover the Node.js style of callbacks where the Error parameter is first. For that operation, 
+we provide the Rx.Observable.fromNodeCallback which we will cover below.
+
+In the following example, we will convert the Node.js fs.exists function. This function takes a path and 
+returns a true or false value whether the file exists, in this case we will check if 'file.txt' exists. 
+The arguments returned when wrapped in Rx.Observable.fromCallback will return an array containing the 
+arguments passed to the callback.
+
+var Rx = require('rx'),
+    fs = require('fs');
+
+// Wrap the exists method
+var exists = Rx.Observable.fromCallback(fs.exists);
+
+var source = exists('file.txt');
+
+// Get the first argument only which is true/false
+var subscription = source.subscribe(
+    x => console.log('onNext: %s', x),
+    e => console.log('onError: %s', e),
+    () => console.log('onCompleted'));
+
+// => onNext: true
+// => onCompleted
+Converting Node.js Style Callbacks to Observable Sequences
+Node.js has adopted a convention in many of the callbacks where an error may occur, such as File I/O, 
+Network requests, etc. RxJS supports this through the Rx.Observable.fromNodeCallback method in which 
+the error, if present, is captured and the onError notification is sent. Otherwise, the onNext is sent 
+with the rest of the callback arguments, followed by an onCompleted notification.
+
+In the following example, we will convert the Node.js fs.rename function to an Observable sequence.
+
+var fs = require('fs'),
+    Rx = require('rx');
+
+// Wrap fs.rename
+var rename = Rx.Observable.fromNodeCallback(fs.rename);
+
+// Rename file which returns no parameters except an error
+var source = rename('file1.txt', 'file2.txt');
+
+var subscription = source.subscribe(
+    x => console.log('onNext: success!'),
+    e => console.log('onError: %s', e),
+    () => console.log('onCompleted'));
+
+// => onNext: success!
+// => onCompleted
+Converting Observable sequences to Callbacks
+We can easily go in another direction and convert an observable sequence to a callback. This of course 
+requires the observable sequence to yield only one value for this to make sense. Let's convert using the 
+timer method to wait for a certain amount of time. The implementation of toCallback could look like the 
+following. Note that it is not included in RxJS but you can easily add it if needed.
+
+Rx.Observable.prototype.toCallback = cb => {
+  var source = this;
+  return () => {
+    var val, hasVal = false;
+    source.subscribe(
+      x=> { hasVal = true; val = x; },
+      e => throw e, // Default error handling
+      () => hasVal && cb(val)}
+    );
+  };
+};
+Then we could execute our command simply like the following:
+
+function cb (x) { console.log('hi!'); }
+
+setTimeout(
+  Rx.Observable.timer(5000)
+    .toCallback(cb)
+  , 500);
+Converting Observable sequences to Node.js Style Callbacks
+The same could also apply to Node.js style callbacks should you desire that behavior. Once again the same 
+restrictions apply with regards to having a single value and an end much like above. The implementation of 
+toNodeCallback could look like the following. Note that it is not included in RxJS but you can easily add 
+it if needed.
+
+Rx.Observable.prototype.toNodeCallback = cb => {
+  var source = this;
+  return () => {
+    var val, hasVal = false;
+    source.subscribe(
+      x => { hasVal = true; val = x; },
+      e => cb(e),
+      () => hasVal && cb(null, val)}
+    );
+  };
+};
+We could then take this and for example if we had an observable sequence which gets a value from a REST 
+call and then convert it to Node.js style.
+
+getData().toNodeCallback((err, data) => {
+    if (err) { throw err; }
+    // Do something with the data
+});
+
+Bridging to Promises
+---------------------------------------------------------------------------------------------------
+Type to search
+Introduction
+1. Why RxJS?
+2. RxJS Design Guidelines
+3. Getting Started With RxJS
+3.1. What Are The Reactive Extensions?
+3.2. Exploring Major  In RxJS
+3.3. Creating And Querying Observable Sequences
+3.3.1. Creating And Subscribing To Simple Observable Sequences
+3.3.2. Bridging To Events
+3.3.3. Bridging To Callbacks
+3.3.4. Bridging To Promises
+3.3.5. Generators And Observable Sequences
+3.3.6. Querying Observable Sequences
+3.3.7. Error Handling With Observable Sequences
+3.3.8. Transducers With Observable Sequences
+3.3.9. Backpressure With Observable Sequences
+3.3.10. Operators By Category
+3.4. Subjects
+3.5. Scheduling And Concurrency
+3.6. Testing And Debugging
+3.7. Implementing Your Own Operators
+4. How Do I...?
+5. Mapping RxJS From Different Libraries
+6. Config
+7. Helpers
+8. Observable
+9. Observer
+10. Notification
+11. Subjects
+12. Schedulers
+13. Disposables
+14. Testing
+15. Bindings
+16. Resources
+17. Recipes
+18. Which Operator do I use?
+Published with GitBook
+ EDIT THIS PAGE
+
+RxJS - Javascript library for functional reactive programming.
+Bridging to Promises
+Promises are a defacto standard within JavaScript community and is part of the ECMAScript Standard. 
+A promise represents the eventual result of an asynchronous operation. The primary way of interacting 
+with a promise is through its then method, which registers callbacks to receive either a promise’s eventual 
+value or the reason why the promise cannot be fulfilled. You can create them very easily where the 
+constructor has two functions, resolve and reject which resolves the value or rejects it for a given 
+reason. RxJS is fully committed to standards and has native support for Promises for any number of methods 
+where they can be used interchangeably with Observable sequences.
+
+The advantage that you get when you intermix Promises with Observable sequences is that unlike the ES6
+ Promise standard, you get cancellation semantics which means you can disregard values if you no longer 
+are interested. One of the biggest problems around Promises right now are around cancellation, as to 
+cancel the operation, such as an XHR is not easily done with the existing standard, nor is it to only 
+get the last value to ensure no out of order requests. With Observable sequences, you get that behavior 
+for free in a multicast behavior, instead of the unicast Promise behavior.
+
+The following list of operators natively support Promises:
+
+Rx.Observable.amb | Rx.Observable.prototype.amb
+Rx.Observable.case
+Rx.Observable.catch | Rx.Observable.prototype.catch
+Rx.Observable.combineLatest | Rx.Observable.prototype.combineLatest
+Rx.Observable.concat | Rx.Observable.prototype.concat
+Rx.Observable.prototype.concatMap
+Rx.Observable.prototype.concatMapObserver
+Rx.Observable.defer
+Rx.Observable.prototype.flatMap
+Rx.Observable.prototype.flatMapLatest
+Rx.Observable.forkJoin | Rx.Observable.prototype.forkJoin
+Rx.Observable.if
+Rx.Observable.merge
+Rx.Observable.prototype.mergeAll
+Rx.Observable.onErrorResumeNext | Rx.Observable.prototype.onErrorResumeNext
+Rx.Observable.prototype.selectMany
+Rx.Observable.prototype.selectSwitch
+Rx.Observable.prototype.sequenceEqual
+Rx.Observable.prototype.skipUntil
+Rx.Observable.startAsync
+Rx.Observable.prototype.switch
+Rx.Observable.prototype.takeUntil
+Rx.Observable.prototype.debounceWithSelector
+Rx.Observable.prototype.timeoutWithSelector
+Rx.Observable.while
+Rx.Observable.prototype.window
+Rx.Observable.withLatestFrom
+Rx.Observable.zip | Rx.Observable.prototype.zip
+Because of this, we can now do a number of very interesting things such as combining Promises and 
+Observable sequences.
+
+var source = Rx.Observable.range(0, 3)
+  .flatMap(x => Promise.resolve(x * x));
+
+var subscription = source.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e),
+  () => console.log('onCompleted'));
+
+// => onNext: 0
+// => onNext: 1
+// => onNext: 4
+// => onCompleted
+This is just scratching the surface of what Promises and RxJS can do together so that we have first 
+class single values and first class multiple values working together.
+
+Converting Promises to Observable Sequences
+It's quite simple to convert a Promise object which conforms to the ES6 Standard Promise where the 
+behavior is uniform across implementations. To support this, we provide the Rx.Observable.fromPromise 
+method which calls the then method of the promise to handle both success and error cases.
+
+In the following example, we create promise objects using RSVP library.
+
+// Create a promise which resolves 42
+var promise1 = new RSVP.Promise((resolve, reject) => resolve(42));
+
+var source1 = Rx.Observable.fromPromise(promise1);
+
+var subscription1 = source1.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e),
+  () => console.log('onCompleted'));
+
+// => onNext: 42
+// => onCompleted
+
+// Create a promise which rejects with an error
+var promise2 = new RSVP.Promise((resolve, reject) => reject(new Error('reason')));
+
+var source2 = Rx.Observable.fromPromise(promise2);
+
+var subscription2 = source2.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e),
+  () => console.log('onCompleted'));
+
+// => onError: reason
+Notice that in this sample, these promises become observable sequences which we can manipulate further. 
+The Querying Observable Sequences topic will show you how you can project this sequence into another, 
+filter its content, so that your application will only receive values that satisfy a certain criteria.
+
+Converting Observable Sequences to Promises
+Just as you can convert a Promise to an Observable sequence, you can also convert an Observable sequence 
+to a Promise. This either requires native support for Promises, or a Promise library you can add yourself, 
+such as Q, RSVP, when.js among others. These libraries must conform to the ES6 standard for construction 
+where it provides two functions to resolve or reject the promise.
+
+var p = new Promise((resolve, reject) => resolve(42));
+We can use the toPromise method which allows you to convert an Observable sequence to a Promise. This 
+method accepts a Promise constructor, and if not provided, will default to a default implementation. 
+In this first example, we will use RSVP to construct our Promise objects.
+
+// Return a single value
+var source1 = Rx.Observable.just(1).toPromise(RSVP.Promise);
+
+source1.then(
+  value => console.log('Resolved value: %s', value),
+  reason => console.log('Rejected reason: %s', reason));
+
+// => Resolved value: 1
+
+// Reject the Promise
+var source2 = Rx.Observable.throwError(new Error('reason')).toPromise(RSVP.Promise);
+
+source2.then(
+  value => console.log('Resolved value: %s', value),
+  reason => console.log('Rejected reason: %s', reason));
+
+// => Rejected reason: Error: reason
+If an implementation is not given with the toPromise method, it will fall back to the Promise 
+implementation specified in the Rx.config.Promise field. By default this will be set to the runtime's 
+ES6 Promise implementation, but can easily be overridden by specifying the configuration information.
+
+Rx.config.Promise = RSVP.Promise;
+
+var source1 = Rx.Observable.just(1).toPromise();
+
+source1.then(
+  value => console.log('Resolved value: %s', value),
+  reason => console.log('Rejected reason: %s', reason));
+
+// => Resolved value: 1
+If you are in a pure ES6 environment, this should just work without any settings on your part as it will
+ use the runtime's ES6 Promise implementation.
+
+var source1 = Rx.Observable.just(1).toPromise();
+
+source1.then(
+  value => console.log('Resolved value: %s', value),
+  reason => console.log('Rejected reason: %s', reason));
+
+Bridging to Generators
+-----------------------------------------------------------------------------------------------------
+ EDIT THIS PAGE
+
+RxJS - Javascript library for functional reactive programming.
+Generators and Observable Sequences
+One of the more exciting features of ES6 is a new function type called generators. They have been in 
+Firefox for years, although they have now been finally standardized in ES6, and will be shipping in a 
+browser or runtime near you. How generators differ from normal functions is that a normal function such 
+as the following will run to completion, regardless of whether it is asynchronous or not.
+
+function printNumberOfTimes(msg, n) {
+  for (var i = 0; i < n; i++) {
+    console.log(msg);
+  }
+}
+
+printNumberOfTime('Hello world', 1);
+// => Hello world
+
+// Asynchronous
+setTimeout(() => console.log('Hello from setTimeout after one second'), 1000); 
+// => Hello from setTimeout after one second
+Instead of running to completion, generators allow us to interrupt the flow of the function by 
+introducing the yield keyword which pauses the function. The function cannot resume on its own without 
+the external consumer saying that they need the next value.
+
+To create a generator function, you must use the function* syntax which then becomes a generator. In this 
+particular example, we will yield a single value, the meaning of life.
+
+function* theMeaningOfLife() {
+  yield 42;
+}
+To get the value out, we need to invoke the function, and then call next to get the next value. 
+The return value from the next call will have a flag as to whether it is done, as well as any value 
+that is yielded. Note that the function doesn't do anything until we start to call next.
+
+var it = theMeaningOfLife();
+
+it.next();
+// => { done: false, value: 42 }
+
+it.next();
+// => { done: true, value: undefined }
+We can also use some ES6 shorthand for getting values from a generator such as the for..of.
+
+for (var v of theMeaningOfLife()) {
+  console.log(v);
+}
+// => 42
+This of course is only scratching the surface of what generators are capable of doing as we're more 
+focused on the simple nature of yielding values.
+
+Since RxJS believes heavily in standards, we also look for ways to incorporate new language features as 
+they become standardized so that you can take advantage of them, combined with the power of RxJS.
+
+Async/Await Style and RxJS
+One common complaint of JavaScript is the callback nature to asynchronous behavior. Luckily, this can 
+be solved quite easily with a library approach. To that end, we introduce Rx.Observable.spawn which 
+allows you to write code in a straight forward manner and can yield not only Observable sequences, but 
+also Promises, Callbacks, Arrays, etc. This allows you to write your code in a very imperative manner 
+without all the callbacks, but also brings the power of RxJS whether you want to call timeout, retry, 
+catch or any other method for that matter. Note that this only yields a single value, but in RxJS terms, 
+this is still quite useful.
+
+For example, we could get the HTML from Bing.com and write it to the console, with a timeout of 5 seconds 
+which will throw an error should it not respond in time. We could also add in things like retry and catch 
+so that we could for example try three times and then if it fails, give a default response or cached version.
+
+var Rx = require('rx');
+var request = require('request');
+var get = Rx.Observable.fromNodeCallback(request);
+
+Rx.Observable.spawn(function* () {
+  var data;
+  try {
+    data = yield get('http://bing.com').timeout(5000 /*ms*/);
+  } catch (e) {
+    console.log('Error %s', e);
+  } 
+
+  console.log(data);
+}).subscribe();
+Mixing Operators with Generators
+Many of the operators inside RxJS also support generators. For example, we could use the Rx.Observable.
+from method to take a generator function, in this case, a Fibonacci sequence, take 10 of them and display it.
+
+function* fibonacci(){
+  var fn1 = 1;
+  var fn2 = 1;
+  while (1) {
+    var current = fn2;
+    fn2 = fn1;
+    fn1 = fn1 + current;
+    yield current;
+  }
+}
+
+Rx.Observable.from(fibonacci())
+  .take(10)
+  .subscribe(x => console.log('Value: %s', x));
+
+//=> Value: 1
+//=> Value: 1
+//=> Value: 2
+//=> Value: 3
+//=> Value: 5
+//=> Value: 8
+//=> Value: 13
+//=> Value: 21
+//=> Value: 34
+//=> Value: 55
+That's just the beginning, as there are several operators such as concatMap/selectConcat and 
+flatMap/selectMany which take iterables as an argument so that we can further enable composition. 
+For example, we could project using generators from a flatMap operation.
+
+var source = Rx.Observable.of(1,2,3)
+  .flatMap(
+    (x, i) => function* () { yield x; yield i; }(),
+    (x, y, i1, i2) => x + y + i1 + i2
+  );
+
+var subscription = source.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e),
+  () => console.log('onCompleted'));
+
+// => Next: 2
+// => Next: 2
+// => Next: 5
+// => Next: 5
+// => Next: 8
+// => Next: 8
+// => Completed
+The future of JavaScript is exciting and generators add new possibilities to our applications to allow 
+them to mix and match our programming styles.
+
+Notice that in this sample, move becomes an observable sequence in which we can manipulate further. 
+The Querying Observable Sequences topic will show you how you can project this sequence into a collection 
+of Points type and filter its content, so that your application will only receive values that satisfy a
+ certain criteria.
+
+See Also
+
+Querying Observable Sequences
+-------------------------------------------------------------------------------------------------------
+Querying Observable Sequences
+In Bridging to Events, we have converted existing DOM and Node.js events into observable sequences to 
+subscribe to them. In this topic, we will look at the first-class nature of observable sequences as 
+IObservable objects, in which generic LINQ operators are supplied by the Rx assemblies to manipulate 
+these objects. Most operators take an observable sequence and perform some logic on it and output another 
+observable sequence. In addition, as you can see from our code samples, you can even chain multiple 
+operators on a source sequence to tweak the resulting sequence to your exact requirement.
+
+Using Different Operators
+We have already used the create and range operators in previous topics to create and return simple sequences. 
+We have also used the fromEvent and fromEventPattern operators to convert existing events into observable 
+sequences. In this topic, we will use other operators of the Observable type so that you can filter, 
+group and transform data. Such operators take observable sequence(s) as input, and produce observable 
+sequence(s) as output.
+
+Combining different sequences
+In this section, we will examine some of the operators that combine various observable sequences into 
+a single observable sequence. Notice that data is not transformed when we combine sequences. In the 
+following sample, we use the Concat operator to combine two sequences into a single sequence and subscribe 
+to it. For illustration purpose, we will use the very simple range(x, y) operator to create a sequence of 
+integers that starts with x and produces y sequential numbers afterwards.
+
+var source1 = Rx.Observable.range(1, 3);
+var source2 = Rx.Observable.range(1, 3);
+
+source1.concat(source2)
+   .subscribe(console.log.bind(console));
+
+// => 1
+// => 2
+// => 3
+// => 1
+// => 2
+// => 3
+Notice that the resultant sequence is 1,2,3,1,2,3. This is because when you use the concat operator, 
+the 2nd sequence (source2) will not be active until after the 1st sequence (source1) has finished 
+pushing all its values. It is only after source1 has completed, then source2 will start to push values 
+to the resultant sequence. The subscriber will then get all the values from the resultant sequence.
+
+Compare this with the merge operator. If you run the following sample code, you will get 1,1,2,2,3,3. 
+This is because the two sequences are active at the same time and values are pushed out as they occur 
+in the sources. The resultant sequence only completes when the last source sequence has finished 
+pushing values.
+
+var source1 = Rx.Observable.range(1, 3);
+var source2 = Rx.Observable.range(1, 3);
+
+source1.merge(source2)
+   .subscribe(console.log.bind(console));
+
+// => 1
+// => 1
+// => 2
+// => 2
+// => 3
+// => 3
+Another comparison can be done with the catch operator. In this case, if source1 completes without 
+any error, then source2 will not start. Therefore, if you run the following sample code, you will 
+get 1,2,3 only since source2 (which produces 4,5,6) is ignored.
+
+var source1 = Rx.Observable.range(1, 3);
+var source2 = Rx.Observable.range(4, 3);
+
+source1.catch(source2)
+   .subscribe(console.log.bind(console));
+
+// => 1
+// => 2
+// => 3
+Finally, let’s look at onErrorResumeNext. This operator will move on to source2 even if source1 cannot 
+be completed due to an error. In the following example, even though source1 represents a sequence that 
+terminates with an exception by using the throw operator, the subscriber will receive values (1,2,3) 
+published by source2. Therefore, if you expect either source sequence to produce any error, it is a 
+safer bet to use onErrorResumeNext to guarantee that the subscriber will still receive some values.
+
+var source1 = Rx.Observable.throw(new Error('An error has occurred.'));
+var source2 = Rx.Observable.range(1, 3);
+
+source1.onErrorResumeNext(source2)
+   .subscribe(console.log.bind(console));
+
+// => 1
+// => 2
+// => 3
+Projection
+The select or map operator can translate each element of an observable sequence into another form.
+
+In the following example, we project a sequence of strings into a series of integers representing the
+ length.
+
+var array = ['Reactive', 'Extensions', 'RxJS'];
+
+var seqString = Rx.Observable.from(array);
+
+var seqNum = seqString.map(x => x.length);
+
+seqNum
+   .subscribe(console.log.bind(console));
+
+// => 8
+// => 10
+// => 4
+In the following sample, which is an extension of the event conversion example we saw in the Bridging 
+with Existing Events topic, we use the select or map operator to project the event arguments to a point 
+of x and y. This way, we are transforming a mouse move event sequence into a data type that can be parsed 
+and manipulated further, as can be seen in the next "Filtering" section.
+
+var move = Rx.Observable.fromEvent(document, 'mousemove');
+
+var points = move.map(e => ({x: e.clientX, y: e.clientY }));
+
+points.subscribe(
+    pos => console.log('Mouse at point ' + pos.x + ', ' + pos.y));
+Finally, let’s look at the selectMany or flatMap operator. The selectMany or flatMap operator has many 
+overloads, one of which takes a selector function argument. This selector function is invoked on every 
+value pushed out by the source observable. For each of these values, the selector projects it into a 
+mini observable sequence. At the end, the selectMany or flatMap operator flattens all of these mini 
+sequences into a single resultant sequence, which is then pushed to the subscriber.
+
+The observable returned from selectMany or flatMap publishes onCompleted after the source sequence and 
+all mini observable sequences produced by the selector have completed. It fires onError when an error 
+has occurred in the source stream, when an exception was thrown by the selector function, or when an 
+error occurred in any of the mini observable sequences.
+
+In the following example, we first create a source sequence which produces an integer every 5 seconds, 
+and decide to just take the first 2 values produced (by using the take operator). We then use selectMany 
+or flatMap to project each of these integers using another sequence of {100, 101, 102}. By doing so, 
+two mini observable sequences are produced, {100, 101, 102} and {100, 101, 102}. These are finally 
+flattened into a single stream of integers of {100, 101, 102, 100, 101, 102} and pushed to the observer.
+
+var source1 = Rx.Observable.interval(5000).take(2);
+var proj = Rx.Observable.range(100, 3);
+var resultSeq = source1.flatMap(proj);
+
+var subscription = resultSeq.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e.message),
+  () => console.log('onCompleted'));
+
+// => onNext: 100
+// => onNext: 101
+// => onNext: 102
+// => onNext: 100
+// => onNext: 101
+// => onNext: 102
+// => onCompleted
+Filtering
+In the following example, we use the generate operator to create a simple observable sequence of numbers. 
+The generate operator has several versions including with relative and absolute time scheduling. In our 
+example, it takes an initial state (0 in our example), a conditional function to terminate 
+(fewer than 10 times), an iterator (+1), a result selector (a square function of the current value), 
+and prints out only those smaller than 5 using the filter or where operators.
+
+var seq = Rx.Observable.generate(
+    0,
+    i => i < 10,
+    i => i + 1,
+    i => i * i);
+
+var source = seq.filter(n => n < 5);
+
+var subscription = source.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e.message),
+  () => console.log('onCompleted'));
+
+// => onNext: 0
+// => onNext: 1
+// => onNext: 4
+// => onCompleted
+The following example is an extension of the projection example you have seen earlier in this topic. 
+In that sample, we have used the select or map operator to project the event arguments into a point 
+with x and y. In the following example, we use the filter or where and select or map operators to
+ pick only those mouse movements that we are interested in. In this case, we filter the mouse moves 
+to those over the first bisector (where the x and y coordinates are equal).
+
+var move = Rx.Observable.fromEvent(document, 'mousemove');
+
+var points = move.map(e => ({ x: e.clientX, y: e.clientY }));
+
+var overfirstbisector = points.filter(pos => pos.x === pos.y);
+
+var movesub = overfirstbisector.subscribe(pos => console.log('mouse at ' + pos.x + ', ' pos.y));
+Time-based Operation
+You can use the Buffer operators to perform time-based operations.
+
+Buffering an observable sequence means that an observable sequence’s values are put into a buffer 
+based on either a specified timespan or by a count threshold. This is especially helpful in situations
+when you expect a tremendous amount of data to be pushed out by the sequence, and the subscriber does 
+not have the resource to process these values. By buffering the results based on time or count, and 
+only returning a sequence of values when the criteria is exceeded (or when the source sequence has completed),
+ the subscriber can process OnNext calls at its own pace.
+
+In the following example, we first create a simple sequence of integers for every second. We then use 
+the bufferWithCount operator and specify that each buffer will hold 5 items from the sequence. 
+The onNext is called when the buffer is full. We then tally the sum of the buffer using Array.reduce. 
+The buffer is automatically flushed and another cycle begins. The printout will be 10, 35, 60… 
+in which 10=0+1+2+3+4, 35=5+6+7+8+9, and so on.
+
+var seq = Rx.Observable.interval(1000);
+
+var bufSeq = seq.bufferWithCount(5);
+
+bufSeq
+    .map(arr => arr.reduce((acc, x) => acc + x, 0))
+    .subscribe(console.log.bind(console));
+
+// => 10
+// => 35
+// => 60
+...
+We can also create a buffer with a specified time span in milliseconds. In the following example, 
+the buffer will hold items that have accumulated for 3 seconds. The printout will be 3, 12, 21… in 
+which 3=0+1+2, 12=3+4+5, and so on.
+
+var seq = Rx.Observable.interval(1000);
+
+var bufSeq = seq.bufferWithTime(3000);
+
+bufSeq
+    .map(arr => arr.reduce((acc, x) => acc + x, 0))
+    .subscribe(console.log.bind(console));
+Note that if you are using any of the buffer* or window* operators, you have to make sure that the 
+sequence is not empty before filtering on it.
+
+Operators by Categories
+The Operators by Categories topic lists all of the major operators implemented by the Observable type 
+by their categories; specifically: creation, conversion, combine, functional, mathematical, time, 
+exceptions, miscellaneous, selection and primitives.
+
+See Also
+
+Error Handling
+---------------------------------------------------------------------------------------------------
+
+
+ EDIT THIS PAGE
+
+RxJS - Javascript library for functional reactive programming.
+Error Handling in the Reactive Extensions
+One of the most difficult tasks in asynchronous programming is dealing with errors. Unlike interactive 
+style programming, we cannot simply use the try/catch/finally approach that we use when dealing with 
+blocking code.
+
+try {
+  for (var obj in objs) {
+    doSomething(obj);
+  }
+} catch (e) {
+  handleError(e);
+} finally {
+  doCleanup();
+}
+These actions mirror exactly our Observer class which has the following contract for handing zero to 
+infinite items with onNext and optionally handling either an Error with onError or successful completion 
+with onCompleted.
+
+interface Observer<T> {
+  onNext(value: T) : void
+  onError(error: Error) : void
+  onCompleted() : void
+}
+But the try/catch/finally approach won't work with asynchronous code. Instead, we have a myriad of 
+ways of handling errors as they occur, and ensure proper disposal of resources.
+
+For example, we might want to do the following:
+
+swallow the error and switch over to a backup Observable to continue the sequence
+swallow the error and emit a default item
+swallow the error and immediately try to restart the failed Observable
+swallow the error and try to restart the failed Observable after some back-off interval
+We'll cover each of those scenarios and more in this section.
+
+Catching Errors
+The first topic is catching errors as they happen with our streams. In the Reactive Extensions, 
+any error is propogated through the onError channel which halts the sequence. We can compensate 
+for this by using the catch operator, at both the class and instance level.
+
+Using the class level catch method, we can catch errors as they happen with the current sequence 
+and then move to the next sequence should there be an error. For example, we could try getting data 
+from several URLs, it doesn't matter which since they all have the same data, and then if that fails, 
+default to a cached version, so an error should never propagate. One thing to note is that if get('url') 
+calls succeed, then it will not move onto the next sequence in the list.
+
+var source = Rx.Observable.catch(
+  get('url1'),
+  get('url2'),
+  get('url3'),
+  getCachedVersion()
+);
+
+var subscription = source.subscribe(
+  data => {
+    // Display the data as it comes in
+  }
+);
+We also have an instance version of catch which can be used two ways. The first way is much like the 
+example above, where we can take an existing stream, catch the error and move onto the next stream or 
+Promise.
+
+var source = get('url1').catch(getCachedVersion());
+
+var subscription = source.subscribe(
+  data => {
+    // Display the data as it comes in
+  }
+);
+The other overload of catch allows us to inspect the error as it comes in so we can decide which route 
+to take. For example, if an error status code of 500 comes back from our web server, we can assume it 
+is down and then use a cached version.
+
+var source = get('url1').catch(e => {
+  if (e.status === 500) {
+    return cachedVersion();
+  } else {
+    return get('url2');
+  }
+});
+
+var subscription = source.subscribe(
+  data => {
+    // Display the data as it comes in
+  }
+);
+This isn't the only way to handle errors as there are plenty of others as you'll see below.
+
+Ignoring Errors with onErrorResumeNext
+The Reactive Extensions borrowed from a number of languages in our design. One of those features is 
+bringing On Error Resume Next from Microsoft Visual Basic. This operation specifies that when a run-time 
+error occurs, control goes to the statement immediately following the statement where the error occurred, 
+and execution continues from that point. There are some instances with stream processing that you simply 
+want to skip a stream which produces an error and move to the next stream. We can achieve this with a 
+class based and instance based onErrorResumeNext method.
+
+The class based onErrorResumeNext continues a stream that is terminated normally or by an Error with the 
+next stream or Promise. Unlike catch, onErrorResumeNext will continue to the next sequence regardless of 
+whether the previous was in error or not. To make this more concrete, let's use a simple example of 
+mixing error sequences with normal sequences.
+
+var source = Rx.Observable.onErrorResumeNext(
+  Rx.Observable.just(42),
+  Rx.Observable.throw(new Error()),
+  Rx.Observable.just(56),
+  Rx.Observable.throw(new Error()),
+  Rx.Observable.just(78)
+);
+
+var subscription = source.subscribe(
+  data => console.log(data)
+);
+// => 42
+// => 56
+// => 78
+The instance based onErrorResumeNext is similar to the class based version, the only difference being 
+that it is attached to the prototype, but can take another sequence or Promise and continue.
+
+Retrying Sequences
+When catching errors isn't enough and we want to retry our logic, we can do so with retry or retryWhen 
+operators. With the retry operator, we can try a certain operation a number of times before an error is 
+thrown. This is useful when you need to get data from a resource which may have intermittent failures 
+due to load or any other issue.
+
+Let's take a look at a simple example of trying to get some data from a URL and giving up after three 
+tries.
+
+// Try three times to get the data and then give up
+var source = get('url').retry(3);
+
+var subscription = source.subscribe(
+  data => console.log(data),
+  err => console.log(err)
+);
+In the above example, it will give up after three tries and thus call onError if it continues to fail 
+after the third try. We can remedy that by adding catch to use an alternate source.
+
+// Try three times to get the data and then return cached data if still fails
+var source = get('url').retry(3).catch(cachedVersion());
+
+var subscription = source.subscribe(
+  data => {
+    // Displays the data from the URL or cached data
+    console.log(data);
+  }
+);
+The above case retries immediately upon failure. But what if you want to control when a retry happens? 
+We have the retryWhen operator which allows us to deeply control when the next try happens.
+We incrementally back off trying again by using the following method:
+
+var source = get('url').retryWhen(
+   attempts =>
+    attempts
+      .zip(Observable.range(1, 3), (_, i) => i)
+      .flatMap(i => {
+        console.log('delay retry by ' + i + ' second(s)');
+        return Rx.Observable.timer(i * 1000);
+      });
+);
+
+var subscription = source.subscribe(
+  data => {
+    // Displays the data from the URL or cached data
+    console.log(data);
+  }
+);
+// => delay retry by 1 second(s)
+// => delay retry by 2 second(s)
+// => Data
+Ensuring Cleanup with Finally
+We've already covered the try/catch part of try/catch/finally, so what about finally? We have the 
+finally operator which calls a function after the source sequence terminates gracefully or exceptionally. 
+This is useful if you are using external resources or need to free up a particular variable upon completion.
+
+In this example, we can ensure that our WebSocket will indeed be closed once the last message is processed.
+
+var socket = new WebSocket('ws://someurl', 'xmpp');
+
+var source = Rx.Observable.from(data)
+  .finally(() => socket.close());
+
+var subscription = source.subscribe(
+  data => {
+    socket.send(data);
+  }
+);
+But we can do a better job in terms of managing resources if need be by using the using method.
+
+Ensuring Resource Disposal
+As stated above, finally can be used to ensure proper cleanup of any resources or perform any side 
+effects as necessary. There is a cleaner approach we can take by creating a disposable wrapper around 
+our object with a dispose method so that when our scope is complete, then the resource is automatically 
+disposed through the using operator.
+
+function DisposableWebSocket(url, protocol) {
+  var socket = new WebSocket(url, protocol);
+
+  // Create a way to close the WebSocket upon completion
+  var d = Rx.Disposable.create(() => socket.close());
+
+  d.socket = socket;
+
+  return d;
+}
+
+var source = Rx.Observable.using(
+  () => new DisposableWebSocket('ws://someurl', 'xmpp'),
+  d => 
+    Rx.Observable.from(data)
+      .tap(data => d.socket.send(data));
+  }
+);
+
+var subscription = source.subscribe();
+Delaying Errors with mergeDelayError
+Another issue may arise when you are dealing with flattening sequences into a single sequence and 
+there may be errors along the way. We want a way to flatten without being interrupted by one of our 
+sources being in error. This is much like the other operator mergeAll but the main difference is, 
+instead of immediately bubbling up the error, it holds off until the very end.
+
+To illustrate, we can create this little sample that has an errored sequence in the middle when it is 
+trying to flatten the sequences.
+
+var source1 = Rx.Observable.of(1,2,3);
+var source2 = Rx.Observable.throwError(new Error('woops'));
+var source3 = Rx.Observable.of(4,5,6);
+
+var source = Rx.Observable.mergeDelayError(source1, source2, source3);
+
+var subscription = source.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e),
+  () => console.log('onCompleted'));
+
+// => 1
+// => 2
+// => 3
+// => 4
+// => 5
+// => 6
+// => Error: Error: woops
+s
+
+Transducers with Observable Sequences
+-----------------------------------------------------------------------------------------------------
+Much like Language Integrated Query (LINQ), Transducers are composable algorithmic transformations. 
+They, like LINQ, are independent from the context of their input and output sources and specify only 
+the essence of the transformation in terms of an individual element. Because transducers are decoupled 
+from input or output sources, they can be used in many different processes - collections, streams, 
+observables, etc. Transducers compose directly, without awareness of input or creation of intermediate 
+aggregates. There are two major libraries currently out there, Cognitect's transducer-js and James Long's 
+transducers.js which are both great for getting high performance over large amounts of data. Because it 
+is collection type neutral, it is a perfect fit for RxJS to do transformations over large collections.
+
+The word transduce is just a combination of 
+- transform and 
+- reduce. 
+
+The reduce function is the base transformation; any other transformation can be expressed in terms of it 
+(map, filter, etc).
+
+var arr = [1, 2, 3, 4];
+
+arr.reduce((result, x) => result.concat(x + 1), []);
+
+// => [ 2, 3, 4, 5 ]
+Using transducers, we can model the following behavior while breaking apart the map aspect of 
+adding 1 to the concat operation, adding the seed and then the "collection" to transduce.
+
+var arr = [1, 2, 3, 4];
+
+function increment(x) { return x + 1; }
+function concatItem(acc, x) { return acc.concat(x); }
+
+transduce(map(increment), concatItem, [], arr);
+
+// => [ 2, 3, 4, 5 ]
+Using Cognitect's transducers-js library, we can easily accomplish what we had above.
+
+var t = transducers;
+
+var arr = [1, 2, 3, 4];
+
+function increment(x) { return x + 1; }
+
+into([], t.comp(t.map(increment)), arr);
+
+// => [ 2, 3, 4, 5 ]
+We can go a step further and add filtering as well to get only even values.
+
+var t = transducers;
+
+var arr = [1, 2, 3, 4];
+
+function increment(x) { return x + 1; }
+function isEven(x) { return x % 2 === 0; }
+
+into([], t.comp(t.map(increment), t.filter(isEven)), arr);
+
+// => [ 2, 4 ]
+Since it works so well using Arrays, there's no reason why it cannot work for Observable sequences as well. 
+To that end, we have introduced the transduce method which acts exactly like it does for Arrays, but for
+ Observable sequences. Once again, let's go over the above example, this time using an Observable sequence.
+
+var t = transducers;
+
+var source = Rx.Observable.range(1, 4);
+
+function increment(x) { return x + 1; }
+function isEven(x) { return x % 2 === 0; }
+
+var transduced = source.transduce(t.comp(t.map(increment), t.filter(isEven)));
+
+transduced.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e),
+  () => console.log('onCompleted'));
+
+// => Next: 2
+// => Next: 4
+// => Completed
+Note that this above example also works the same with transducers.js as well with little to no modification. 
+This example will in fact work faster than the traditional LINQ style (as of now) which most use currently.
+
+var source = Rx.Observable.range(1, 4);
+
+function increment(x) { return x + 1; }
+function isEven(x) { return x % 2 === 0; }
+
+var transduced = source.map(increment).filter(isEven);
+
+transduced.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e),
+  () => console.log('onCompleted'));
+
+// => Next: 2
+// => Next: 4
+// => Completed
+This opens up a wide new set of possibilities making RxJS even faster over large collections with no 
+intermediate Observable sequences.
+
+Backpressure
+----------------------------------------------------------------------------------------------------------
+
+
+ EDIT THIS PAGE
+
+RxJS - Javascript library for functional reactive programming.
+Error Handling in the Reactive Extensions
+One of the most difficult tasks in asynchronous programming is dealing with errors. Unlike interactive 
+style programming, we cannot simply use the try/catch/finally approach that we use when dealing 
+with blocking code.
+
+try {
+  for (var obj in objs) {
+    doSomething(obj);
+  }
+} catch (e) {
+  handleError(e);
+} finally {
+  doCleanup();
+}
+These actions mirror exactly our Observer class which has the following contract for handing zero to 
+infinite items with onNext and optionally handling either an Error with onError or successful completion 
+with onCompleted.
+
+interface Observer<T> {
+  onNext(value: T) : void
+  onError(error: Error) : void
+  onCompleted() : void
+}
+But the try/catch/finally approach won't work with asynchronous code. Instead, we have a myriad of ways 
+of handling errors as they occur, and ensure proper disposal of resources.
+
+For example, we might want to do the following:
+
+swallow the error and switch over to a backup Observable to continue the sequence
+swallow the error and emit a default item
+swallow the error and immediately try to restart the failed Observable
+swallow the error and try to restart the failed Observable after some back-off interval
+We'll cover each of those scenarios and more in this section.
+
+Catching Errors
+The first topic is catching errors as they happen with our streams. In the Reactive Extensions, 
+any error is propogated through the onError channel which halts the sequence. We can compensate for 
+this by using the catch operator, at both the class and instance level.
+
+Using the class level catch method, we can catch errors as they happen with the current sequence and 
+then move to the next sequence should there be an error. For example, we could try getting data from 
+several URLs, it doesn't matter which since they all have the same data, and then if that fails, default 
+to a cached version, so an error should never propagate. One thing to note is that if get('url') 
+calls succeed, then it will not move onto the next sequence in the list.
+
+var source = Rx.Observable.catch(
+  get('url1'),
+  get('url2'),
+  get('url3'),
+  getCachedVersion()
+);
+
+var subscription = source.subscribe(
+  data => {
+    // Display the data as it comes in
+  }
+);
+We also have an instance version of catch which can be used two ways. The first way is much like the 
+example above, where we can take an existing stream, catch the error and move onto the next stream or
+ Promise.
+
+var source = get('url1').catch(getCachedVersion());
+
+var subscription = source.subscribe(
+  data => {
+    // Display the data as it comes in
+  }
+);
+The other overload of catch allows us to inspect the error as it comes in so we can decide which route 
+to take. For example, if an error status code of 500 comes back from our web server, we can assume 
+it is down and then use a cached version.
+
+var source = get('url1').catch(e => {
+  if (e.status === 500) {
+    return cachedVersion();
+  } else {
+    return get('url2');
+  }
+});
+
+var subscription = source.subscribe(
+  data => {
+    // Display the data as it comes in
+  }
+);
+This isn't the only way to handle errors as there are plenty of others as you'll see below.
+
+Ignoring Errors with onErrorResumeNext
+The Reactive Extensions borrowed from a number of languages in our design. One of those features is 
+bringing On Error Resume Next from Microsoft Visual Basic. This operation specifies that when a run-time 
+error occurs, control goes to the statement immediately following the statement where the error occurred, 
+and execution continues from that point. There are some instances with stream processing that you simply 
+want to skip a stream which produces an error and move to the next stream. We can achieve this with a 
+class based and instance based onErrorResumeNext method.
+
+The class based onErrorResumeNext continues a stream that is terminated normally or by an Error with 
+the next stream or Promise. Unlike catch, onErrorResumeNext will continue to the next sequence 
+regardless of whether the previous was in error or not. To make this more concrete, let's use a 
+simple example of mixing error sequences with normal sequences.
+
+var source = Rx.Observable.onErrorResumeNext(
+  Rx.Observable.just(42),
+  Rx.Observable.throw(new Error()),
+  Rx.Observable.just(56),
+  Rx.Observable.throw(new Error()),
+  Rx.Observable.just(78)
+);
+
+var subscription = source.subscribe(
+  data => console.log(data)
+);
+// => 42
+// => 56
+// => 78
+The instance based onErrorResumeNext is similar to the class based version, the only difference being 
+that it is attached to the prototype, but can take another sequence or Promise and continue.
+
+Retrying Sequences
+When catching errors isn't enough and we want to retry our logic, we can do so with retry or retryWhen 
+operators. With the retry operator, we can try a certain operation a number of times before an error is 
+thrown. This is useful when you need to get data from a resource which may have intermittent failures 
+due to load or any other issue.
+
+Let's take a look at a simple example of trying to get some data from a URL and giving up after three tries.
+
+// Try three times to get the data and then give up
+var source = get('url').retry(3);
+
+var subscription = source.subscribe(
+  data => console.log(data),
+  err => console.log(err)
+);
+In the above example, it will give up after three tries and thus call onError if it continues to fail 
+after the third try. We can remedy that by adding catch to use an alternate source.
+
+// Try three times to get the data and then return cached data if still fails
+var source = get('url').retry(3).catch(cachedVersion());
+
+var subscription = source.subscribe(
+  data => {
+    // Displays the data from the URL or cached data
+    console.log(data);
+  }
+);
+The above case retries immediately upon failure. But what if you want to control when a retry happens? 
+We have the retryWhen operator which allows us to deeply control when the next try happens. 
+We incrementally back off trying again by using the following method:
+
+var source = get('url').retryWhen(
+   attempts =>
+    attempts
+      .zip(Observable.range(1, 3), (_, i) => i)
+      .flatMap(i => {
+        console.log('delay retry by ' + i + ' second(s)');
+        return Rx.Observable.timer(i * 1000);
+      });
+);
+
+var subscription = source.subscribe(
+  data => {
+    // Displays the data from the URL or cached data
+    console.log(data);
+  }
+);
+// => delay retry by 1 second(s)
+// => delay retry by 2 second(s)
+// => Data
+Ensuring Cleanup with Finally
+We've already covered the try/catch part of try/catch/finally, so what about finally? 
+We have the finally operator which calls a function after the source sequence terminates 
+gracefully or exceptionally. This is useful if you are using external resources or need to 
+free up a particular variable upon completion.
+
+In this example, we can ensure that our WebSocket will indeed be closed once the last message is processed.
+
+var socket = new WebSocket('ws://someurl', 'xmpp');
+
+var source = Rx.Observable.from(data)
+  .finally(() => socket.close());
+
+var subscription = source.subscribe(
+  data => {
+    socket.send(data);
+  }
+);
+But we can do a better job in terms of managing resources if need be by using the using method.
+
+Ensuring Resource Disposal
+As stated above, finally can be used to ensure proper cleanup of any resources or perform any s
+ide effects as necessary. There is a cleaner approach we can take by creating a disposable wrapper 
+around our object with a dispose method so that when our scope is complete, then the resource is 
+automatically disposed through the using operator.
+
+function DisposableWebSocket(url, protocol) {
+  var socket = new WebSocket(url, protocol);
+
+  // Create a way to close the WebSocket upon completion
+  var d = Rx.Disposable.create(() => socket.close());
+
+  d.socket = socket;
+
+  return d;
+}
+
+var source = Rx.Observable.using(
+  () => new DisposableWebSocket('ws://someurl', 'xmpp'),
+  d => 
+    Rx.Observable.from(data)
+      .tap(data => d.socket.send(data));
+  }
+);
+
+var subscription = source.subscribe();
+Delaying Errors with mergeDelayError
+Another issue may arise when you are dealing with flattening sequences into a single sequence and 
+there may be errors along the way. We want a way to flatten without being interrupted by one of our 
+sources being in error. This is much like the other operator mergeAll but the main difference is, 
+instead of immediately bubbling up the error, it holds off until the very end.
+
+
+To illustrate, we can create this little sample that has an errored sequence in the middle when it is 
+trying to flatten the sequences.
+
+var source1 = Rx.Observable.of(1,2,3);
+var source2 = Rx.Observable.throwError(new Error('woops'));
+var source3 = Rx.Observable.of(4,5,6);
+
+var source = Rx.Observable.mergeDelayError(source1, source2, source3);
+
+var subscription = source.subscribe(
+  x => console.log('onNext: %s', x),
+  e => console.log('onError: %s', e),
+  () => console.log('onCompleted'));
+
+// => 1
+// => 2
+// => 3
+// => 4
+// => 5
+// => 6
+// => Error: Error: woops
+
+Operator Categories
+-----------------------------------------------------------------------------------------------------------
+
+Operators by Categories
+This topic lists all major operators implemented by the Observable type by their categories, specifically: 
+creation, conversion, combine, functional, mathematical, time, exceptions, miscellaneous, selection and
+primitives.
+
+Operators by Categories
+Usage										Operators
+Creating an observable sequence	
+----------------------------------------------------------------------------------------------------------
+create
+defer
+generate
+generateWithAbsoluteTime
+generateWithRelativeTime
+range
+using
+
+Converting events or asynchronous patterns to observable sequences, or between Arrays and observable sequences.	
+-------------------------------------------------------------------------------------------------------------
+from
+fromArray
+fromCallback
+fromNodeCallback
+fromEvent
+fromEventPattern
+fromPromise
+of
+toArray
+toMap
+toPromise
+toSet
+
+Combining multiple observable sequences into a single sequence.	
+--------------------------------------------------------------------------------------------------------------
+amb
+prototype.amb
+combineLatest
+concat
+prototype.concat
+startWith
+merge
+prototype.merge
+mergeAll
+repeat
+prototype.repeat
+withLatestFrom
+zip
+prototype.zip
+
+Functional - Sharing Side Effects	
+----------------------------------------------------------------------------------------------
+let
+publish
+publishLast
+publishValue
+replay
+share
+shareLast
+shareReplay
+shareValue
+
+Mathemathical operators on sequences
+---------------------------------------------------------------------------------------------------	
+aggregate
+average
+count
+max
+maxBy
+min
+minBy
+reduce
+sum
+
+Time-based operations	
+-------------------------------------------------------------------------------------------------------
+debounce
+debounceWithSelector
+delay
+interval
+timeInterval
+timer
+timeout
+timeoutWithSelector
+timestamp
+
+Handling Exceptions	
+-----------------------------------------------------------------
+catch
+prototype.catch
+finally
+onErrorResumenext
+prototype.onErrorResumeNext
+retry
+
+Filtering and selecting values in a sequence	
+----------------------------------------------------------------------------------------
+concatMap
+concatMapObserver
+elementAt
+elementAtOrDefault
+filter
+flatMap
+flatMapLatest
+flatMapObserver
+find
+findIndex
+first
+firstOrDefault
+includes
+last
+lastOrDefault
+map
+pluck
+select
+selectConcat
+selectMany
+selectManyObserver
+selectSwitch
+single
+singleOrDefault
+skip
+skipLast
+skipLastWithTime
+skipUntil
+skipWhile
+take
+takeLast
+takeLastBuffer
+takeLastBufferWithTime
+takeLastWithTime
+takeWhile
+where
+
+Grouping and Windowing	
+----------------------------------------------------------------------------
+buffer
+bufferWithCount
+bufferWithTimeOrCount
+groupBy
+groupByUntil
+groupJoin
+join
+window
+windowWithCount
+windowWithTime
+windowWithTimeOrCount
+
+Imperative Operators	
+---------------------------------------------------------------------------------------
+case
+do
+doOnNext
+doOnError
+doOnCompleted
+doWhile
+for
+if
+tap
+tapOnNext
+tapOnError
+tapOnCompleted
+while
+
+Primitives	
+-----------------------------------------------------------------------------------------
+empty
+never
+return
+throw
+
+See Also

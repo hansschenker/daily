@@ -1,0 +1,24 @@
+Grid Techniques
+---------------------------------
+
+Default grid flow is oriented to "row" layout (1 Column - N Rows),
+where items flow down the page along the Y-axis.
+
+switch to "column" layout
+-------------------------
+grid-auto-flow: column;
+
+This switches that default behavior to "column" 
+which means items default to flowing along the X-axis.
+
+this will add columns up to max width of container (grid has no explicit wrapping behavior)
+grid wrapping with: grid-column-layout: repeat(auto-fit, minmax(60rem, 1fr)
+---------------------------------------------------
+items will take as much room as needed to contain their content up until the max width of the container, 
+at which point text will break to new lines
+there is a risk of overflow because of lack of "wrapping" behavior in grid, 
+which means assigning this property will flow things along the X-axis into infinity
+this can be solved by only applying this behavior above a certain viewport width via a media query
+
+Note: once flexbox gap is fully supported, 
+it will likely be the better method for this outcome due to also having wrapping behavior

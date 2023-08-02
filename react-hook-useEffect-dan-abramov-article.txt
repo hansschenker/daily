@@ -1,0 +1,205 @@
+CreateEffect Hook explained by Dan Abramov
+
+also read: https://overreacted.io/react-as-a-ui-runtime/
+
+
+ Synchronization, Not Lifecycle
+ ------------------------------
+ One of my favorite things about React is that it unifies describing the initial render result and the updates. 
+ This reduces the entropy of your program
+
+ - React synchronizes the DOM according to our current props and state. 
+   There is no distinction between a “mount” or an “update” when rendering
+
+ - useEffect lets you 
+   - synchronize things outside of the React tree 
+   - according to our props and state.
+
+
+
+Hooks are closures (allow for composing effects -> custom hook is a hook of hooks
+------------------------------------------------------------------------------------
+Hooks ease the management of state and side effects inside functional React components. 
+Moreover, repeated logic can be extracted into a custom hook to reuse across the application. 
+Hooks heavily rely on JavaScript closures. That's why hooks are so expressive and simple
+
+https://www.netlify.com/blog/2019/03/11/deep-dive-how-do-react-hooks-really-work/
+
+ - reified
+ make (something abstract) more concrete or real.
+"these instincts are, in man, reified as verbal constructs"
+ 
+ Algebraic Effects and Handlers
+ -------------------------------
+ An algebraic effect handler is a programming abstraction for manipulating control-flow in a first-class fashion. 
+
+ They generalise common abstractions such as 
+ - exceptions, 
+ - generators, 
+ - asynchronous I/O, or 
+ - concurrency, as well as other seemingly esoteric programming abstractions such as 
+ - transactional memory and 
+ - probabilistic computations.
+
+ - Operationally, effect handlers offer a form of first-class, restartable exception mechanism. 
+
+ Algebraic effect and Monad
+ ---------------------------
+ algebraic effect handlers and monads have a lot in common. In fact, a popular way of implementing algebraic effects 
+ is through free monadic interpretation.
+
+ Generators & streams.
+ -----------------------
+ So far we've seen examples where the handler discards the continuation (exceptions) and immediately 
+ resumes the computation (state). Since the continuations are first-class values, we can also keep them around 
+ and resume them later, while executing some other code in the mean time. This functionality allows us 
+ to implement programming idioms such as generators, async/await, etc
+
+ Message passing
+ ----------------
+ Let us being with a simple example that illustrates control switching between two tasks. 
+ The two tasks run cooperatively, sending messages between each other. 
+
+
+
+ Algebraic Effect
+ ---------------
+- algebraic effects can be a very powerful instrument to 
+  - separate the what from the how in the code.
+
+- Effect handlers let us decouple the program logic from its concrete effect implementations 
+  without too much ceremony or boilerplate code
+
+  Effect Handlers are composable
+  ------------------------------
+- effect handlers are composable (you can nest them), you can create very expressive abstractions with them.
+
+  Hooks are Algebraic Effects implemented with Javascript closures
+  -----------------------------------------------------------------
+  Hooks are another example that might remind you of algebraic effects
+
+  how can a useState call possibly know which component it refers to?
+
+React.useState(), React.useEffect(), or another built-in Hook, these calls are forwarded to the current dispatcher.
+
+// In React (simplified a bit)
+const React = {
+  // Real property is hidden a bit deeper, see if you can find it!
+  __currentDispatcher: null,
+
+  useState(initialState) {
+    return React.__currentDispatcher.useState(initialState);
+  },
+
+  useEffect(initialState) {
+    return React.__currentDispatcher.useEffect(initialState);
+  },
+  // ...
+};
+
+  useState EffectHandler
+  ------------------------
+  you can think of useState() as of being 
+  - a perform State() effect which is handled by React when executing your component
+
+The mental model for useEffect
+
+- it is not about component life cycles
+
+- useEffect is a javascript closure: it captures state and props 
+  at the time of running createEffect
+  it will capture props and state. So even inside the callbacks, you’ll see the initial props and state
+
+- “think in effects”, and their mental model is closer to implementing synchronization than to responding to lifecycle events
+
+- the lifecycle of a component is synchronous (mount, display data, component did update, unmount)
+
+- [] means the effect doesn’t use any value that participates in React data flow
+
+- learn a few strategies (primarily useReducer and useCallback) 
+  that can remove the need for a dependency instead of incorrectly omitting it
+
+- If after that your effect still ends up using functions in the render scope (including function from props), 
+  wrap them into useCallback where they’re defined, and repeat the process
+
+- Functions can “see” values from props and state — so they participate in the data flow
+
+- To avoid recreating objects, useMemo can serve a similar purpose
+
+- Effects always “see” props and state from the render they were defined in.
+
+- Each Render Has Its Own Props and State (each render is like a function call with a closure over state and props of 
+  function
+
+- React as a UI-Runtime
+  --------------------
+  In computer programming, a runtime system or runtime environment is a sub-system that exists both in the computer 
+  where a program is created, as well as in the computers where the program is intended to be run. 
+  The name comes from the compile time and runtime division from compiled languages, which similarly distinguishes 
+  the computer processes involved in the creation of a program (compilation) and its execution in the target machine (the run time).
+
+- React output is a tree of Components
+  --------------------------------------
+  React programs usually output a tree that may change over time
+  React is a layer on top of DOM Tree
+- it helps you write a program that predictably manipulates a complex host tree in response 
+  to external events like interactions, network responses, timers, and so on
+
+- calling the DOM api is React's job
+  ------------------------------------
+   the DOM provides APIs like appendChild, removeChild, setAttribute, and so on. 
+   In React apps, you usually don’t call these APIs. That’s the job of React.
+
+- React Renderer
+  -------------
+  A renderer teaches React to talk to a specific host environment and manage its host instances. 
+  React DOM, React Native, and even Ink are React renderers. 
+  You can also create your own React renderer.
+
+- React Element - the smallest building block in React
+  ------------------------------------------------------
+  In the host environment, a host instance (like a DOM node) is the smallest building block. In React, 
+  the smallest building block is a React element.
+
+  A React element is a plain JavaScript object. It can describe a host instance.
+ike host instances, React elements can form a tree:
+
+// JSX is a syntax sugar for these objects.
+// <dialog>
+//   <button className="blue" />
+//   <button className="red" />
+// </dialog>
+{
+  type: 'dialog',
+  props: {
+    children: [{
+      type: 'button',
+      props: { className: 'blue' }
+    }, {
+      type: 'button',
+      props: { className: 'red' }
+    }]
+  }
+}
+
+ React render - the entry point
+ ------------------------------
+  Entry Point
+  Each React renderer has an “entry point”. It’s the API that lets us tell React to render a particular React element tree 
+  inside a container host instance.
+
+For example, React DOM entry point is ReactDOM.render:
+
+ReactDOM.render(
+  // { type: 'button', props: { className: 'blue' } }
+  <button className="blue" />,
+  document.getElementById('container')
+);
+
+ React concilliation : macht Host Tree (DOM Tree) with React Element tree
+ ----------------------------------------------------------------------------
+ React’s job is to make the host tree match the provided React element tree. 
+ The process of figuring out what to do to the host instance tree in response 
+ to new information is sometimes called reconciliation.
+
+

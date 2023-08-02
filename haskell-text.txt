@@ -1,0 +1,75 @@
+
+• Functions are first-class values
+• Higher-order functions can be elegantly expressed
+• Haskell does not support standard loop control flow
+• Haskell is all about expressions and declarations
+
+Strong and Static Type System
+• Catch as many potential defects at compile time as possible
+• Generate the most efficient code as possible
+• Types are deleted at compile time
+
+1. Why functional programming matters
+Jeremy Gibbo...
+• programs are values, not commands 
+• supports good old-fashioned equational reasoning 
+• ... with program texts, without needing a distinct language 
+• calculate efficient implementations from clear specifications
+• using Haskell 
+• a plea for simplicity: no GADTs, no Monads, no Traversables...
+
+• Values and expressions
+• Types and type signatures
+• Algebraic data types
+• Type classes
+• Pattern matching
+
+Primitive Types
+• Char
+• Integer
+• Int
+• Float, Double
+• Almost everything else is defined in terms of these
+
+• Values of primitive types
+• Functions as values
+• Function application
+• Function composition
+• Anonymous functions
+• Infix functions, sections, and partial application
+
+• Type synonyms
+• Type signatures for values
+• Type signatures for functions
+• Polymorphism
+• Constraints
+
+Tuples.hs
+Functions.hs
+FormatList.hs
+Polymorphism
+Inheritan
+Nums.hs
+Chars.hs Strings.hs Lists.hs 1 
+
+myMap :: (a -> b) -> [a] -> [b]
+myMap _ [] = [] myMap f (a : as) = fa : myMap f as
+
+myFilter 	:: (a1 -> Bool) -> [a] -> [a] 
+myFilter – [] = [] 
+myFilter f (a : as) = if fa then a : myFilter f as else myFilter f as
+
+myFold :: (a -> b -> b) -> b -> [a] -> b myFold _b [] = b myFold fb (a : as) = myFold f (f a b) as
+
+main :: 10 () - main = do
+print $ myMap show [10, 20, 30] p rint $ myFilter (< 25) [10, 20, 30] print $ myFold (+) 100 [10, 20, 30]
+
+Algebraic Data Types
+• Do not confuse them with abstract data types
+· Composite data types
+• Sum types
+• Product types
+
+--     define     a     function     of     orte     variable 
+f :: Int -> Int f x = x + 1 
+Ä> f 2 3 

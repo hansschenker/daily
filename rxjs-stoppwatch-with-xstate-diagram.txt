@@ -1,0 +1,118 @@
+--------------------------------------  typescript ----------------------------------------
+createMachine({
+      "id": "Stoppwatch",
+  "initial": "Initial",
+  "states": {
+    "Initial": {
+      "on": {
+        "Started": {
+          "target": "Running"
+        }
+      }
+    },
+    "Running": {
+      "on": {
+        "Paused": {
+          "target": "Pausing"
+        },
+        "Stopped": {
+          "target": "Initial"
+        }
+      }
+    },
+    "Pausing": {
+      "on": {
+        "Resumed": {
+          "target": "Running"
+        },
+        "Reseted": {
+          "target": "Initial"
+        }
+      }
+    }
+  }
+,
+    schema: {
+      context: {} as {
+        
+      },
+      events: {} as {"type": "Started"}| {"type": "Paused"}| {"type": "Resumed"}| {"type": "Reseted"}| {"type": "Stopped"}
+    },
+   context: {},
+   predictableActionArguments: true,
+   preserveActionOrder: true,
+  })
+
+---------------------- json .--------------------------------
+{
+  "id": "Stoppwatch",
+  "initial": "Initial",
+  "states": {
+    "Initial": {
+      "on": {
+        "Started": {
+          "target": "Running"
+        }
+      }
+    },
+    "Running": {
+      "on": {
+        "Paused": {
+          "target": "Pausing"
+        },
+        "Stopped": {
+          "target": "Initial"
+        }
+      }
+    },
+    "Pausing": {
+      "on": {
+        "Resumed": {
+          "target": "Running"
+        },
+        "Reseted": {
+          "target": "Initial"
+        }
+      }
+    }
+  }
+}
+--------------------------------------------  javascript -----------------------------------
+createMachine({
+      "id": "Stoppwatch",
+  "initial": "Initial",
+  "states": {
+    "Initial": {
+      "on": {
+        "Started": {
+          "target": "Running"
+        }
+      }
+    },
+    "Running": {
+      "on": {
+        "Paused": {
+          "target": "Pausing"
+        },
+        "Stopped": {
+          "target": "Initial"
+        }
+      }
+    },
+    "Pausing": {
+      "on": {
+        "Resumed": {
+          "target": "Running"
+        },
+        "Reseted": {
+          "target": "Initial"
+        }
+      }
+    }
+  }
+,
+   context: {},
+   predictableActionArguments: true,
+   preserveActionOrder: true,
+  })
+------------------------------------------------------------

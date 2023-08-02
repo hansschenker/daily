@@ -1,0 +1,82 @@
+Observable
+-----------
+An Observable is a lazily evaluated computation that can synchronously or 
+asynchronously return zero to (potentially) infinite values from the time it’s 
+invoked onwards. (http://bit.ly/2sWVEAf)
+
+In order to consume data emitted by an observable, we need to create an observer 
+(consumer); this subscribes to the observable and reacts every time a value is emitted by 
+the observable (producer).
+
+If we want to summarize in technical words what an observable is, we could 
+say that an observable is an object that wrap some data consumed by an observer 
+(an object with a specific contract) and once instantiated provides a cancellation 
+function.
+
+The observer is an object that allows us to retrieve the value emitted by an 
+observable and has a specific contract exposing three methods: next, error, and 
+complete functions.
+When you deal with observables and observers bear in mind two well-known design 
+patterns for fully understand their mechanisms: the observer and the iterator patterns.
+
+Observer Pattern
+The Observer Pattern is a behavioral pattern where an object called Subject maintains 
+a list of other objects (observers) that want to be notified when a change happens inside 
+the program.
+
+Iterator Pattern
+The Iterator Pattern is a behavioral pattern used for traversing a data container like an 
+array or an object.
+
+
+Hot and Cold Observables
+We can have two different types of observables: hot and cold.
+A cold observable 
+-----------------
+is lazy and unicast by nature; it starts to emit values only when 
+someone subscribes to it.
+In cold observables, the producer lives inside the observable itself; therefore every 
+time we subscribe to a cold observable, the producer is created again and again
+Instead, the 
+hot observables 
+-----------------
+could emit events also before someone is listening 
+without the need to wait for a trigger for starting its actions; also they are multicast 
+by design.
+in the hot observable the producer is unique and shared across multiple 
+observers; therefore we will receive fresh values every time we are subscribing to it 
+without receiving all of them since the first value emitted
+
+Back Pressure
+--------------
+Another important Reactive Programming concept is backpressure and how we can use 
+it for improving our reactive applications.
+When we work with multiple streams, they could emit a large amount of events 
+in a short period of time. Therefore we need a way for alleviating the amount of data 
+consumed by the observers if we don’t really need all of them or if the process to 
+elaborate them is too computationally intense, and the consumer is not able to keep up
+
+loss-less strategy
+--------------------
+Usually we have two possibilities to handle back pressure in our application: first, 
+- queue the value, creating a buffer and elaborate all the values received, so in this 
+case we don’t miss the values emitted. This strategy is called loss-less strategy.
+
+lossy strategy
+----------------
+- skipping some events and reacting only after a certain 
+amount of time, filtering what we receive because maybe this information is not critical 
+for what the consumer needs to do; in this case we call this strategy lossy strategy.
+Imagine, for example, that we are merging two observables with a zip operator. 
+The first observable is providing some capital case letters every second, and the second 
+observable is emitting lowercase letters every 200 milliseconds.
+
+The zip operator in this case will create a new observable with the values of the 
+two streams coupled together, but because it needs to couple the letters from different 
+streams that are emitting values with different speed, inside the zip operator we have a 
+buffer for storing the values of the second observable until the first one is going to emit.
+
+Operators
+-----------
+the operators in RxJs are the lego pieces. When you want build a house you use certain lego types
+and when you want to build an areoplane you use other lego pieces, but still lego pieces with this simple interface (input -> output)

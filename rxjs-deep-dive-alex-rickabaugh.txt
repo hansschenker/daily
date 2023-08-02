@@ -1,0 +1,1345 @@
+
+
+JavaScript since the beginning they
+
+really got popular with nodejs
+
+with single threaded asynchronous
+
+server-side programming they're very
+
+simple in a very lightweight way of
+
+waiting for something that's happening
+
+asynchronously so here we're using the
+
+node HTTP API HTTP GET and passing a URL
+
+we pass it in this callback function
+
+that'll get called whenever the result
+
+was available and we're just console
+
+logging it and what I want you to notice
+
+about this code snippet is the part
+
+marked here in red right this is the
+
+extent of our HTTP call in the code and
+
+what you notice is that the callback
+
+write the definition of what to do next
+
+is actually contained within the call
+
+itself and this is a fundamental feature
+
+or a problem with callbacks you have to
+
+define what to do next when you're
+
+initiating the operation when you're in
+
+the process of making it and this leads
+
+to the problem that we all know is
+
+callback
+
+he'll write when you have this long
+
+chain of asynchronous things that need
+
+to happen you have to declare the whole
+
+thing upfront right one thing nested
+
+inside the other and every step contains
+
+the callbacks of all the steps that
+
+happen after it and that becomes really
+
+messy and really limiting very quickly
+
+and that's why promises were so awesome
+
+right because a promise lets us abstract
+
+that concept of waiting away right it's
+
+a reference to a value that may or may
+
+not be available yet and it lets us
+
+perform the operation in this case we're
+
+making the same age to be call using the
+
+fetch API and not worry about declaring
+
+what happens next right in fact we can
+
+do that in a different file we can pass
+
+that promise around and eventually we
+
+can say okay promise go ahead and run
+
+this callback whenever the results
+
+available so the fundamental improvement
+
+that promises made was this decoupling
+
+of the initialization of an action right
+
+the initiation of an operation from what
+
+comes next with promises we can initiate
+
+operations and then worry about what
+
+happens they abstract the idea of
+
+waiting of expecting a future value and
+
+they allow us to treat that expectation
+
+as a first-class object in our code but
+
+they're not without their downsides
+
+right promises only ever have one value
+
+in their entire life that makes them
+
+really unsuitable for representing data
+
+that's changing over time for example a
+
+firebase stream from a firebase database
+
+right it's really hard to represent that
+
+with the promise and they also go in one
+
+direction only there's no way to
+
+actually cancel an in-progress operation
+
+if you only have a promise and are
+
+waiting for it to finish and that's
+
+really where observables come in
+
+observables are like promises and this
+
+is the only time in this talk you will
+
+hear me say that observables are like
+
+promises in the sense that they are also
+
+asynchronous primitives and you can use
+
+them to solve the same problems but
+
+those solutions are going to look
+
+different because observables under the
+
+hood are very different animals so
+
+observables you know as you probably
+
+have heard they support multiple values
+
+and you can cancel them and those are
+
+useful distinctions but the real thing
+
+that sets them apart
+
+is there laziness right a promise
+
+represents an action which has already
+
+begun and we're waiting for it to
+
+complete and observable on the other
+
+hand represents an operation that hasn't
+
+even started yet so let's go ahead and
+
+define these two terms a little more
+
+rigorously we're going to talk about
+
+computations and computations can be
+
+performed eagerly or lazily and if we
+
+state that a computation is eager that
+
+means that it's evaluated as soon as
+
+it's defined right as soon as the
+
+JavaScript execution engine gets to a
+
+statement and runs that line if a
+
+computation is done lazily it means that
+
+it's not evaluated until it's needed
+
+until the result is actually required
+
+and that's an important distinction
+
+between many imperative and functional
+
+programming languages right if you've
+
+done any functional programming you
+
+probably know that computations
+
+generally are lazy they don't happen
+
+until you need the result but we can
+
+actually mimic this in an imperative
+
+language like JavaScript and we do it
+
+using functions so the top line here
+
+this computation of eager result adds
+
+the numbers one and two and as soon as
+
+the JavaScript interpreter gets to this
+
+it'll compute the result three and store
+
+it in a variable but just by wrapping
+
+that computation inside a function now
+
+when the JavaScript interpreter gets
+
+here
+
+it does those instructions away and it
+
+doesn't actually run them it's only when
+
+we call the function that we actually
+
+make that computation so with that
+
+simple definition in mind we can start
+
+building our mental model of how
+
+observables and promises are
+
+fundamentally different so we're going
+
+to consider two axes here on the
+
+vertical on the left hand side we have
+
+eager vs. lazy and along the top
+
+horizontal we have synchronous and
+
+asynchronous made so what's an example
+
+of a value which is both synchronous
+
+available right away and eager and
+
+computed the moment it happens well it's
+
+just any scalar value a string and
+
+object a number anything that doesn't
+
+require us to compute it or wait for it
+
+and we saw an example of synchronous and
+
+lazy right that's a function which
+
+returns a scalar it's still synchronous
+
+we call it we have the result
+
+immediately we
+
+have to wait but it doesn't actually get
+
+computed until we call the function so
+
+how about this asynchronous side well it
+
+might surprise you a little bit but
+
+promises are actually eager when you
+
+have a promise that means the operation
+
+that's computing the value is already in
+
+progress
+
+like when we call the fetch API we get a
+
+promise back the browser is already
+
+making that HTTP call and it's going to
+
+return a result to us eventually it's
+
+asynchronous but eager and that leaves
+
+us with one empty square right any
+
+guesses not yet right you can actually
+
+have a function which returns a promise
+
+that's both lazy write the promise
+
+doesn't get created the operation
+
+doesn't start until you call the
+
+function and it's asynchronous we'll get
+
+our value back over time and it turns
+
+out we do this all the time right this
+
+is exactly how a lot of services work so
+
+we have this constant get data it's a
+
+function that calls fetch and whenever
+
+we call get data an HTP operation starts
+
+we wait for our promise to resolve and
+
+we get our data and here's an important
+
+distinction right every time we call
+
+this get data function a new operation
+
+happens in the background because that
+
+computation is tied to the promise and
+
+every time we call the function we get a
+
+new promise so this is a pattern that
+
+gets used over and over in services
+
+right we have API service it's full of
+
+functions like get data they return a
+
+promise to data we do this all the time
+
+so back to our model asynchronous and
+
+lazy is a function that returns a
+
+promise also in this box is the
+
+observable and that is key right it's
+
+not a function that returns an
+
+observable and observable is of itself
+
+an object that behaves like an
+
+asynchronous function it represents an
+
+operation that could be performed and
+
+allows us to trigger that operation on
+
+demand whenever we want and once we
+
+trigger that operation by subscribing
+
+the values are returned asynchronously
+
+just like a promise so here's how we
+
+define such a thing right
+
+we're
+
+hooking the observable constructor if
+
+you ever use the promise constructor
+
+it's kind of similar you pass it a
+
+function and that function will get
+
+called every time someone subscribes to
+
+the observable and inside that function
+
+we get the subscriber and we can do
+
+anything we like synchronous
+
+asynchronous doesn't matter and we want
+
+to push data to the subscriber we call
+
+subscriber dot next so in this case
+
+we're doing the same thing we did with
+
+their promise we're wrapping the HTTP
+
+API when we get our result callback we
+
+push it to our subscriber and the
+
+equivalent of calling the function then
+
+for an observable is subscribing when we
+
+subscribe we pass the callback that's
+
+going to get called whenever the
+
+observable emits and if we subscribe a
+
+second time it's like running the
+
+function a second time we get another
+
+HTTP request made in the background and
+
+unlike functions that we're not limited
+
+with an oblate I'm like yeah I'm like
+
+functions we're not limited with an
+
+observable too returning just one result
+
+we could admit as many times as we like
+
+so here's an observable that just takes
+
+away time every second using the set
+
+interval API and this example also
+
+illustrates another property of
+
+observables they can actually understand
+
+when their subscriber is no longer
+
+interested in them so from the function
+
+we pass in the constructor we can return
+
+another function and that gets called
+
+whenever the subscriber unsubscribes
+
+there we can clear up or cancel any kind
+
+of long-running in progress operations
+
+HTTP calls in this case we're clearing
+
+up our timer and that makes observe
+
+rules really powerful because they have
+
+back pressure right they know when the
+
+UI is no longer interested in them so
+
+getting back to our API service from the
+
+beginning we've now learned that a
+
+promise and an observer will have
+
+similar purposes but they operate in
+
+very different ways so it'd be rather
+
+strange to replace promise with
+
+observable in this get data function
+
+because that's like declaring a function
+
+that returns something like a function
+
+that we would then call observables
+
+remember are by nature already very much
+
+like functions so most likely we'd want
+
+to expose this data observable directly
+
+and it's safe to do that because
+
+someone subscribes to it no calculation
+
+will actually happen right this is very
+
+cheap operation to create this thing so
+
+now that we're armed with this mental
+
+model of observables we can jump into
+
+operators operators are where they're
+
+real powerful power of rx starts the
+
+show so they are the observable
+
+equivalent of function composition
+
+wrapping one function with another an
+
+operator transforms an observable into
+
+another observable without subscribing
+
+to it and the logic in the operator is
+
+also then lazy right it won't execute
+
+until the resulting observable is
+
+subscribe to an Rx has over a hundreds
+
+of these things I certainly don't know
+
+them off the top of my head some of them
+
+are pretty specialized you only use them
+
+in very specific circumstances I find
+
+most applications have about 
+
+different operators that they use on a
+
+regular basis we're going to cover some
+
+of the more commonly used ones
+
+particularly operators that focus on
+
+three use cases transformation
+
+projection and combination so the first
+
+set of operators I'm going to talk about
+
+our ones were pretty much used to
+
+dealing with on arrays already there are
+
+a few of them with the most important to
+
+our map and filter so map works
+
+identically to an array it transforms
+
+one value to another using a projection
+
+function filter on the other hand uses a
+
+predicate to decide whether to include
+
+or exclude each individual value that's
+
+coming through so here's how map works
+
+in code we have this source observable
+
+and we're gonna initialize it with an
+
+array of numbers   &  so it'll emit
+
+the values  then  and then  and with
+
+the map operator we're just going to
+
+transform each value by doubling it and
+
+we get back this map observable and when
+
+you subscribe to that it gives us   
+
+straight very straightforward but this
+
+map operation doesn't actually do
+
+anything to the source observable it
+
+doesn't transform it in any way and we
+
+can still subscribe directly to it and
+
+get back our original sequence   & 
+
+it's very functional
+
+so the second set of operators that I
+
+want to talk about are the projection
+
+operators and this is where it starts to
+
+really get interesting because these
+
+transform a value into a whole stream of
+
+other values and that transformation can
+
+even be asynchronous which makes these
+
+very useful operators they're kind of
+
+the bread and butter of using rx so one
+
+common operation for example might be to
+
+take a stream of IDs and make an HTTP
+
+request to get data for each ID in a
+
+very naive way of doing this you see a
+
+lot of people starting out with rx think
+
+oh okay I know map I'll just use map and
+
+map this value into an HTTP call the
+
+problem is that map doesn't actually
+
+understand that the value you're
+
+transforming it to isn't observable so
+
+you end up with this thing that's an
+
+observable of observable of data right
+
+and you see that in your IDE and you
+
+think oh god what happened but this
+
+actually somewhat common in rx we call
+
+this a higher-order observable and if
+
+you think about it makes sense we've
+
+turned each ID into an asynchronous
+
+function that if we call it if we
+
+subscribe to it will get us the data for
+
+that ID so what we really want to do
+
+though is then flatten those results
+
+down we want something that will
+
+actually subscribe to that observable
+
+that we've created inside our map
+
+function and give us the values that
+
+come out and that sounds relatively
+
+straightforward but it's actually a
+
+vague requirement right there are a lot
+
+of different ways we could do this do we
+
+subscribe to every HTTP call at once and
+
+return the results in whatever order do
+
+they come back do we wait for the first
+
+one to finish before we do the second
+
+one
+
+you know there's lots of different
+
+options there an Rx has operators for
+
+each of these so these are the
+
+projection operators they all accomplish
+
+the same task of turning a higher-order
+
+observable right and observable of
+
+observables into a lower one but each
+
+with a slightly different kind of
+
+behavior merge all for example will
+
+subscribe to all of them as they show up
+
+and combine all the results into a
+
+single stream without caring about what
+
+order they come back in can cattle it
+
+takes a slightly different approach
+
+it subscribes to the first one waits for
+
+it to finish subscribe to the second one
+
+they set our down the line switch all
+
+actually will unsubscribe from the
+
+previous observable that it's listening
+
+to whenever a new value shows up right
+
+so it's always going to subscribe to the
+
+latest one a little bit of trivia for
+
+the longest time I thought these were
+
+the three operators there are but
+
+there's actually a fourth one in rx it's
+
+called exhaust not exhaust all and it's
+
+pretty exotic I've only ever seen it
+
+used in one application and what this
+
+does is ignore new values while the old
+
+subscription is still running so it
+
+drops it's kind of the opposite of
+
+switch all in that sense so what does
+
+this look like in code well starting
+
+from our source observable we use map
+
+again and we turn each ID into an
+
+observable that fetches the data for
+
+that ID and then we call concat all and
+
+that will give us back a stream of data
+
+where each value is corresponds to the
+
+data for each ID so we'll get the data
+
+for ID one then the data for ID two and
+
+the data for ID three and it turns out
+
+that this pattern is so prevalent in rx
+
+mapping to a higher-order observable and
+
+Concannon or merging or switching back
+
+down that Rx has shortcut operators for
+
+all of these so we have the concat map
+
+operator which does both steps at once
+
+right transforms into an observable and
+
+flattens them back down again but one
+
+mistake I see beginners in rx use is
+
+they choose the same projection operator
+
+and usually they pick merge map every
+
+time they want to do something
+
+asynchronous with an observable and in
+
+fact merge map is a pretty poor choice I
+
+would argue that kink at map should be
+
+your default asynchronous operator if
+
+you're going to use one of them and why
+
+is that
+
+well it's because most of the time we
+
+work with source observables they're in
+
+a particular order we're processing
+
+events click events from the Dom form
+
+changes etc and we want to preserve that
+
+order even as we go through our
+
+asynchronous steps
+
+and that's what cap map will do for us
+
+it'll actually preserve that order as it
+
+subscribes to each in our observable
+
+switch map you should use when a new
+
+value makes everything you were doing
+
+before obsolete the common example here
+
+is auto completers if you have an auto
+
+completer and the user types the next
+
+character you want to immediately stop
+
+with the query you were doing previously
+
+and jump to subscribing to the new value
+
+form changes right value events from
+
+forms parameter observables from the
+
+router also kind of similar you really
+
+don't care if the user navigates to URL
+
+one and then two you want to get the
+
+data for two they've already left the
+
+page for one there's no need to hang
+
+around and fetch that
+
+and merge map actually is not really
+
+that needed that much in code you really
+
+only use it when you're combining
+
+multiple streams of the similar type of
+
+data and you don't really care what
+
+order they come in and as I mentioned
+
+the exaust map nobody ever uses that one
+
+so another issue with projection
+
+operators that I see is people needing
+
+to access both results right so this
+
+mapping operation we make one HTTP
+
+requests for slash first and then we
+
+make a second HTTP request that depends
+
+on the URL that came back in first and
+
+if we were to subscribe to this we would
+
+get a stream of the results of the
+
+second request but what if we still
+
+wanted to access data from that first
+
+request right what if we wanted both of
+
+them it turns out that all of these
+
+operators accept what's called a
+
+selector function which can customize
+
+the output using both the inner value
+
+and the outer value so for example here
+
+we're using can cap map to do the same
+
+thing but we're now passing at this
+
+function that takes first and second and
+
+returns an object that composes them
+
+both and this is really useful when
+
+you're writing these long asynchronous
+
+flows will you do something like start
+
+with the router parameters to get the
+
+current route ID do a bunch of
+
+transformations on it and at the very
+
+end you want to post data back to the
+
+server using the same route ID and it
+
+was all the way at the top and you
+
+didn't really plumb it through to the
+
+bottom that gets really tricky to do
+
+norm
+
+but with this pattern of per passing the
+
+outer result through it can be really
+
+easy so the last set of operators that I
+
+want to cover are the combination
+
+operators and these join together
+
+multiple input observables into a single
+
+stream there are a few of them but the
+
+two that I want to cover our combined
+
+latest and with latest from so combine
+
+latest is a function and it takes
+
+multiple observables as parameters and
+
+the first thing it's going to do is
+
+going to wait for them to all emit once
+
+and when they do that it will emit by
+
+default an array with all of the values
+
+in it and then as each observable emits
+
+write if any of them emit it gives you a
+
+new array with the latest values that
+
+it's seen from all of them so this is
+
+really useful when you want to do a
+
+database join for example we are waiting
+
+on two different firebase tables or two
+
+different firebase queries and you want
+
+to get the results from both of them at
+
+the same time by default it will emit
+
+that array but just like whisking cap
+
+map you can pass a selector function and
+
+customize exactly how you want the
+
+values to be combined I find it's very
+
+useful to combine them into an object
+
+rather than receive them as an array
+
+because then you're referencing you no
+
+result thought you know user and result
+
+dot account and not you know result
+
+bracket  bracket  and finally the last
+
+operator we'll talk about is with latest
+
+from this is a pretty cool little
+
+operator and what it does is side load
+
+another stream into the current
+
+operation that you're doing so every
+
+time your main observable emits it'll
+
+take the latest value it saw on your
+
+side observable and combine it again
+
+using the selector function with the
+
+main value so here we're watching a
+
+firebase database but we don't actually
+
+care when the firebase database changes
+
+so much we just want to merge it with
+
+the form values that the users piping in
+
+so whenever the form value changes we
+
+just go and get whatever is in firebase
+
+at that moment merge it together and
+
+emit the result
+
+this brings us to the final section that
+
+I wanted to cover which is best
+
+practices we're gonna look at a handful
+
+of patterns and anti patterns that I've
+
+seen in real applications so first up is
+
+a pretty big anti pattern nesting
+
+subscriptions just don't do this rx
+
+works best when you start with an event
+
+that's emitted from the Dom or from a
+
+WebSocket or a database or something go
+
+through a sequence of operators that
+
+transform that event into an update to
+
+your UI and then a subscription that
+
+happens as close to the UI as possible
+
+and what that does is allow cancellation
+
+and that back pressure of unsubscription
+
+to work properly right if the UI decides
+
+it doesn't it's no longer interested in
+
+the value if it unsubscribes all the
+
+work that's being done to produce that
+
+value should come to a stop instead what
+
+you can do is use projection operators
+
+to handle all these asynchronous steps
+
+and only subscribe at the end so let's
+
+look at what this looks like in the wild
+
+here we're doing that same thing where
+
+we're making two HTTP requests the
+
+second one depending on the first but
+
+this time whoever wrote this has put the
+
+SUBSCRIBE for the second request inside
+
+the SUBSCRIBE for the first and they're
+
+also saving the values out into the
+
+component context and this is kind of
+
+hard to read you're not really sure when
+
+these events happen we've introduced the
+
+state now where this stuff first can be
+
+populated and this second is still
+
+waiting
+
+this messes with cancellations so if I
+
+cancel this outer observable the inner
+
+one doesn't know about it and introduces
+
+side-effects in the middle of
+
+computation it's just not a great way to
+
+deal with our X we can definitely clean
+
+this up using the concatenate er along
+
+with the selector function and this is
+
+how you should write it now all the
+
+computation happens in the operators it
+
+can be canceled by canceling the
+
+subscription and we update our component
+
+UI in one fell swoop
+
+without these intermediate states where
+
+some things are loaded and others aren't
+
+so let's look at a good pattern next how
+
+to manage subscriptions when components
+
+are destroyed it's important that they
+
+clean up their subscriptions not only
+
+does that prevent memory leaks
+
+but also can prevent some really strange
+
+behavior when a component you thought
+
+was gone and off the screen right
+
+suddenly gets an event in one of its
+
+observables maybe it was still listening
+
+to ng rx and then it does something and
+
+triggers an update in the application
+
+unsubscribing is not actually that hard
+
+you don't have to manually track
+
+subscriptions we're going to look at a
+
+pattern which uses a non destroy
+
+observable and an operator in order to
+
+do this more or less automatically so
+
+the way this works is you first have to
+
+turn angular's on destroy life cycle
+
+event into an observable that you can
+
+listen to and do this we use the subject
+
+so we create this on destroy observable
+
+as a subject and in the ng on destroy
+
+event we just next at a random value
+
+right so now we have this observable
+
+that's going to emit whenever the
+
+components destroyed
+
+so next whenever this component does any
+
+kind of subscription the last operator
+
+in our chain right here we're making an
+
+HTP call when you go through maps which
+
+map whatever the last operator in the
+
+chain is this taken till and what take
+
+until does is subscribe until the signal
+
+observable emits and then unsubscribe
+
+and so what we're saying here is as long
+
+as this component isn't destroyed go for
+
+it receive values whatever but as soon
+
+as on destroy emits close up shop so
+
+another empty pattern that I frequently
+
+see is the use of side effects and
+
+operators for example in this code
+
+example we have an API service with the
+
+get data function that gets data for URL
+
+and we're calling angular's HTTP client
+
+getting this URL typing it through a map
+
+function but we're abusing the map
+
+operator to pull this data out we need
+
+to set a property on our API service
+
+this has a lot of negative effects on an
+
+applications architecture it introduces
+
+state in places where you probably
+
+shouldn't have it it also introduces a
+
+race condition if someone calls get data
+
+on two different URLs and subscribe'
+
+simultaneously we're not sure which
+
+one's going to end up getting set on API
+
+service in the end so instead it's a
+
+much better idea to keep your operators
+
+pure and to use stateless services
+
+wherever you can and state management
+
+tools like ng rx can really help you
+
+with that and the last pattern I'd like
+
+to talk about is a pretty cool one
+
+writing a custom operator an operator in
+
+rx is just a function which transforms
+
+one observable to another you can do
+
+that by either subscribing and handling
+
+all the the mechanics yourself or you
+
+can simply wrap other operators and you
+
+can achieve some pretty powerful and
+
+readable code by taking up all the
+
+complex business logic that you have in
+
+transforming values and wrapping them in
+
+to kind of your own DSL that you build
+
+up so we're gonna do a really contrived
+
+case we're going to write an operator
+
+that counts the number of characters and
+
+every string that comes to an observable
+
+so as I mentioned an operator is a
+
+function that transforms one observable
+
+to another and you can see that's the
+
+inner function that we're returning it's
+
+very customary to write custom operators
+
+as a function that you call to get the
+
+operator and that allows you to pass

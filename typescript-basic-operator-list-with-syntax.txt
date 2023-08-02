@@ -1,0 +1,185 @@
+Types as metavalues 
+Consider the following two levels of TypeScript code:
+
+Value level (runtime):
+---------------------- 
+At runtime, we can use values and functions.
+
+Type level: 
+----------------------
+At compile time, we can use specific types and generic types.
+The type level is a metalevel of the program level.
+
+Level		Available at	Operands	Operations
+-------------------------------------------------------------
+Program level	Runtime	Values	Functions
+Type level	Compile time	Specific types	Generic types
+
+
+Basic Type Theory:
+
+- Types are sets of values
+
+- Set operations can be applied on types: union and intersection
+
+- a type has 0 or n constituents (inhabitants) , boolean: has 2, true and false
+
+- an intersection produces product types: the cartesian product of its inhabitants: boolean and boolean = 2*2
+
+- a union produces a sum type: the sum of its inhabitants: boolean or string = 2 + n
+
+- each javascript value is also a typescript type
+  const one = 1, // type number         type One = 1 // type 1
+
+Basic Types: 
+TypeScript includes types similar to JavaScript, such as 
+- boolean,
+- number, 
+- string, 
+- Array, 
+- Tuple, 
+- null, 
+- undefined, 
+- void, 
+- any, 
+- never
+- unknown
+
+Type Annotations: 
+TypeScript allows you to declare types explicitly using type annotations, providing a way to specify 
+the type of variables, function parameters, function return values, and object properties.
+
+Type Inference: 
+TypeScript compiler uses type inference to deduce types when they're not explicitly provided.
+
+Enums: 
+TypeScript supports enumerations (enums) which can be strings or numbers.
+
+Interface: 
+An interface in TypeScript is a syntax for declaring a contract or a shape of an object.
+
+Classes: 
+TypeScript classes are a syntax for defining entities that include properties and functions related 
+to an object.
+
+Generics: 
+Generics provide a way to create reusable components while maintaining type safety.
+
+Type Alias: 
+Type aliases allow you to give a name to a type or shape. It can represent a complex type or be used 
+for simpler types for readability.
+
+Union Types: 
+Union types allow you to create a type that could be one of several types.
+
+Intersection Types: 
+Intersection types allow you to combine multiple types into one, enabling objects to have properties 
+of all combined types.
+
+Type Guards: 
+TypeScript has mechanisms to narrow down the type of a variable within a conditional block.
+
+Mapped Types: 
+Mapped types allow the creation of new types based on transformations applied to old types.
+
+Conditional Types: 
+Conditional types select one of two possible types based on a condition expressed as a type 
+relationship test.
+
+Index Types: 
+Index types allow for dynamic property names and values within a type definition.
+
+Optional Types: 
+Optional types denote optional object properties or function parameters.
+
+Readonly Types: 
+Readonly types ensure that properties of an object cannot be changed after creation.
+
+Type Assertions: 
+TypeScript allows type assertions to manually override inferred types.
+
+Literal Types: 
+Literal types, such as string, numeric, or boolean literal types, allow you to specify 
+exact values that a type can have.
+
+Utility Types: 
+Utility types are a set of generic types that provide common type transformations.
+
+These definitions summarize the fundamentals of the TypeScript type system.
+
+
+Generic Types
+----------------------------------------------------
+23.2 Generic types: factories for types 
+Generic types are functions at the metalevel – for example:
+
+type Wrap<T> = [T];
+The generic type Wrap<> has the parameter T. Its result is T, wrapped in a tuple type. 
+This is how we use this metafunction:
+
+// %inferred-type: [string]
+type Wrapped = Wrap<string>;
+We pass the parameter string to Wrap<> and give the result the alias Wrapped. The result 
+is a tuple type with a single component – the type string.
+
+
+Transformation with Mapped Types
+----------------------------------------------------
+
+
+Control Flow with Conditional Types
+---------------------------------------------------
+
+
+Function Types
+---------------------------------------------------
+Return Types with Infer
+
+Utility Types
+---------------------------------------------------
+
+Typescript type operator syntax
+----------------------------------------------------
+
+
+
+{}, 			// object type
+----------------------------------------------------
+
+{x: T;y: U;} , 		// specific object type
+----------------------------------------------------
+
+T | U; , 		// union operator
+----------------------------------------------------
+
+T & U; ,		// intersection operator
+----------------------------------------------------
+
+ 
+keyof T; , 		// iterate over type properties
+----------------------------------------------------
+The TypeScript keyof operator is used to apply constraints in a generic function. 
+The above-given function retrieves the type of object property defined using generics. 
+keyof T returns a union of string literal types. Literals are defined as the 
+constant values that are assigned to the constant variables.
+
+javascript		typescript
+object.keys, 		the keyof operator
+
+
+T[K]; , 		// indexed type access
+----------------------------------------------------
+
+javascript		typescript
+
+
+{  [P - in K]: X;} ,	// mapped types 
+----------------------------------------------------
+
+javascript		typescript
+
+
+T extends U ? X : Y;	// conditional types
+----------------------------------------------------
+
+javascript		typescript

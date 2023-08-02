@@ -1,0 +1,65 @@
+set @ngrx/schematics as default schematics
+------------------------------------------
+ngrxi
+
+root store
+------------
+ng generate store AppState --root --statePath store --m app
+
+root effects
+----------------
+ng g effect store/app --root -m=app
+
+
+generate feature
+-----------------------------
+module:
+ng g m auth --routing
+
+service:
+ng g s auth/auth -m auth
+
+container:
+ng g c auth -m auth
+
+component:
+ng g c auth/signup -m auth
+
+ngrx feature:
+ng generate feature auth/Auth  -m auth --reducers ../store/index.ts
+
+app container html
+------------------------------------------------------------------
+<ul>
+  <li><a  routerLink="home">Home</a></li>
+  <li><a  routerLink="auth">Auth</a></li>
+</ul>
+
+app container css
+----------------------------------------
+
+app routing with lazy loaded feature module
+---------------------------------------------
+const routes: Routes = [
+  { path: "", pathMatch: "full", redirectTo: "home" },
+  { path: "home", component: HomeComponent },
+  { path: "auth", loadChildren: "./auth/#AuthModule" }
+];
+
+
+
+feature routing (lazy loaded)
+--------------------------------
+
+
+feature container html with router outlet (auth.component.html)
+----------------------------------------------------------------
+<ul>
+  <li><a  routerLink="signin">Signin</a></li>
+  <li><a  routerLink="signup">Signup</a></li>
+</ul>
+<router-outlet></router-outlet>
+
+feature container css
+---------------------------------------------------
+

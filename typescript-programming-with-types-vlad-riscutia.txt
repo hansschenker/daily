@@ -1,0 +1,89 @@
+Type - is a set of possible values
+--------------------------------------------------------------------------------------------
+A type is a classification of data that defines the operations that can be done on that data, 
+the meaning of the data, and the set of allowed values
+
+Type System
+--------------------------------------------------------------------------------------------
+A type system is a set of rules that assigns and enforces types to elements of a programming language. 
+These elements can be variables, functions, and other higher-level constructs
+
+Type Checking
+----------------------------------------------------------------------------------------------
+The process of type checking ensures that the rules of the type system are respected by the program. 
+This type checking is done by the compiler. The component of the compiler that handles enforcement 
+of the typing rules is called a type checker
+
+Type checking and proofs - close connection between logic - type theory - set theory
+-----------------------------------------------------------------------------------------------
+There is a lot of formal theory behind type systems. The remarkable Curry-Howard correspondence, 
+also known as proofs-as-programs, shows the close connection between logic and type theory.
+
+It shows that we can view a type as a logic proposition, 
+and a function from one type to another as a logic implication
+A value of a type is equivalent to evidence that the proposition is true.
+
+The close relationship between logic and type theory shows that a program 
+that respects the type system rules is equivalent to a logic proof
+
+The type system is the language in which we write these proofs
+
+BENEFITS OF TYPE SYSTEMS
+---------------------------------------------------------------------------------------------------
+The main benefits of typing are 
+- correctness, 
+- immutability, 
+- encapsulation, 
+- composability, and 
+- readability
+
+Correctness
+----------------------------------------------------------------------------------------------------
+Correct code means code that behaves according to its specification, producing expected results 
+without creating run-time errors or crashes
+
+- reducing the state space -  the Cartesian product of the type of each variable (reduce state explosion)
+----------------------------------------------------------------------------------------------------
+ state space of a running program as the combination of all possible values of all its live variables
+The Cartesian product of two sets is the set comprised of all ordered pairs from the two sets
+
+
+Immutability - viewing our running system as moving through its state space
+----------------------------------------------------------------------------------------------------
+Immutability is another property closely related to viewing our running system as moving through its state space
+if we can keep parts of that state from changing, we reduce the possibility of errors
+
+dont loose garanitees of types by allowing for state mutation
+Marking state that shouldn’t change as such by adding the const notation to our type 
+prevents the kind of mutations with which we lose guarantees
+
+Immutability is especially useful when concurrency is involved
+
+Encapsulation - hide the internals - restrict interface/api (helps with dealing with complexity)
+----------------------------------------------------------------------------------------------------
+Encapsulation is the ability to hide some of the internals of our code, be it a class, function or module
+
+Composability - parameterize over type and predicate
+----------------------------------------------------------------------------------------------------
+function first<T>(range: T[], pred: (elem: T) => boolean)
+    : T | undefined {
+    for (let elem of range) {
+        if (pred (elem)) return elem;
+    }
+}
+
+function findFirstNegativeNumber(numbers: number[])
+    : number | undefined {
+    return first(numbers, n => n < 0);
+}
+
+function findFirstOneCharacterString(strings: string[])
+    : string | undefined {
+    return first(strings, str => str.length == 1);
+}
+
+Readability
+----------------------------------------------------------------------------------------------------
+
+
+

@@ -1,0 +1,182 @@
+Hallo an alle, die gerne in Frontend-Technologien eintauchen! In diesem Artikel 
+werde ich darüber sprechen, wie Sie JSX mit einem Vite-Builder in ein Vanilla-TypeScript-Projekt 
+einbetten können. Das Material ist interessant, wenn Sie:
+
+Arbeitete mit React, weiß aber nicht, was unter der Haube steckt.
+
+Interessiert an der gesamten Theorie rund um das Frontend.
+
+Ein Geek, der Vanilla-JS/TS-Projekte erstellt.
+
+Wofür? Meistens zum Spaß! Es ist unwahrscheinlich, dass die beschriebene Idee 
+ohne zusätzliche Komplikationen und die Erstellung eines neuen Frontend-Frameworks 
+in realen Projekten verwendet werden kann. Öffnen Sie also im nächsten Tab das 
+GitHub-Repository mit dem Projektcode und machen Sie es sich bequem. 
+Ahead ist ein tiefer Einblick in JSX.
+
+Was ist JSX?
+----------------------------------------------------------------------------------------
+JSX ist ein syntaktischer Wrapper über JS. Es ist nicht in den ECMAScript-Standards enthalten, 
+daher transpilieren Tools wie Babel und React es in regulären JavaScript-Code. 
+
+Betrachten Sie ein klassisches JSX-Beispiel:
+
+konstantes Profil = (
+   <div>
+     <img src="avatar.png" className="profil" />
+     <h3>{[user.firstName, user.lastName].join(" ")}</h3>
+   </div>
+);
+
+Nach dem Ausführen von @babel/plugin-transform-react-jsx verwandelt sich der Code 
+in browserfreundliches JS:
+
+konstantes Profil = React.createElement (
+   "div",
+   Null,
+   React.createElement("img", { src: "avatar.png", className: "profile" }),
+   React.createElement("h3", null, [user.firstName, user.lastName].join(" "))
+);
+
+Wie Sie sehen können, hat Babel JSX erfolgreich in eine ordentliche React.createElement-Funktion 
+verwandelt, die aus einem Wrapper-Tag, seinen Eigenschaften (null im Beispiel) und 
+untergeordneten Elementen besteht, die ebenfalls mit dieser Funktion erstellt werden.
+
+React-, Vue- und Solid-Frameworks können JSX verarbeiten, aber sie tun es anders. 
+Dies liegt daran, dass sie 
+unterschiedliche Implementierungen der createElement-Funktion haben, 
+----------------------------------------------------------------------
+die auch als JSX-Pragma bekannt ist. Als ich davon erfuhr, 
+wollte ich sofort mein eigenes Pragma erstellen.
+
+Analysieren von JSX
+----------------------
+Bevor Sie mit der Erstellung eines Pragmas beginnen, müssen Sie 
+lernen, wie JSX analysiert wird. 
+
+Für ein kleines und modernes Projekt, das keine Unterstützung für ältere Browser benötigt, 
+möchten Sie Babel nicht verwenden. 
+Vite und Typescript
+--------------------
+Glücklicherweise können Sie mit Vite und 
+TypeScript immer ein einfaches und schnelles Projekt bereitstellen. 
+
+Vite uses ES-Module
+------------------
+Vite ist ein moderner Projektentwickler. Seine Besonderheit liegt darin, 
+dass es im Gegensatz zu Webpack den Quellcode über ES-Module liefert. 
+
+Um ein Projekt für Vite und TypeScript bereitzustellen, 
+müssen Sie nur den folgenden Befehl ausführen:
+
+npm erstellt vite@latest
+-------------------------
+
+Standardmäßig parsen sowohl Vite als auch TypeScript, wenn sie 
+
+.jsx- oder .tsx-Dateien sehen, 
+-------------------------------
+das darin enthaltene JSX und ersetzen die Funktion React.createElement. 
+Um sie zu einer benutzerdefinierten Funktion zu leiten, 
+
+tsconfig.json ändern.
+----------------------
+{
+   "compilerOptions": {
+     "jsx": "bewahren",
+     "jsxFactory": "h",
+     "jsxFragmentFactory": "Fragment"
+   }
+}
+
+
+Oder wenn Sie ein Projekt ohne TypeScript schreiben, 
+
+vite.config.js ein.
+-----------------------------
+
+importiere {defineConfig} aus 'vite';
+
+export default defineConfig({
+   Aufbau: {
+     jsxFactory: 'h',
+     jsxFragment: 'Fragment'
+   }
+});
+
+
+Diese Eigenschaften teilen dem Parser mit, dass die Funktion h 
+(von Hyperscript, Hypertext + Javascript) beim Parsen von JSX verwendet werden sollte, 
+wenn es nur 
+- ein übergeordnetes Element in JSX gibt, und 
+- Fragment, wenn es mehr als eines gibt.
+
+JSX-Pragma
+-------------------------
+Nachdem wir den Parser für die Verarbeitung der h-Funktion konfiguriert haben, 
+versuchen wir, ihn in 
+
+src/pragma.ts zu erstellen.
+--------------------------
+// Das Tag kann entweder 
+   - ein String oder 
+   - eine Funktion sein - wenn wir parsen
+// Funktionskomponente
+
+Typ Tag = Zeichenkette | ((Requisiten: alle, Kinder: alle []) => JSX.Element);
+
+// Elementattribute - Objekt oder Null
+type Props = Record<string, string> | Null;
+
+// Die Kinder des Elements sind der Rückgabewert der Funktion h()
+type Children = (Knoten | string)[];
+
+export const h = (tag: Tag, props: Props, ...children: Kinder) => {
+   // Wenn das Tag eine Komponente ist, rufen Sie es auf
+   if (Typ des Tags === 'Funktion') {
+     return tag({ ... props }, children);
+   }
+
+   // Erstellen Sie ein HTML-Element mit den übergebenen Attributen
+   const el = document.createElement(tag);
+   wenn (Requisiten) {
+     Object.entries(props).forEach(([key, val]) => {
+       if (Schlüssel === 'Klassenname') {
+         el.classList.add(...(val as string || '').trim().split(' '));
+         zurückkehren;
+       }
+
+       el.setAttribute(Schlüssel, Wert);
+     });
+   }
+
+   // Kindelemente zum Elternteil hinzufügen
+   children.forEach((Kind) => {
+     el.append(Kind);
+   });
+
+   zurück el;
+};
+
+Die h-Funktion nimmt wie 
+- createElement den 
+  - Namen eines Tags (oder einer funktionalen Komponente), 
+  - Attribute und das 
+  - Ergebnis der Ausführung der h-Funktion für untergeordnete Elemente.
+
+Alle .jsx-Dateien müssen die h-Funktion importieren, 
+----------------------------------------------------
+damit sie nach der Transpilation für den Code sichtbar ist. 
+
+importiere { h } aus '../pragma';
+importiere { LikeComponent } aus './like';
+
+export const App = (
+   <Hauptklassenname="Hallo">
+     <h1>
+       Hallo JSX!
+     </h1>
+     <WieKomponente groß />
+   </main>
+);
+---------------------------------------------------

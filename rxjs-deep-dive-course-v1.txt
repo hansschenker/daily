@@ -1,0 +1,430 @@
+RxJs Deep Dive
+-------------------------------------------------------course  structure              ------------------------------
+Tutorial structure
+----------------------------------------------------------------------------------------------
+Goal of the Tutorial
+
+Structure of Tutorial
+-----------------------
+
+Introduction to RxJS
+----------------------
+
+01 Observables and Subscriptions
+----------------------------
+
+02 Operators (e.g. map, filter, mergeMap, switchMap)
+-------------------------------------------------
+
+03 Subjects and multicasting
+--------------------------------------------------
+
+04 Error handling with RxJS
+----------------------------------------------------
+
+05 Backpressure and throttling
+-------------------------------------------------------
+
+06 Debouncing and delaying
+---------------------------------------------------------
+
+07 Time-based operators (e.g. interval, timer, debounceTime)
+---------------------------------------------------------
+
+08 Combining observables (e.g. merge, concat, forkJoin)
+---------------------------------------------------------
+
+09 Higher-order observables (e.g. switchMap, mergeMap, exhaustMap)
+---------------------------------------------------------
+
+10 Testing with RxJS (e.g. marble testing, hot vs. cold observables)
+---------------------------------------------------------
+
+11 Real-world use cases of RxJS
+---------------------------------------------------------
+
+12 Optimization and performance tuning
+---------------------------------------------------------
+
+13 Building a reactive application with RxJS
+---------------------------------------------------------
+
+14 Advanced RxJS techniques and topics (e.g. schedulers, custom operators, shareReplay)
+---------------------------------------------------------
+
+15 Resources that can help you develop your course, 
+---------------------------------------------------------
+- RxJS documentation, the 
+- RxJS Github repository, 
+- RxJS blogs and tutorials. 
+¨
+Additionally, there are many video courses on platforms like 
+- Udemy, 
+- Pluralsight, 
+- YouTube that can serve as inspiration for your own course.
+
+----------------------------------------------------------------------course structure -----------------------------------------------------------------------------------------------------------
+rxjs-deep-dive-00: Course instructur
+------------------------------------------------
+Hello an welcome
+My name is Hans Schenker and
+I am a Typescript and Javascript Programmer
+favoriting Functional and Reactive Programming 
+and marathon runner and sports fanatic
+I am excited to teach you everything I know about Reactive Extensions
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+rxjs-deep-dive-00: Course goal
+------------------------------------------------
+
+The goal is an advanced understanding of RxJs and the underlaying concepts
+The course should help learners gain a comprehensive understanding of the RxJS library, its key concepts, 
+and how to apply them effectively in real-world scenarios. 
+
+
+rxjs-deep-dive-01: Introduction to Reactive Extensions (Rx)
+------------------------------------------
+
+RxJs or Reactive Extensions is a library that allows you to write asynchronous and event-driven programs 
+using observable sequences. It provides a set of operators that allow you to easily transform, filter, 
+and combine these sequences, making it easier to work with complex data streams. Rx is available 
+in multiple programming languages including JavaScript, and the JavaScript version of Rx is called RxJs.
+
+rxjs-deep-dive-02: Installing RxJs
+-------------------------------------------
+Installing RxJs
+You can install RxJs using npm, the Node.js package manager. Simply run the following command in your terminal:
+npm install rxjs
+
+Creating Observables
+-------------------------------------------------
+An Observable is a stream of data that can be observed and subscribed to. In RxJs, you can create an 
+Observable using the Observable constructor, and then emit values using the next method. Here is an example:
+
+
+import { Observable } from 'rxjs';
+
+Creating an Observable
+-----------------------------------------------------------
+const observable = new Observable(subscriber => {
+  subscriber.next(1);
+  subscriber.next(2);
+  subscriber.next(3);
+  subscriber.complete();
+});
+
+In this example, we create an Observable that emits the values 1, 2, and 3 using the next method, and 
+then completes using the complete method.
+
+Subscribing to Observables
+-------------------------------------------------------
+To subscribe to an Observable, you can call the subscribe method on the Observable, and pass in an object 
+with functions to handle the emitted values and errors. Here is an example:
+
+observable.subscribe({
+  next: value => console.log(value),
+  error: error => console.error(error),
+  complete: () => console.log('Observable complete')
+});
+
+In this example, we subscribe to the Observable we created earlier, and pass in an object with three functions 
+to handle the emitted values, errors, and completion. The next function logs each emitted value to the console, 
+the error function logs any errors to the console, and the complete function logs a message to the 
+console when the Observable completes.
+
+RxJs Operators
+------------------------------------------------------------------
+RxJs provides a set of operators that allow you to transform, filter, and combine Observables. 
+Here are a few examples:
+
+import { from } from 'rxjs';
+import { map, filter, take } from 'rxjs/operators';
+
+const source = from([1, 2, 3, 4, 5]);
+
+// Map operator
+----------------------------------
+const mapped = source.pipe(
+  map(value => value * 2)
+);
+// Output: 2, 4, 6, 8, 10
+mapped.subscribe(console.log);
+
+// Filter operator
+-----------------------------------
+const filtered = source.pipe(
+  filter(value => value % 2 === 0)
+);
+// Output: 2, 4
+filtered.subscribe(console.log);
+
+// Take operator
+-----------------------------------
+const taken = source.pipe(
+  take(3)
+);
+// Output: 1, 2, 3
+taken.subscribe(console.log);
+
+In this example, we use the from operator to create an Observable from an array of numbers, 
+and then use the map, filter, and take operatsors to transform, filter, and take the first three values 
+from the Observable. We then subscribe to each of these Observables and log the emitted values to the console.
+
+Conclusion
+------------------------------------
+Reactive Extensions (Rx) and RxJs can be a powerful tool for writing asynchronous and event-driven programs 
+in JavaScript. By using Observables and the operators provided by RxJs, you can easily work with complex 
+data streams and handle errors and completion in a more efficient way.
+
+
+
+Tutorial structure
+----------------------------------------------------------------------------------------------------------
+Instructor: 
+------------
+Hans Schenker
+Typescript and Javascript Programmer
+favoriting Functional and Reactive Programming 
+marathon runner and sports fanatic
+
+Course Goal: 
+------------
+
+Advanced understanding of RxJs and the underlaying concepts
+
+help learners gain a comprehensive understanding of the RxJS library, its key concepts, 
+and how to apply them effectively in real-world scenarios. 
+This would involve covering the following topics:
+
+Reactive programming concepts and principles,including  
+- observables, 
+- subscribers, 
+- operators
+- subjects and 
+- schedulers
+
+How to use RxJS operators effectively to transform, filter, and combine observables.
+
+Error handling strategies in RxJS, including how to handle errors 
+with operators like catchError() and retry().
+
+How to use RxJS to manage asynchronous data streams, 
+including how to use operators like merge(), concat(), and switchMap().
+
+How to use RxJS with other frameworks and technologies, such as 
+- Angular, 
+- React, 
+- Svelte and
+- Node
+
+Best practices for using RxJS, including how to write clean, maintainable code 
+and avoid common pitfalls and performance issues.
+
+Overall, the goal of an RxJS deep dive tutorial should be to provide learners with a 
+solid foundation in reactive programming and equip them with the skills and 
+knowledge needed to use RxJS effectively in their own projects.
+
+Introduction to rxjs 
+--------------------
+RxJS is the Reactive Extensions for JavaScript library
+It is using Observables that makes it easier to compose asynchronous or event-based programs.
+
+It was first developed by Microsoft in 2012 as part of the Rx project lead by Erik Meijer, 
+which aimed to provide a consistent API for working with streams of data 
+across multiple programming languages and platforms.
+
+RxJs provides a set of operators and functions for working with streams of data 
+in a declarative and composable way. 
+
+Observables in RxJS can be used to represent anything that can be captured as a stream of data.
+In principle can any data source be captured with an Observable. It is the unifying Inferface for any data source 
+such as mouse clicks, HTTP requests, Websockets, stock prices, gps sensor data (any realtime data) 
+or even values from a database.
+
+Since its initial release, RxJS has become a popular tool for building reactive and event-driven applications in JavaScript, 
+and it has been adopted by many frameworks and libraries, including Angular, React, and Vue.js. 
+It continues to evolve with new features and updates, with the latest version being RxJS 8 in 2023.
+
+
+underlayinng concepts
+-------------------------
+- declarative vs imperative
+
+what is a declarative programming style
+--------------------------------------------
+Declarative programming is a style of programming in which the programmer specifies what needs to be done, 
+rather than the steps necessary to achieve it. This style of programming is often used for describing the data 
+and information that needs to be processed. Examples of declarative programming languages include SQL, Prolog, and XPath.
+
+Human: what is imperative programming style
+------------------------------------------
+AI:
+Imperative programming is a style of programming in which the programmer provides step-by-step instructions 
+for how to complete a task. This style of programming is often used for describing the operations and commands 
+that need to be processed. Examples of imperative programming languages include C, Java, and FORTRAN.
+
+
+
+
+
+- functional vs traditional OOP
+------------------------------
+Human: what is functional programming style
+-------------------------------------------
+AI: Functional programming is a programming paradigm that emphasizes the use of pure functions and avoiding 
+side effects, as well as the declaration of variables. It is a declarative programming style which focuses 
+on the evaluation of expressions rather than the execution of commands.
+Human: what is imperative programming style
+
+AI: Imperative programming 
+-------------------------------------------
+is a programming paradigm that emphasizes the use of statements that change the 
+program's state, as well as the declaration of variables. It is an imperative programming style which 
+focuses more on the execution of commands than the evaluation of expressions.
+
+- iterator and observer pattern
+Human: what is the iterator pattern
+-------------------------------------
+The Iterator Pattern 
+----------------------
+is a design pattern used to provide a way to traverse through the elements of a collection, 
+without exposing its underlying representation. It allows for a uniform way of accessing and manipulating collections, 
+regardless of the type of elements stored within the collection.
+Human: what is the observer pattern
+AI:
+The Observer Pattern 
+--------------------
+is a software design pattern that allows an object, known as the subject, to notify observers 
+of any state changes. This is done by having the subject maintain a list of observer objects and sending a 
+notification message to each one when an event occurs. The observers will then update their state based 
+on the information they receive.
+
+- intersection of iterator and observer pattern
+
+- synchronous (statements) vs asynchronous (callbacks, promises, observables)
+--------------------------------------------------------------------------------
+The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.
+
+
+Human: What is RxJs
+----------------------------------------
+AI: RxJS is a popular library for reactive programming in JavaScript. It helps to simplify complex 
+asynchronous operations and enables you to efficiently create asynchronous data flows.
+
+Human: What is an asynchronous data flow
+------------------------------------------
+AI: An asynchronous data flow is a process where data moves through several steps in a system without 
+any specified order or timing. It is often used to describe how information flows between different 
+components and systems. RxJS helps to simplify this process by providing a framework to create, manage, 
+and manipulate such data flows.
+
+
+Human: What are asynchrounous ways in javascript
+-------------------------------------------
+AI: Asynchronous ways in JavaScript include callbacks, promises, and async/await. Callbacks are a 
+special type of function that is called after an asynchronous task has completed, allowing you to 
+manipulate the result of the operation. Promises are also a way of specifying when a certain asynchronous task 
+will be complete, along with any associated errors that may have occurred. Finally, async/await is a syntax 
+that makes it easier to write asynchronous code by merging the concepts of callbacks and promises into one.
+
+Humain: Give me a sample of a callback
+-----------------------------------
+AI: Here is a sample of a callback:
+function doSomething(callback) { 
+    // Do something... 
+    const result = "some result"; 
+    callback(result); 
+} 
+
+doSomething(function(result) { 
+    console.log(result); 
+});
+Human: give me a sample for a promise
+AI: Here is a sample for a promise: 
+let promise = new Promise((resolve, reject) => { 
+    // Do something asynchronously 
+    let result = "some result"; 
+    resolve(result); 
+}); 
+
+promise.then(result => { 
+    console.log(result); 
+});
+Human: give me a sample for an rxjs observable
+AI: Here is a sample for an RxJS observable:
+
+const source = Rx.Observable.interval(1000).take(10); 
+source.subscribe(x => console.log(x));
+Human: give me a sample for javascript async await
+
+AI: Here is a sample for JavaScript async/await:
+
+async function doSomething() { 
+    const result = await someAsyncFunc(); 
+    console.log(result); 
+} 
+
+doSomething();
+Human: 
+
+
+- pull vs push
+- promise vs observable
+
+functional programming : 
+--------------------------
+- functions are first class citizens
+- pure functions
+- immutable data
+- function composition
+- input - processing - output
+
+function vs observable
+
+
+What is Reactive Programming
+---------------------------
+Human: what is reactive programming
+----------------------------------------------------------
+AI: Reactive programming is a programming paradigm where the flow of data is 
+based on the reaction to change. It is a declarative programming style that focuses on 
+reacting to events or changes in order to achieve a desired result. Reactive programming 
+typically utilizes event-driven, asynchronous programming that enables applications 
+to be more efficient and responsive.
+
+Human: What are the characteristics or Reactive programming
+------------------------------------------------------------
+AI: The characteristics of reactive programming include:
+- Event-driven and asynchronous programming
+- Declarative programming style
+- Data flows are based on reacting to changes
+- Focuses on responding to events or changes in order to achieve a desired result
+- Improves performance, scalability, and responsiveness
+
+
+Cold Observable
+------------------------------------------------
+Since we are on Youtube - you can Hot and Cold Observable explain with youtube videos watching:
+- Cold Observable: 1 video title  to 1 youtube user: 
+When you start a Youtube video - you are the only watcher (subscriber) of that video - 
+when another user starts the same video title , he gets his own video playing from beginining
+
+- Hot Observable: 
+----------------------
+Youtube video streaming: 1 video stream - n possible users ( 0 to n subscriptions ) 
+when you subscribe to a youtube video stream - you get the video stream from the time you 
+subscribe to it (you could be late and get only the remaining streaming)
+
+Human: RxJs Observable is a monad
+---------------------------------------------
+No, RxJs Observable is not a monad. It is an implementation of the observer pattern which 
+is a well-established software pattern that allows objects to 
+receive notifications of events and data changes.
+
+Human:  what is continuation-passing style programming
+------------------------------------------------------
+AI: Continuation-passing style (CPS) is a programming language framework commonly 
+used in functional programming. It is a style of programming in which computations 
+are represented using continuation, a form that describes control flow. 
+CPS programming is used for a variety of tasks
+

@@ -1,0 +1,98 @@
+RxJs-Spy
+-----------
+rxjs-spy introduces a tag operator that associates a string tag with an observable
+
+The tag operator can be used alone — import "rxjs-spy/add/operator/tag"
+
+Most of the tool’s methods accept matchers that determine to which tagged observables they will apply. 
+Matchers can be simple strings, regular expressions or predicates that are passed the tag itself.
+
+When the tool is configured via a call to its spy method, it patches Observable.prototype.subscribe 
+so that it is able to spy on all subscriptions, notifications and unsubscriptions. That does mean, 
+however, that only observables that have been subscribed to will be seen by the spy
+
+rxjs-spy exposes 
+- a module API that is intended to be called from code and 
+- a console API that is intended for interactive use in the browser’s console
+
+Console API
+-----------
+
+import { Observable } from "rxjs/Observable";
+import { spy } from "rxjs-spy";
+
+import "rxjs/add/observable/interval";
+import "rxjs/add/operator/map";
+import "rxjs/add/operator/mapTo";
+import "rxjs-spy/add/operator/tag";
+
+spy();
+
+const interval = new Observable.interval(2000).tag("interval");
+
+const people = interval
+  .map((value) => {
+    const names = ["alice", "bob"];
+    return names[value % names.length];
+  })
+  .tag("people")
+  .subscribe();
+
+The console API in rxjs-spy is exposed via the rxSpy global.
+----------------------------------------------------------
+Calling rxSpy.show() will display a list of all tagged observables, indicating their state 
+(incomplete, complete or errored), the number of subscribers 
+and the most recently emitted value (if one has been emitted)
+
+
+ a tag name or a regular expression can be passed to show:
+.tag("people")
+
+rxSpy.show("people")
+Logging can be enabled for tagged observables by calling rxSpy.log:
+rxSpy.log("people")
+
+log all tagged Observables
+----------------------------
+Calling log with no arguments will enable the logging of all tagged observables.
+
+
+teardown
+--------------------
+Most methods in the module API return a teardown function that can be called to undo the method call. 
+In the console, that’s tedious to manage, so there is an alternative.
+
+Calling rxSpy.undo() will display a list of the methods that have been called:
+
+RxJs-Spy Use Case (rxjs tooling 2)
+-------------------------------
+
+RxSpy.spy();
+RxSpy.log(/user-.+/);
+RxSpy.log("users");
+
+const names = ["benlesh", "kwonoj", "staltz"];
+const users = Rx.Observable.forkJoin(
+  ...names.map((name) =>
+    Rx.Observable.ajax
+      .getJSON(`https://api.github.com/users/${name}`)
+      .tag(`user-${name}`)
+  )
+).tag("users");
+
+users.subscribe();
+
+regular expression for log: /user-.+/
+-----------------------------
+ the example enables spying and configures loggers for tagged observables with tags 
+that match the /user-.+/ regular expression or observables that have a users tag
+
+In addition to the observable next and complete notifications, the logged output includes 
+notifications for subscriptions and unsubscriptions. And it shows everything that occurs:
+
+the subscription to the composed observable effects parallel subscriptions to the observable for the API request for each user;
+the requests complete in any order;
+the observables all complete;
+and the subscription to the composed observable is automatically unsubscribed upon completion.
+
+

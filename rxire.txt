@@ -1,0 +1,208 @@
+# npm 
+npm i rxfire firebase rxjs --save
+# yarn 
+yarn add rxfire firebase rxjs
+Make sure to install Firebase and RxJS individually as they are peer dependencies of RxFire.
+
+Example use:
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import { collectionData } from 'rxfire/firestore';
+import { tap } from 'rxjs/operators';
+ 
+const app = firebase.initializeApp({ /* config */ });
+const citiesRef = app.firestore().collection('cities');
+citiesRef.where('state', '==', 'CO');
+ 
+collectionData(citiesRef, 'id')
+  .pipe(
+    tap(cities => console.log('This is just an observable!'))
+  )
+  .subscribe(cities => { /* update UI */ })
+Easily combine multiple Firebase data sources
+RxJS provides multiple operators and creation methods for combining observable streams. This makes it easy to combine data from multiple Firebase resources. You can also handle simplify high asynchronous tasks like joins into a flat stream.
+
+The example below streams a list of "cities" from Firestore and then retrieves their image from a Cloud Storage bucket. Both tasks are asynchronous but RxJS makes it easy to combine these tasks together.
+
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import 'firebase/storage';
+import { collectionData } from 'rxfire/firestore';
+import { getDownloadURL } from 'rxfire/storage';
+import { switchMap } from 'rxjs/operators';
+ 
+const app = firebase.initializeApp({ /* config */ });
+const citiesRef = app.firestore().collection('cities');
+citiesRef.where('state', '==', 'CO');
+ 
+collectionData(citiesRef, 'id')
+  .pipe(
+    switchMap(cities => {
+      return combineLatest(...cities.map(c => {
+        const ref = storage.ref(`/cities/${c.id}.png`);
+        return getDownloadURL(ref).pipe(map(imageURL => ({ imageURL, ...c })));
+      }));
+    })
+  )
+  .subscribe(cities => {
+    cities.forEach(c => console.log(c.imageURL));
+  });
+Understanding RxFire imports
+RxFire is a complementary library to Firebase. It is not meant to wrap the entire Firebase SDK. RxFire's purpose is to simplify async streams from Firebase. You need to import the Firebase SDK and initialize an app before using RxFire.
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////
+import firebase from 'firebase/app';
+import 'firebase/storage'; // import only the features needed
+import { getDownloadURL } from 'rxfire/storage';
+ 
+const app = firebase.initializeApp({ /* config */ });
+const ref = app.storage().ref('data.json');
+ 
+// Now you can use RxFire!
+const url$ = getDownloadURL(ref);
+RxFire contains multiple entry points for module imports. Each Firebase library is an entry point.
+
+import { } from 'rxfire/firestore';
+import { } from 'rxfire/database';
+import { } from 'rxfire/storage';
+import { } from 'rxfire/auth';
+import { } from 'rxfire/functions';
+
+Simple functions
+-----------------------------------
+RxFire is a set of functions. 
+Most functions create observables and from there you can use regular RxJS operators.
+ 
+Some functions are custom operators. 
+But at the end of the day, it's all just functions. 
+This is important for tree shaking. Any unused functions are stripped from your final build 
+if you use a module bundler like Webpack or Rollup.
+
+import firebase from 'firebase/app';
+import 'firebase/storage';
+import { getDownloadURL, put /* not used! */ } 'rxfire/storage';
+ 
+const app = firebase.initializeApp({ /* config */ });
+const ref = app.storage().ref('data.json');
+ 
+const url$ = getDownloadURL(ref);
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import { authState } from 'rxfire/auth';
+import { filter } from 'rxjs/operators';
+
+const app = firebase.initializeApp({ /* config */ });
+authState(app.auth())
+  .pipe(
+    filter(u => u !== null)
+  ).subscribe(u => { console.log('the logged in user', u); });
+
+-----------------------------
+RxFire also includes helpful functions for common Firebase tasks. 
+Do you need a synchronized array of child events in the Realtime Database? 
+You're just one function call away!
+
+import firebase from 'firebase/app';
+import 'firebase/database';
+import { list } from 'rxfire/database';
+
+const app = firebase.initializeApp({ /* config */ });
+const todosRef = app.database().ref('todos');
+list(todosRef).subscribe(list => { console.log('a synchronized array!', 
+------------------------------------------
+
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import { collectionData, docData } from 'rxfire/firestore';
+import { combineLatest } from 'rxjs';
+
+const app = firebase.initializeApp({ /* config */ });
+
+// Create observables of document and collection data
+
+const profile$ = docData(app.firestore().doc('users/david'));
+const cart$ = collectionData(app.firestore().collection('carts/david'));
+
+const subscription = combineLatest(profile$, cart$, (profile, cart) => {
+  // transform the profile to add the cart as a child property
+  profile.cart = cart;
+  return profile;
+})
+  .subscribe(profile => { console.log('joined data', profile); });
+
+// Unsubscribe to both collections in one call!
+subscription.unsubscribe();
+
+-------------------------------------------------------------------------
+
+Retrieving data from an authenticated user is another common task 
+that traditionally required nested callbacks. 
+
+RxJS allows you to get one piece of data asynchronously and then 
+use that to conditionally get another. In this case you can check for an authenticated user 
+and then retrieve a photo from Cloud Storage based on the user's id.
+
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/storage';
+import { authState } from 'rxfire/auth';
+import { getDownloadURL } from 'rxfire/storage';
+import { switchMap, filter } from 'rxjs/operators';
+
+const app = firebase.initializeApp({ /* config */ });
+authState(app.auth())
+  .pipe(
+    filter(u => u !== null),
+    switchMap(u => {
+      const ref = app.storage().ref(`profile/${u.uid}`);
+      return getDownloadURL(ref):
+    });
+  ).subscribe(photoURL => {
+    console.log('the logged in user's photo', photoURL);
+  });
+
+The code above listens for the authenticated users and filters out any logged out or null events. 
+When there is an authenticated user, we get their photo URL based on the logged in user's id.
+
+----------------------------------------------
+Using RxFire you can simplify the loading The dynamic import() uses promises, 
+but RxJS makes it easy to convert promises to observables.
+
+import { from, combineLatest } from 'rxjs';
+import { map, mergeMap } from 'rxjs/operators';
+
+function lazyLoadCollection(config, collectionName) {
+
+  const app$ = from(import('firebase/app'));
+  const firestore$ = from(import('firebase/firestore'));
+  const rxfire$ = from(import('rxfire/firestore'));
+
+  return combineLatest(app$, firestore$, rxfire$)
+    .pipe(
+      map(([firebase, firestore, rxfire]) => {
+        const app = firebase.apps[0] || firebase.initializeApp(config);
+        return { app, rxfire };
+      }),
+      mergeMap(([app, rxfire]) => {
+        const ref = app.firestore().collection(collectionName);
+        return rxfire.collectionData(ref, 'id');
+      })
+    );
+}
+
+document.querySelector('#btnLoadTodos')
+  .addEventListener('click', event => {
+    lazyLoadCollection({ /* config */ }, 'todos').subscribe(todos => {
+      console.log('lazy todos!', todos);
+    });
+});
+
+The sample above creates a stream of todos from Firestore while lazily loading Firebase, 
+RxFire, and RxFire on a button click. This type of code is still more complex that we'd like, 
+but RxFire is in beta and we're working on making this much easier.
+----------------------------------------------------------------------------------------

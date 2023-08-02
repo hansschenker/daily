@@ -1,0 +1,452 @@
+streams, also known as 
+- func￾tional sequences of events, which RxJS implements under the hood through the use of
+- patterns such as iterator and observer
+- any data source that can be consumed
+
+Observer pattern
+Behind RxJS is a fine-tuned observer design pattern. It involves an object 
+
+- the sub￾ject, which maintains a list of subscribers (each an observer) that are 
+- notified of any state changes. 
+
+This pattern has had many applications, especially as an integral part
+of the model-view-controller (MVC) architecture where the view layer is constantly lis￾tening for model changes
+
+RxJS draws inspiration from this pattern for its publish-subscribe methodology tar￾geted at asynchronous programs 
+but adds a few extra features out of the box, like
+- signals that indicate when a stream has completed, 
+- lazy initialization, 
+- cancellation,
+- resource management, and disposal
+
+RxJS abstracts over time
+under the same programming model regardless of source, so that you can transform your data
+as if your code was completely linear and synchronous
+
+Components of an Rx stream
+The RxJS stream is made up of several basic components, each with specific tasks and
+lifetimes with respect to the overall stream. You saw some examples of these earlier,
+and now we’ll introduce them more formally:
+ Producers
+ Consumers
+ Data pipeline
+ Time
+
+PRODUCERS
+Producers are the sources of your data. A stream must always have a producer of data,
+which will be the starting point for any logic that you’ll perform in RxJS.
+anything
+from a single value, an array, mouse clicks, to a stream of bytes read from a file)
+
+The observer pattern 
+-------------------------
+defines producers as the subject; in RxJS, we call them observables, as in
+something that’s able to be observed.
+
+Observables are the Subject and the Producers
+----------------------------------------------
+Observables are in charge of pushing notifications, so we refer to this behavior as
+fire-and-forget, which means that we’ll never expect the producer to be involved in
+the processing of events, only the emission of them
+
+CONSUMERS
+To balance the producer half of the equation, you must also have a consumer to
+accept events from the producer and process them in some specific way. When the
+consumer begins listening to the producer for events to consume, you now have a
+stream, and it’s at this point that the stream begins to push events; 
+we’ll refer to a con￾sumer as an observer.
+
+Stream
+Once the latter is able to begin receiving
+events from the former, you have effectively created a stream
+
+Operators
+DATA PIPELINE
+One advantage of RxJS is that you can manipulate or edit the data as it passes from the
+producer to the consumer. This is where the list of methods (known as observable
+operators) comes into play
+
+Expectations of the Consumer
+Manipulating data en route means that you can adapt the
+output of the producer to match the expectations of the consumer
+
+Observable and Observer
+a separation of concerns between the two entities
+
+Time - Schedulers
+The implicit factor behind all of this is time. For everything RxJS there’s always an
+underlying concept of time, which you can use to manipulate streams. 
+
+
+FP Functional Progamming
+places behavior at the center of all things, with functions as the main unit of work.
+
+Reactive programming
+requires you to see data as a constantly flowing stream of change as 
+
+Imperative programming
+monolithic data types or collections holding all of an application’s state. 
+
+In Practice
+In practice, you can use OOP to model your domain and use a powerful combina￾tion of reactive and FP 
+a combination known as functional reactive programming) to drive your behavior and events
+
+Transient Data Flow (State change)
+in RP is transient, which means that data never
+remains stored but actually flows through the streams that are being subscribed to,
+which makes event handling easy to reason about and test.
+
+Declartive (What) vs Imperative (How)
+RxJS code encourages you to write declaratively, which means
+your code expresses the what and not the how of what you’re trying to accomplish.
+RxJS follows a simple and declarative design inspired by FP
+
+Immutable - No Side effects
+Observables are pure and free of side effects, with a powerful arsenal
+of operators and transformations that allow you to elegantly compose your business
+logic with asynchronous operations
+
+
+Summary
+ Asynchronous code can be very difficult to implement because existing pro￾gramming patterns don’t scale to complex behavior.
+
+ Callbacks and Promises can be used to deal with asynchronous code, but they
+have many limitations when targeted against large streams generated from
+repeated button clicks or mouse movements. 
+
+ RxJS is a reactive solution that can more concisely and declaratively deal with
+large amounts of data separated over time.
+
+ RxJS is a paradigm shift that requires seeing and understanding data in streams
+with propagation of change (State change).
+
+ Streams originate from a producer (observable), where data flows through a
+pipeline, arriving at a consumer (observer). This same programming model is
+used whether or not data is separated by time. 
+
+Functional programming as the pillar of reactive programming
+------------------------------------------------------------
+The abstractions that support RP are built on top of FP, so FP is the foundation for RP.
+Much of the hype around RP derives from the development communities and the
+industry realizing that FP offers a compelling way to design your code
+
+Intersection of Observer Pattern and Iterator Pattern
+ReactiveX is a combination of the best ideas from the Observer pattern, the Iterator
+pattern, and functional programming.
+
+The iterator pattern - traverse data container without knowing its underlying structure
+---------------------------------------------------------------------------------------
+You can make any data iterable with the help of an Iterator
+(array, tree, map, stream, ,,,)
+
+A key design principle behind RxJS streams is to give you a familiar traversal mecha￾nism, 
+just as you have with arrays. Iterators are used to traverse containers of data in a
+structure-agnostic way or independent of the underlying data structure used to har￾ness these elements, 
+whether it’s an array, a tree, a map, or even a stream. In addition,
+this pattern is effective at decoupling the business logic applied at each element from the itera￾tion itself. 
+The goal is to provide a single protocol for accessing each element and mov￾ing on to the next
+
+You can make any object iterable by manipulating its underlying iterator
+
+Consider an iterator object that traverses an
+array of numbers and buffers a set amount of contiguous elements. Here, the business
+logic performed is the buffering itself, which can be useful to group elements together
+to form numerical sets of any dimension
+
+the advantage of separating data and behavior is that you
+can reason about a holistic model to account for any type of data
+
+
+Summary
+ RxJS and, more generally, the concept of thinking in streams derive many of
+their foundational principles from functional programming.
+
+ The declarative style of RxJS allows you to translate almost exactly from your
+problem statement into working code.
+
+ Data sources can often operate quite differently, even within the observable
+contract.
+
+ Mouse clicks, HTTP requests, or simple arrays are all the same under the eyes of
+observables.
+
+ Push-based and pull-based semantics are represented through observables and
+iterators, respectively. Wrapping data sources is the first step in creating a pipe￾line/observable.
+
+ Observables abstract the notion of production and consumption of events such
+that you can separate 
+
+- production, Observable
+- processing, Operator
+- consumption, Observer
+
+and processing into com￾pletely self-contained constructs.
+
+ Observers expose an API with three methods: 
+- next(), 
+- complete(), and
+- error(). 
+
+Domain Model - What is a bounded context?
+A bounded context is a design principle originating from domain-driven design, which
+states that entities pertaining to a single domain model should be highly cohesive
+and expose only the necessary interface to interact with other contexts. You can
+extend this definition to the Observable type as a form of context that hides the
+nature of the data that’s pushed through it, allowing you to transform it by a ubiqui￾tous 
+language made up from the limited set of operators being exposed and inde￾pendently of what happens in the outside world.
+
+Tap or Do Side effects - Effectful computations
+The do operator is known as an effectful computation, which means it will typically
+cause an effect such as I/O, a database insert, append to the DOM, or write to a
+file—all of these side effects, of course. The reason why do() still preserves the
+chain is rooted in an FP artifact called the K combinator. In simple terms, this is a
+function that executes any effect but ignores its outcome, just passing the value
+along in the stream to the next operator. In a way, it’s a bridge that intercepts the
+stream that allows you to invoke any function. It’s known in other libraries as the
+tap() operator.
+
+
+Summary
+ Streams provide their own mechanisms for cancellation and disposal, which is
+an improvement over JavaScript’s native event system.
+
+ The Observable data type enables fluent function chaining that allows the
+sequential application of operators, using a model similar to that of arrays.
+
+ Unlike JavaScript’s native promises, observables have built-in capabilities for
+disposal and cancellation.
+
+ Functions injected into the operators of an observable sequence contain the
+business logic of your application and should be side effect–free.
+
+ Observables are self-contained with indefinitely chainable operators.
+
+Operators act independent of each other and work only on the output of the
+operator that preceded them.
+
+ The order and type of operators used determine the behavior and the perfor￾mance characteristics of an observable.
+
+Schedulers - Represent time
+SCHEDULERS There’s another parameter called a scheduler that’s passed into
+either interval() or timer(), as well as other operators. You can imagine
+that unit testing code with long timers is virtually impossible. 
+
+
+Observable factory vs. instance methods
+Static methods and instance methods on some websites are referred to as observ￾able methods 
+and observable instance methods, respectively. The static methods are
+defined directly on the Rx.Observable object and are not part of the object’s proto￾type. 
+These are typically used for initiating the declaration of an observable instance,
+for example, Rx.Observable.interval(500). The observable instance methods are
+included in the object’s prototype and are used as members of the chained pipeline
+after you’ve initiated an observable declaration. We’ve referred to these simply as
+operators in previous chapters for brevity, for example, Rx.Observable.prototype
+.delay(), Rx.Observable.prototype.debounceTime(), and others.
+
+
+RxJS allows you greater control in manipulating and tracking the flow of time
+in an application.
+ Operators can interact with time to change the output of an observable.
+
+ Time can be implicit, or it can be explicitly declared when more fine-grained
+control is needed.
+
+ Implicit time manifests in the latency waiting for asynchronous HTTP calls to
+respond. You have no control over how long these functions take.
+
+ Explicit time is controlled by you and takes advantage of JavaScript’s timers.
+
+ Delaying shifts the observable sequence by a due time (in milliseconds).
+
+ Debouncing emits an event from an observable sequence only after a particular
+time span (in milliseconds) has passed without it omitting any other item.
+
+ Throttling enforces a maximum number of times a function can be called over
+time.
+
+ Buffering operations use many of the same semantics as the timing operations.
+
+ RxJS features size-based as well as time-based buffers.
+
+
+Joining streams with Interleaving, with order preserving, with stream switching
+ There are many different ways to join multiple streams into one and take advan￾tage 
+of using a single observer to handle them all. In this section, we’ll look at the fol￾lowing strategies:
+
+ Interleave events by merging streams—This strategy is useful for forwarding events
+from multiple streams and is ideal for handling different types of user interac￾tion events like mouse or touch.
+
+ Preserve order of events by concatenating streams—This one is used when the order
+of the events emitted by multiple streams needs to be preserved.
+
+ Switch to the latest stream data—This is used when one type of event kicks off
+another, such as a button click initiating a remote HTTP call or beginning a
+timer. 
+
+Summary Stream merging strategies
+ You can merge the outputs of several observables into a single stream to sim￾plify subscription logic.
+
+ You can use different merge strategies that contain different behavior for com￾bining streams, depending on your needs. 
+
+ You can interleave streams with merge(), cancel and switch to a new projected
+observable with switch(), or preserve entire observable sequences in order by
+using concat().
+
+ You can use split operators to combine and flatten a series of nested observable
+streams.
+
+ You can combine and project observables into a source observable using the
+higher-order operators such as mergeMap() and concatMap().
+
+ You implemented an auto-suggest search box.
+
+ You implemented a live stock ticker with deeply nested streams.
+
+ You implemented drag and drop using stream concatenation. 
+
+Error Handling
+Imperative error handling has many drawbacks that make it incompatible with FP.
+ Value containers, like Try, provide a fluent, expressive mechanism for trans￾forming values immutably.
+
+ The Try wrapper is a functional data type used to consolidate and abstract
+exception handling so that you can sequentially map functions to values. 
+
+ RxJS implements many useful and powerful operators that allow you to catch
+and retry failed operations in a way that doesn’t break the flow of the stream
+and the declarative nature of an RxJS stream declaration. 
+
+ RxJS provides operators such as catch(), retry(), retryWhen(), and finally()
+that you can combine to create sophisticated error-handling schemes. 
+
+Unicast, Multicast and Websockets Summary
+ A cold observable is passive in that it waits until a subscriber is listening to 
+exe￾cute an individual pipeline for each subscriber. Cold observables manage the
+lifecycle of the event producer.
+
+ Hot observables are active and can begin emitting events regardless of whether
+subscribers are listening. Hot observables close over the producer of events, so
+their lifecycles are independent of the source.
+
+ Event emitters such as WebSockets and DOM elements are examples of hot
+observables.
+
+ Events from hot observables will be lost if no one is listening, whereas cold
+observables will always rebuild their pipeline upon every subscription.
+
+ share() makes observers use the same underlying source stream and discon￾nects 
+when all the subscribers stop listening. This operator can be used to make
+a cold observable hot—or at least warm.
+
+ Using operators such as publish(), publishReplay(), and publishLast() cre￾ates multicast observables.
+
+
+Testing
+Mocha with Chai
+Mocha.js is a full-fledged JavaScript testing framework built for both the browser and
+Node.js. It runs all of your unit tests serially and creates detailed reports. One of the
+nice features of Mocha is that it allows you to easily plug in any assertion library you
+want, whether you’re familiar with the xUnit assertion APIs like assert.js or other vari￾eties 
+such as expect.js (used previously) and should.js, to name a few. In this book,
+because we have synchronous as well as asynchronous test requirements, we’ll use
+a flexible API or a domain-specific language (DSL) called Chai.js, which includes sup￾port for 
+all the testing APIs mentioned previously. Should.js will be instrumental when
+running tests involving Promises.
+
+const search$ = (source$, fetchResult$, url = '', scheduler = null) => 
+ source$ 
+.debounceTime(500, scheduler) 
+.filter(notEmpty)
+.do(term => console.log(`Searching with term ${term}`)) 
+.map(query => url + query)
+.switchMap(fetchResult$);
+This way of encapsulating an observable sequence into its own function is known as an
+epic. Epics will become important in chapter 10, because they will allow you to easily
+embed RxJS into an overall reactive architecture. 
+ To use the reactive architecture, just call the function with the source and AJAX
+streams: 
+search$(
+ Rx.Observable.fromEvent(inputText, 'keyup')
+.pluck('target','value'),
+ query => 
+Rx.Observable.fromPromise(ajax(query))
+.pluck('query', 'search')
+.defaultIfEmpty([])
+).subscribe(arr => { 
+ if(arr.length === 0) {
+clearResults(results);
+ } 
+ else {
+appendResults(results, arr);
+ } 
+ });
+
+Testing Summary
+ Functional programs are easy to test, given that all functions are pure and have
+clear signatures.
+
+ Testing asynchronous code can be challenging, and you need to leverage async￾aware unit-testing frameworks like Mocha.
+
+ You can combine Mocha with powerful assertion interfaces like Chai.js to create
+elegant and fluent tests.
+
+ Testing synchronous observables follows the same procedures as testing any
+pure function.
+
+ Testing asynchronous behavior as well as streams that bend time can be done
+effectively using the virtual scheduler.
+
+ It’s best to make your streams testable and modular. Attempt to keep your busi￾ness logic separate, 
+as a set of functions, and to decouple a stream from its pro￾ducer and observer; 
+this will allow you to manipulate its test boundaries to suit
+the different use cases you want to test. 
+
+RxJs with Redux
+props vs. state
+Earlier, we mentioned that props carries a React component’s input. So what exactly
+is the difference between the props and state attributes? They’re similar in concept
+but play different roles. First, both props and state make up the totality of a com￾ponent’s state. 
+The former is used to configure the component—its options. It’s
+received from its parent or the root, and it’s immutable. Just like a pure function’s
+input, props are not meant to change. On the other hand, state is meant to store
+data that will suffer mutations in time throughout the lifetime of a component.
+
+React -setState
+Although all those reasons for disliking state mutation are valid (you’ll be thankful
+for Redux later on), React minimizes its effect in a couple of ways and protects you
+from the normal cesspool of state management:
+ All mutation is done through the setState() method. This means that the state
+variable isn’t directly accessed and changed; there’s some intelligence behind
+it. In fact, as you’ll see, the local context of state is always safe when calling
+setState(). 
+ React protects the individual state of components and contains it locally. All state
+propagation is done through the props object that is then passed on to child
+states, meaning the parent component is responsible for initializing the props
+of a child component, which the child should never change thereafter. 
+Remem￾ber, all components must act like pure functions with respect to their props,
+and this applies to all levels of the React element (DOM) tree.
+
+RxJs Redux Summary
+ Understanding how data is transformed and moved will inform decisions on
+how to include RxJS in your project.
+
+ Keep events moving in a single direction by looping streams in order to create
+complex UI interactions that are easy to reason about.
+
+ Manage state immutably and keep all components separate. This will ensure a
+clear separation of concerns that will allow you to scale your architecture to sup￾port 
+new features without linearly increasing the complexity of your application.
+
+ You can use Subjects to implement advanced middleware or stream-proxying
+solutions. While powerful, Subjects can be hard to troubleshoot given that they
+can act as both observables and observers. We recommend you keep Subjects
+to a minimum and well encapsulated.
+
+ You can use RxJS to create middleware that handles asynchronous data flows so
+that actions dispatched from the UI can flow through an observable pipeline to
+be translated into a separate action that flows out of an epic.
+
+ RxJS in an intricate part of the Redux/React architecture, which we call 3R. 
+
+
+Choosing an Operator
+

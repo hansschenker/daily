@@ -1,0 +1,224 @@
+Typescript Types
+---------------------------
+Values are Unit Types: "a", 1, true, false, undefined
+Types represent sets of values, string, number, boolean
+Union types: A | B   ,choises, enable to express multiple options: Fruit = Bananan or Orange or Apple
+Intersection: T & U  ,commonalities, enable to express what is common to types:  Banana yellow sweet, Apple red sweet: Sweet Fruits: Banana and Apple
+
+Object type
+----------------
+{x: T, y: U}
+
+Union
+-----------------------------------------------------------------------------------------------------------
+T | U
+
+Intersection
+-----------------------------------------------------------------------------------------------------------
+T & U
+
+Index Types
+------------------------------------------------------------------------------------------------------------
+keyof T			Person: age, name,    personKeys = keyof Person // "age" or "name"
+---------------						   keyof typeof Person // "string" or "number"
+
+Index and indexed access types - keyof T and T[K]
+
+type Foo = { a: number, b: string, c: string[] };
+
+type Fookey = keyof Foo;
+
+type FooA Foo["a"];
+
+// number
+
+type FooProp = Foo[keyof Foo];
+
+// number
+
+| string
+
+string[]
+
+
+Index and indexed access types - keyof T and T[K]
+
+type Foo = { a: number, b: string, c: string[] };
+
+type FooKey = keyof Foo;
+
+type FoOA = Foo["a"];
+
+// "a" | "b" | "c"
+
+// number
+
+type FooProp = Foo[keyof Foo]; // number | string string[]
+
+function getProperty<T, K extends keyof T>(obj: T, key: K) {
+
+return obj[key]; // T[K]
+
+}
+
+declare let foo: Foo;
+
+declare let key: keyof Foo; // "a" | "b" | "c"
+
+let a = getProperty(foo, "a"); // number
+
+let x = getProperty(foo, "x"); // Error!
+
+let z = getProperty(foo, key); // number | string | string[]
+
+
+Indexed Access Type
+----------------------------------------------------------------------------------------
+T[K]			Person: age, name,  age = Person["age"] // number
+
+Index and indexed access types - keyof T and T[K]
+
+type Foo {a: number, b: string, c: string[] };
+
+type Fookey= keyof Foo;
+
+// "a" | "b" | "c"
+
+type FOOA = Foo["a"];
+
+// number
+
+type FooProp = Foo[keyof Foo]; // number | string string[]
+
+function getProperty<T, K extends keyof T>(obj: T, key: K) { return obj[key]; // T[K]
+
+}
+
+
+
+
+Mapped Types
+----------------------------------------------------------------------------------------------------------
+{ [P in K]: X}
+
+
+Mapped types - { [P in K]: X}
+
+declare function makeRecord<K extends string, T>(keys: K[], value: T): { [P in K]: T };
+
+let rec makeRecord(['x', 'y', 'z'], 42); // { x: number, y: number, z: number }
+
+let rx = rec.x; // number
+
+let ra rec.a; // Error!
+
+type Proxy<T>= { get(): T, set (value: T): void }; type Proxified<T> = { [P in keyof T]: Proxy<T[P]> };
+
+declare function proxify<T>(obj: T): Proxified<T>;
+
+let item = { text: "widget", sizes: [1, 2, 3] };
+
+let proxy = proxify(item);
+
+let text = proxy.text.get(); // string proxy.sizes.set(["S", "M"]); // Error!
+
+
+Conditional Types
+-----------------------------------------------------------------------------------------------------------------
+T extends U? X : Y
+
+Conditional types
+
+type Name { name: string );
+
+// Label for string values
+
+type Id { id: number };
+
+// Label for number values
+
+type Check- { enabled: boolean) // Label for Boolean values
+
+type LabelForType<T> -
+
+T extends string? Name:
+
+T extends number? Id :
+
+T extends boolean ? Check :
+
+never;
+
+declare function createLabel<T extends string number | boolean> (value: T): LabelForType<T>;
+
+let a createLabel("Joe"); // Name let b = createLabel(42); // Id
+
+let c-createLabel(true); // Check
+
+let d createLabel (cond? "Joe": 42); // Name Id let e- createLabel(cond? 10: false); // Id | Check
+
+
+Collection of Typescript Types
+----------------------------------------------------------------------------------------------------------
+
+
+
+type hexa decimal color values with literal types
+-------------------------------------------------
+type HexDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'a' | 'b' | 'c' | 'd' | 'e'| 'f' | 'A' | 'B' | 'C' | 'D' | 'E'| 'F';
+
+type HexColor<T extends string> =
+    T extends `#${HexDigit}${HexDigit}${HexDigit}${infer Rest1}`
+        ? (Rest1 extends `` 
+            ? T // three-digit hex color
+            : (
+                Rest1 extends `${HexDigit}${HexDigit}${HexDigit}`
+                    ? T  // six-digit hex color
+                    : never
+            )
+        )
+        : never;
+
+function hex<T extends string>(s: HexColor<T>): T {
+    return s;
+}
+
+// All valid
+hex('#ffffff');
+hex('#fff');
+hex('#000');
+hex('#123456');
+hex('#abcdef');
+hex('#012def');
+hex('#ABCDEF');
+-------------------------------------------------
+
+hex color with branded types
+-----------------------------
+Finally, I might suggest that you use type brands to create a type which signifies 
+that a string is a valid hex color, and only use your hex function to create strings of that type? 
+
+In the example below, you could simply use Color throughout your codebase and only need to rely 
+on the hex helper function when specifically making a Color from a string literal for the first time. 
+
+I don't know if this'll meet your exact ideal usecase, because you do still need to use your hex 
+helper wherever a literal is declared, but it gets you pretty close:
+
+branded type
+-------------------------------------------------------------------------------------------------------------------
+type String50 = string & { __type: "String50" };
+
+
+type Color = string & { __type: "HexColor" };
+
+function hex<T extends string>(s: HexColor<T>): Color {
+    return s;
+}
+
+const color: Color = hex('#aaa');
+
+const theme: Record<string, Color> = {
+    backgroundColor: hex('#ff0000'),
+    color: hex('#0f0'),
+};
+------------------------------------------------------

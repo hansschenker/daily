@@ -1,0 +1,60 @@
+log operator: just console log value and forward it
+-----------------------------------------------------------------------------------
+
+import { of, from, range, Observable, Observer } from "rxjs";
+import { map, tap } from "rxjs/operators";
+
+export const log = <T>(source: Observable<T>) => {
+
+  return new Observable((observer: Observer<T>) => {
+    const subscription = source.subscribe(
+      (value: T) => {
+        console.log(value);
+        observer.next(value);
+      },
+      (err: any) => observer.error(err),
+      () => observer.complete()
+    );
+    return subscription;
+  });
+};
+
+----------------------------------------------------------------------------------------
+
+function onSubscribe<T>(
+  onSubscribe: () => void
+): (source: Observable<T>) => Observable<T> {
+  return function inner(source: Observable<T>): Observable<T> {
+    return defer(() => {
+      onSubscribe();
+      return source;
+    });
+  };
+}
+
+const users = [
+  {
+    id: 1,
+    name: "Peter P."
+  },
+  {
+    id: 2,
+    name: "Tony S."
+  },
+  {
+    id: 3,
+    name: "Steve R."
+  },
+  {
+    id: 4,
+    name: "Bruce B."
+  }
+];
+
+function loadData(userId: number) {
+  return timer(1000).pipe(
+    onSubscribe(() => console.log(`Loading data for user ${userId}`)),
+    map(() => users.find(u => u.id === userId))
+  );
+}
+-------------------------------------
