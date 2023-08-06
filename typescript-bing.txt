@@ -1,0 +1,915 @@
+
+TypeScript is a programming language that builds on JavaScript, adding syntax for types. 
+
+It can help you write more reliable and scalable code. You can learn more about TypeScript from the official website1, the documentation2 or this tutorial3. Do you have any specific questions about TypeScript?
+
+TypeScript syntax for types allows you to 
+- **annotate** variables, functions, parameters and 
+- return values with **type information**. 
+
+For example, you can write 
+
+`let x: number = 10;` to declare that `x` is a number and assign it the value 10. 
+
+You can also use 
+- **arrays**, 
+- **interfaces**, 
+- **generics**, 
+- **unions** and other 
+- **advanced types** to model complex data structures. 
+
+You can see some examples of TypeScript syntax for types on the official website¹, the documentation²³ or this tutorial.
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: JavaScript With Syntax For Types.. https://www.typescriptlang.org/.
+(2) TypeScript: Documentation - Everyday Types. https://www.typescriptlang.org/docs/handbook/2/everyday-types.html.
+(3) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+
+There are many typescript types, but some of the most common ones are:
+
+- **Basic types**: such as `string`, `number`, `boolean`, `null`, `undefined`, `symbol` and `bigint`.
+
+- **Array types**: such as `number[]` or `Array<number>` to represent an array of numbers.
+
+- **Tuple types**: such as `[string, number]` to represent a fixed-length array with known element types.
+
+- **Enum types**: such as `enum Color {Red, Green, Blue}` to define a set of named constants.
+
+- **Object types**: such as `{name: string, age: number}` to describe the shape of an object.
+
+- **Function types**: such as `(x: number) => string` to describe the parameters and return type of a function.
+
+- **Interface types**: such as `interface Person {name: string, age: number}` to define a contract for the structure of an object.
+
+- **Class types**: such as `class Animal {name: string; constructor(name: string) {this.name = name;}}` to define a blueprint for creating objects with properties and methods.
+
+- **Generic types**: such as `Array<T>` or `Promise<T>` to represent a type that depends on another type parameter.
+
+- **Union types**: such as `string | number` to represent a value that can be one of several types.
+
+- **Intersection types**: such as `Person & Employee` to represent a value that has all the properties of both types.
+
+- **Literal types**: such as `"hello"` or `42` to represent a specific value that can be assigned to a variable.
+
+- **Type aliases**: such as `type ID = string | number` to create a new name for an existing type.
+
+- **Utility types**: such as `Partial<T>` or `Readonly<T>` to modify existing types in various ways.
+
+You can find more details and examples of these and other typescript types in the documentation¹²³.
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Everyday Types. https://www.typescriptlang.org/docs/handbook/2/everyday-types.html.
+(2) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+(3) TypeScript: Documentation - Utility Types. https://www.typescriptlang.org/docs/handbook/utility-types.html.
+
+No, those are not TypeScript type constructors. A type constructor is a **function** that takes a type argument and returns a new type. For example, `Array<T>` is a type constructor that takes a type `T` and returns a new type `Array<T>`. Similarly, `Promise<T>` is a type constructor that takes a type `T` and returns a new type `Promise<T>`.
+
+The types you mentioned are different kinds of 
+
+**type operators** (only possible in combination with generics)
+-------------------
+that can manipulate existing types in various ways. For example:
+
+- **Indexed types**: 
+--------------------
+such as `T[K]` or `T[keyof K]` to access the property types of an object type `T` by using a key type `K`.
+
+- **Index access types**: 
+-------------------------
+such as `keyof T` to get the union of all the property names of an object type `T`.
+
+- **Union types**: 
+------------------------
+such as `A | B` to represent a value that can be either of type `A` or type `B`.
+
+- **Intersection types**: 
+---------------------
+such as `A & B` to represent a value that has all the properties of both type `A` and type `B`.
+
+- **Mapped types**: 
+---------------------
+such as `{[P in K]: T}` to create a new object type by mapping over the keys `P` in another key type `K` and assigning them the value type `T`.
+
+
+- **Conditional types**: 
+-----------------------
+such as `T extends U ? X : Y` to create a new type that depends on a conditional expression between two types.
+
+You can find more details and examples of these and other TypeScript type operators in the documentation³.
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+(2) Writing a constructor in TypeScript - LogRocket Blog. https://blog.logrocket.com/writing-constructor-typescript/.
+(3) Constructor in TypeScript - TekTutorialsHub. https://www.tektutorialshub.com/typescript/constructor-in-typescript/.
+(4) TypeScript: Documentation - Utility Types. https://www.typescriptlang.org/docs/handbook/utility-types.html.
+(5) TypeScript: Documentation - Classes. https://www.typescriptlang.org/docs/handbook/2/classes.html.
+
+Yes, that's a correct way to describe a type operator in TypeScript. 
+
+A type operator
+-----------------
+is a **generic function** that accepts one or more **type parameters** and returns a new **type**. 
+
+For example, `Array<T>` is a type operator that accepts a type parameter `T` 
+and returns a new type `Array<T>`. 
+
+Similarly, `T extends U ? X : Y` is a type operator that accepts three type parameters `T`, `U`, and `X` 
+and returns a new type that depends on the conditional expression.
+
+Some examples of type operators in TypeScript are:
+
+- **typeof**: This operator returns the type of a variable or property. 
+For example, `typeof s` returns the type of `s`.
+
+- **keyof**: This operator returns the union of all the property names of an object type. 
+For example, `keyof T` returns the union of all the keys of `T`.
+
+- **in**: This operator checks if a property name exists in an object type. 
+For example, `"name" in T` returns true if `T` has a property named `"name"`.
+
+- **extends**: This operator checks if a type is a subtype of another type. 
+For example, `T extends U` returns true if `T` is assignable to `U`.
+
+- **infer**: This operator infers a type from another type. 
+For example, `infer R` infers the return type of a function type.
+
+- **?:**: This operator creates a conditional type that depends on a boolean expression. 
+For example, `T extends U ? X : Y` returns `X` if `T` is a subtype of `U`, otherwise returns `Y`.
+
+You can find more details and examples of these and other TypeScript type operators in the documentation⁴⁵.
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Typeof Type Operator. https://www.typescriptlang.org/docs/handbook/2/typeof-types.html.
+(2) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+(3) TypeScript Operators - Scaler Topics. https://www.scaler.com/topics/typescript/typescript-operator/.
+(4) TypeScript Operators - javatpoint. https://www.javatpoint.com/typescript-operators.
+(5) Operators in TypeScript. https://reflectoring.io/typescript-operators/.
+
+No, not every JavaScript value can also be a TypeScript type. 
+
+A TypeScript type - describe,define shape and behavior
+---------------------
+is a way to describe the shape and behavior of a value, not the value itself. 
+
+`number` is a TypeScript type that represents any numeric value, but `42` is a JavaScript value that is an instance of the `number` type.
+
+typeof operator returns type of a value
+---------------------------------------
+Some JavaScript values can be used as TypeScript types by using the `typeof` operator. 
+For example, if you have a variable `s` that holds a string 
+you can use `typeof s` to get the type of `s`, which is `string`. 
+This can be useful when you want to refer to the type of an existing variable or property⁵.
+
+However, not all JavaScript values have a corresponding TypeScript type. For example, 
+
+`null`(result has no value) and `undefined` (value is not assigned) can be assigned to any type
+-------------------------------------------------
+are JavaScript values that can be assigned to any type in TypeScript by default¹. This means that they are not valid types by themselves, but rather special values that indicate the absence of a value. Similarly, some JavaScript values such as functions, objects, and arrays have complex or dynamic types that cannot be easily expressed in TypeScript. In these cases, you may need to use other TypeScript features such as interfaces, generics, or type assertions to describe their types³.
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Typeof Type Operator. https://www.typescriptlang.org/docs/handbook/2/typeof-types.html.
+(2) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+(3) TypeScript: Documentation - Everyday Types. https://www.typescriptlang.org/docs/handbook/2/everyday-types.html.
+(4) TypeScript Types - javatpoint. https://www.javatpoint.com/typescript-types.
+(5) Documentation - TypeScript for JavaScript Programmers. https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html.
+
+Yes, the JavaScript value `42` can also be the literal type `42` in TypeScript. 
+
+A literal type - null or undefined are not valid literal types
+-----------------
+is a type that represents a single value, such as a specific string, number, or boolean. For example, `"hello"` is a string literal type that only accepts the value `"hello"`, and `true` is a boolean literal type that only accepts the value `true`.
+
+Literal types can be useful when you want to restrict the possible values of a variable or parameter to a finite set. For example, you can use a union of literal types to create an enumeration of valid options¹. You can also use literal types to infer the exact value of a generic type parameter³.
+
+However, not all JavaScript values can be literal types in TypeScript. For example, `null` and `undefined` are not valid literal types, but rather special values that indicate the absence of a value. Similarly, some JavaScript values such as functions, objects, and arrays have complex or dynamic types that cannot be easily expressed as literal types. In these cases, you may need to use other TypeScript features such as interfaces, generics, or type assertions to describe their types⁴.
+
+Source: Conversation with Bing, 6.8.2023
+(1) Literal Types - TypeScript Deep Dive - GitBook. https://basarat.gitbook.io/typescript/type-system/literal-types.
+(2) Typescript: Get the literal value from a generic type. https://stackoverflow.com/questions/58327555/typescript-get-the-literal-value-from-a-generic-type.
+(3) TypeScript: Handbook - Literal Types. https://www.typescriptlang.org/docs/handbook/literal-types.html?azure-portal=true.
+(4) Learning TypeScript: Literal Types - aaronbos.dev. https://aaronbos.dev/posts/typescript-literal-types.
+(5) TypeScript: Documentation - Template Literal Types. https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html.
+(6) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+
+Sure, I can show you some ways to 
+
+create composite types from simpler types
+--------------------------------------------
+ in TypeScript. A composite type is a type that combines or modifies other types to create a new type. For example, you can use a union type to create a type that represents either one of two types, such as `string | number`. You can also use an intersection type to create a type that represents both of two types, such as `X & Y`.
+
+There are also other TypeScript features that allow you to create composite types from simpler types, such as:
+
+- **Indexed access types**: These types allow you to access a subset of a type by using a key or index, such as `T[K]` or `T["a"]`. 
+For example, if you have a type `Person` that has properties `name` and `age`, you can use `Person["name"]` to get the type of the `name` property, which is `string`.
+
+- **Conditional types**: These types allow you to create a type that depends on a boolean expression, such as `T extends U ? X : Y`. 
+For example, if you have a generic type parameter `T`, you can use `T extends string ? "yes" : "no"` to create a literal type that is `"yes"` if `T` is a string, and `"no"` otherwise.
+
+- **Mapped types**: These types allow you to create a type by mapping each property in an existing type, such as `{ [P in K]: T }`. 
+For example, if you have a type `Person` that has properties `name` and `age`, you can use `{ [P in keyof Person]: boolean }` to create a type that has the same properties as `Person`, but with boolean values instead of the original values.
+
+- **Template literal types**: These types allow you to create a type by using template literal strings, such as `` `${T}!` ``. 
+For example, if you have a literal type `"hello"`, you can use `` `${"hello"}!` `` to create a new literal type `"hello!"`.
+
+You can find more details and examples of these and other ways to create composite types from simpler types in the documentation².
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Creating Types from Types. https://www.typescriptlang.org/docs/handbook/2/types-from-types.html.
+(2) TypeScript: TSConfig Option: composite. https://www.typescriptlang.org/tsconfig/composite.html.
+(3) "Composite type" in TypeScript - Stack Overflow. https://stackoverflow.com/questions/50728485/composite-type-in-typescript.
+
+To narrow a composite type with TypeScript, 
+-------------------------------------------
+you can use various techniques to refine the type of a variable or parameter to a more specific type than declared. This can help you avoid type errors and access the properties and methods of the narrowed type. Some of the ways to narrow a composite type are:
+
+- **Type guards**: These are expressions that check if a value belongs to a certain type, such as `typeof`, `instanceof`, or user-defined type predicates. For example, if you have a variable `x` that has the type `string | number`, you can use `typeof x === "string"` to narrow `x` to `string` within the true branch of the condition.
+
+- **Type assertions**: These are expressions that tell the compiler to treat a value as a certain type, such as `<T>x` or `x as T`. For example, if you have a variable `x` that has the type `any`, you can use `x as string` to narrow `x` to `string`. However, you should be careful when using type assertions, as they can override the compiler's checks and lead to runtime errors.
+
+- **Control flow analysis**: This is the process by which TypeScript follows possible paths of execution that your program can take to analyze the most specific possible type of a value at a given position. For example, if you have a variable `x` that has the type `string | number`, and you assign it to `"hello"`, TypeScript will narrow `x` to `string` after the assignment.
+
+- **Discriminated unions**: These are union types that have a common property that acts as a tag to distinguish between the different variants. For example, if you have a union type `Shape` that represents either a circle or a square, you can add a property `kind` that has literal types `"circle"` or `"square"` as values. Then, you can use a switch statement or an if statement to narrow the type of a variable of type `Shape` based on the value of its `kind` property.
+
+- **Exhaustiveness checking**: This is a technique that ensures that all possible cases of a union type are covered by using a never-returning function. For example, if you have a discriminated union type `Shape` as above, and you want to write a function that calculates its area, you can use an exhaustiveness check to make sure that you handle both the circle and the square cases, and throw an error if any other case is encountered.
+
+- **In operator narrowing**: This is a technique that narrows the type of an object based on whether it has a certain property or not. For example, if you have an object `obj` that has the type `{ x: number } | { y: number }`, you can use `"x" in obj` to narrow `obj` to `{ x: number }` within the true branch of the condition.
+
+You can find more details and examples of these and other ways to narrow composite types in TypeScript in the documentation² and this blog post³.
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Narrowing. https://www.typescriptlang.org/docs/handbook/2/narrowing.html.
+(2) 6 ways to narrow types in TypeScript | Building SPAs - Carl's Blog. https://www.carlrippon.com/6-ways-to-narrow-types-in-typescript/.
+(3) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+
+Yes, you can think of TypeScript types as sets of possible values. A type is a way to describe the shape and behavior of a value, and a set is a collection of distinct elements. For example, the type `number` is a set of all the possible numbers, and the type `boolean` is a set of two values: `true` and `false`.
+
+Some TypeScript types are finite sets, meaning they have a limited number of possible values. For example, the type `void` is a set of one value: `undefined`. Other TypeScript types are infinite sets, meaning they have an unlimited number of possible values. For example, the type `string` is a set of all the possible strings.
+
+You can also create new types from existing types or values by using various TypeScript features, such as:
+
+- **Generics**: These are types that take parameters, such as `Array<T>` or `Promise<T>`. For example, if you have a type parameter `T`, you can use `Array<T>` to create a type that is a set of all the possible arrays whose elements are of type `T`.
+
+- **Keyof type operator**: This is an operator that takes an object type and returns a union of its property names, such as `keyof T`. For example, if you have an object type `{ x: number; y: number }`, you can use `keyof { x: number; y: number }` to create a type that is a set of two values: `"x"` and `"y"`.
+
+- **Typeof type operator**: This is an operator that takes a value and returns its type, such as `typeof x`. For example, if you have a value `x` that has the type `number`, you can use `typeof x` to create a type that is the same as `number`.
+
+- **Indexed access types**: These are types that allow you to access a subset of a type by using a key or index, such as `T[K]` or `T["a"]`. For example, if you have an object type `{ x: number; y: number }`, you can use `{ x: number; y: number }["x"]` to create a type that is the same as `number`.
+
+You can find more details and examples of these and other ways to create types from types or values in the documentation⁴ and this tutorial².
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Creating Types from Types. https://www.typescriptlang.org/docs/handbook/2/types-from-types.html.
+(2) Thinking of types as sets of values | Learn TypeScript. https://learntypescript.dev/04/l8-sets-of-values/.
+(3) TypeScript Set and Weakset (with Examples) - SPGuides. https://www.spguides.com/typescript-set-and-weakset/.
+(4) TypeScript: Documentation - Everyday Types. https://www.typescriptlang.org/docs/handbook/2/everyday-types.html.
+
+There is no built-in way to count the constituents of a TypeScript type, but you can use some tricks to achieve that. One possible way is to use a generic type that takes a union type as a parameter and returns a tuple type whose length is equal to the number of constituents in the union type. For example, you can define a type `CountUnion<T>` as follows:
+
+```typescript
+type CountUnion<T> = T extends any ? [T, ...CountUnion<Exclude<T, T>>] : [];
+```
+
+This type uses conditional types and mapped types to recursively create a tuple type from a union type. The `Exclude<T, U>` utility type removes the types in `U` from `T`. For example, `Exclude<"a" | "b" | "c", "a">` is `"b" | "c"`. The `...` syntax is used to spread the elements of one tuple type into another.
+
+Then, you can use the `CountUnion<T>` type to count the constituents of any union type by accessing its `length` property. For example:
+
+```typescript
+type Foo = "a" | "b" | "c";
+type Bar = 1 | 2 | 3 | 4;
+
+type FooCount = CountUnion<Foo>; // ["a", "b", "c"]
+type BarCount = CountUnion<Bar>; // [1, 2, 3, 4]
+
+console.log(FooCount.length); // 3
+console.log(BarCount.length); // 4
+```
+
+You can find more details and examples of this technique in this Stack Overflow answer¹. You can also find more information about utility types and tuple types in the documentation².
+
+Source: Conversation with Bing, 6.8.2023
+(1) Typescript type composition via Generics - Stack Overflow. https://stackoverflow.com/questions/70127412/typescript-type-composition-via-generics.
+(2) TypeScript: Documentation - Utility Types. https://www.typescriptlang.org/docs/handbook/utility-types.html.
+(3) How to count certain elements in array? - Stack Overflow. https://stackoverflow.com/questions/6120931/how-to-count-certain-elements-in-array.
+
+Yes, the boolean type consists of two inhabitants: `true` and `false`. These are the only two possible values of the boolean type.
+
+Not necessarily. Some types have a finite number of inhabitants, such as boolean, enum, or literal types. Other types have an infinite number of inhabitants, such as number, string, or function types. And some types have no inhabitants at all, such as never or unknown.
+
+Yes, you can apply some set operations on types in TypeScript, such as union, intersection, difference, and complement. 
+For example, you can use the following type operators to perform these operations:
+
+- **Union**: This is an operator that creates a new type that is a set of all the possible values of two or more types, such as `T | U`. 
+For example, `number | string` is a type that is a set of all the possible numbers and strings.
+
+- **Intersection**: This is an operator that creates a new type that is a set of all the common values of two or more types, such as `T & U`. 
+For example, `{ x: number } & { y: number }` is a type that is a set of all the objects that have both `x` and `y` properties of type `number`.
+
+- **Difference**: This is an operator that creates a new type that is a set of all the values of one type that are not in another type, such as `Exclude<T, U>`. 
+For example, `Exclude<number | string | boolean, string>` is a type that is a set of all the numbers and booleans.
+
+- **Complement**: This is an operator that creates a new type that is a set of all the values that are not in a given type, such as `Exclude<any, T>`. 
+For example, `Exclude<any, number>` is a type that is a set of all the values that are not numbers.
+
+You can find more details and examples of these and other ways to create types from types in the documentation¹ and this tutorial².
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Creating Types from Types. https://www.typescriptlang.org/docs/handbook/2/types-from-types.html.
+(2) TypeScript: Documentation - Utility Types. https://www.typescriptlang.org/docs/handbook/utility-types.html.
+(3) TypeScript: Documentation - Everyday Types. https://www.typescriptlang.org/docs/handbook/2/everyday-types.html.
+
+The `infer` keyword in TypeScript 
+---------------------------------
+can be used for inferring types in a conditional type. A conditional type is a type that has the form `T extends U ? X : Y`, where `T` and `U` are types, and `X` and `Y` are the types that are returned depending on whether `T` is a subtype of `U` or not.
+
+The `infer` keyword allows us to define a variable within the condition that can be referenced or returned in the consequent or alternative types. For example, we can use `infer` to extract the element type of an array type:
+
+```typescript
+type ElementType<T> = T extends Array<infer E> ? E : never;
+```
+
+This type takes a generic type parameter `T` and checks if it is an array type. If it is, it uses `infer E` to declare a variable `E` that represents the element type of the array. Then, it returns `E` as the result. If `T` is not an array type, it returns `never`, which is a type that represents something that should never happen.
+
+Using this type, we can infer the element types of different array types:
+
+```typescript
+type Foo = ElementType<number[]>; // number
+type Bar = ElementType<string[]>; // string
+type Baz = ElementType<boolean>; // never
+```
+
+You can find more details and examples of using the `infer` keyword in these articles¹² and in the documentation³.
+
+Source: Conversation with Bing, 6.8.2023
+(1) Inferring types in a conditional type | Learn TypeScript. https://learntypescript.dev/09/l2-conditional-infer/.
+(2) Understanding infer in TypeScript - LogRocket Blog. https://blog.logrocket.com/understanding-infer-typescript/.
+(3) TypeScript: Documentation - Conditional Types. https://www.typescriptlang.org/docs/handbook/2/conditional-types.html.
+(4) TypeScript infer Keyword | Academy | Lucas Paganini. https://www.lucaspaganini.com/academy/typescript-infer-keyword.
+
+type ElementType<T> = T extends Array<infer E> ? E : never;
+
+type Foo = ElementType<number[]>; // number
+type Bar = ElementType<string[]>; // string
+type Baz = ElementType<boolean>; // never
+
+type Foo = ElementType<number[]>; // number
+type Bar = ElementType<string[]>; // string
+type Baz = ElementType<boolean>; // never
+
+type Point = [number, number]; // tuple type
+type Shape = 'circle' | 'square' | 'triangle'; // union type
+type Circle = { radius: number }; // object type
+type Square = { side: number }; // object type
+type Triangle = { base: number; height: number }; // object type
+type Figure = Circle | Square | Triangle; // union of object types
+
+TypeScript branded types 
+-------------------------
+are a way to create nominal types, which are types that are distinguished by their names rather than their structures. TypeScript by default uses structural typing, which means that two types are compatible if they have the same properties and methods, regardless of their names. This can lead to some unwanted type errors or bugs.
+
+Branded types allow you to add a unique identifier to an existing type, such as a `string` or a `number`, and use it to create a new type that is incompatible with other types that have the same structure but different names. For example, you can create branded types for different kinds of IDs, such as `UserId` or `ProductId`, and prevent them from being mixed up.
+
+To create a branded type in TypeScript, you start with an existing type and add a `readonly` property to it. This property is typically named `__brand`, `__kind`, or `__type`. Since this property is readonly, it’s not possible to directly annotate a variable with this type. You need to use a type assertion or an assertion function to cast a value to the branded type.
+
+For example, you can create a branded type for an ISO date string like this:
+
+```typescript
+type ISODateString = string & { readonly __brand: 'ISODateStriong' };
+```
+
+Then, you can use an assertion function to validate and cast a string to the branded type:
+
+```typescript
+function assertISODateString(value: string): asserts value is ISODateString {
+  // check if the value is a valid ISO date string
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(value)) {
+    throw new Error('Invalid ISO date string');
+  }
+}
+
+// usage
+const date = '2021-12-31T23:59:59.999Z';
+assertISODateString(date); // no error
+const isoDate: ISODateString = date; // OK
+
+const invalidDate = '2021-13-32T25:61:61.000Z';
+assertISODateString(invalidDate); // error
+const invalidISODate: ISODateString = invalidDate; // error
+```
+
+You can find more details and examples of using branded types in these articles¹²³ and in this question⁴.
+
+Source: Conversation with Bing, 6.8.2023
+(1) Improve Your Type Safety with Branded Types – TypeScript TV. https://typescript.tv/best-practices/improve-your-type-safety-with-branded-types/.
+(2) What is a Branded Type? | Total TypeScript. https://www.totaltypescript.com/workshops/advanced-typescript-patterns/branded-types/what-is-a-branded-type.
+(3) Using Branded types in Typescript - aamir j. https://www.aamirj.com/posts/branded-types.
+(4) typescript - Intersection of branded types - Stack Overflow. https://stackoverflow.com/questions/68057233/intersection-of-branded-types.
+
+Yes, branded types can be considered as domain specific types, 
+--------------------------------------------------------------
+since they represent a specific concept or entity in your domain model. For example, an email is not just any string, but a string that follows a specific format and has a specific meaning in your domain. By using a branded type for email, you can enforce the validity and uniqueness of the email values in your code.
+
+Type and interface 
+-------------------------
+are two ways to declare the shape of an object in TypeScript. They are very similar, but they have some differences that can affect your choice.
+
+The main difference between type and interface is that 
+
+interface 
+--------------
+describes the shape of an object, whereas 
+
+type declarations 
+-----------------
+are more flexible and can define complex types, including primitive types, arrays, tuples, unions, intersections, mapped types, and conditional types¹²³.
+
+Another difference is that interface can participate in declaration merging, which means that you can extend or merge an existing interface by declaring it again with the same name. Type declarations cannot do that¹²³.
+
+A third difference is that interface can use `extends` to inherit from another interface or a class, whereas type declarations cannot use `extends`, but can use `&` to create an intersection type²⁴.
+
+For example, you can declare an interface for a person like this:
+
+```typescript
+interface Person {
+  name: string;
+  age: number;
+}
+```
+
+And then extend it with another interface for a student:
+
+```typescript
+interface Student extends Person {
+  grade: number;
+}
+```
+
+Or merge it with another interface for a person with hobbies:
+
+```typescript
+interface Person {
+  hobbies: string[];
+}
+```
+
+Now the Person interface has three properties: name, age, and hobbies.
+
+You can also declare a type for a person like this:
+
+```typescript
+type Person = {
+  name: string;
+  age: number;
+};
+```
+
+But you cannot extend it with another type for a student using `extends`:
+
+```typescript
+type Student extends Person = { // error
+  grade: number;
+};
+```
+
+You have to use `&` to create an intersection type:
+
+```typescript
+type Student = Person & {
+  grade: number;
+};
+```
+
+And you cannot merge it with another type for a person with hobbies by declaring it again:
+
+```typescript
+type Person = { // error
+  hobbies: string[];
+};
+```
+
+You have to create a new type or modify the existing one.
+
+You can find more details and examples of using type and interface in these articles¹²³⁵⁶ and in this question⁴.
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript Type vs. Interface: Which One Should You Use? | WM - Web Mound. https://www.webmound.com/typescript-type-vs-interface/.
+(2) Type vs Interface: Which Should You Use In 2023? | Total TypeScript. https://www.totaltypescript.com/type-vs-interface-which-should-you-use.
+(3) Top 9 Differences Between Type VS Interface in TypeScript. https://timmousk.com/blog/typescript-type-vs-interface/.
+(4) Interfaces vs Types in TypeScript - Stack Overflow. https://stackoverflow.com/questions/37233735/interfaces-vs-types-in-typescript.
+(5) TypeScript: Playground Example - Types vs Interfaces. https://www.typescriptlang.org/play/typescript/language-extensions/types-vs-interfaces.ts.html.
+(6) Types vs. interfaces in TypeScript - LogRocket Blog. https://blog.logrocket.com/types-vs-interfaces-typescript/.
+
+is interface - inheritance
+-------------
+more to understand in hierarchical inheritance sense
+
+and type alias - composition 
+---------------
+more in the composition of types
+
+That's a good way to think about it. 
+
+Interface 
+----------
+is more suitable for describing hierarchical inheritance, where you have a base type and some subtypes that extend or modify it. 
+
+Type alias
+-----------
+is more suitable for describing composition of types, where you have different types that can be combined or transformed in various ways.
+
+Type alias allows for creating Algebraic Data Types
+---------------------------------------------------
+Yes, you are correct! TypeScript allows for the creation of algebraic data types through the use of type aliases. Type aliases create a new name for a type and can be used to name primitives, unions, tuples, and any other types that you’d otherwise have to write by hand³. You can combine string literal types, union types, type guards, and type aliases to build an advanced pattern called discriminated unions, also known as tagged unions or algebraic data types¹. This is useful in functional programming and allows for more dynamic and reusable code². Is there anything else you would like to know about this topic? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+(2) Algebraic data types in TypeScript - Stack Overflow. https://stackoverflow.com/questions/33915459/algebraic-data-types-in-typescript.
+(3) How To Use Type Aliases in TypeScript | DigitalOcean. https://www.digitalocean.com/community/tutorials/typescript-type-alias.
+
+An algebraic data type (ADT) is a kind of composite type, i.e., a type formed by combining other types¹. Two common classes of algebraic types are product types (i.e., tuples and records) and sum types (i.e., tagged or disjoint unions, coproduct types or variant types)¹. Product types allow you to have more than one value in a single structure, at the same time². Sum types, on the other hand, allow you to model the business domain². Together, they’re like a dynamic duo for encoding business logic. They help us make good things possible, and bad things less likely². Is there anything else you would like to know about this topic? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) Algebraic data type - Wikipedia. https://en.wikipedia.org/wiki/Algebraic_data_type.
+(2) Algebraic Data Types: Things I wish someone had explained about .... https://jrsinclair.com/articles/2019/algebraic-data-types-what-i-wish-someone-had-explained-about-functional-programming/.
+(3) What is an Algebraic Data Type (ADT)? - Stack Overflow. https://stackoverflow.com/questions/44991429/what-is-an-algebraic-data-type-adt.
+
+Yes, you are correct! Algebraic laws can be applied to types in programming languages. This means that types can be manipulated using algebraic operations such as addition, multiplication, and exponentiation¹. For example, in functional programming languages like Haskell, algebraic data types (ADTs) are used to define complex data structures using algebraic operations¹. This allows for more expressive and reusable code, as well as making it easier to reason about the behavior of the program¹. Is there anything else you would like to know about this topic? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) Algebraic structure - Wikipedia. https://en.wikipedia.org/wiki/Algebraic_structure.
+(2) Basic Laws of Algebra - Wikiversity. https://en.wikiversity.org/wiki/Basic_Laws_of_Algebra.
+(3) Algebraic properties | Lesson (article) | Khan Academy. https://www.khanacademy.org/test-prep/praxis-math/praxis-math-lessons/praxis-math-algebra/a/gtp--praxis-math--article--algebraic-properties--lesson.
+
+The Basic Laws of Algebra are the associative, commutative, and distributive laws. These laws help explain the relationship between number operations and lend towards simplifying equations or solving them¹. Here is a brief overview of each law:
+
+- **Commutative Law**: This law states that the arrangement of addends or factors does not affect the sum or product. For example, `a + b = b + a` and `a * b = b * a`¹.
+- **Associative Law**: This law states that the grouping of addends or factors does not affect the sum or product. For example, `(a + b) + c = a + (b + c)` and `(a * b) * c = a * (b * c)`¹.
+- **Distributive Law**: This law states that adding numbers and then multiplying them yields the same result as multiplying numbers and then adding them. For example, `a * (b + c) = (a * b) + (a * c)`¹.
+
+These laws are fundamental to algebra and are used to manipulate equations and expressions. Is there anything else you would like to know about this topic? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) Basic Laws of Algebra - Wikiversity. https://en.wikiversity.org/wiki/Basic_Laws_of_Algebra.
+(2) Algebrarules.com: The Most Useful Rules of Basic Algebra. https://algebrarules.com/.
+(3) Algebra Basics | Khan Academy. https://www.khanacademy.org/math/algebra-basics.
+
+type BasicLawsOfAlgebra = {
+  commutativeLaw: {
+    addition: (a: number, b: number) => boolean;
+    multiplication: (a: number, b: number) => boolean;
+  };
+  associativeLaw: {
+    addition: (a: number, b: number, c: number) => boolean;
+    multiplication: (a: number, b: number, c: number) => boolean;
+  };
+  distributiveLaw: (a: number, b: number, c: number) => boolean;
+};
+
+const basicLawsOfAlgebra: BasicLawsOfAlgebra = {
+  commutativeLaw: {
+    addition: (a, b) => a + b === b + a,
+    multiplication: (a, b) => a * b === b * a,
+  },
+  associativeLaw: {
+    addition: (a, b, c) => (a + b) + c === a + (b + c),
+    multiplication: (a, b, c) => (a * b) * c === a * (b * c),
+  },
+  distributiveLaw: (a, b, c) => a * (b + c) === a * b + a * c,
+};
+
+
+generic version of reduce function
+----------------------------------
+Sure! Here is a generic version of the `reduce` function that you mentioned:
+
+```typescript
+function reduce<T, U>(
+  array: T[],
+  callback: (accumulator: U, currentValue: T) => U,
+  initialValue: U
+): U {
+  let accumulator = initialValue;
+  for (const value of array) {
+    accumulator = callback(accumulator, value);
+  }
+  return accumulator;
+}
+```
+
+This function takes an array of type `T`, a callback function that takes an accumulator of type `U` and a current value of type `T` and returns a new accumulator of type `U`, and an initial value of type `U`. The function applies the callback function to each element in the array, accumulating the result in the `accumulator` variable, and returns the final accumulated value.
+
+You can use this function to sum the elements of an array like this:
+
+```typescript
+const numbers = [1, 2, 3, 4];
+const sum = reduce(numbers, (acc, val) => acc + val, 0);
+console.log(sum); // 10
+```
+
+Is there anything else you would like to know about this topic? 😊
+
+educative.io - piechoki
+------------------------
+function reduce<TElement, TResult>(
+    array: TElement[], 
+    reducer: (result: TResult, el: TElement) => TResult, 
+    initialResult: TResult
+): TResult {
+    let result = initialResult;
+    for (const element of array) {
+        result = reducer(result, element);
+    }
+    return result;
+}
+
+--------- hans shortened names
+
+function reduce<T, R>(
+    array: T[], 
+    reducer: (result: R, el: T) => R, 
+    initialResult: R
+): TResult {
+    let result = initialResult;
+    for (const element of array) {
+        result = reducer(result, element);
+    }
+    return result;
+}
+
+const total = reduce<number, number>([1, 2, 3, 4, 5], (sum, el) => sum + el, 0);
+
+const ageByName = reduce<Person, Record<string, number>>(
+    persons, 
+    (result, person) => ({
+        ...result,
+        [person.name]: person.age
+    }),
+    {}
+);
+
+There are many examples of generic functions in TypeScript. Here are a few examples:
+
+- **Identity function**: This is a simple function that takes an argument of any type and returns the same value. Here's an example of a generic identity function in TypeScript:
+
+```typescript
+function identity<Type>(arg: Type): Type {
+  return arg;
+}
+```
+
+This function uses a type variable `Type` to capture the type of the argument and the return value. This allows the function to work with any type of argument, while still preserving the type information.
+
+- **Array wrapping function**: This is a function that takes an argument of any type and returns an array containing that value. Here's an example of a generic array wrapping function in TypeScript:
+
+```typescript
+function wrapInArray<Type>(input: Type): Type[] {
+  return [input];
+}
+```
+
+This function uses a type variable `Type` to capture the type of the argument and the return value. This allows the function to work with any type of argument, while still preserving the type information.
+
+- **Pair creation function**: This is a function that takes two arguments of different types and returns a pair containing those values. Here's an example of a generic pair creation function in TypeScript:
+
+```typescript
+function createPair<S, T>(v1: S, v2: T): [S, T] {
+  return [v1, v2];
+}
+```
+
+This function uses two type variables `S` and `T` to capture the types of the arguments and the return value. This allows the function to work with any combination of argument types, while still preserving the type information.
+
+These are just a few examples of generic functions in TypeScript. Generics provide a powerful way to create reusable and flexible code that can work with many different types¹²³. Is there anything else you would like to know about this topic? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Generics. https://www.typescriptlang.org/docs/handbook/2/generics.html.
+(2) TypeScript: Playground Example - Generic Functions. https://www.typescriptlang.org/play/javascript/functions-with-javascript/generic-functions.ts.html.
+(3) TypeScript Basic Generics - W3Schools. https://www.w3schools.com/typescript/typescript_basic_generics.php.
+(4) How To Use Generics in TypeScript | DigitalOcean. https://www.digitalocean.com/community/tutorials/typescript-generics-in-typescript.
+(5) undefined. https://www.typescriptlang.org/docs/handbook/generics.html.
+
+function sort<T>(array: T[], compareFn: (a: T, b: T) => number): T[] {
+  return array.slice().sort(compareFn);
+}
+
+function filter<T>(array: T[], callback: (value: T) => boolean): T[] {
+  const result: T[] = [];
+  for (const value of array) {
+    if (callback(value)) {
+      result.push(value);
+    }
+  }
+  return result;
+}
+
+No, TypeScript generics are not the base feature for TypeScript type operators. Generics and type operators are two separate features of the TypeScript language that can be used together to create powerful and expressive types¹².
+
+Generics allow you to create reusable components that can work with a variety of types, rather than a single one¹. This allows you to write code that is more flexible and reusable, as it can work with any type that the user provides.
+
+Type operators, on the other hand, allow you to create new types based on existing types². For example, you can use the `keyof` operator to create a new type that represents the keys of an object type, or the `typeof` operator to create a new type based on the type of a value².
+
+While generics and type operators can be used together to create complex and powerful types, they are not dependent on each other and can be used independently. Is there anything else you would like to know about this topic? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Generics. https://www.typescriptlang.org/docs/handbook/2/generics.html.
+(2) TypeScript: Documentation - Creating Types from Types. https://www.typescriptlang.org/docs/handbook/2/types-from-types.html.
+(3) How To Use Generics in TypeScript | DigitalOcean. https://www.digitalocean.com/community/tutorials/how-to-use-generics-in-typescript.
+
+Here is a list of some advanced types in TypeScript:
+- **Type Guards and Differentiating Types**: Union types are useful for modeling situations when values can overlap in the types they can take on. A type guard is some expression that performs a runtime check that guarantees the type in some scope¹.
+- **User-Defined Type Guards**: It would be much better if once we performed the check, we could know the type of pet within each branch. It just so happens that TypeScript has something called a type guard¹.
+- **Nullable types**: TypeScript has two special types, `null` and `undefined`, that have the values `null` and `undefined` respectively¹.
+- **Utility Types**: TypeScript provides several utility types to facilitate common type transformations. These utilities are available globally. Some examples include `Partial<Type>`, `Required<Type>`, `Readonly<Type>`, `Record<Keys, Type>`, `Pick<Type, Keys>`, and `Omit<Type, Keys>`².
+
+You can learn more about these advanced types and others by visiting the [TypeScript documentation](^1^) or by checking out this [cheat sheet](^3^). Is there anything else you would like to know? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+(2) TypeScript: Documentation - Utility Types. https://www.typescriptlang.org/docs/handbook/utility-types.html.
+(3) TypeScript: Documentation - Advanced Types. https://www.typescriptlang.org/docs/handbook/advanced-types.html.
+(4) Advanced TypeScript Types Cheat Sheet (with Examples). https://www.freecodecamp.org/news/advanced-typescript-types-cheat-sheet-with-examples/.
+
+Utility types are a set of built-in type utilities in TypeScript that provide common type transformations. They are designed to help with working with existing types and easily constructing new types³. Some examples of utility types include `Partial<Type>`, `Required<Type>`, `Readonly<Type>`, `Record<Keys, Type>`, `Pick<Type, Keys>`, and `Omit<Type, Keys>`¹.
+
+Here is an example of how to use the `Partial` utility type:
+```typescript
+interface Todo {
+  title: string;
+  description: string;
+}
+
+function updateTodo(todo: Todo, fieldsToUpdate: Partial<Todo>) {
+  return { ...todo, ...fieldsToUpdate };
+}
+
+const todo1 = {
+  title: "organize desk",
+  description: "clear clutter",
+};
+
+const todo2 = updateTodo(todo1, {
+  description: "throw out trash",
+});
+```
+In this example, the `Partial<Todo>` type is used to make all properties of the `Todo` type optional. This allows us to update only some fields of a `Todo` object while leaving others unchanged.
+
+You can learn more about utility types and how to use them by visiting the [TypeScript documentation](^1^) or by checking out this [cheat sheet](^2^). Is there anything else you would like to know? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) Utility Types In Typescript - DEV Community. https://dev.to/kalashin1/utility-types-in-typescript-4nfo.
+(2) TypeScript: Documentation - Utility Types. https://www.typescriptlang.org/docs/handbook/utility-types.html.
+(3) TypeScript: Documentation - Utility Types. https://www.typescriptlang.org/docs/handbook/utility-types.html.
+(4) TypeScript Utility Types - W3Schools. https://www.w3schools.com/typescript/typescript_utility_types.php.
+(5) Using built-in utility types in TypeScript - LogRocket Blog. https://blog.logrocket.com/using-built-in-utility-types-typescript/.
+(6) A Complete Guide to TypeScript Utility Types - camchenry.com. https://camchenry.com/blog/typescript-utility-types.
+
+type Position = {
+  x: number;
+  y: number;
+};
+
+type Snake = {
+  body: Position[];
+  direction: "up" | "down" | "left" | "right";
+};
+
+type Food = Position;
+
+type GameBoard = {
+  width: number;
+  height: number;
+  snake: Snake;
+  food: Food;
+};
+
+function createGameBoard(width: number, height: number): GameBoard {
+  // create a new game board with the given width and height
+}
+
+function moveSnake(gameBoard: GameBoard): void {
+  // move the snake on the game board
+}
+
+function generateFood(gameBoard: GameBoard): void {
+  // generate new food on the game board
+}
+
+function checkCollision(gameBoard: GameBoard): boolean {
+  // check if the snake has collided with the walls or itself
+}
+
+Sure! Here is an example of how you might implement a Snake game using TypeScript type aliases instead of classes:
+
+```typescript
+type Position = {
+  x: number;
+  y: number;
+};
+
+type Snake = {
+  body: Position[];
+  direction: "up" | "down" | "left" | "right";
+};
+
+type Food = Position;
+
+type GameBoard = {
+  width: number;
+  height: number;
+  snake: Snake;
+  food: Food;
+};
+
+function createGameBoard(width: number, height: number): GameBoard {
+  // create a new game board with the given width and height
+}
+
+function moveSnake(gameBoard: GameBoard): void {
+  // move the snake on the game board
+}
+
+function generateFood(gameBoard: GameBoard): void {
+  // generate new food on the game board
+}
+
+function checkCollision(gameBoard: GameBoard): boolean {
+  // check if the snake has collided with the walls or itself
+}
+```
+
+In this example, we define type aliases for the different components of the game, such as the `Position`, `Snake`, `Food`, and `GameBoard`. We then define functions to create a new game board, move the snake, generate new food, and check for collisions. These functions take a `GameBoard` object as an argument and manipulate its properties to control the game logic.
+
+This is just one way to implement a Snake game using TypeScript type aliases. You can experiment with different approaches and designs to create your own version of the game. I hope this helps! Is there anything else you would like to know? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) snake-game · GitHub Topics · GitHub. https://github.com/topics/snake-game?l=typescript.
+(2) Build a Snake Game in TypeScript | by Ken Reilly - ITNEXT. https://itnext.io/build-a-snake-game-in-typescript-8bee5b9f1ec6.
+(3) Writing a Snake Game Using TypeScript Classes - Medium. https://medium.com/fullstack-programming-in-english/writing-a-snake-game-using-typescript-classes-70dd44efe7a0.
+(4) undefined. https://rtivital.github.io/snake/.
+(5) undefined. https://hasanmothaffar.github.io/Snake-TS/.
+
+You can use the Reactive Extensions for JavaScript (RxJS) library to add reactive programming capabilities to your TypeScript Snake game. RxJS is a set of libraries for composing asynchronous and event-based programs using observable sequences and fluent query operators².
+
+Here is an example of how you might use RxJS with the TypeScript type aliases for the Snake game that we discussed earlier:
+
+```typescript
+import { interval } from "rxjs";
+import { map } from "rxjs/operators";
+
+type Position = {
+  x: number;
+  y: number;
+};
+
+type Snake = {
+  body: Position[];
+  direction: "up" | "down" | "left" | "right";
+};
+
+type Food = Position;
+
+type GameBoard = {
+  width: number;
+  height: number;
+  snake: Snake;
+  food: Food;
+};
+
+function createGameBoard(width: number, height: number): GameBoard {
+  // create a new game board with the given width and height
+}
+
+function moveSnake(gameBoard: GameBoard): void {
+  // move the snake on the game board
+}
+
+function generateFood(gameBoard: GameBoard): void {
+  // generate new food on the game board
+}
+
+function checkCollision(gameBoard: GameBoard): boolean {
+  // check if the snake has collided with the walls or itself
+}
+
+const gameBoard = createGameBoard(20, 20);
+
+const game$ = interval(1000).pipe(
+  map(() => {
+    moveSnake(gameBoard);
+    if (checkCollision(gameBoard)) {
+      // game over
+    }
+    // update the game state and render the game board
+  })
+);
+
+game$.subscribe();
+```
+
+In this example, we use the `interval` function from RxJS to create an observable that emits a value every second. We then use the `map` operator to update the game state by moving the snake and checking for collisions. Finally, we subscribe to the `game$` observable to start the game loop.
+
+This is just one way to use RxJS with a TypeScript Snake game. You can experiment with different approaches and designs to create your own version of the game using reactive programming principles. I hope this helps! Is there anything else you would like to know? 😊
+
+Source: Conversation with Bing, 6.8.2023
+(1) Reactive-Extensions/RxJS: The Reactive Extensions for JavaScript - GitHub. https://github.com/Reactive-Extensions/RxJS.
+(2) TypeScript combine type-aliases with inheritance and generics. https://stackoverflow.com/questions/63212904/typescript-combine-type-aliases-with-inheritance-and-generics.
+(3) merge - Learn RxJS. https://www.learnrxjs.io/learn-rxjs/operators/combination/merge.
