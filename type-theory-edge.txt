@@ -1,0 +1,396 @@
+Type theory is a branch of mathematical logic that studies type systems, which are formal systems in which every term has a type and operations are restricted to specific types¹. Some type theories serve as alternatives to set theory as a foundation for mathematics. Two influential type theories that were proposed as foundations are Alonzo Church's typed λ-calculus and Per Martin-Löf's intuitionistic type theory¹. Most computerized proof-writing systems use a type theory for their foundation, a common one is Thierry Coquand's Calculus of Inductive Constructions¹. Is there anything else you would like to know about Type Theory?
+
+Quelle: Unterhaltung mit Bing, 10.8.2023
+(1) Type theory - Wikipedia. https://en.wikipedia.org/wiki/Type_theory.
+(2) Typentheorie – Wikipedia. https://de.wikipedia.org/wiki/Typentheorie.
+(3) BRIEF INTRODUCTION TO TYPE THEORY AND THE UNIVALENCE AXIOM. https://math.uchicago.edu/~may/REU2015/REUPapers/Macor.pdf.
+
+In type theory, types are often thought of as sets of possible values. For example, the type `bool` can be thought of as the set containing the two values `true` and `false`. Similarly, the type `int` can be thought of as the set of all integers. However, it is important to note that this is not always the case. In some type theories, types are not sets but rather more abstract entities. For example, in Homotopy Type Theory, types are interpreted as spaces rather than sets. Is there anything else you would like to know about Type Theory?
+
+Yes, in TypeScript, types are often thought of as sets of possible values. TypeScript is a strict syntactical superset of JavaScript that adds optional type annotations to the language. These type annotations allow developers to specify the types of variables, function parameters, and return values. The TypeScript compiler then uses these type annotations to check that the code is type-safe, meaning that operations are only performed on values of the appropriate type. For example, if a variable is declared to be of type `number`, then the TypeScript compiler will generate an error if the variable is assigned a value that is not a number. Is there anything else you would like to know about TypeScript or Type Theory?
+
+In TypeScript, it is possible to create new types from existing types using various type operators¹. For example, you can use the `keyof` operator to create a new type that represents the keys of an object type, or the `typeof` operator to create a new type that represents the type of a value¹. However, these operations are not the same as set operations. Set operations such as union, intersection, and difference can be applied to sets of values, but not directly to types. Is there anything else you would like to know about TypeScript or Type Theory?
+
+Quelle: Unterhaltung mit Bing, 10.8.2023
+(1) TypeScript: Documentation - Creating Types from Types. https://www.typescriptlang.org/docs/handbook/2/types-from-types.html.
+(2) Is it possible to set conditions within types or interfaces in TypeScript. https://stackoverflow.com/questions/66805631/is-it-possible-to-set-conditions-within-types-or-interfaces-in-typescript.
+(3) TypeScript Set Example - HowToDoInJava. https://howtodoinjava.com/typescript/sets/.
+(4) TypeScript: Documentation - Everyday Types. https://www.typescriptlang.org/docs/handbook/2/everyday-types.html.
+
+TypeScript has several type operators that can be used to create new types from existing types. Some of the most commonly used type operators in TypeScript are:
+
+- `keyof`: The `keyof` operator takes an object type and produces a string or numeric literal union of its keys³.
+- `typeof`: The `typeof` operator can be used in a type context to refer to the type of a variable or property¹.
+- `in`: The `in` operator can be used to create mapped types, which are new types that transform the properties of an existing type.
+- `extends`: The `extends` operator is used in conditional types to create a new type based on a condition.
+- `infer`: The `infer` keyword is used in conditional types to infer a type within a conditional type.
+
+These are just some of the type operators available in TypeScript. Is there anything else you would like to know about TypeScript or Type Theory?
+
+Quelle: Unterhaltung mit Bing, 10.8.2023
+(1) TypeScript: Documentation - Keyof Type Operator. https://www.typescriptlang.org/docs/handbook/2/keyof-types.html.
+(2) TypeScript: Documentation - Typeof Type Operator. https://www.typescriptlang.org/docs/handbook/2/typeof-types.html.
+(3) TypeScript: Documentation - Everyday Types. https://www.typescriptlang.org/docs/handbook/2/everyday-types.html.
+
+Mapped types and conditional types are two powerful features in TypeScript's type system that allow developers to create more expressive and flexible types.
+
+- **Mapped types** allow you to create new types based on existing types by transforming their properties. For example, you can use mapped types to create a new type that makes all the properties of an existing type optional or readonly¹. Mapped types build on the syntax for index signatures, which are used to declare the types of properties which have not been declared ahead of time¹. A mapped type is a generic type which uses a union of `PropertyKey`s (frequently created via a `keyof`) to iterate through keys to create a type¹.
+
+- **Conditional types** allow you to create new types based on conditions. They take the form `SomeType extends OtherType ? TrueType : FalseType`, where `SomeType` is checked against `OtherType` and if it is assignable, the resulting type is `TrueType`, otherwise it is `FalseType`². Conditional types can be used with generics to create more complex and flexible types².
+
+These features can be combined to create even more powerful and expressive types. Is there anything else you would like to know about TypeScript or Type Theory?
+
+Quelle: Unterhaltung mit Bing, 10.8.2023
+(1) TypeScript: Documentation - Mapped Types. https://www.typescriptlang.org/docs/handbook/2/mapped-types.html.
+(2) TypeScript: Documentation - Conditional Types. https://www.typescriptlang.org/docs/handbook/2/conditional-types.html.
+(3) TypeScript Advanced: Mapped and Conditional Types - JavaScript in Plain .... https://javascript.plainenglish.io/typescript-advanced-mapped-and-conditional-types-2d10c96042fe.
+(4) Exploring Advanced Types in TypeScript: Mapped & Conditional Types. https://derekcuevas.github.io/posts/exploring-advanced-types-in-typescript-mapped--conditional-types/.
+
+Mapped types are a powerful feature in TypeScript that allows you to create new types based on existing types by transforming their properties. To use mapped types, you need to define a type that describes the transformation you want to apply to the properties. This type is then used to transform another type by looping over its properties and applying the transformation¹.
+
+Here is an example of how to use mapped types in TypeScript:
+
+```typescript
+type OptionsFlags<Type> = {
+  [Property in keyof Type]: boolean;
+};
+
+type Features = {
+  darkMode: () => void;
+  newUserProfile: () => void;
+};
+
+type FeatureOptions = OptionsFlags<Features>;
+```
+
+In this example, `OptionsFlags` is a mapped type that takes a type `Type` as a parameter and creates a new type with the same properties as `Type`, but with all property values changed to `boolean`. The `FeatureOptions` type is then created by applying the `OptionsFlags` mapped type to the `Features` type¹.
+
+Is there anything else you would like to know about mapped types or TypeScript?
+
+Quelle: Unterhaltung mit Bing, 10.8.2023
+(1) TypeScript: Documentation - Mapped Types. https://www.typescriptlang.org/docs/handbook/2/mapped-types.html.
+(2) Mastering TypeScript mapped types - LogRocket Blog. https://blog.logrocket.com/typescript-mapped-types/.
+(3) Exploring TypeScript Type Manipulation: Mapped Types | YourSiteName. https://vue-community.org/js/typescript-type-manipulation-mapped-types.html.
+(4) Mastering Mapped Types in TypeScript - Atatus. https://www.atatus.com/blog/mastering-mapped-types-in-typescript/.
+
+Conditional types are a powerful feature in TypeScript that allows you to create new types based on conditions. To use conditional types, you need to define a type that describes the condition you want to check and the resulting types based on whether the condition is true or false.
+
+Here is an example of how to use conditional types in TypeScript:
+
+```typescript
+type NonNullable<Type> = Type extends null | undefined ? never : Type;
+
+type StringOrNumber = string | number;
+type NotNullableStringOrNumber = NonNullable<StringOrNumber>;
+```
+
+In this example, `NonNullable` is a conditional type that takes a type `Type` as a parameter and checks if it is assignable to `null | undefined`. If it is, the resulting type is `never`, otherwise it is `Type`. The `NotNullableStringOrNumber` type is then created by applying the `NonNullable` conditional type to the `StringOrNumber` type.
+
+Is there anything else you would like to know about conditional types or TypeScript?
+
+Here are some types that you might find useful when writing a Snake game in TypeScript:
+
+- `Position`: A type representing the position of an element on the game board. This could be a tuple type, for example `type Position = [number, number]`, where the first element represents the row and the second element represents the column.
+- `Direction`: A type representing the direction in which the snake is moving. This could be an enum type, for example `enum Direction { Up, Down, Left, Right }`.
+- `Snake`: A type representing the snake itself. This could be an object type with properties such as `body: Position[]` representing the positions of the snake's body segments, and `direction: Direction` representing the direction in which the snake is moving.
+- `Food`: A type representing a piece of food on the game board. This could be a simple object type with a single property such as `position: Position` representing the position of the food.
+- `GameState`: A type representing the current state of the game. This could be an object type with properties such as `snake: Snake` representing the snake, `food: Food` representing the current piece of food, and `score: number` representing the current score.
+
+These are just some suggestions for types that you might find useful when writing a Snake game in TypeScript. You can define additional types as needed to represent other aspects of the game. Is there anything else you would like to know about TypeScript or game development?
+
+---------
+import { fromEvent, interval } from 'rxjs';
+import { map, scan, startWith, withLatestFrom } from 'rxjs/operators';
+
+type Position = [number, number];
+enum Direction { Up, Down, Left, Right }
+type Snake = {
+  body: Position[];
+  direction: Direction;
+}
+type Food = {
+  position: Position;
+}
+type GameState = {
+  snake: Snake;
+  food: Food;
+  score: number;
+}
+
+const DIRECTION_MAP = {
+  ArrowUp: Direction.Up,
+  ArrowDown: Direction.Down,
+  ArrowLeft: Direction.Left,
+  ArrowRight: Direction.Right
+};
+
+const TICK_INTERVAL = 100;
+
+const moveSnake = (snake: Snake): Snake => {
+  const newHead = [...snake.body[0]];
+  switch (snake.direction) {
+    case Direction.Up:
+      newHead[0]--;
+      break;
+    case Direction.Down:
+      newHead[0]++;
+      break;
+    case Direction.Left:
+      newHead[1]--;
+      break;
+    case Direction.Right:
+      newHead[1]++;
+      break;
+  }
+  return {
+    ...snake,
+    body: [newHead, ...snake.body.slice(0, -1)]
+  };
+};
+
+const eatFood = (state: GameState): GameState => {
+  const snake = state.snake;
+  const food = state.food;
+  if (snake.body[0][0] === food.position[0] && snake.body[0][1] === food.position[1]) {
+    return {
+      ...state,
+      snake: {
+        ...snake,
+        body: [...snake.body, snake.body[snake.body.length - 1]]
+      },
+      food: generateFood(),
+      score: state.score + 1
+    };
+  }
+  return state;
+};
+
+const generateFood = (): Food => ({
+  position: [Math.floor(Math.random() * BOARD_SIZE), Math.floor(Math.random() * BOARD_SIZE)]
+});
+
+const initialState: GameState = {
+  snake: {
+    body: [[5, 5], [5, 4], [5, 3]],
+    direction: Direction.Right
+  },
+  food: generateFood(),
+  score: 0
+};
+
+const direction$ = fromEvent<KeyboardEvent>(document, 'keydown').pipe(
+  map(event => DIRECTION_MAP[event.code]),
+);
+
+const tick$ = interval(TICK_INTERVAL);
+
+const game$ = tick$.pipe(
+  withLatestFrom(direction$, (_, direction) => direction),
+  scan((state, direction) => {
+    const newState = { ...state };
+    if (direction !== undefined) {
+      newState.snake.direction = direction;
+    }
+    newState.snake = moveSnake(newState.snake);
+    return eatFood(newState);
+  }, initialState),
+);
+
+game$.subscribe(state => render(state));
+
+function render(state: GameState) {
+// Render the game state to the screen
+}
+
+---------
+type BoundingBox = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+function checkCollision(a: BoundingBox, b: BoundingBox): boolean {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
+}
+
+function handleCollision(player: Player, enemy: Enemy) {
+  // Handle the collision between the player and the enemy
+}
+
+// Check for collisions between the player and enemies
+for (const enemy of enemies) {
+  if (checkCollision(player.boundingBox, enemy.boundingBox)) {
+    handleCollision(player, enemy);
+  }
+}
+
+An advanced TypeScript course on types could be structured in several ways, depending on the goals and focus of the course. Here is one possible structure for such a course:
+
+1. **Introduction to TypeScript's type system**: This section could cover the basics of TypeScript's type system, including primitive types, type inference, type annotations, and type assertions.
+2. **Advanced types**: This section could delve into more advanced types such as union and intersection types, tuple types, and index types. It could also cover type guards and type predicates.
+3. **Generics**: This section could introduce the concept of generics and show how to create and use generic types and functions.
+4. **Type operators**: This section could cover the various type operators available in TypeScript, such as `keyof`, `typeof`, `in`, `extends`, and `infer`.
+5. **Mapped and conditional types**: This section could introduce mapped and conditional types and show how to use them to create more expressive and flexible types.
+6. **TypeScript's utility types**: This section could cover the various utility types provided by TypeScript, such as `Partial`, `Readonly`, `Record`, and `Pick`.
+7. **TypeScript's declaration files**: This section could introduce declaration files and show how to use them to provide type information for external libraries.
+8. **Advanced topics**: Depending on the focus of the course, this section could cover more advanced topics such as type-level programming, higher-kinded types, or nominal typing.
+
+This is just one possible structure for an advanced TypeScript course on types. The exact structure and content of the course would depend on the goals of the course and the background of the students. Is there anything else you would like to know about TypeScript or course design?
+
+Some common challenges when teaching TypeScript include:
+
+1. **Understanding the benefits of static typing**: Some students may be coming from a background in dynamically-typed languages and may not immediately see the benefits of using a statically-typed language like TypeScript. It can be helpful to provide concrete examples of how static typing can prevent common errors and improve code maintainability.
+2. **Learning the syntax and semantics of TypeScript's type system**: TypeScript's type system is quite powerful and expressive, but it can also be complex and difficult to learn. Students may struggle with understanding the syntax and semantics of advanced features such as generics, type operators, mapped types, and conditional types.
+3. **Integrating TypeScript into existing projects**: Students may have difficulty integrating TypeScript into existing JavaScript projects. It can be helpful to provide guidance on how to incrementally adopt TypeScript, such as by using the `allowJs` and `checkJs` compiler options.
+4. **Working with third-party libraries**: Students may encounter challenges when working with third-party libraries that do not provide TypeScript type definitions. It can be helpful to teach students how to use declaration files and the `@types` organization on npm to provide type information for these libraries.
+5. **Keeping up with new features and changes**: TypeScript is a rapidly-evolving language, with new features and changes being introduced regularly. Students may find it challenging to keep up with these changes and to understand how they affect their code.
+
+These are just some of the common challenges that students may face when learning TypeScript. As an instructor, it is important to be aware of these challenges and to provide support and guidance to help students overcome them. Is there anything else you would like to know about teaching TypeScript?
+Thinking of TypeScript types as sets of possible values can help you better understand the behavior of the type system and write more accurate and expressive types. For example, when you define a union type `type A = B | C`, you can think of it as creating a new set `A` that contains all the values from sets `B` and `C`. Similarly, when you define an intersection type `type D = E & F`, you can think of it as creating a new set `D` that contains only the values that are present in both sets `E` and `F`.
+
+This way of thinking about types can also help you understand more advanced concepts such as type narrowing and type guards. For example, when you use a type guard to narrow the type of a variable from a union type to one of its constituent types, you can think of it as removing all the values from the other sets in the union.
+
+Overall, thinking of TypeScript types as sets of possible values can provide a useful mental model for understanding how the type system works and how to use it effectively. Is there anything else you would like to know about TypeScript or its type system?
+
+function isString(x: any): x is string {
+  return typeof x === 'string';
+}
+
+let x: string | number = 'hello';
+if (isString(x)) {
+  // x is narrowed to string within this block
+  console.log(x.toUpperCase());
+}
+
+In TypeScript, there are several ways to narrow the type of a variable:
+
+1. **Using type guards**: A type guard is an expression that performs a runtime check on the type of a variable and returns a boolean value indicating whether the variable is of a certain type. There are several ways to define and use type guards in TypeScript, including using user-defined type guard functions, the `in` operator, the `instanceof` operator, and discriminated unions.
+2. **Using the `typeof` operator**: The `typeof` operator can be used to check the runtime type of a variable and can also act as a type guard. For example, you can use `typeof x === 'string'` to check if a variable `x` is of type `string`.
+3. **Using control flow analysis**: TypeScript uses control flow analysis to automatically narrow the types of variables within conditional blocks. For example, if you have a variable `x` of type `string | number`, and you check if `x` is greater than 0 within an `if` block, then TypeScript will automatically narrow the type of `x` to `number` within that block.
+4. **Using type assertions**: A type assertion is a way to explicitly tell the TypeScript compiler that you know the type of a variable better than it does. You can use a type assertion to narrow the type of a variable by using the `as` keyword or angle-bracket syntax. However, be careful when using type assertions, as they can potentially hide errors if used incorrectly.
+
+These are some of the most common ways to narrow the type of a variable in TypeScript. Is there anything else you would like to know about TypeScript or its type system?
+Yes, you are correct! Control flow analysis is another way to narrow the type of a variable in TypeScript. TypeScript uses control flow analysis to automatically narrow the types of variables within conditional blocks based on the checks performed on them. For example, if you have a variable `x` of type `string | number`, and you check if `x` is greater than 0 within an `if` block, then TypeScript will automatically narrow the type of `x` to `number` within that block. Is there anything else you would like to know about TypeScript or its type system?
+interface Circle {
+  kind: 'circle';
+  radius: number;
+}
+
+interface Square {
+  kind: 'square';
+  sideLength: number;
+}
+
+type Shape = Circle | Square;
+
+function getArea(shape: Shape) {
+  if (shape.kind === 'circle') {
+    // shape is narrowed to Circle within this block
+    return Math.PI * shape.radius ** 2;
+  } else {
+    // shape is narrowed to Square within this block
+    return shape.sideLength ** 2;
+  }
+}
+
+Yes, you are correct! Mapped types and conditional types are two powerful features in TypeScript's type system that allow developers to create more expressive and flexible types.
+
+- **Mapped types** allow you to create new types based on existing types by performing a uniform transformation on their properties. For example, you can use mapped types to create a new type that makes all the properties of an existing type optional or readonly. Mapped types build on the syntax for index signatures, which are used to declare the types of properties which have not been declared ahead of time. A mapped type is a generic type which uses a union of `PropertyKey`s (frequently created via a `keyof`) to iterate through keys to create a type.
+
+- **Conditional types** allow you to create new types based on conditions. They take the form `SomeType extends OtherType ? TrueType : FalseType`, where `SomeType` is checked against `OtherType` and if it is assignable, the resulting type is `TrueType`, otherwise it is `FalseType`. Conditional types can be used with generics to create more complex and flexible types. Conditional types perform a non-uniform transformation on types, allowing you to create new types based on complex conditions.
+
+Is there anything else you would like to know about TypeScript or its type system?
+TypeScript does not have a concept of "type constructors" in the same way that some other languages do. Instead, TypeScript has several ways to create and define new types, including:
+
+- **Type aliases**: A type alias is a way to give a name to a type. You can use the `type` keyword to define a new type alias, for example `type MyString = string;`.
+- **Interfaces**: An interface is a way to define the shape of an object. You can use the `interface` keyword to define a new interface, for example `interface MyObject { x: number; y: number; }`.
+- **Classes**: A class is a way to define a new type that includes both data and behavior. You can use the `class` keyword to define a new class, for example `class MyClass { x: number; y: number; constructor(x: number, y: number) { this.x = x; this.y = y; } }`.
+- **Generics**: Generics allow you to define types that can work with multiple other types. You can use angle brackets (`< >`) to define a new generic type, for example `type MyArray<T> = T[];`.
+
+These are some of the ways you can create and define new types in TypeScript. Is there anything else you would like to know about TypeScript or its type system?
+
+Quelle: Unterhaltung mit Bing, 10.8.2023
+(1) Class constructor type in typescript? - Stack Overflow. https://stackoverflow.com/questions/39614311/class-constructor-type-in-typescript.
+(2) Multiple constructors in typescript - Stack Overflow. https://stackoverflow.com/questions/70450659/multiple-constructors-in-typescript.
+(3) TypeScript constructors and generic types · Simon Holywell. https://www.simonholywell.com/post/typescript-constructor-type.html.
+Yes, you can create your own type operators by combining existing type operators in TypeScript. For example, you can use the `keyof` and `Pick` type operators to create a new type operator that picks only the properties of a certain type from an object type:
+
+```typescript
+type PickOfType<ObjectType, PropertyType> = Pick<
+  ObjectType,
+  { [Key in keyof ObjectType]: ObjectType[Key] extends PropertyType ? Key : never }[keyof ObjectType]
+>;
+
+interface MyObject {
+  a: string;
+  b: number;
+  c: boolean;
+}
+
+type MyStringProperties = PickOfType<MyObject, string>;
+// Equivalent to: type MyStringProperties = Pick<MyObject, 'a'>;
+```
+
+In this example, we define a new type operator `PickOfType` that takes two type parameters: `ObjectType` and `PropertyType`. The `PickOfType` type operator uses the `Pick` and `keyof` type operators to create a new type that includes only the properties of `ObjectType` whose values are of type `PropertyType`.
+
+This is just one example of how you can create your own type operators by combining existing type operators in TypeScript. You can use this technique to create more complex and expressive types as needed. Is there anything else you would like to know about TypeScript or its type system?
+
+type Person = {
+  name: string;
+  age: number;
+}
+
+function validatePersonInput(input: any): input is Person {
+  return typeof input.name === 'string' && typeof input.age === 'number';
+}
+
+const formInput = {
+  name: 'John',
+  age: 30
+};
+
+if (validatePersonInput(formInput)) {
+  // formInput is narrowed to Person within this block
+  console.log(`Name: ${formInput.name}, Age: ${formInput.age}`);
+} else {
+  console.log('Invalid input');
+}
+Yes, you are correct! In the example I provided, `input is Person` is a type predicate. A type predicate is a special kind of return type for a function that specifies the type of one of its parameters. In this case, the `validatePersonInput` function has a return type of `input is Person`, which means that if the function returns `true`, then the `input` parameter is known to be of type `Person`. This allows TypeScript to narrow the type of the `input` variable within the conditional block based on the result of the `validatePersonInput` function. Is there anything else you would like to know about TypeScript or type predicates?
+
+Here is a list of 10 important TypeScript compiler options that you can set in the `tsconfig.json` file:
+
+1. `target`: Specifies the ECMAScript target version to which the code should be compiled.
+2. `module`: Specifies the module system to use for code generation.
+3. `lib`: Specifies a list of library files to be included in the compilation.
+4. `outDir`: Specifies the output directory for generated JavaScript files.
+5. `strict`: Enables all strict type checking options.
+6. `noImplicitAny`: Raises an error when the type of an expression cannot be inferred and would be implicitly `any`.
+7. `noUnusedLocals`: Raises an error when a local variable is declared but never used.
+8. `noUnusedParameters`: Raises an error when a function parameter is declared but never used.
+9. `sourceMap`: Generates source maps for easier debugging of compiled code.
+10. `esModuleInterop`: Enables interoperability between CommonJS and ES Modules via the creation of namespace objects for all imports.
+
+These are just some of the many compiler options available in TypeScript. You can find more information about these and other options in the [TypeScript documentation](^1^). Is there anything else you would like to know about TypeScript or its compiler options?
+
+Quelle: Unterhaltung mit Bing, 10.8.2023
+(1) TypeScript: Documentation - tsc CLI Options. https://www.typescriptlang.org/docs/handbook/compiler-options.html.
+(2) Exploring advanced compiler options in TypeScript. https://blog.logrocket.com/exploring-advanced-compiler-options-typescript/.
+(3) The most important Config Options in Typescript - DEV Community. https://dev.to/ahmedmohmd/the-most-important-config-options-in-typescript-88p.
+
+In 2023, the most commonly used module systems for TypeScript are still ECMAScript modules (also known as ES modules or ESM) and CommonJS. ECMAScript modules are the standard module system for JavaScript and are natively supported in modern browsers and Node.js. CommonJS is the module system used by Node.js and is widely used in server-side JavaScript development.
+
+The choice between these two module systems depends on your specific use case and development environment. If you are developing for the browser, then using ECMAScript modules is recommended, as they are natively supported and provide features such as dynamic imports and tree shaking. If you are developing for Node.js, then you can use either ECMAScript modules or CommonJS, depending on your preference and the requirements of your project.
+
+Is there anything else you would like to know about TypeScript or its module systems?
+
+Quelle: Unterhaltung mit Bing, 10.8.2023
+(1) 17 Best IDEs for TypeScript development as of 2023 - Slant. https://www.slant.co/topics/5815/~ides-for-typescript-development.
+(2) A comprehensive guide to “Module System” in TypeScript ... - Medium. https://medium.com/jspoint/typescript-module-system-5022cac310f6.
+(3) Mastering TypeScript - 2023 Edition | Udemy. https://www.udemy.com/course/learn-typescript/.
+

@@ -1,0 +1,182 @@
+Types and syntaxes
+-------------------
+statically typed superset of JavaScript:
+
+1. **Basic Types**: Include string, number, boolean, null, undefined, symbol, and bigint. 
+They define the basic data that variables can hold.
+
+2. **Array Types**: Represent an array of elements, such as `number[]` or `Array<number>`, 
+denoting an array of numbers.
+
+3. **Tuple Types**: Define a fixed-length array with known element types, e.g., `[string, number]`.
+
+4. **Enum Types**: Define a set of named constants, e.g., `enum Color {Red, Green, Blue}`.
+
+5. **Object Types**: Describe the shape of an object, like `{name: string, age: number}`.
+
+6. **Function Types**: Describe the parameters and return type of a function, such as `(x: number) => string`.
+
+7. **Interface Types**: Define a contract for an object's structure, e.g., `interface Person {name: string, age: number}`.
+
+8. **Class Types**: Act as blueprints for objects, with properties and methods. For instance, `class Animal {name: string; constructor(name: string) {this.name = name;}}`.
+
+9. **Generic Types**: Represent a type depending on another type parameter, e.g., `Array<T>` or `Promise<T>`.
+
+10. **Union Types**: Represent a value that can be one of several types, like `string | number`.
+
+11. **Intersection Types**: Represent a value with properties from both types, e.g., `Person & Employee`.
+
+12. **Literal Types**: Represent a specific value assigned to a variable, like `"hello"` or `42`.
+
+13. **Type Aliases**: Create a new name for an existing type, e.g., `type ID = string | number`.
+
+14. **Utility Types**: Modify existing types in various ways, like `Partial<T>` or `Readonly<T>`.
+
+15. **Type Operators**: Manipulate existing types in combination with generics. For instance:
+ 
+   - **Indexed Types**: Access property types of an object type using a key type, like `T[K]` or `T[keyof K]`.
+
+    - **Union and Intersection Types**: Combine types in different ways, such as `A | B` or `A & B`.
+
+    - **Mapped Types**: Create a new object type by mapping keys and assigning them the value type, like `{[P in K]: T}`.
+
+    - **Conditional Types**: Create a new type depending on a conditional expression, such as `T extends U ? X : Y`.
+
+16. A **TypeScript Type** is a way to describe the shape and behavior of a value, not the value itself. For instance, `number` represents any numeric value where arithmetic operations can be applied.
+
+17. The `typeof` operator returns the type of a value. However, not all JavaScript values have a corresponding TypeScript type. For example, `null` and `undefined` can be assigned to any type but do not have corresponding literal types.
+
+18. **Composite Types** are types combined or modified from simpler types. 
+
+- union type, and `X & Y` is an 
+- intersection type. 
+- indexed access types, 
+- conditional types, 
+- mapped types, and 
+- template literal types.
+
+refining a variable's type to a more specific type. 
+-----------------------------------------------------
+
+- **Type Guards**: Using expressions that validate if a value belongs to a specific type, 
+such as `typeof`, `instanceof`, or user-defined type predicates.
+
+- **Type Assertions**: These expressions instruct the compiler to treat a value as a certain type. 
+Be careful, though, as they can override the compiler's checks and lead to runtime errors.
+
+- **Control Flow Analysis**: TypeScript uses this process to follow possible paths of execution, 
+analyzing the most specific possible type of a value at a given position.
+
+- **Discriminated Unions**: Union types with a common property to distinguish different variants, 
+enabling you to narrow down the type based on that property's value.
+
+- **Exhaustiveness Checking**: A technique that ensures all possible cases of 
+a union type are covered.
+
+- **In Operator Narrowing**: This technique narrows down the type of an object based 
+on whether it has a certain property or not.
+
+TypeScript types sets of possible values.
+------------------------------------------ 
+Some TypeScript types can be finite or infinite sets. You can also create new types using features like Generics, Keyof type operator, Typeof type operator, and Indexed access types.
+
+Type inhabitants
+----------------
+ of boolean type, and discusses the application of set operations on types in TypeScript.
+
+The `infer` keyword 
+--------------------
+is used in TypeScript for inferring types in a conditional type. 
+It allows us to define a variable within the condition that can be returned in the 
+consequent or alternative types.
+
+branded types, add a unique identifier to make it a entity in a domain model
+-------------------------------------
+which are used to create nominal types. 
+They let you add a unique identifier to an existing type and create a new type that is 
+incompatible with other types that have the same structure but different names. 
+This technique can prevent unwanted type errors or bugs.
+
+1. **Branded Types**: 
+----------------------
+These are domain-specific types used to represent a specific concept 
+or entity in a domain model. 
+For example, an email address could be a branded type since it's 
+not just a string but a string that has specific format requirements.
+
+2. **Type and Interface**: 
+-----------------------------
+These are two ways to declare the shape of an object in TypeScript. 
+They are similar but have significant differences:
+
+- An interface
+--------------
+ describes the shape of an object, and it can participate in declaration merging, 
+meaning you can extend an existing interface by declaring it again with the same name. 
+Interfaces can use `extends` to inherit from another interface or a class.
+
+- Type declarations 
+---------------------
+are more flexible. They can define complex types including 
+primitive types, arrays, tuples, unions, intersections, mapped types, and conditional types. 
+Type declarations cannot participate in declaration merging or use `extends`, 
+but they can use `&` to create an intersection type.
+
+3. **Interface and Type Alias**: Interfaces are more suitable for describing 
+- interface for hierarchical inheritance, while type aliases are more apt for describing 
+- type alias for composition of types. 
+
+4. **Algebraic Data Types**: 
+------------------------------
+TypeScript allows for the creation of 
+algebraic data types (ADTs) through type aliases. ADTs are composite types formed by 
+combining other types and are useful in functional programming. Types can be manipulated 
+using algebraic operations like addition, multiplication, and exponentiation, thus enabling 
+more expressive and reusable code.
+
+5. **Generic Reduce Function**: 
+-----------------------------
+This is a general version of the reduce function that 
+applies a function against an accumulator and each element in an array (from left to right) 
+to reduce it to a single output value.
+
+6. **Examples of Generic Functions**: 
+----------------------------------
+The text presents examples of generic functions, 
+such as the Identity function, Array wrapping function, and Pair creation function. 
+These functions use type variables to capture the type of arguments and return values, 
+thus allowing these functions to work with any type while preserving type information.
+
+The TypeScript code describes the basic structure and functionality of a "Snake" game. 
+Let's summarize the type definitions and the game functions:
+
+1. **Type Definitions**
+
+   - `Position`: It represents a 2D coordinate with `x` and `y` as numbers.
+
+   - `Snake`: It represents the snake in the game with a body consisting of an array 
+of `Position` objects and a direction which can be up, down, left, or right.
+
+   - `Food`: It is a `Position` type that represents the location of the food on the game board.
+
+   - `GameBoard`: It defines the game board. It has a `width` and `height`, 
+and includes a `snake` and `food` within it.
+
+2. **Game Functions**
+   - `createGameBoard(width: number, height: number)`: This function returns a 
+`GameBoard` object with a specified `width` and `height`.
+
+   - `moveSnake(gameBoard: GameBoard)`: This function moves the snake on the game board 
+according to its current direction. It doesn't return anything.
+
+   - `generateFood(gameBoard: GameBoard)`: This function places a new piece of food on 
+the game board. It doesn't return anything.
+
+   - `checkCollision(gameBoard: GameBoard)`: This function checks if the snake has collided 
+with the walls or itself on the game board. It returns a boolean value.
+
+The code only includes type definitions and function declarations. The actual implementations 
+of the functions `createGameBoard`, `moveSnake`, `generateFood`, and `checkCollision` are not 
+provided in the given text.
+
+
