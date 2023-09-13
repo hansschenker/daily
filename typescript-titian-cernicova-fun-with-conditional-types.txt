@@ -1,0 +1,4686 @@
+hello everyone welcome to my workshop
+fun with conditional types and other
+advanced type topics
+my name is titian nichola dragomir and
+today we're going to go through some of
+the interesting features that the
+typescript type system has to offer
+we're going to cover a lot of topics
+i think that you might already be
+familiar with some of these and i hope
+that i can add some extra information
+for you
+but if you're not familiar with any of
+them then don't worry we're going to
+take it slowly we're going to cover the
+basics before we move on to the more
+interesting stuff
+so without further ado let's actually
+start and dive into this workshop
+the first idea that i want to discuss is
+the idea that we can look at types as
+sets now what do i mean by this
+well if we were to have an object type
+with property full then this represents
+the set of all values that can be
+created that are objects and have this
+full property of type
+number similarly we could have an object
+type
+with a bar property and this also
+represents the set of all possible
+values that are objects and have this
+bar property of type number
+number
+represents the set of all values that
+are floating point numbers that can be
+represented in javascript
+similarly the type string represents the
+set of all values that are strings
+the type never is actually a special set
+it is the empty set let me this means
+that there are no values that can
+inhabit this set
+its counterpart is to type unknown
+which also represents a set but it
+represents the set of all possible
+values if you can create this value in
+javascript then it belongs to this set
+so it has the type unknown
+so armed with this new understanding of
+types
+let's see what operations we can perform
+on types that are similar to set
+operations
+the first one would be unioning
+and this is the same concept as
+set unions namely if we create a new set
+that is represents the union of two
+other sets that means that we're
+creating a set that has values that can
+either belong in the first
+set or in the second set
+similarly if we create the union of two
+types what we're creating is a new type
+whose values can either satisfy the the
+conditions described by the first type
+or the second type this means they can
+either have a full property of type
+number or a bar property of type number
+so this is the new set that we are
+describing
+similarly if we have a union between
+string and number this means that we
+want all values that are either strings
+or numbers
+the second set operation we can perform
+on types in typescript is intersections
+so again is the same concept as the set
+operation namely if we take the
+intersection of two other sets we're
+left with only the values that belong to
+both sets simultaneously
+so for example if we create the
+intersection of our two object types
+what work what we get is a new set or a
+new type which has objects that have
+both a full property of type number and
+a bar property of type number
+similarly we can create a new
+intersection between number and string
+and this creates the set or the type of
+all values that are simultaneously both
+string and numbers and i know what
+you're thinking right about now
+what value is both a string and a number
+and the answer is that no value will
+satisfy this intersection so what we get
+is actually the empty set which reduces
+to the type never and we will see this
+happening in several places where
+intersections that can never happen will
+reduce to the never type
+so let's see what we can do with unions
+and intersections
+so the first question we're going to
+look at is how can we represent an
+object that either is an engineer or a
+doctor and the simple answer is that we
+can use a union
+so we have a function let's call it
+print person
+which we want to use to either print a
+doctor or an engineer
+and this seems simple enough and right
+now we can call this function and we can
+say print person and
+we can pass in any object literal and
+when i say any object literal i mean
+that the type here is any so we can pass
+in anything so this of course means that
+we don't get completion and we can have
+all sorts of errors that we don't want
+to have
+so how can we improve the type of print
+person well the answer is simple we can
+say that person is either an engineer or
+it's a doctor
+and this is very simple and now we get
+type checking where we actually try to
+use this union
+we have to specify now the name
+we have to specify
+the age
+we have to specify
+the field this
+person is working in
+and that's it if we're just printing a
+person an engineer
+and if we want to create a doctor we
+have to specify the speciality
+and this also works fine
+
+now inside the function
+we can access some of the properties of
+these for example we can access name
+and we can access
+for example
+page
+the problem is that we cannot access
+properties that are not common to both
+of these two interfaces
+why is that
+well given our understanding of how a
+union works
+we can only guarantee that these two
+properties will be on the object that
+can be passed in inside the parameter b
+why well because
+p can either be a doctor
+or an engineer
+they both have name and age so
+definitely that object will have name
+and age but we don't know if we are
+getting a doctor or an engineer so we
+cannot access field or speciality
+and this moves us to our second question
+why can't i access some properties of
+the union we already understood that and
+the graph the thing we're going to look
+at next is how we can access them safely
+and the answer is we can
+narrow the union
+now there are several ways we can narrow
+a union
+but for this type of union that is not
+discriminated and is a unit of object
+types the simplest way we could do this
+is using on
+the in operator
+so for example we can say that if
+speciality
+
+in
+p
+then we actually get access to the
+speciality field
+and this is called union narrowing and
+it's called narrowing because basically
+we took this type which is a wider set
+and we narrowed it to just one of the
+union constituents in this case if we
+checked for speciality we now have p is
+typed as doctor because that is the only
+part of the unit that is left
+on the other side
+we could access
+the other
+property
+of the union that we couldn't access
+before namely field
+why is that well tax credit is smart
+enough to understand that if on this
+side we narrowed the union and we
+handled the doctor case what's left on
+the else case is only the other part of
+the union namely an engineer and we can
+access the fields of engineers without
+any more restrictions
+so we saw how we can narrow a union
+namely using type cards but what are
+type guards basically they're syntactic
+constructs that can help us narrow a
+union and when i say syntactic i mean
+that their form matters so basically the
+form of our code
+is what let type let's typescript know
+that this is something that we use to
+narrow the type of a specific
+variable
+so basically to narrow the type of a
+value variable
+for this particular case we used
+property in
+value and this we call this the in type
+card
+now the in-type guard can only be used
+with
+object unions right with unions of
+several object types but if we have a
+union of primitive types then we can use
+another typescript operator namely the
+type of operator to narrow the type of
+the union so for example we will have to
+use a construct type of value where
+value is a variable that is of the union
+type equals some valid javascript type
+so let's see an example here we have a
+function
+which has a parameter that is a union of
+primitive types
+now
+we can say if
+type of p
+equals for example string
+then on this branch of the e f p will
+indeed be a string and we have access to
+all of its string methods
+similarly
+we can do here if type of p
+equals
+boolean
+we can then
+access boolean functions here
+and ease of type bolia
+and if
+type of p
+is a number
+then we can do number of things on this
+branch
+and of course on the else branch
+what will be the type of of this union
+well since we removed
+string we removed boolean we move number
+from the union the only thing that is
+left from this from this type is
+actually nothing so we get the never
+type on this branch
+now i want to point out that type guards
+in general don't only work on
+variables or parameters you can narrow
+fields so for example if p
+is not the union itself but
+is an object type that has
+a property
+that is a union
+then we can apply the same logic to
+narrow this field of the parameter and
+the same holds true we're narrowing
+p dot foo
+and then on each branch we will get
+access to the specific
+methods and members of the top of the
+type
+and of course on the last branch we
+actually get that p dot who is going to
+be of type never
+now one little thing to be aware of here
+is that when you're narrowing a field
+you're only narrowing the field itself
+you're not narrowing the whole object so
+in this particular case we have p
+the type of p
+is not impacted in any way by either of
+these type guards so p still has a field
+that is string number or boolean
+even though that field when we look at
+it is actually of type string as
+narrowed by the the type guard
+now this quark means that in some cases
+you might get surprising effects so for
+example here
+p dot foo is boolean
+but if we actually try to
+
+to call a function that requires an
+object with a field that is boolean this
+is actually not assignable
+because the type guard only impacts the
+field itself and this is generally true
+of type guards type guards narrow the
+symbol that they have been applied to so
+in this case a field or a variable or a
+parameter
+if we want to narrow the parent object
+we have several options one of them is
+to use a custom time card
+but a better option would actually be to
+use a discriminated union and we will
+look at discriminated unions a bit later
+but first let's look at another type of
+type construct namely a literal type and
+let's start with the motivating question
+namely how can i strictly type the
+alignment property of an element for
+example which can be one of the
+following can either be center left or
+right
+and let's move on to some code
+and see here we have a function
+we call it with alignment and just
+for the sample we're just going to log
+out that alignment
+and right now we see that this is a
+string
+well this is technically correct it
+means that we can pass any number of
+valid
+values in here that are not necessarily
+valid alignments so for example i
+misspelled center i rooted central
+and i said
+except left and right i also use start
+and end which might not be supported
+now
+let's see
+how we can make this
+be typed a little more specific
+and let's start out with a very simple
+observation namely if we actually write
+the constant and we say here
+that it has value right
+we actually see that typescript doesn't
+infer the type string
+for this as it would for for example a
+variable
+right if we say a variable here we would
+see string
+it actually infers the type
+right
+what does this mean well in typescript
+it turns out that any
+value
+any literal value can also be used as a
+type so for example if i were to declare
+a variable right and i will say that
+this has type right
+then the only variable the only value i
+can assign here would be the value right
+if i were to try to assign the value
+left
+well that wasn't wouldn't be correct
+those really literal types by themselves
+are not very interesting
+because what is good having a variable
+that can only ever have one value
+however they truly come into into their
+own if we pair them with unions
+so
+if for example we remove here
+the string type annotation and we say
+that this
+parameter can be either the string
+literal type or it can be the string
+literal type left
+then we start to see that we get errors
+on
+values that are not in this
+in this union
+what we're doing here is basically that
+a string internal type represents a
+value
+a set with a single
+value for example right and we're
+unioning this set with another set that
+also contains a single value namely left
+and we see here that for
+these two calls the texture compiler
+says that this is okay but for all the
+others it says that it's an error and if
+we had to want to add one more we can
+also say
+we support center
+so to recap what are literal types
+well in typescript any value can also be
+a type and this type represents the set
+of value that actually contain only one
+value the value that originated this
+type
+example of string literal types for
+example we can have center right and
+these are string literal types but we
+can also have number literal types for
+example 0 or 100 or boolean literal
+types which can only be true or false
+and we can have the non-literal type and
+the undefined literal type
+now these are most useful when we pair
+them with unions
+so let's see how we can narrow
+unions of literal types as well
+so
+let's see in this function if we use an
+if statement and we say alignment
+equals
+for example center
+then it means that we have narrowed this
+union of literal types and on this
+particular branch
+the only thing that is left is
+the type center so alignment can only be
+center
+on the else branch
+we see that
+alignment
+is what's left of the union string
+right and left
+now typescript is far smart enough to
+also figure out conditions that are more
+complex for example we can use an or
+and we can say here if it's left or
+center or
+right and then
+the union is narrowed as expected
+we can also do something else
+we can actually use a switch statement
+to narrow the union so for example if we
+say switch alignment
+then we can have several cases so for
+example we can have
+in case the variable is center
+and we can do something
+and we can also have the case in which
+it is left
+and the case in which it is
+right
+and this works out great
+now if you have the default if you have
+a default case here well what is left
+so we are narrowing the union we took
+out the case where alignment could be
+center we took out the case where
+alignment could be left we also took out
+the case where alignment could be right
+so what's left if we take out center
+left and right from our
+set that contains only these three
+values what's left the answer is nothing
+there is nothing left in this
+in this set
+so
+what set represents
+what type represents the empty set and
+typescript the answer is
+the never type
+now we can also do here a little trick
+namely we could define a function
+that
+asserts
+the value is never
+which takes a single parameter of type
+never so basically we never expect that
+any value to actually be passed into
+this function and we can do something
+here like for example throw a new error
+
+now if we were to use this
+function in our default
+this all works as expected right there's
+no compilation here the compilation
+error here because typescript will have
+narrowed alignment down to never and
+we're calling a certain ever with a
+value that is never
+but if for example we were to add here
+other cases for example start
+
+then we get an error because now
+alignment
+is no longer
+never it's no longer the empty set it's
+the value start it is uh it has a type
+that can be something so we cannot
+assign what is the empty set to we
+cannot assign this new string literal
+type to the empty set this is not so
+this is not something that is possible
+so now we get an error when we add new
+items to our string literal type union
+and we have to this ensures that all of
+the cases are dealt with as uh as
+expected and we never fall to the
+default branch which
+is an error branch in this case
+so as we saw we can use the quality
+operator or do not equality operator to
+narrow unions and we can also use
+logical operators and they will work
+just as we expect them in type cards we
+can also use switch statements to to
+narrow unions and we also saw a little
+trick how we can ensure that our
+switches are exhaustive
+now i want to talk a little bit about
+strict null checking which is something
+that everybody might be familiar with
+already but let's look at it
+with our new understanding of types
+and namely
+what does strict null checking do what
+does this flag do in typescript well
+what it does act what it does is that
+really simple actually it just carves
+out null and undivided out of other
+types
+so in terms of sets the values null and
+undefined are not part of the set
+described by a type anymore
+now when i said previously that number
+is a set of all floating point numbers
+what i meant was if we don't have strict
+null checking on is that it is the set
+of all possible numbers
+and the values null or undefined
+similarly string is the set of all
+string values or null or undefined
+now if we add strict null checkings if
+we enable this flag
+the number just becomes the set of all
+floating point numbers without null or
+undefined and similarly for string and
+if we want to allow null or undefined we
+can actually union
+these the base types with null or
+undefined to allow in those those values
+back into the sets represented by those
+types
+so let's see how this works in practice
+well if we were to take our previous
+example
+we could say that alignment is
+left right center start
+or we can also add
+undefined as a possible case
+now we see here that our assertion now
+fails because this is not
+this is not any anymore never basically
+on our default branch we were left with
+the value undefined
+so how do we get rid of this well again
+we can use an if and the simplest way to
+take out undefined is to use
+the
+not operator on our variable
+now if not alignment is true the only
+value that could
+that alignment could be here is
+undefined and similarly if we were to
+add back
+null as well
+now if we were to reverse this condition
+if alignment what we would be doing is
+basically eliminate be eliminating
+undefined and null from the set of
+values that alignment can be so what
+we're left with is just the string
+literal types that we saw before
+so we can say if not alignment then we
+do an early return and now we get back
+to a case where we have dealt with all
+the possible possible conditions
+all the possible
+values that alignment could have
+now let's continue looking at an
+interesting case
+so if we have
+two types and we put them in a union
+we see that something strange happens
+if we take the same object literal and
+we try to assign it to doctor
+it fails if we assign it to engineer it
+also fails but it actually succeeds when
+we try to assign it to the union doctor
+or engineer
+so what's happening here we see that the
+object literal we're trying to assign
+has the property is name speciality and
+field
+while doctor only allows name and
+speciality an engineer only allows name
+and field
+by default typescript will actually do
+what is called access property checks if
+we try to assign a new object literal to
+a specific
+to reference of a specific type
+so in the first case it fails because it
+does this excess property checks and its
+field sees that field is is extra and it
+shouldn't be there
+in the second case we see that it fails
+because
+our object literal has speciality and
+engineer doesn't have this field so that
+is also
+a reason for access property checks to
+trigger an error
+but in the third case we see that if we
+try to assign
+the object literal to something that is
+a doctor or person it actually can allow
+any of the fields that are present in
+any of the
+of the constituents of the union
+so this is by design and the simple way
+to get around this is to use a
+discriminated unit
+we will see another solution for this a
+bit later on when we actually don't
+change the structure of the tags but we
+managed to create a condition where
+these
+extra fields are actually
+an error but for now let's see what a
+discriminated union is and how we could
+use it to get around this issue
+so i just want to point out that unions
+only allow
+fields that are present in at least one
+constituent so you can't specify any
+field and the type of it will actually
+be checked so you can't have for example
+a field that is a number when the field
+should be a straight
+but the fact that it does allow extra
+fields is something that might not be
+always in our best interest so how can
+we deal with this well the simple answer
+is to use a discriminated union and what
+is a discriminated union
+this created union is a union that has a
+field that is of a literal type that is
+incompatible between
+different constituents of the union so
+for example here we could add a type
+field
+which
+is this is going to be the of the string
+literal type d and here we have another
+type
+field that is going to be the type e the
+string letter of type e
+so now when we create our
+our doctor we can specify that is
+definitely a doctor the typescript
+compiler doesn't have to guess which one
+of the union constituents we're trying
+to initialize and here we can say it's a
+type e
+type engineer
+so
+now if we try to assign one of these
+object literals to
+our union we see that we either get and
+feel an error on on the field
+or we get an error on speciality
+okay
+great
+now let's see
+something else about these unions
+let's see how we can narrow a
+discriminated union
+so remember when i said that type guards
+don't narrow the type of the parent
+object they only narrow the type of a
+field if they're applied to a field well
+this is true but discriminated unions
+are actually an exception to this rule
+so for example if we narrow p dot type
+
+equals d
+well then we've actually narrowed p
+itself to just be a doctor now it's no
+longer
+uh
+a doctor or an engineer and we have
+access to all the fields and if we have
+a function that only takes a doctor
+
+well we can actually pass
+the
+parameter as a doctor
+so if we have a discriminated union the
+type narrowing actually does narrow the
+whole object itself it doesn't narrow
+just the field and this is a very
+important distinction
+so when are when do we create a
+discriminated union well a discriminated
+union has to have a discriminant
+property which has to be either a union
+of literal types or is a union that
+contains at least one literal type
+and when we narrow
+the discriminant field we actually
+narrow the whole object that that field
+belongs to
+so
+we saw a couple of type guards that we
+can use for
+for variables
+what about unions what about
+discriminated unions
+well we have similar type cards we can
+use the equals and the not equals and
+all of the other type guards win if
+statements
+we can use
+a switch type card
+so for example here we could have used a
+switch and it will work
+
+we can have a case where we have
+doctor and then on this branch
+we will actually have
+a doctor
+
+and we can have another one where we say
+we have type engineer and we can access
+the field of batch engineer and on the
+default branch well we're going to have
+p
+b be typed as never because again we're
+excluding each constituent of the union
+in in turn and then on the default
+branch there's nothing left in this
+in the set described by this type so if
+we took out all the doctors we took out
+all the engineers from our set then
+there's nothing there should be nothing
+left in the set and the same trick of
+asserting never do you ensure that
+unions are exhaustively checked also
+works for
+for discriminated unions
+now before we move on from discriminated
+unions
+i'd like to point out some examples that
+aren't actually discriminated unions so
+for example
+here we have
+these three types
+and the unit here is actually a
+discriminated union because
+the field type is present
+across all union constituents and is of
+a literal type in each one of these
+constituents but let's see what happens
+if we actually change type here to be a
+to be a
+number
+and here to be a
+boolean
+now we can still discriminate doctor we
+can still take it out doctor from the
+union using a simple equals type guard
+so we can say p dot type equals
+d and this still works
+and here inside if we call with doctor
+we can see that p is actually a doctor
+type we haven't had just the type of
+field narrowed down
+now
+what are we left on the with on the l
+side
+well on the l side
+we have a engineer and an artist
+or an artist
+so can we discriminate these two
+members of a union can we
+have on one branch only the engineers
+and on the other branch only the artists
+well we could use a type of type guard
+and say p dot type
+p dot type equals
+number
+now an expectation would be that here we
+would get only
+the engineers because the the field type
+is number only in engineers but
+typescript actually doesn't narrow p
+here to just engineers because this is
+no longer a discriminated union
+right
+neither of the
+uh
+neither of the types of the type field
+is a literal type so we cannot narrow
+the whole object
+so what we're left here is on the if
+side we have p dot p is still an
+engineer or an artist
+the field was narrowed so if we access p
+dot type this is a number
+but the whole object was not narrowed
+and this is an important distinction to
+to keep in mind because discriminated
+unions need a property of a literal type
+in order to narrow the type of the whole
+variable instead of narrowing just
+fields
+let's move on to another topic
+let's see
+how we could do the following
+let's say we have a union and it has
+some string literal numbers and some
+number literal members
+how can we get only the string or only
+the number constituents
+and we're going to look at the at
+another option to do this a bit later
+using conditional types but right now
+let's just use what we already know
+we've heard about unions and we've heard
+about intersections and let's see how we
+could use an intersection to actually do
+this to just get the string constituents
+or the longer constituents
+so let's see if we were to get
+if we were to create a new type
+and let's say we just want the string
+constituents
+how could we do this well if we take
+loose boolean
+and we intersect it with string
+if we hover over string values we see
+that you only get yes or no
+similarly
+if we hover over
+a new intersection that contains number
+instead of string
+we can see that we only get the number
+of values
+but let's
+dive a little bit into how this works
+and more more explicitly why it works
+now one thing we need to keep in mind
+about units and intersections is that
+when typescript sees
+a type that looks something like this it
+will try to apply some rules to it
+the first rule that it will try to apply
+is to move the intersection inside so
+basically what will happen here is that
+typescript will apply the distributive
+property of
+intersections and unions so basically it
+can just move in that intersection with
+string inside of the parenthesis and
+distribute it across each constituent of
+the union so basically this is the first
+step that happens right intersection
+with string goes on the inside
+now some of these intersections
+are uninhabitable by any values so there
+are no possible values
+that could be there so for example zero
+and string there's no value that can be
+both zero and the string and there can
+be no value that is at the same time the
+value one and the string so these reduce
+to never
+okay great
+so now we already have a simpler
+a simpler type
+but what happens next
+well we get subtype reduction
+basically if we have an intersection
+between
+a literal type and its parent type
+well the parent type just goes away
+because if something is has to be yes
+and has to be a string well the only
+string value that can be
+that value is the string yes
+this works in general if you have d
+which is a subset of of b then d and p
+will just result to d if we'll think
+about it in terms of sets this also this
+also works
+so now we have a simpler type yet we
+have yes no
+never and never we have this this union
+but unioning with the empty set
+well that's always going to be a null
+operation it doesn't matter so never is
+just removed from a new union union
+and we get
+the final union yes and no and the same
+logic applies if we intersect with
+straight so this is why when we
+intersect
+with string or intersect with number
+this reduction happens and we actually
+get
+we we actually can filter out just the
+string members or just the number
+members
+so we saw that this trick of
+intersecting with another type to filter
+out the constituent of the union works
+with literal types could it work with
+something more complicated for example
+could it work with a discriminated union
+and the answer is yes we can actually go
+from the person union which is a
+discriminated union to just the doctor
+type without having to rewrite the
+person
+the person union
+and let's see how this could happen
+so here we have our
+person union which has both constituents
+for engineer and for doctor and we would
+like to create a new type let's call it
+doctor that only can stay contains the
+this constituent the constituent with
+type d so how could we go about doing
+that well we could take the person type
+and we could intersect it with a new
+type that has
+a type property that is the string
+literal type d
+now on a set level right if we just
+think of types as sets again
+what
+would be the result of this so we have a
+union between something that has a type
+property that is the string little type
+e that's one set of objects and we have
+another set of objects that has a
+property type that is the literal type d
+well
+if we take the intersection of these
+well it's clear that there are no
+objects in
+this set that are also part of this set
+so this basically can be removed
+now
+following the the rules for reducing
+unions and intersections that we
+previously saw what actually happens
+here so let's just take this
+the type and inline it here and let's
+see how union reduction would happen in
+this case union inverse and intersection
+reduction would happen
+well
+like i said the first step typescript
+does is to actually take this
+intersection and move it
+inside
+so it will distribute over all the union
+constituents
+okay
+but
+let's see what happens on uh on this
+side
+if we were to intersect these two types
+the type of the property type would
+actually be never because there is no
+possible value that can at the same time
+be e and d
+so
+what typescript does it actually reduces
+this to just this simple
+object type
+but since this object type has this
+never in it again it's clear to
+typescript that that exact this is
+actually not instantiable this there is
+no value that could satisfy this type
+so again this reduces to never
+and now based on the same rules
+we saw namely that never being the empty
+set inside the union has no effect this
+is also removed
+and this is why we end up with the type
+that we previously saw with this
+intersection because on this on this
+other side there are no simplifications
+typescript will do
+it could probably simplify
+this intersection because it's already
+contained within within the object type
+but that doesn't currently happen
+so what did you learn from this
+well we learned that if we have two
+object types that have incompatible
+properties and we intersect them this
+means that some of the properties will
+have type never and if some of the
+properties have type never the whole
+object type may be simplified to never
+and we can use this
+and we can use this to our advantage
+when trying to extract certain
+constituents of unions
+let's look at another interesting
+question
+let's say we have a function that takes
+a string parameter
+but the string parameter while it can be
+any string there are certain preferred
+strings
+while we can pass in any hex value
+right we can pass it any string we would
+like to suggest red and blue
+for various reasons we could of course
+add more colors but it would be helpful
+to have a set of values
+that are suggested to the user when they
+try to call this function
+now a naive answer might be let's use
+string or red or blue
+and let's see what happens when we
+actually try to do this
+so
+we have our print color function
+it has a parameter that is string red or
+blue
+and when we try to call this function
+well the parameter appears as only
+string and when we try to use code
+completion there are no suggested values
+why is this
+well the answer has to do with how
+unions and intersection are reduced in
+typescript
+so if we have string or red or blue
+this has a type of subtype reduction
+also applied to it
+so if d is a subset of p
+then if we take the union of these two
+sets p union with d well the result is
+just simply p
+right because we have this parent set
+it contains all the values that d also
+contains so the result is just p
+similarly if we have the union string or
+red or blue
+well red or blue are superfluous they
+don't add anything because string
+already contains the values red and blue
+so there's no reason to specify those
+separately
+so this just reduces to string and we
+can see that in the intellisense
+so what would be the solution here
+well the answer is we need a way to
+prevent typescript from reducing this
+union to just string
+without actually changing the meaning of
+what is present here
+and the way to do this is actually quite
+simple
+is we actually take string
+and we intersect it with the empty
+object type
+now this doesn't actually add a lot of
+information to string
+it doesn't change it in in any
+significant way
+any string will still be compatible
+with string and empty object
+but it does prevent subtype reduction
+typescript will not see that
+these string literal types are actually
+contained within the set described by
+this type
+and the pleasant side effect of this is
+that we actually do get code completion
+now where we actually wanted it to be we
+can pass it any string
+but if we invoke code completion we get
+a list of specific values that we can
+pass into this function
+let's look at another
+application of intersections
+so the question here is how can we
+create a string
+that represents a file path in such a
+way that it's not easy to pass in any
+string to that type
+basically what we want to do is we have
+we want to take something that is
+usually represented as a primitive type
+string or number and we want to ensure
+that it's hard to create on
+a string literal or a number literal
+that is compatible with this new type
+the reason for this is simple we want to
+make sure that whoever actually passes
+in a path to our copy function has
+obtained that path either from a
+trusted source or they have checked the
+fact that that string is actually a path
+so let's see how we can do this
+the way we can do this is we need to
+find a way to ensure that string
+literals which are of type string
+are not compatible with our path type
+how can we do that
+well the answer is simple since
+typescript is a structurally typed
+language it will compare the properties
+of individual
+values to make sure that they are
+compatible
+so if the string literal is missing a
+property that our path type requires
+then we can ensure this incompatibility
+the question is how to do that
+and the simplest way to do it
+is to actually
+intersect string with an object type
+that has
+a property this property will not
+actually be there at runtime it doesn't
+have to be
+it's just there for the type checker so
+we can keep track of what is a path and
+what isn't a path
+so let's call this
+property underscore underscore
+brand
+and
+at first let's just type it as any and
+we will see something better to use here
+in a little while but
+for now this works
+and we can see now that for example our
+source proper our source variable
+is no longer assignable to our copy
+function
+because the type string does not have
+this underscore underscore brand
+property i said we want to ensure that
+people check before they assume that a
+string is actually a path
+so how can we do this
+well the simple answer is we can use a
+function let's call it is path
+that accepts a string
+and returns a boolean
+now inside this function
+you can perform whatever types of checks
+you want and you can say that it will
+return true if
+the string p is indeed a path
+now if we want to use this new function
+we can say if path
+if source is a path
+then
+we perform this copy
+but we still have a problem
+even though inside our is path function
+we performed all the necessary checks
+typescript is not aware that this has
+influenced the type of p
+now we could use a type assertion here
+and we can say source as
+path
+and this works
+and we could apply the same treatment to
+destination
+but type assertions are by definition
+not 100 say because
+as we see here we only check checked
+source we didn't actually check
+destination either it would be great if
+there would be an automatic way for the
+type information to flow from is path to
+the true branch of the if statement
+and the answer is there is such a way
+it's called they're called custom type
+cards
+and instead of using boolean as the
+return type we can use a specialized
+syntax that will let typescript know
+that this function
+changes the type of b
+so we can say here
+p
+is
+path
+if is path returns true basically the
+runtime return type of this function is
+not influenced in any way is path
+returns a boolean
+this specialized syntax will let
+typescript know
+that is path is a custom type card
+namely that it impacts the
+type of its parameter p
+so what can we do now well
+since ispath is a custom type guard we
+can remove the type assertion from
+source
+if we remove it from path that is still
+an error because we didn't actually
+check destination
+complementary to custom type guards
+they're also
+custom assertions
+namely that we can say that
+we have a function
+we can say that it's called assert path
+it also takes
+a string parameter
+and if
+our parameter is not a path
+then we throw
+an error
+
+and if we use this function
+we know that after this function is
+called destination is always a path
+now the typescript compiler doesn't know
+this yet
+but there is a way to let it know
+namely we can add a type annotation here
+and we can say asserts
+p
+is path
+and now
+we have a way to assert that a string is
+actually a path and
+throw a runtime error if it's not
+so these are the two ways we can
+check strings either by
+actually performing a check and using it
+in the conditional all by or by
+asserting it is a path and throwing an
+error if it is not
+now remember when i said the type of
+this property doesn't really matter
+well it doesn't matter for compatibility
+between string and our branded type
+and it doesn't matter for compatibility
+between two paths it does however matter
+if we actually define another type let's
+call it
+globally unique identifier guide now if
+this new type has the same property and
+it's of the same type
+well basically these two types describe
+the same kind of object right they
+describe the same set
+their strings that also have this
+underscore underscore brand property
+so these two sets are basically the same
+set they're the same type essentially
+so this means that for example
+we were to replace here that
+source is actually
+a guide
+well no error will occur because both of
+these
+path and grid are actually the same type
+so our is path check
+will produce a valid
+a valid path
+which is assignable to a good
+so how can we avoid this well the answer
+is to be more specific here and instead
+of any to use a more specific type
+preferably a descriptive one so what we
+could do here is we could replace
+any with the string literal type path
+and we could replace squid with the
+string lateral type
+guide
+and now we actually have this
+incompatibility between good and path
+because the types are different on the
+brand property they're no longer
+compatible between each other and this
+is basically what we wanted
+now there's another solution to this you
+could also use a unique symbol
+i'm not going to show this because you
+can google it it's not that difficult to
+to to change the benefit of that is that
+you have a stronger guarantee that
+nobody else will use the same string as
+you unique symbols can be defined in
+typescript code and typescript will
+ensure that no other
+symbol is compatible
+with
+that particular unique symbol except the
+one that you declared it at that
+specific code location
+so just a short recap what are branded
+types well basically there are primitive
+type that we intersect with an object
+type
+in order to ensure that the primitive
+literals are not directly compatible
+with this new
+branded type
+this can be done either using a string
+literal property it can also be done
+using a unique symbol as the type for
+that property it can also be done using
+any but that exposes you to easy
+aliasing by other types
+what are some other applications well
+we can for example create numbers that
+are guaranteed to be database ids or we
+can create strings that are are
+guaranteed to be guides like we saw in
+our example there are plenty of
+applications where you could use this
+but it's something that you should keep
+in mind and you should keep in your tool
+belt whenever you think you have one
+primitive type that also has an extra
+meaning
+so let's move away from branded types
+and unions and intersections for a while
+and let's look at something else
+let's see if we have an object type
+how can we get a new type that
+represents all of the keys of that
+original type
+so for example we have the person type
+we want to get a union of all possible
+keys for example we want to get the name
+key
+and the h key
+and we want to be able to use this as a
+separate type
+and the answer here is pretty simple
+we have our person
+type defined this can be either type
+alias or an interface it doesn't really
+matter
+and we can use the
+key of operator
+and we can say key of person
+and this will automatically give us a
+new type that only contains name and age
+the two string literal types
+so for example if we want to define here
+a new variable
+of type person key
+we see that the only two values
+assignable are the string h and the
+string name
+because
+person keys only contains these two
+string literal types
+okay
+let's see another type operator namely
+the type of operator
+now
+what does this help us do so the
+motivating question here is okay let's
+say we have defined a variable we
+assigned an object literal to it and we
+let the typescript compiler infer
+exactly what the type of that
+of that variable is going to be
+now the question is how can we get the
+type of this
+variable
+we want to get the type of the n
+variable and then use it for something
+else without having to rewrite the type
+again
+and the answer is we can use the type of
+operator to achieve this so here if we
+say
+type we're creating a new type area
+alias
+and we say this is equal to type of
+and
+and if we hover over this we see that it
+gives us exactly the type we wanted it
+gives us a type with the same properties
+as
+f as the variable n and with the
+appropriate types for each property
+now i want to stress that
+key of
+will always act on
+a type right so we say key of person and
+here person has to be a type if that can
+be a type alias it can be an interface
+it can be a tuple type it can be set any
+type and then organ type expression but
+it has to be a type
+the type of operator in contrast acts
+on variables so you have to pass it here
+a variable that is in scope for example
+the m variable in this case
+now i want i also want to stress that
+this type of operator although it shares
+its name with the javascript type of
+operator it is different from it
+now the javascript type of operator will
+return a string that represents the
+runtime type of the variable for example
+it could return string or object or
+whatever else
+however the type type of operator will
+return as we saw
+the type of whatever variable is given
+to it the typescript type of that
+variable
+so that is very different and we can
+differentiate between the two given the
+context in which they're used
+if we have the type of operator that's
+used in an expression in a value that
+will appear at runtime and will be
+evaluated at runtime that means that the
+javascript version so if you say
+for example if
+type of and
+equals
+object
+the type of operator we've used here is
+actually the javascript version of this
+type of operator
+well if we use type of insider type or a
+type annotation
+that means we're using the typescript
+type of operator
+which gives us the full typescript type
+of any variable
+let's look at another question
+if we already have a type let's call it
+books
+how can we get
+the type that represents a union of all
+property types inside of that original
+type so for example we would like to
+define a type let's call it value of
+and we would like this type to return if
+we pass in books
+we would like it to return string or
+number because those are the only types
+that are possible for keys of
+of the type book
+before we can answer this though let's
+look at the simpler
+question let's see how we can just get
+the type of a specific property let's
+say we want to get the type of pages
+from books how could we go about doing
+that
+and the answer is we can use what is
+called an index type
+so we can create a new type
+
+let's call it type of pages and we're
+going to say that it is equal to book
+and we can
+use the indexing operator and pass in
+here
+any valid
+literal string literal type that can
+index book
+so for example we could pass in pages
+and now we can see that our new type is
+the type number same as the pages
+type
+if we change this to bigint
+then our new type would also be big end
+because we're not
+writing out number we're referencing the
+type that is defined inside books for
+pages
+okay
+so now we've seen how we can use an
+index type
+so how what does it look like well it
+has the form t of k
+where t can be any type expression it
+can be book it can be type of m it can
+be basically any type or type expression
+that you can write in typescript
+k
+has to be a valid type expression that
+can index d so for example for book that
+would be the string literal
+string little type name or for arrays it
+could be number
+now one interesting property of the
+indexing operation
+is that it distributes over k if k is a
+union
+so what does this mean
+if we have an interesting operation that
+ha that
+is indexing with a union so for example
+we have t of k1 or k2 or k
+dot dot kn
+well this actually becomes t of k1 t of
+k2
+dot dot key of kn
+so what practical applications are are
+there to this
+well it actually comes as the answer to
+our original question how can we get all
+the values inside inside this type
+and the answer is we can use
+an indexing operation that indexes over
+all the properties of book so for
+example we have we can pass in here
+pages and we can pass in font size
+and we can pass in
+name
+and we can pass in
+author
+now that was pretty tedious to type not
+to mention the fact that in the future
+if this changes were all out of luck and
+nobody will add the new properties to
+our
+union
+what can we use that we already learned
+to actually get this union without
+having to type it out well the answer is
+simple we can use key of
+book
+which will automatically give us a union
+of all keys of the book type
+so now we have our new type that
+represents string or number or begin
+which are the properties which are the
+types of the properties from our
+from our original type
+now we can make this generic if we want
+let's say we call it values
+of
+and instead of using
+book
+we use a generic type parameter you can
+see think of these as
+parameters two types they're or the same
+as parameter to functions they will be
+replaced with whatever we're passing in
+so if we say value of t then we
+index t
+with whatever the keys of t are
+and now if we want the type of books
+the values of books we can say value of
+book
+and we get them
+[Music]
+just as we did before
+now there is value in defining this
+value of type even though the definition
+is pretty small if t is actually a more
+complicated type expression it might be
+difficult to have to write it twice both
+in
+the index and the
+the type that is being indexed and in
+the key of expression
+but
+i generally use this simpler version if
+we're just talking about indexing of a
+named type so i don't usually bother
+with defining this alias but that's
+definitely your choice and you can
+define it in your team
+let's style of these operators together
+and see how we can use them in a more
+complicated example
+let's see how we can create a function
+that safely gets the values from a
+specific constant so for example we
+could create our constant let's call it
+environment it would have a server
+a property and a port property and we
+want to get
+we can want to create a function that
+accepts one of these keys either server
+or port and returns the specific value
+now the reasons for doing this could be
+multiple we could want to provide some
+defaults or we want to make sure that we
+can manipulate those values before we
+actually give them to whoever is using
+them but we want to be able to do this
+in a safe way so when we pass in server
+ideally we want to get back string and
+when we pass in port ideally we want to
+get back a number
+so let's move on to code
+here we have our save getter function
+in its first form it's actually not very
+safe
+here we see first of all it allows in
+any string even a string that has been
+misspelled which is a problem
+and we also see that it returns any so
+all of our
+results are typed as any and this is
+definitely not what we want
+so how can we improve this the first
+improvement we can make to this function
+is to take into account that here s
+can't be any string it must obligatory
+be
+a key
+of this and constant so how can we get
+the keys of the end constant
+well that's simple we can use key of
+type of
+f
+remember when i said that
+kiov accepts any valid type expression
+well it we can't say key of type of m
+we're just building one on top of the
+other one operator on top of the other
+and what about the return type well any
+again is definitely not the right
+type here
+what we actually want to say is that
+okay maybe a better approximation of
+this would be any possible value that
+appears inside this n
+variable so we can say type of n
+key of type of n
+so is this better well the first
+error appears here right we get an error
+for the misspelled
+variable which is great it's exactly
+what we wanted
+now server and port are no longer any
+which is great
+they're already string or number which
+is definitely a narrower type so it's
+better but it's still not great this
+will create a lot of developer friction
+because people will have to do some sort
+of time guarding to get their
+their strings or their numbers when they
+know that the the alternate of that type
+guard can never actually happen
+so how can we improve this further still
+well for that we need to
+make a couple of changes to our get
+function
+but before let before that let's do a
+bit of housekeeping first
+while we can use type of directly it's a
+bit tedious to keep typing it out so i'm
+just going to create a type alias to put
+that type into it
+to put the type of the environment
+constant into it
+and this will simplify a bit of what we
+have to write so here we can change it
+to key of n
+and
+we can use here this new type alias as
+well
+so how can we improve this
+well we need to add what is called a
+generic type parameter to our function
+so type generic type parameters are
+added using the angular brackets right
+after the function name
+and we can say that we are adding a type
+parameter k
+and this type parameter k
+will be used as the type for
+the the s variable
+now why did i do this well usually the
+types of parameters
+are defined
+at the moment when you define your
+function
+and that is their final type
+with generic functions we can actually
+defer the decision as to exactly what
+type a parameter will have until that
+function gets invoked until it's call
+site
+so for example here
+we can see that for
+get value
+the type k was inferred as string
+why
+because
+when we when we called
+getvalue we passed in a string here so
+that's what type that's what typescript
+decided to pass in
+now we could for example also call
+getvalue with a number
+that will also work
+and then k will be a number
+but we don't want to accept any k here
+right we want to be more specific than
+that because we already had a better
+version of this that errored on this
+misspelled word we want to say that k
+must be one of the strings of our
+environment constant
+to do that we can add here a clause
+that says k must extend
+
+key of
+environment
+so all this me what this means is that k
+must be one of the the following server
+or port
+what happens now well we see something
+interesting here
+so this one is an error again which is
+great because that's what we wanted
+but now we see that
+k is no longer inferred to string when
+we pass in a string
+because it can't be any string it has to
+be either server or port
+so
+typescript will actually infer 4k
+the string literal type server which is
+the what we passed in as an argument
+for port
+it will infer k as port
+so great
+now at call site
+we have for
+4k a very specific
+type
+we have either server or port and that
+is the the type
+of k for that particular call site now
+what can we do with it with k here
+well
+we can index
+like i said with any valid type
+expression
+that can be used as an index to n
+okay
+well we can index with k can't we i mean
+k
+must
+be
+a subtype of key of n so it can either
+be the union server or port or it can be
+server or it can be port it can't be
+anything else so definitely k can be
+used to index and
+so
+we can switch here
+our indexing expression to be
+m of k
+so let's see what happens now
+well since at this call site
+k was server
+m of server evaluated the string
+at the other call site
+since k was port
+m
+of port evaluated to number
+so now we've managed to satisfy all of
+the constraints that we placed on this
+function namely we wanted it to error
+out on
+mistaken
+properties
+and we wanted to get the correct type
+for each property in our original
+constant
+so i think that we managed to do quite a
+good job here
+and i'm pretty happy with the results
+hope you guys are too so let's shift
+gears a little bit and let's look at
+some types that are defined in the
+typescript standard library and all of
+these are going to be map types and
+we're going to see exactly what that
+means in a second but first let's take
+them at face value and see exactly what
+they do
+now we're going to create a class we're
+going to call it form data and it's
+going to abstract
+holding
+the data for a form
+and we're going to track validity and
+we're going to have methods that get
+data we're going to have methods that
+get some of the data and also allow us
+to set the data in this form
+now this is obviously a toy example but
+it's going to demonstrate some of the
+behaviors that are useful and can be
+and can be solved by maps types
+so first let's understand exactly how
+this class works so we have a type for
+example person and we're creating a new
+form data of that person
+so this is a form that is going to hold
+data for person and we initialize it
+with some
+with some data
+so the first method we're going to look
+at is this set sum method
+which currently takes a parameter that
+is of type t so for example here set sum
+would actually have to take a person
+but what setsum actually wants to do is
+to allow us to set some of the fields of
+person we definitely don't want to have
+to specify all of the fields that are
+required in person we don't want to have
+to specify name if we're only we only
+want to set for example age and maybe
+for example company
+now we actually what we actually need
+here is a new
+type let's call it some person where all
+of these properties are optional
+now we could do something like this we
+could spell out this type and we could
+also pass it as a type parameter and for
+example say here that okay you must
+manually specify a new
+an extra type and we'll call it p
+partial and take this new type and use
+it as the parameter for some fields and
+this would actually work
+but the problem is that it is very
+tedious to write the this new type and
+it's very error problem we could mispost
+some of the the names or we could forget
+to add them when we modify person
+so how does typescript solve this well
+it allows us to
+use a predefined type
+called partial
+and what partial does is it creates a
+new type with the same properties but
+with all properties being marked as
+optional
+so what we can do here instead of
+spelling out this type we can say
+partial of person
+so now if we hover over some person we
+see that all of the properties
+are now optional name is optional age is
+optional and also company is optional
+which was optional before as well so now
+we actually
+have this type created for us
+but this also means that we don't
+actually need to specify this type
+this type parameter inside form data we
+can actually just use
+partial
+on our type parameter so we avoid having
+this need to specify more type
+parameters than is necessary
+so now we have our set sum method
+correctly typed in the sense that it
+will take
+an object that can that will contain
+some of the fields of our original
+person type
+and we get all of the the type checking
+for example we cannot
+misspell a name and we and the types
+of the
+of the fields must be of the same type
+as in our original person type
+
+moving on we see here the get validity
+method and the is valid by field
+field
+and we see here that these are typed as
+any
+and the question is what exactly would
+be a good type here
+well the type that would be returned
+here should have all the keys inside of
+t
+but if they should be typed as boolean
+so the field is valid or invalid
+so what would this type type look like
+well it would be a type
+let's call it valid
+person
+and it would basically have
+all the same fields as our person type
+except all of those
+all of the types would be changed to
+boolean
+and actually we don't want company to be
+partial we would all want all of them to
+be present because the state
+of validity should always be there
+so how can we do this
+well
+the answer is that typescript offers a
+new another predefined type called
+record
+and what record does
+is that it takes
+a union of keys and the type
+and it creates a new type with all of
+those keys
+and the type of the keys is going to be
+the type that was passed to the second
+parameter so we can have record
+of
+name
+and boolean
+and this is going to create a new type
+that is going to contain
+this single field
+now if you want to create more than one
+field we can just pass in a union and we
+can say we want here age as well
+and we also want
+company
+and now we have the exact type that we
+want right we have a type that contains
+name which is boolean age which is also
+boolean and company which is also
+boolean
+now the last change we should make is
+that we don't want to have to spell out
+all of the fields and in this case since
+we're just trying to have the same keys
+as another type we could just use our
+key of operator on person
+and we are going to get the type the
+same type that contains all of the
+fields only they're marked as only their
+type is boolean
+we can also use this type
+on our type parameter
+so we can say that we want a record
+that will contain all of the keys
+that are present in t
+only they're all typed as boolean
+and we're going to
+use this as the return type for our get
+validity function as well
+okay
+so now our get validity type function is
+typed correctly and we see here that we
+have an error because we were trying to
+access a field that wasn't there and we
+can see that
+the new
+return type of get validity actually
+has only the fields that we are
+interested in and we know that it
+actually exists on our
+on our return value
+so this was the second
+map type we saw record it creates a type
+with a given set of properties all of
+the same type
+now the third type we're going to look
+at is read only and this creates a type
+with the same structure as a given type
+but with all the properties marked as
+read only
+so
+if we were to take our get data method
+we want this to actually return the same
+type t but we want all of the properties
+marked as read only so for example this
+assignment here should not be possible
+so like i said if we are working to take
+our read-only type
+it functions very similar to partial
+namely it we can just say read only
+of person
+and this is going to create a read-only
+person and if we hover over this type we
+will see that it has the same structure
+as person only with the read-only
+modifier added
+we can use this of course on the type
+parameter
+and
+we're going to
+say that getdata returns a read-only
+version of the data and then when this
+assignment
+is attempted it will actually actually
+raise an error
+when
+at compile time
+
+the fourth map type we're going to look
+at is required which again creates a
+type with the same structure as the
+original type but with all properties
+marked as required
+so for example here when we have our set
+all method we want to
+be forced to provide values for all of
+the fields including those that are
+optional in the in the base type for
+example
+in person
+and again it functions quite similar to
+the other ones to partial and to read
+only
+and we see here that if we
+apply it to our person type
+we get a type that has the same
+structure only company here is not
+marked as optional anymore it is
+required
+and
+if we are to use this on our type
+parameter
+again
+when we try to call the set all method
+we are forced to specify company as well
+
+now the last map type we're going to
+look at is pick
+and what pic does it it actually picks a
+set of properties from a given type
+and let's take a look at at one at using
+it simply in types
+and let's say that we want to pick from
+person
+name
+so we have pick
+the second the first type parameter is
+the type we're picking from
+and then we can specify a field
+so for example in this case p is going
+to be an object type that only contains
+name
+now if we want to pick more fields we
+can just add them in a union
+so we can say we pick name and age for
+example
+or name and company
+now what's interesting to note is that
+pick will preserve the shape
+and the structure
+of the original type so for example if
+the original type had a field that was
+optional it will be optional in the pic
+result if the field was also for example
+marked as read only
+then p is also going to keep this
+read-only modifier
+so it is structure preserving
+now how can we use this
+pic type in our form data class well we
+have this getsome
+method that is going to take some of the
+it's going to take an array of keys
+and it's going to create a new object
+that contains only those keys
+and we would like to be able to use this
+method
+by specifying some
+some keys for example we would like to
+specify age and company but not name and
+we'd like o to contain only
+those fields now right now o is typed as
+t which means it will
+falsely claim that it returns also the
+name when that property is actually
+never present on the result
+so how can we do well we we're going to
+need to use pick to pick out only
+the fields that were passed it but
+similarly to how our
+example of a save getter function needed
+to know exactly at call site
+what fields were passed in
+similarly this getsome method also needs
+to know at call site what actual fields
+were were passed it
+we're going to again use a type
+parameter k
+which we're going to say it extends key
+of t
+so k must be one of the keys of t
+and this type parameter is going to be
+used as
+the
+in the the type for key so we're going
+to be passing an array of whatever this
+k type is
+so now when get sum is called here
+k is going to be inferred to whatever
+fields we actually passed in
+to the array in this case it's going to
+contain age and company
+so now that we have this information at
+call site and for example and if we
+were to pass in different fields
+k
+would be different
+for example here we have on k is going
+to be name and h
+we can use big in conjunction with k
+so we can say we're picking from t
+whatever fields were specified
+in the k type parameter
+so for the first call
+since k is agent company
+we're going to get a return type that is
+pick of person and age or company
+so this means that
+this type
+so this means that o
+is going to have
+the age property is going to have the
+the company property but it's not going
+to have the name property
+and similarly o2
+is going to have the name and h property
+but not the company property
+so i've kept referring to these types as
+mapped types but what exactly does that
+mean what makes them mapped types well
+if we go to definition on one of these
+types we can see how they look inside
+the standard typescript library
+now you'll see that they share a syntax
+that we're going to delve in just a
+little bit later
+but first let's look at the motivating
+example let's see
+something that we could not solve
+just using these predefined map types
+and the question that i post to is very
+simple
+let's say we have an existing type
+that contains keys and for each key we
+have a function that returns something
+and we want to create a new type
+with the same keys
+but for each key we have the return type
+of the original function instead of the
+function itself
+so we're going to need an extra type
+here we're going to need return type
+which is a conditional type which we'll
+go in a bit later but for now return
+type just takes a function type and
+returns the
+the return type so for example for
+server since we have here
+string a function that returns string
+return type would just return
+string from from this
+function type
+so we're going to need a custom maps
+type
+together with this return type
+but first let's understand
+a little bit the anatomy of
+of a mapped type
+and we're going to start by looking at
+record and let's just take this record
+and see what it does now let's remove
+some of these type parameters because i
+think they only add noise for now
+and let's look at the basic anatomy of a
+mapped type
+so we have p in
+and this in is going to be
+either a single string literal type
+or it's going to be a union of
+keys for our resulting type let's start
+off simple let's say that
+we have p in just name
+and here we can use whatever type we
+want to give that property so for
+example here we could say boolean
+so now what have we created here well
+we've created a new type
+that has a single property called name
+and the type of that property is going
+to be boolean
+now the magic happens if instead of just
+a single literal type here we have
+a union passed it so for example here we
+say name or age
+or
+company
+now what's going to happen well p is
+going to take each value in this
+union and is going to create a new type
+for which the property name is going to
+be
+whatever
+constituent of the union is being dealt
+with at the time and the type is going
+to be boolean
+so here we have a record which is going
+to contain
+name age and company
+
+now if we want to create a new type
+based on an existing type
+we can specify here that we're not going
+to iterate over an arbitrary union we're
+going to map over
+key of
+environment getters for example
+so what this means is that we're going
+that p is going to take all of the
+values in key of
+environment getters
+and it's going to assign for each type
+of boolean so
+we've managed to create a type with the
+same
+members as our getter
+type
+but now i ask you a question
+what is p
+is this some magic syntax well it there
+is a magic syntax here map types have a
+their own dedicated syntax
+but what is p
+does it have to be named p
+the answer is no this can be any letter
+of the alphabet you can choose k or p or
+u or t or whatever but it is a type
+parameter
+so basically what we're introducing here
+is a new type parameter you can think of
+p as the
+as the variable in a for loop so in a
+for loop we take each value inside of a
+of an array for example a for overloop
+here similarly p is going to be that
+variable that takes each value inside of
+our
+inside of our union of
+of properties
+so p is going is just a type parameter
+and consequently it is just a type and
+it can be used as a type anywhere that a
+type can be used
+so for example if we remove here boolean
+and we specify p
+is this valid
+well yes
+b is just a type
+why wouldn't it be valid
+what do we get here
+well we get this interesting
+type which actually just has
+the keys
+and each key must be typed as the same
+as its as its name
+so for example if we were to create an
+object here which we're going to type
+with this
+custom record type we're creating
+for port we're going to have to specify
+the same value port and for server we're
+going to have to specify the same value
+server
+okay that's interesting maybe not
+particularly useful although it could be
+in some cases
+but
+what else can we do with p
+well
+we can use it as a type to index into m
+getters
+so let's do that
+what do we get now
+well we get a type
+that looks exactly as
+and getters did
+each key is typed as in the original
+type
+why is this well p is first of all going
+to be server
+so
+when typing the server key
+what we're going to get here is and
+getters of server which is going to
+resolve to this type
+then p is going to be port
+and and getters of port is just going to
+resolve to this type which will be the
+type for the port field
+so this is what happened each property
+got resolved to the same type in the
+original type
+but now that we have access to this
+mechanism we can do more interesting
+things here right so instead of just
+preserving the exact same structure we
+can start to intervene a little bit
+and like i said return type
+is just a type that returns
+
+returns the return type of a given
+function type so for example here if we
+pass in a function type
+and it returns
+a string
+what we get in r is going to be
+that return time string
+so if we apply this to m getters
+of p
+what's going to happen is we get
+our desired type we get server that has
+type string and port that has type
+number
+so we did it we've basically created
+this type
+without having to specify everything
+again right we've created our m type
+using this custom maps type
+we could even generalize this if we want
+so we could call it
+all return types
+we could say we are passing in a t
+and we're iterating
+over the keys of this type
+and we're using return type for
+on t of b
+now the problem is that since t is just
+any type
+t of t might not be a function
+and return type requires a function
+so what we could do here is we can say
+that this type must extend
+something
+that if it's indexable with any string
+
+the
+type of that indexing operation is going
+to be
+a function that returns anything
+takes any number of parameters and
+returns anything
+so this works
+and then we can type our environment as
+just being
+all return types of and getters
+and this also leads to the same result
+so let's recap a little bit what we've
+learned about map types so far
+the basic anatomy of a map type
+you can see here on screen
+and
+the first part of it is this
+p in k which basically means taking each
+p
+in the union k
+k is usually a union that will contain
+valid types that represent property
+names so it can be
+string numbers or unique symbols
+and p will be each constituent of the
+union in turn so first of all it will be
+name then it will be fields then it will
+be whatever else is in the union
+p is a new type parameter and can be
+used anywhere a type would be used
+inside the type expression u
+so what is u
+u is the type of the property p so for
+each
+constituent in the union k
+which is going to be name and h and then
+each one of these is going to get its
+own type
+now you can be any type expression it
+can be
+a constant type expression such as a
+string a number a type of n or it can be
+something that depends on p
+so for example we could have just b as a
+type we could have an indexing operation
+and we will see later we could also have
+conditional types here in this
+expression
+remember when i said that some map types
+preserve structure
+for example i said that pic
+will preserve the structure of the type
+it's picking from
+so for example here if we have o dot
+company company is optional why is it
+optional well it's optional because it
+was picked from the person type
+whose company property is optional
+so the resulting picked type will also
+have a property that is optional
+while age age isn't optional
+because age was not optional in the
+original type
+so that's pretty interesting how does
+this structure preservation happen
+so let's see is the type we define
+structure preserving
+now i have here a simpler example not
+the generic version of the type we wrote
+before
+and let's see if this end type is going
+to have the same modifiers as the type
+in and getters
+if we add here the read-only modifier
+we see that yes indeed
+our map type the map type we wrote here
+is actually structure preserving because
+we were mapping over the keys of end
+getter and we ended up with a new type
+that has the read-only modifier on the
+same properties as in the original type
+so why does this happen
+so let's see based on what we know how
+typescript would evaluate this type this
+mapped type
+well
+here inside our
+map type
+we have in kiev and getters
+well what does this resolve to well it
+resolved it resolves to
+the union of string literal type server
+or port
+and if we do this we see that things
+mostly work the same
+namely we don't get errors on our
+indexing operations and the type we get
+has the same two properties
+with the same types
+but the surprise here is that the
+redoing modifier actually disappeared
+so the fact that we were mapping over
+key of type actually turns out to be
+important it's not just the fact that
+this map type
+can be composed from the parts it's made
+it's not just the sum of its parts
+typescript actually detects here the
+specialized pattern in which we're
+mapping over key of type
+and it will say that okay since you're
+mapping over the keys of this given type
+i'm going to preserve all the modifiers
+that i find in this type for each one of
+the properties
+so this is why we end up with this
+read-only modifier here
+now there's actually another pattern
+that could be used for homomorphic map
+types for these map types that preserve
+structure namely instead of mapping over
+the keys of a type
+we could be mapping over a type
+parameter which is constrained to have
+to be the keys of a given type and again
+that given type will have its modifiers
+preserved and this is actually what pic
+does so if you look at pick
+we see that the mapping operation
+happens over k
+where k is a type parameter
+that extends key of t so it must be one
+of the keys of the type t
+so this means we since we have this
+pattern
+we will have the preservation of
+modifiers that come from this type t
+whatever that type happens to be
+let's see how we could play around with
+these modifiers
+so we saw that
+by default
+if we use key of type then the type
+has its modifiers preserved
+but what if we explicitly want to add
+modifiers what if we want to make all
+properties read only well then we could
+just add the read-only modifier in front
+of this mapping expression
+what if we want to make all of the
+properties optional
+well we could add the question mark
+modifier after the mapping expression
+basically the same as we would for a
+regular property
+now we have a
+map type that produces read-only and
+optional properties
+but what if we actually want to remove a
+modifier
+what can we do then
+and let's
+have a look at the function we have here
+it's called get values and it takes an
+amp getter
+which will provide values for our
+environment but let's say that some of
+the properties on this m getters type
+are optional and then we also want to
+provide some defaults but we want to
+make sure that all keys have a default
+value
+so basically if we want to call
+getvalues
+we can specify here the getter for the
+port
+but we don't have to specify the server
+because it's optional
+we do however have to specify the
+default values for both port
+but we will also want to make sure that
+server is not omitted
+right now since modifiers are preserved
+in our m-type server is optional
+so how can we remove this optionality
+well
+we can add
+this syntax
+we can add minus question mark
+all right question mark as the modifier
+minus question mark removes the modifier
+we could also use plus
+for adding the the modifier but it's not
+strictly necessary just using the simple
+question mark also as the modifier but
+to remove it we have to use minus
+question mark
+we could also remove read-only modifiers
+
+by using minus
+read-only and this will remove the the
+read-only modifier as well
+so now we see that this
+server property is required in our m
+type which is what we wanted
+but we have another problem here and
+this is not really necessary to map
+types but
+we have an error here when trying to map
+server
+why do i say when we're trying to map
+server where well the problem is that
+there is a property
+namely this server property which isn't
+just a function it's a union of function
+and undefined because that's one of the
+side effects of the
+optionality modifier to add
+undefined to the type that the property
+originally was
+how can we remove this undefined because
+we don't want it in this case the simple
+answer is we have a predefined type
+called non-nullable
+which will actually take
+a union
+and it will remove all
+undefined and nulls from that union so
+for example if we apply non-nullable to
+this type
+we get back just
+the non-nullable parts in this case the
+string signature
+so we can use non-nullable on
+our m getters of b
+to remove any
+undefined values that may be present in
+our
+in our types
+and now we see that we no longer have an
+error and the type of server is also
+correct just as a parting thought i want
+to stress the
+syntactic nature of these homomorphic
+mapped types of this behavior namely
+that we must map over key of
+type it's not enough for the type we're
+mapping over to be some alias for key of
+another type so for example if we were
+to add
+another type let's call it k and this
+would be equal to key of m getters and
+we were to use this type in our mapping
+then
+then modifiers would actually not be
+preserved because m is no longer a
+homomorphic map type it doesn't preserve
+structure because it's not mapping over
+key of type so quick recap of what we
+saw we saw that some map types preserve
+structure and these are called
+homomorphic map types
+and that they are dependent on the
+syntax we use for mapping
+if we map over key of t
+that means that
+where we preserve the modifiers of t
+or if we map over a type parameter where
+the type parameter is constrained to be
+key of t
+then again the type
+then again the modifiers of that type
+are preserved
+we can also manipulate modifiers we can
+add the read-only modifier by specifying
+it in front of the mapping expression
+we can remove it by using minus
+read-only in front of that mapping
+expression
+we can also add the
+optional modifier by adding a question
+mark after the mapping expression and we
+can remove it by by using minus question
+mark
+so let's move on to what everybody is
+here for namely conditional types
+now i know that it's a bit late into
+this workshop we finally got to them
+conditional types
+the reason that i went through a lot of
+all of the other types is that
+conditional types are nowhere nearly
+half as interesting if we don't
+understand all of the other type that
+types that we can use in typescript and
+all of the
+stuff about unions and intersections and
+map types these are all important for us
+to get the full experience of
+conditional types
+so let's have a look and let's try to
+see exactly what conditional types are
+and
+for that i want to start off with a very
+simple motivating question how can we
+correctly type a function that returns
+either string or number based on the on
+the type of a passed in parameter so
+basically we have this get sample data
+function and if we pass in string we get
+a string and if we pass in number we get
+a number
+and
+there could be another option to this we
+could use overloads but let's try to
+solve this using conditional types
+so what are conditional types well in
+typescript we can make decisions as to
+what the type
+should be based on other types so for
+example
+let's have a simple type
+and let's say that
+if
+one extends
+string
+then we want the type yes
+otherwise we want to type no
+so obviously in this case one
+does not extend string
+so the result is going to be no
+now if here we were to have a string
+literal type
+then indeed one would be extending
+string
+so the result of this would be s
+so basically when this type gets
+resolved
+we are left with either y or n depending
+on
+if this expression is true if this
+extends expression is true
+now i want to point out that there is no
+other operator here you can only use
+extents between types so there's only
+this type of relationship that can be
+expressed between the type on the left
+hand side and type on the right hand
+side
+and then this condition is followed by a
+question mark and by the two alternates
+what if the condition is true and what
+if the condition is false very similar
+basically to a turner ternary operator
+in javascript
+okay
+i know what you're saying this doesn't
+seem particularly useful
+okay
+i always know if one extends string or
+if the number one extends straight
+what's this useful for
+well this becomes more useful
+when you start to pair it with type
+parameters
+so let's see how we can express the
+relationship between input type and
+output type using a conditional type
+so let's say we have a new type
+let's say it's called we call it return
+type of k
+and
+if k extends
+string
+then we're going to return
+string
+if k is not the string neutral type
+string we're going to return
+number
+and now if we were to
+instantiate this type
+for example red
+of
+string
+or red of number
+we're going to see that
+r1 is going to be string and r2 is going
+to be number
+so how can we use this in the function
+so the first thing we actually have to
+do is to actually capture the value of
+the argument in a type parameter
+so right now
+if we were to say get sample data of
+string or get sample data of number
+the type of this value parameter is
+always the same it's always string or
+number what we want to do is at each
+call site we want to capture whether
+we're passing in the type string or the
+type num
+and as we saw this in previous examples
+we can do this using a conditional type
+and we can say that k
+extends string or number
+
+and then this
+parameter
+will be of type k
+and now typescript will actually capture
+the actual type of the argument that is
+passed it so in the first case k is
+going to be string and in the second
+case k is going to be
+number
+and now that we have the actual type of
+the argument that's being passed in it's
+not no longer it's no longer just string
+or number
+we can use this in the return type
+so we can say here we're returning red
+of
+whatever k is
+and now if we go to our call sites we
+see that the first call is going to
+return
+a string
+and the second call is going to return a
+number
+now
+you notice here that we have an error
+this is because
+generally when we use conditional types
+in generic functions
+typescript cannot really tell
+how that conditional type is going to be
+instantiated so it can't actually check
+this expression it cannot check that
+this expression will actually conform to
+the signature of this type of this
+function that it will actually be okay
+but usually what i try to do is not
+worry too much about the implementation
+if i use conditional types i expect to
+find some type assertions in the
+implementation of such a function
+and i don't mind that
+what's important is that the call site
+is correctly typed because
+probably if you're writing a function
+more people are going to call that
+function that are going to be writing
+that function or at least hopefully
+that's the way it's going to be
+
+so
+this is what a conditional type is it's
+a way to make a decision in code based
+on another type
+what's the anatomy of a conditional type
+well
+basically the syntax is similar to the
+conditional operator in javascript
+we can test any type then we have to
+follow it by the extends operator no
+other operator is possible
+and then a potential base type or the
+type we want to test
+and then question mark and we have the
+two branches if true and if false
+
+so now that we have a grasp of the
+basics of conditional types
+let's see if we can
+do something more complicated with them
+let's see how can we get the properties
+of a specific type from another given
+type so for example if we have
+the book type we want to only get keys
+that have
+type string so for example in this case
+name and author
+so let's see how we could code this
+now i'm going to present two versions of
+this filtering type because typescript
+recently added some syntax that is
+useful in when doing this filtering but
+first we're going to look at the old way
+of doing it just so we get a handle of
+conditional types a little bit better
+so let's think a little bit about what
+we want to do here
+we want to go through all of the
+properties in this type
+and in each
+case we want to decide if that
+particular property should stay in the
+result or it should not stay in the
+result
+so let's see
+what this sounds like well the going
+over each property in
+a type in an object type well that
+sounds like a map type doesn't it
+and the second part with we want to make
+a decision
+for each property based on its type
+whether it should stay in the result or
+not
+that sounds like a conditional type
+so let's start out with the first part
+with going over
+the keys of the book type
+so we can create a new map type we can
+say k in
+key of book
+and what should we say the property of
+type
+and what should we say that the property
+k is typed as
+well we really don't necessarily care
+about
+these types
+we want to put them in the condition but
+they're definitely not going to be part
+of the result
+so let's use here k
+as the type for the property and
+remember we saw this type back when we
+introduced mapped types
+and we see that this is actually a type
+
+that for each property is going to have
+the same
+type okay as the name of that now what
+can we do further here well if we want
+to get back for example to just the keys
+of book
+we could index here
+by key of book
+now this is obviously a very roundabout
+way of getting the keys
+but it is a way that does produce the
+same result as a simple key of book
+the trick is that we have control over
+the the types of the properties here we
+don't need to always specify k
+so let's remove this indexing operation
+and let's see what we can do here except
+just specify k
+if
+books
+of k
+extend
+string
+then indeed we preserve k
+otherwise we return the never
+so what happens now
+well
+for some of these properties
+the type is the same as the
+the name of the property
+but for the ones that we're not
+interested in
+the type of these properties is never
+so now if we have a union of all
+the property value types
+what we will end up is a unit between
+never never name and author
+and as we saw never is the empty set it
+doesn't have any influence on a union
+operation
+so what we're actually going to be left
+with is name and author which is
+actually what we're interested in
+so we can just take here
+key of
+book
+so now we have this type
+that filtered out
+keys based on the type
+of those properties
+can we make it generic well of course we
+can
+let's call it filter
+keys
+let's say they take a type t and the
+value type that we're interested in and
+we can map over t
+and we can say here if
+t of k extends
+not string but the value or in the type
+we're interested in
+and we index here with
+key of t and basically now we've
+converted our type to this generic form
+
+and if we instantiate it
+
+we can instantiate it with filter keys
+of book
+and we're only interested in the string
+keys
+or we're only interested in the number
+keys
+and we can see that this first type is
+going to be name and author and the
+second type is going to be pages and
+font size
+now
+let's try to mess this up a little bit
+what if we add an optional modifier to
+some of these properties
+and we see here an interesting thing
+namely that both pages and
+that those properties are have actually
+been removed from the type
+why is that
+well the reason they were removed it's
+is that they're no longer the types
+we're interested in so for example if we
+search for number strings that number or
+undefined is no does no longer satisfy
+the extent's clause right number or
+undefined does not extend number it's
+actually the other way around
+based on on how unions and sets works
+and similarly for author string or
+undefined does not extend string
+okay so we understand why they were
+removed so basically we don't want them
+in there anymore but the question is why
+do we have this or undefined now
+and let's see if we remove this industry
+operation exactly what the object we get
+looks like
+and we see here that
+for the types that we were not
+interested in
+we get never for the
+for the properties that are required but
+we get undefined
+for the other ones
+why is that
+well we would normally get never here as
+well
+but since we also have the optional
+modifier what we were left with with is
+basically
+never or undefined
+never is removed because in a union
+never is always removed and we're left
+with just undefined
+now why do we have this optional
+modifier here
+because we're mapping over key of t
+and as we've established if we're
+mapping over k of t then we have a
+homomorphic map type we have a structure
+preserving mapped type
+that preserves this optional modifier as
+it is supposed to
+we don't want to preserve the optional
+modifier here we want to actually get
+never for the type of a property not
+undefined
+so what we can do is we can remove that
+optional modifier
+and now we see that
+when
+this object type
+is created
+for all properties we're not interested
+in we will get never and only for the
+properties we are interested in the
+the property type will be the same as
+its name
+so now we can add back the indexing
+operation to get the values of this type
+and we see that it works correctly even
+with these
+optional keys
+and remember i said at the beginning
+that typescript has recently added some
+syntax that actually helps us to filter
+keys a bit easier
+so what is this new syntax well let's
+start off from
+our type that filters the string keys of
+book
+and let's just remove this in this
+indexing part we want to see the object
+we're getting
+let's just add back the removal of the
+optional modifier
+and let's also keep both of the string
+keys so we have a better
+example
+and the syntax that typescript has added
+is that inside of this mapping
+expression
+we can actually add another clause an as
+clause
+now previously
+what would happen is that we took it we
+took each key in book
+and we mapped it to the same key in the
+result type
+now we can say we're mapping
+to maybe the same key so for example we
+can say as k
+and then we get a type which maps
+basically in the same way
+or maybe we can specify here
+a constant type and then we're mapping
+all of the keys
+to the same key
+in this case it would end up as never
+because of our conditional type
+but
+we can map to a single to all keys to a
+single key
+but we could also
+put a conditional type in here in the
+mapping expression for for each key
+
+so we could take that same expression we
+had before
+the same conditional type and we can say
+that we're mapping k
+to k
+if
+the key in books is of type string
+or we're mapping it to never
+if the condition is not met
+now what happens if we have a property
+that is named never in the resulting
+object types well never can't really be
+a key
+and it will just get removed from the
+resulting type
+so now if we look at
+this type we will see that only the
+string keys were preserved right because
+we were mapping and the the keys that we
+were not interested in got mapped to
+never and they were removed and we don't
+actually care about the type of the
+property we could for example use here
+any
+now if you want to get the keys we can
+just say
+key of
+this
+and we get back to
+the same name and author we were
+interested in
+and of course we could also make this
+type generic
+it could have a the t
+and the value type we're interested in
+and we're mapping over t
+again
+and anything that extends the value type
+is going to be preserved
+what's interesting is that we can
+actually also create a
+pick by
+type helper type
+so we saw that previously we would get
+an object type that contained only the
+string keys and if we actually preserve
+the type of each property
+by using t of k
+then we could
+create this type which helps us pick
+only the properties of a specific
+type so for example we could have pick
+by type of book
+and we want only the number keys
+or we want only the string
+keys in our final object type so we have
+our three is going to be pages and r4 is
+going to be name and author
+right if you also want to include the
+ones that are possibly undefined we
+could specify here number or undefined
+and then we get back pages
+and font size
+but maybe this should not have this
+optionality removal specifier so we can
+so it does preserve the the original
+structure of the top
+okay so what did we see here well we saw
+another aspect of
+of mapped types as well as an
+application of conditional types we saw
+that mapped types can have an as clause
+where we'll we're going to take each key
+in whatever union we're mapping over
+but
+p is not going to be the name of the
+property in the resulting type it's
+going to be whatever the type expression
+c evaluates to
+c can be any expression that depends on
+p
+but c must end up being a valid type for
+a key so it must be a subset of number
+string or symbol
+or it can be never never type in which
+case that key is going to be removed
+from the result
+now c is usually going to be a
+conditional type because that's all
+point of c to include or exclude some
+keys or it might be a string literal
+type which we're going to see a little
+bit later
+so let's look at another application of
+conditional types this time we want to
+filter a union and we've already sent
+several other options to filter unions
+but now we're going to try doing it
+using conditional types
+and the answer is that there are two
+predefined conditional types called
+extract and exclude which can help us
+achieve this goal
+so let's put them to the test
+so let's start with a simple form of
+filtering let's see our loose boolean
+type that we saw
+when we were filtering unions using
+intersections and let's see how we could
+extract just the string keys using
+conditional types
+so if we say here string
+lose boolean
+we can have here extract
+and we want to extract just the string
+keys
+and we see here that we're going to get
+just yes no
+now if we want the
+number
+constituents of this union
+we could use extract
+of loose boolean and number
+or we could use
+exclude
+of loose boolean and string and this
+will basically exclude all constituents
+that are that have a base type of string
+so it will basically exclude the s and
+no and we're going to be left with
+zero and one
+and this can also be used on
+object types
+and for example let's say we want to
+extract
+all of the shapes
+that have a color member
+now we don't care what that color member
+is so we could just pass any
+and we see here that we're going to get
+the union that contains just the two
+shapes that have a color property now we
+could also do the same for fill
+and we would get only those
+constituents that have a fill property
+and we can also use
+exclude
+to exclude any constituents that have a
+field property
+now how does this work well since
+basically this type is a very broad type
+right the set that it describes includes
+any
+object types that have
+a fill property that is of type string
+and have any other properties
+basically this will work as a filter on
+any type that has this fill property
+
+so let's see how this works
+let's go to definition on this type and
+let's copy it
+in our own code so we can have a better
+look at it and let's call it extract 2.
+
+and let's try to use this extract to to
+actually
+do the same thing as we did before
+and it seems to work
+but
+this is strange
+let's actually think what this type
+should be resolving to
+so we have
+this type
+right and if we were to inline
+what exactly this type is doing
+well then we should have
+t is replaced with
+loose boolean
+u is replaced with
+string
+and t is replaced with
+lose boolean
+so i hope that we can all agree that
+basically i just inlined extract 2 right
+here in
+this version of the type
+so
+this first type evaluates to have said
+no
+and this other type evaluates to never
+well that's strange
+does this make sense
+well does
+this union extend string
+the answer is no
+it doesn't
+and even if it did
+how does just yes and no make it into
+the result into the resolution of this
+conditional type
+basically what we've stumbled upon here
+is the distributive
+property of conditional types
+namely
+that when we have a naked type parameter
+typescript will not evaluate
+the conditional type
+or as is if the type parameter is a
+union so this
+this is not what actually happens
+this isn't what actually happens when
+typescript tries to evaluate our extract
+type
+no
+what actually happens is that if the
+condition is directly on a type
+parameter ie a naked type parameter
+and if that type parameter is a union
+then the conditional type is applied to
+each constituent of the union
+and the results are all unions to give
+the final type
+so if we have a type
+c and this is a distributive conditional
+type and we instantiate that type with a
+union t1 t2 t3
+dot dot tn
+this would be the same as if we were to
+have instantiated
+c of t 1 or c of t 2 or c of t 3 dot dot
+or c of t x
+so
+let's see
+our extract type how does it actually
+evaluate
+so we're evoking extract
+with this union zero one yes and no and
+and the second type parameter is string
+now we have here t extends u the
+condition is over a naked type parameter
+so what's going to happen is that this
+conditional type is going to be
+instantiated for each constituent of the
+unit so we're going to have
+0 extend string then 0 or never
+if one extends string
+then
+one otherwise never
+if yes extends string
+then we have yes or never otherwise
+if no extend string then we have no
+otherwise never
+the first two
+conditionals are going to resolve to
+never
+and the last two are going to resolve to
+yes and no
+and this is why we end up with yes and
+no when we apply
+extract to our union
+now sometimes it is important to disable
+distribution
+because we don't always want it
+and the way to do that is usually to
+wrap the type in a in a tuple
+basically you put square brackets around
+the type now other types would also work
+but they might depend on the variance of
+of that specific type so it's best to
+stick with the tuple when you're trying
+to disable distribution
+on the other hand sometimes we need just
+the distribute the distributive behavior
+of the conditional type
+and
+when we need that we usually have a
+condition that is always true so we
+could see something like t extends
+t
+or t extends unknown or t extends n
+which are conditions that are true for
+any given t
+when we see a condition such as this
+it doesn't mean that the person who was
+writing the type
+didn't know what they were doing they
+wanted an always true condition because
+they actually only cared about the
+distributive part of this conditional
+type
+now i just want to point out that this
+might create a surprising situation when
+you first encounter it namely that
+sometimes inlining a conditional type
+will produce different results than the
+actual conditional type if it's put in
+an alias
+like we saw for our
+extract example where the conditional
+type produced different behavior when we
+used it in a type alias or when we
+actually inline the same behavior
+while this might seem surprising at
+first in my experience distribution
+works much like you would expect it to
+it's rarely surprising
+but sometimes you d you do need to
+either
+make sure that you disable the behavior
+using a tuple if
+you want to do something that doesn't
+what doesn't require distribution or you
+might want to actually just use a
+conditional type solely for the purpose
+of distribution and that's what we're
+going to look at next
+so let's look at this question
+can we starting from a union for example
+string or number create a new union that
+contains an array of strings and an
+array of numbers as this constituents
+and the answer is yes we can do this
+easily using distributive conditional
+types
+so how can we do that let's create a new
+type let's call it make array
+and it's going to take a type parameter
+t
+now we want to create a new type that is
+an array of
+of each constituent
+if we just use t array that's going to
+create an array of the union type so for
+example if we create now type r and we
+say make array
+of string or number
+we're going to end up with an array of
+strings or numbers
+what we actually want to have is either
+an array of just numbers on earth or
+or an array of just strings
+so
+we want to take each constituent of the
+union and apply this
+new type constructor we want to create a
+new array out of each type
+so since we want just the distribution
+behavior we can use t extends t
+we can say that if this is true and it's
+always going to be true we're going to
+create our new array type
+otherwise we're going to return never
+now the false branch doesn't matter
+because it's always going to be true
+and we see here that we actually get our
+strings
+or our number array
+now let's see what happens when we add
+boolean
+to our union
+now because boolean is just a set of
+discrete values namely true and false
+we will actually see that typescript
+treats it as a union between true and
+false
+and we will get an array of string
+number false and true
+so make array doesn't play well with
+types that are
+a discrete set of values that typescript
+internally represents as union
+now there are other types that also do
+this namely enums
+and if you have an enum that is a
+b or c
+and we use it in our make array type
+we're also going to see that
+the make array type will actually
+distribute over
+the union that is created by this
+enum type
+
+this means that our make array type
+doesn't play well with
+types that are discrete set of values
+but that's probably not another
+operation of distributed conditional
+type
+let's see how we can extract
+all the keys from a union of object
+types
+so what i mean by all the keys is that
+we want to have the keys from each one
+of the constituents of this union
+so let's see why key up doesn't really
+work by itself
+let's say that we have this union person
+and we just apply key of
+person what does this get us
+well the answer is that key of person is
+just going to be
+name
+why is that well as we already saw when
+you try to access the properties of the
+union
+only the common properties from all
+union constituents are visible and kiov
+respects this same idea namely we only
+get the common properties from all union
+constituents not the specific properties
+of each one of them
+so how can we get around this
+well again we want to create a type
+let's call it
+key of all
+
+and we want to take each constituent of
+the union t
+and whenever we say we want to take each
+constituent of the unity
+then we immediately think of
+distributive conditional types and we
+can say here's t extends
+t
+and then we want to get the keys of that
+particular constituent of the union so
+we can just say key of t
+otherwise we don't care it will always
+be never
+so now if we apply
+key of all to person
+we can see that we actually get all the
+keys from our
+from all constituents of our union
+how did this work well again
+key of was applied to the first
+constituents of the union and we got
+name and field
+key of was applied to the second
+constituent of the unit and we got name
+and speciality and the union of all of
+these four items resulted in just name
+field a speciality because the
+duplicated
+name
+property is just removed because it
+doesn't make any sense to have the same
+constituent twice in a union
+let's revisit the union problem that we
+saw at the beginning of this workshop
+namely the fact that unions allow
+properties from any constituent of the
+union
+we want to find a way to avoid this
+without using discriminated unions which
+was the solution that we proposed
+so here we have a union of three
+object types namely doctor engineer and
+artist and we see that they all have a
+common field which is name and they also
+have
+a specific field namely speciality field
+of activity for gen engineered and
+preferred medium for the artist
+now the question is how can we ensure
+that these three types are not
+compatible with an object that contains
+field from
+another constituent of this union
+and the answer is we can actually add
+these fields
+but we can make sure that they're always
+undefined if they exist
+so for example for doctor we could add
+in the field
+but it has to be undefined if it exists
+we can also add in preferred medium
+but this also has to be undefined if it
+exists
+
+now
+this object literally is still
+compatible because what at the end of
+the day the object literal has to be
+compatible with at least one of the
+constituents of the union and even
+though this particular object literally
+is no longer compatible with doctor it's
+still compatible with engineer
+but we can add
+the fields to engineer as well
+but this time we want to add the fields
+that are not present in engineer so for
+in this case we're going to use
+speciality
+and preferred medium
+if these are present they have to be
+undefined
+now this object literally still
+compatible with one constituent of this
+union namely with artist
+because
+it can have these extra properties that
+are present in other constituents of the
+union
+but if you also add
+this to artist and we also make sure
+that we add the other fields that are
+from the other union constituents namely
+in this case
+field
+we see that we actually get an error on
+o now we get an error that
+says string is not assignable to type
+undefined for speciality because okay
+typescript will type to c now
+this object literal
+what constituent of the union is it
+compatible with
+and the answer is that it's compatible
+with none of them
+now if we were to leave in just one of
+these fields
+this would work so for example
+this object literally is compatible with
+engineer
+this object literally is compatible with
+artist
+and
+this object literal is compatible with
+doctor
+but as soon as we add one of these extra
+properties compatibility is no longer
+possible
+so let's see if we can find an automated
+way
+to actually do all of these changes to
+our union constituents but for that
+let's first of all do a bit of
+housekeeping let's
+keep our original person union let's
+call it original person
+
+and let's add all of these intersection
+types
+in a new
+union
+so as we have the clean
+original types so we say that this is a
+union with all of these extra fields
+and we add
+them
+to engineer
+and we add these to artists
+
+so let's see if we can find an automated
+way to
+add these
+extra fields
+so first let's see what it is we're
+adding in each case
+let's first of all see what we're adding
+in the case of doctor
+so if we were to create a type and let's
+call it
+d for example
+what fields are we adding here
+well we're adding the fields
+that are present in other union
+constituents but not in doctor
+so how could we get those keys
+well since we're adding keys from all
+union constituents we could use our key
+of all type that we saw before and we
+could say key of all
+original person
+and now we have a union of all
+keys from all union constituents
+and we can say that we want
+the keys that are not part of doctor
+and we could do that using the
+exclude conditional type which excludes
+members from a union
+so
+we could say here that we're excluding
+all the keys of doctor
+so now we get a union of field and
+preferred media which are the exact
+field that we should add to doctor
+and now we want to create a
+new type
+that has
+all of the all of these fields
+but are typed as undefined and to do
+that we could use record
+which creates an object type with a set
+of keys
+and all of those keys are typed as
+undefined so we have this but we also
+want to make them optional because we
+don't want people to have to specify
+them as
+required
+so we say partial of record
+and this results in the exact same type
+we were adding here
+so can we extract this to make something
+generic so we can
+do this addition in a generic way for
+each one of these union constituents
+well the answer is yes we could you call
+this add
+undefined props
+we could pass as type parameters
+the original
+union
+and t
+union constituent
+and we can use these in place of
+original person and
+doctor and now if we want to
+create
+these extra types
+we can intersect here with
+original person
+and doctor
+and then we can intersect for engineer
+with a similar type except we're going
+to
+have here
+engineer
+and similarly
+for artists
+
+great so now we have a type that is
+equivalent to what we were manually
+doing before and it gives out the same
+errors
+okay but this still requires us to
+not use our original
+union but it requires us to actually go
+and add to each union constituent this
+specific type
+how can we get around this and the
+answer is that we could get around this
+using a distributive conditional type
+let's call this
+new type
+let's call it strict
+union
+and we're going to have a type parameter
+t that is going to represent our union
+now since we want to
+iterate over each constituent of this
+union
+we're going to use a
+conditional type that just always
+evaluates to true for example t extends
+t
+and then we're going to say that we're
+going to for each
+constituent of this union
+we're going to intersect t
+with
+for now original person
+and the union constituent is going to be
+that d because the
+conditional distributive type is going
+to take
+each member of our union
+and otherwise it's going to be never
+so now if we want to create our person
+union
+we can use strict
+union of
+original person
+and this has the same effect as before
+namely we cannot specify these extra
+fields but if only one of these fields
+is present things work as expected
+okay but this particular strict union
+type is still tied to this original
+person
+why is that why didn't i change this
+well the answer is that
+we need the original union here
+but since we're distributing over t
+[Music]
+inside
+this true condition of the
+the conditional type
+t is going to be each union constituent
+we don't have access to the whole thing
+anymore right we're distributing over it
+so accessing the whole thing is not
+possible
+what we can do however is add another
+type parameter for example t original
+and we can pass in the same
+union twice
+and now we have two type parameters and
+we're distributing over the first one
+but not over the second one
+so
+while for the first union
+t is going to be each union of the each
+constituent of original person
+if we use
+the original and we pass in the same
+union
+that's going to still hold us the whole
+union and it's not going to distribute
+over it
+and now again we have that same type
+that is
+a strict union that doesn't allow any
+extra fields from other union
+constituents
+now one last thing we could do one last
+nicety we could do here is we could not
+force our user to have to pass in both
+t and t original
+and we could actually do this using a
+default
+value for
+our t original type we're just going to
+say that t original is the same as t if
+unspecified
+so now we can invoice or invoke strict
+union with just our original person
+union
+and actually this
+unit itself we might just as well inline
+it
+and we don't need the original union
+anymore
+so this is a way we can work around the
+fact that
+excess property checks allows
+properties from all union constituents
+in our object literals
+let's look at another facet of
+conditional types
+so let's look at this question
+let's say we have an object type that
+contains a series of functions that
+return a promise and what we actually do
+want to do is we want to create a new
+type
+that has the same properties
+but for each
+function we want the result type of the
+problem so for example for the first one
+we want to have string and for the
+second one we have number
+so how can we do this
+so we previously created this m type
+which was the map type that use this
+return type conditional type in order to
+extract the return type of a function
+and this works the same for
+this new
+environment type that we have here
+only we want
+the result type of the promise we don't
+want promise of string we want the
+string type inside that promise
+so the first question we need to ask
+ourselves is okay how does return type
+work what does it do
+and we can actually see its definition
+and let's just bring it here so we have
+it right in front of us
+we can remove the type of string that's
+not that interesting for us right now
+but what this type says here is
+if t extends
+something that is a function that has
+any arguments
+and returns
+anything
+then give me that anything
+this is what that infer keyword does
+there it introduces a new type parameter
+and basically that location acts as a
+wildcard anything could be there
+but if the rest of the type matches
+then whatever is at that type location
+will be put in the type parameter r
+and so we can use this new type
+parameter r on the true branch of the
+conditional type we can't actually use
+it on the false branch because since it
+wasn't actually inferred
+there's nothing in it so it doesn't make
+sense to actually have access to it ever
+on the false branch but on the true
+branch we get whatever was at that type
+location now i want to stress that you
+can use infer
+new type parameter
+anywhere where where a type expression
+would be expected so for example here
+you could have an object type and you
+could use infer in the position of
+a property type or you could use it in a
+generic type argument or you could use
+it basically anywhere
+so if we want to actually get the type
+inside of the promise
+well we could use the same infer keyword
+and we could say that if t extends
+something that is a function
+which has any arguments
+and it returns a promise
+and that promise has a taika argument
+that can be anything give me whatever is
+at that location whatever is
+the type with which the promise was
+instantiated with
+so now let's call this resolved
+return type
+and if we use this type here
+we can see that we can actually get
+the in the promise
+result type right we can get your string
+or we get number
+so this was a very simple way to resolve
+our problem
+so what is the the anatomy of such a
+conditional type
+well
+we have again t extends
+and then we have a type expression which
+can contain any number of inference
+points places inside the type where we
+don't actually have a specific type we
+want to match but we want to extract the
+type at that location and this can be
+any number of type parameters that we
+introduce
+and then on the true branch we have
+access to these new type parameters and
+we can use them on the false branch we
+can't use them because they weren't
+actually infer
+so now we know that conditional types
+have three behaviors that we may care
+about
+they have their actual conditional
+behavior where we can make decisions
+based on the type that is using the
+condition
+we can have their distributive behavior
+where we can distribute over the
+constituents of a union
+and we can have their inference behavior
+where we use these conditional types to
+extract parts of other types like we saw
+with the promise and the return type of
+a function
+now which one of these three behaviors
+you want really depends and and
+sometimes you may use all three of them
+as we will see in a in a future example
+but
+definitely you need to keep in mind that
+these are three separate behaviors and
+you can use any one of these three
+depending on your needs at a specific at
+any specific moment in time
+so let's look at another type that we
+might want to create
+in this case we want to create a type
+that applies the read-only modifier to
+all levels of a type so for example if
+we have
+this particular
+type which has several properties and
+several nested properties and also an
+array we want to make sure that the
+read-only modifier is applied at every
+level of this type
+so how can we do this
+we can do this with a mapped type
+now first of all i want to
+prove that the original read-only mapped
+type doesn't actually work in this case
+because that will only apply the
+read-only modifier
+to the first level of our type so we'll
+only get read-only modifiers on rest api
+and db servers we won't get them on
+these inner properties
+so how can we achieve this
+well let's start with our read-only
+mapped type
+let's change its name to deep read-only
+
+and for now it has the same behavior as
+the read-only type
+but what we can do now is we can
+actually take this
+type
+and call it for each nested property
+that we have so
+the type for each key
+won't be the same as the type in the
+original
+type it will be
+a deep read-only version of it
+and let's see how well this works right
+out of the box
+so we can see that the read-only
+modifier is applied on the first level
+and it is also invoked for the nested
+types
+however it's a little bit difficult to
+read exactly what this is doing
+now there's a trick to actually getting
+typescript to expand out all
+these deep read-only types namely if we
+add an intersection with an empty object
+object type we actually get a better
+picture of the finally resolved type
+so we see here now
+that we have read-only on the first
+level of rest api we also have read-only
+on the nested properties of this object
+type
+and we also see that for the array type
+typescript created a read-only array
+that in turn had
+has items
+that have the read-only modifier applied
+to each one of these items
+now i want to point out that in the past
+this type actually used to be a lot
+harder to write and you might find
+versions that have all sorts of of
+special conditions
+for for example array
+or for object or for other various types
+or for primitives
+but in recent
+typescript iterations
+several things have changed namely for
+the for example the fact that
+mapped types actually get applied now to
+items inside an array for example here
+we see that it was applied directly to
+the item inside the array
+and
+also if we apply
+a map type to a primitive it actually
+won't change that primitive
+so these are all improvements that were
+made and which made this type a lot
+easier to write
+now there is one case that it doesn't
+handle it correctly let's say we have a
+function
+let's call it
+time
+which is a function
+that returns an object and let's say
+this object has day
+
+and i don't know
+time
+now if we apply our deep read-only type
+to this
+we will see that
+the time property actually
+ends up being an empty object
+why is this well it's because typescript
+doesn't really handle
+mapping over a function all that well
+and indeed in this case it's not exactly
+clear clear what it should do
+because a function might have parameter
+types it will have return types it's not
+clear what top to apply the maps type to
+but for our purposes here we would like
+to apply the deep read-only modifier
+to
+the return type
+so what we could do here is we could say
+if
+t of b
+extends
+a function
+with some parameters
+we want to infer those parameters
+and we also want to infer the return
+type
+now what we're going to do is we're
+going to create a new function
+which has those same parameters
+but it has a deep read-only version of
+our return type
+and otherwise we apply the deep
+read-only type just as before
+so let's see how this looks now
+we see that our time function has now a
+better type it is a function at least
+that was preserved
+which has a return type that is read
+only
+now if we were to add some parameters
+here
+we would see that those are preserved as
+expected in the maps type
+so deep read-only we can write pretty
+easily these days but there might still
+be special cases that we need to
+consider in order for this to to work as
+expected
+so for example if we have start time and
+this is a date
+well data's an object type
+so it will get
+sort of mangled in all sorts of ways
+maybe for date we don't want to actually
+apply the read-only modifier we want to
+leave it as date
+so in that case we might also want to
+add here
+if tfp
+extends date
+we want to just preserve date we don't
+want to actually transform this with any
+sort of modifiers
+and now start date will actually just be
+a regular date it won't be
+put through this read-only
+map type
+so we're going to move on to the final
+type of type constructor we're going to
+see in this workshop namely template
+literal types
+now the motivating question for
+introducing these types is going to be
+given an existing type can we create a
+new type that has methods
+that have the same name as
+the properties in the original type but
+prefixed with get or set
+so for example here we want to transform
+our m type
+into a similar type but each key has
+been prefixed with a get
+so how can we do this
+so let's think a little bit about how we
+could get something similar in
+javascript to this
+so if we already defined a constant
+let's call it is an admin
+and we wanted to
+create a new constant
+that is
+get is admin
+well we could use template literal types
+to do this we could prefix a get here
+and then we could
+interpolate is admin
+now the funny thing is that typescript
+actually supports basically the exact
+same thing in typeland
+so
+if we move the const here and we replace
+it with type
+this basically works pretty much the
+same
+namely is admin is going to be a string
+literal type
+and get is admin
+is actually going to be
+a new type
+that has this get prefix
+and then it has interpolated inside it
+this is admin literal type
+
+so
+how can we
+transform this type to the other type
+then
+well the answer is using a maps type of
+course
+so we can
+use b
+in key of n
+so we're mapping over m
+the type of each property is going to be
+a function
+that returns m of b
+and now we're going to use the as clause
+we saw
+in our
+in our previous examples and we can say
+here we're mapping p as
+a string literal type
+that has get
+and then has whatever
+string
+literal type is contained by p
+
+and let's see if this worked the answer
+is yes it did exactly what we expected
+it to do
+now there's only one small problem
+namely is admin and his server should
+really be capitalized inside of
+of these property names
+fortunately typescript provides a type
+that helps us do exactly this
+namely the capitalized type
+and now our type is exactly what we
+would like it to be
+so this was a pretty simple way to
+actually do string manipulations and to
+create a new type based on on an
+existing one
+and to map the property keys to
+something else
+now if we also wanted to have set
+methods we could
+use an intersection
+and we could do basically the same thing
+only for set functions and we could say
+that
+the function here takes a value
+that is of type
+p of m and it returns void so now we
+have a full type that has both get and
+set
+functions
+now you may be wondering what exactly is
+the definition of capitalize i mean so
+many others so many other types we saw
+had a more elaborate definition when we
+actually look at them and we could have
+learned a lot from them
+capitalize is an exception to this
+it is actually what is called an
+intrinsic compiler type namely that this
+type has a special meaning to the
+compiler and it will perform this
+conversion of string literal types from
+their
+lowercase version to their capitalized
+version
+there are several other
+intrinsic types
+namely we already saw capitalize there's
+uncapitalized which does the opposite
+there's uppercase
+lowercase and that's about it
+let's look at the more complicated
+transformation we might want to do
+let's say we have an amp type which
+contains properties that are prefixed
+with x underscore and then they use
+underscore to separate the components of
+each name we want to transform this into
+something that is more javascript
+oriented so we want to remove that
+underscore and we want to transform it
+to the casing that is usually found in
+javascript
+so let's look at the first part of this
+problem how can we remove this
+x underscore prefix that we find in
+front of each property
+now the first question we have to ask
+ourselves is how we would we add this x
+prefix
+and here we created a small helper type
+that accepts any string
+literal type as its parameter
+and returns x
+underscore and then followed by that
+type parameter
+so
+if we were to invoke this type
+with
+for example
+is admin
+
+what would happen is that we would
+get this
+x underscore is admin
+okay so this is how we add it but how do
+we remove it
+and the answer is that we can remove it
+using a conditional type
+so
+let's say we accept
+any p
+that extends string any property name
+now we can ask the question
+does b extend
+add prefix
+if so
+infer what parameter it would be invoked
+with
+
+so how does this logic happen
+well if b
+extends something that has an
+x underscore in front of it
+then this condition is going to be true
+and what this inference size is going to
+give us is actually what comes after
+that x underscore
+so for example if we create a new type r
+and we say it's remove prefix of
+let's use this
+
+then we see we've managed here to
+extract just the is admin part
+
+okay so now we know how to remove the
+prefix
+the question is how can we transform
+this type
+is admin
+to
+is admin starting with a lowercase
+so for that we're going to have to
+split our
+string types
+using this underscore and how could we
+do that
+well again using conditional types so
+let's say we want to create a new type
+
+and we're going to call it convert to
+camel case
+
+and
+we're going to say here if t
+extends
+a template literal type
+that has some sort of prefix
+then it's followed by an underscore
+and then
+we want to infer
+whatever comes next
+we're going to return
+
+a lowercase version
+of the head
+
+or never
+and we're also going to want to add the
+tail part
+but for now we're just going to add it
+as
+the original tail without transforming
+it in any way
+so let's see
+what
+applying this
+to is admin
+will achieve
+so we see here now that we've removed
+that first underscore and we have the
+admin after the the initial
+is token we could just
+capitalize this as well
+
+we could
+we'd also have to lower case it
+
+but this wouldn't really deal well with
+property names that have multiple tokens
+so if we do it like this
+then we still get those underscores
+so how can we remove
+underscores
+well we're going to have to use a
+recursive conditional type
+so basically we're going to remove
+one underscore token
+and then we're going to recursively call
+remove underscores for the rest of our
+string until it is no longer a string
+that contains underscores
+so
+we can say here that if t extends again
+something that has
+a head and a tail and contains an
+underscore in between
+we're going to
+keep
+the head
+
+but we're going to
+capitalize and lower case it
+
+and then after it
+we're going to whatever we're going to
+put whatever remove underscores returns
+for the tail
+if the type did not contain
+an underscore
+well we should still
+capitalize and lower case it
+let's just add some constraints here
+these should all extend string
+so let's see what
+remove calling remove underscores
+on the tail
+in our camel case type will do
+
+we see that we get the exact type we
+want basically we managed to remove the
+underscores successively from
+[Music]
+from all of the positions it was present
+in
+in our property name
+now putting this all together is just a
+simple case of using our new convert to
+camel case type in a mapped type
+so m data could become
+b in
+key of
+n
+and we're going to map
+using
+convert
+to camo case
+and we're also going to remove
+prefix from our property p
+and we're going to say that the property
+type is f of b we're preserving the same
+property type
+so now m data is going to be is admin
+and max request per minute and
+everything seems to work
+as expected
+except for the
+x server which doesn't contain an extra
+underscore what we forgot to actually do
+here is
+if
+the initial type does not contain an
+underscore
+we should
+lower case it
+
+so now it all works as expected
+the ability to do string manipulations
+in the time system was something that
+has been requested for quite a while and
+personally i'm very happy to see it's
+finally made its way into into
+typescript it's a great feature and as
+we saw it has
+great potential and unlocks a lot of new
+type transformations that we can do that
+previously were not possible
+so the final type we're going to look at
+today is a type that helps us convert a
+union to an intersection
+and this is going to tie in some of the
+distributive and the inference behaviors
+of conditional types that we've we've
+previously seen
+so the first thing we need to look at in
+order to be able to build this type
+is
+we need to look at unions of function
+types and with what they are actually
+invokable
+and for example let's take
+the union we have
+that we're trying to transform
+and let's create a new function
+union
+and we're just going to write out this
+type
+
+and let's say the
+and let's say
+these functions
+take different parameters
+and return
+void
+okay and let's declare a variable that
+is of this type let's say it's a
+function
+and it has the type function
+union
+and let's assign to it
+randomly
+either a function that
+deals with a
+with something that has type
+full of type number
+and console logs this
+
+or it's something that
+has a bar property
+and it logs out that bar property
+
+now the question is
+what is it safe to invoke this function
+with
+now the typescript compiler here tells
+us that what it's safe to invoke this
+function with is an intersection
+of the two possible parameter types
+so even though we started out with a
+union of functions
+the parameter that we can pass into this
+union of function
+functions
+is actually going to be an intersection
+of all parameter of all possible
+parameter types
+now why is this
+well given the fact that we don't know
+which function it is
+it could either be the function that
+accesses full or the function that
+accesses bar
+there is only one possible safe solution
+is to pass in a parameter that satisfies
+all possible implementations of this
+function
+so we need to pass in something that has
+both
+full and var
+
+so this is why if we have a union of
+functions
+we need to pass in something that is
+broad enough
+to satisfy all possible
+implementations that could be passed
+into this function
+now for object types this intersection
+will result into a
+type that has more properties
+unfortunately if we were dealing here
+with
+primitive types the intersection would
+probably reduce to never because if you
+have for example string one parameter is
+string and the other parameter is number
+the intersection would produce never and
+it's basically a function that cannot be
+invoked because you cannot have a you
+cannot have a value that is both a
+string and a number there is no
+parameter that could work to satisfy all
+possible
+implementations of this function
+so what does this have to do with our
+union to intersection transformation
+well if we were to use a conditional
+type on this
+union of functions
+what we would get
+is the parameter
+that would be
+valid to invoke this union of functions
+and let's try this
+let's say we have a type r
+and we want to take our function union
+
+and if it extends a function
+which have as a parameter
+and returns
+let's say void
+then give us that parameter type
+
+and indeed here if we look
+we can see that this r type
+is going to be the intersection
+of these
+two parameter types
+starting from a union of functions
+we were able to get an intersection of
+the parameter types
+okay but i hear you say i don't have a
+union of function types
+i have a regular union
+i want to
+get the intersection
+yes but building
+a type that transforms
+a union
+of whatever into a union of function
+types that has each constituent as a
+parameter shouldn't be that difficult
+given what we know so far
+so let's say we want to generalize this
+function union
+with the type parameter t that is going
+to be the union
+and we want to take
+each constituent of this union
+so basically we're going to need a
+distributive conditional type because we
+want to operate on each constituent of
+this union
+so we're just going to use a true
+condition
+and we're going to create a new function
+type for each constituent
+where the parameter
+to this function is going to be the
+union of the the constituent of the
+union
+otherwise we're just going to say never
+because the condition is always true
+anyway
+so now we can
+use this
+function union type
+to transform any
+given union
+to a union of functions
+where the original constituents of the
+union are set as
+the types of the parameters
+so
+if we put this together
+we can actually create our union
+to intersection type now
+what would it look like
+union to
+intersection
+of
+t
+first we want to transform the union
+to a union of functions
+and then we want to say that we want to
+extract from this union of functions
+whatever parameter
+we can use to invoke this union of
+functions
+so what would happen here as we saw is
+that given that we have this union of
+functions
+what is going to be invocable with is
+the intersection of all parameter types
+which as we saw we mapped
+each constituent
+to one of these parameter types
+so now if we use
+our new union to intersection type
+on our original union
+we see that we get the intersection that
+we want
+now you might have seen this type on the
+internet without this extra helper
+helper type
+and it is not strictly necessary
+we could just inline it
+right here
+and we would get the same type
+if slightly harder to read
+
+so we've made it to the end of this
+workshop thank you very much for
+listening
+if you have any questions
+add me on twitter
+i'm going to try to answer as many
+questions as i as i possibly can
+if you've made it this far i think that
+you're probably on pretty good ground to
+tackle any typescript problem you will
+find in the future
+so
+thank you for listening and have a nice
+day

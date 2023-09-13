@@ -1,0 +1,172 @@
+The speaker expresses gratitude to the audience and event organizers for their support and enthusiasm about TypeScript. He then provides an overview of the talk, mentioning that he will discuss the rationale behind TypeScript, its growth and development over the years, its features, and what's coming next. 
+
+The speaker notes that TypeScript was created to address JavaScript's limitations, particularly the need for better tooling as applications scale. TypeScript introduces static types to JavaScript, which enables superior development tools.
+
+He then reflects on TypeScript's seven-year journey, highlighting how much has changed, including their shift from CodePlex to GitHub for open development. The speaker talks about TypeScript's focus on following ECMAScript standards while innovating in its type system. This type system has grown increasingly advanced, supporting a range of features like erasable and gradual typing, structural type systems, and more. Because of these static types, TypeScript enables better tooling features like code navigation and safe refactoring.
+
+The speaker concludes with stats about TypeScript's growth, pointing out there have been eight releases in the last 18 months. Download numbers have also increased significantly, illustrating the deepening engagement with the community.
+
+The speaker discusses TypeScript's increasing popularity, citing various surveys that show high adoption rates within the JavaScript community. For instance, an NPM survey found that over half of their community uses TypeScript, and a large-scale "State of JavaScript" survey revealed that nearly 50% use TypeScript, with over 80% saying they want to or are planning to use it. TypeScript also ranks seventh in the list of top languages on GitHub.
+
+The speaker introduces the TypeScript team, mentioning that it's a small group of less than 20 people. He emphasizes the importance of community engagement and gives examples of community efforts that TypeScript has been involved in over the past 18 months:
+
+1. Babel Support: The TypeScript team collaborated with the Babel team to enable Babel to support TypeScript syntax, allowing developers to use TypeScript for type checking and Babel for transpilation.
+
+2. ESLint: The team worked with contributors to add TypeScript support to ESLint, merging the capabilities of TSLint into ESLint. This led to performance enhancements and allowed for semantic lint rules, even for projects not using TypeScript.
+
+3. Framework Neutrality: TypeScript aims to work well with all JavaScript frameworks. Though they initially collaborated with Angular, now other frameworks like Vue and React have TypeScript support as well.
+
+4. Playground: A new team member enhanced the TypeScript playground using a better implementation from the open-source community called TypeScript Play. It now allows for automatic type acquisition and even lets users choose the TypeScript version they want to use, including nightly builds.
+
+5. Definitely Typed: The speaker appreciates this community project, saying it represents open-source software at its best. It provides type definitions for various JavaScript libraries, enabling TypeScript users to easily include these libraries in their projects.
+
+In summary, the speaker lauds the community's role in TypeScript's growth and mentions various initiatives that aim to enhance the TypeScript ecosystem.
+
+The text discusses various aspects of TypeScript, a programming language developed by Microsoft. The key points are:
+
+1. **Popularity and Community Support**: Surveys from NPM and the State of JavaScript indicate that TypeScript is increasingly popular, with half of the NPM community and almost 50% of JavaScript developers using it. TypeScript is also the seventh most-used language on GitHub.
+
+2. **Small Development Team**: Despite its popularity, TypeScript is developed by a relatively small team at Microsoft, emphasizing the importance of community contributions.
+
+3. **Community Collaborations**: The TypeScript team has partnered with Babel to support TypeScript syntax, and with ESLint to add TypeScript support. These collaborations make TypeScript easier to integrate into existing tech stacks.
+
+4. **Framework Agnostic**: TypeScript works well with various frameworks like Angular, Vue, and React, showing its flexibility.
+
+5. **Definitely Typed**: Started just four days after TypeScript was released, this repository collects type definitions and has become one of the most active repositories on GitHub. It provides types for about 70% of commonly used NPM packages, aiding TypeScript's adoption.
+
+6. **Statistics and Performance**: Research shows that the top 1% of packages generate more types than the bottom 33%, which can affect compiler performance. Developers are advised to use TypeScript features judiciously.
+
+7. **Maintaining Definitely Typed**: The TypeScript team has been actively involved in maintaining Definitely Typed, including automating many tasks and even having team rotations to manage pull requests.
+
+The text highlights TypeScript's growth, its broad adoption in the developer community, and the critical role of Definitely Typed and other community-led initiatives in its success.
+
+The text discusses various aspects of TypeScript, with a particular focus on the DefinitelyTyped repository and improvements to TypeScript over time. 
+
+- **DefinitelyTyped**: Created in October 2012, it quickly grew to become one of the most active repositories on GitHub with contributions from almost 10,000 individuals. Statistics showed that 70% of the libraries that NPM packages depend on have types, and this figure has grown over time. However, the repository has become so active that maintaining it has become a considerable task, with numerous pull requests awaiting review. The speaker encourages the community to help out with maintenance.
+
+- **Types in NPM packages**: Although under 1% of all NPM packages have types, 70% of the dependencies of NPM packages do have types, indicating widespread use in common libraries. 
+
+- **Type generation**: There are statistics showing that generating a lot of types can slow down the compiler. Creative usage of TypeScript's type features can lead to performance issues, and users are advised to use these features judiciously.
+
+- **Community Involvement**: The community has been instrumental in building features for upcoming releases, and their contributions are highly valued.
+
+- **Improvements and Focus Areas**: Over the last year and a half, TypeScript has focused on three main areas: 
+    1. **User Experience**: Efforts have been made to make error messages more informative and to the point.
+    2. **Scaling and Faster Builds**: They've made efforts to make the compiler more efficient, particularly when watching for file changes.
+    3. **Better Capturing of Functional Paradigms**: This is to keep pace with how these paradigms are becoming popular in frameworks today.
+  
+The text appeals for community help in maintaining DefinitelyTyped and provides a detailed overview of TypeScript's ongoing development efforts.
+
+The TypeScript text discusses several topics related to the language's development, performance, and community contributions. Here's a summary of the key points:
+
+1. **Community Contributions**: The speaker appeals to the audience to contribute to the TypeScript ecosystem, especially if they are maintainers or experts in a particular framework. They also thank the community for its contributions to recent releases.
+
+2. **Improvements Over Last Year**: The team has focused on three main areas: improving user experience, particularly error messages; scaling and faster builds; and better capturing functional paradigms in the language.
+
+3. **Error Message Improvements**: The team has worked on making error messages more clear and organized, providing more context to help developers pinpoint the issue quickly.
+
+4. **Scaling and Faster Builds**: The TypeScript team has improved the 'watch mode' to only recompile dependent modules, making it more efficient. They also introduced composite projects for better managing large monorepos, which include multiple dependent projects. 
+
+5. **Build Performance**: They've added build info files that store information about the modules and dependencies. This significantly speeds up the initialization time for subsequent builds, reducing build time from 50 seconds to around 10 seconds in some cases.
+
+6. **Demonstration**: The speaker demonstrates these improvements by showing how changes in code affect build times and how TypeScript intelligently knows what needs to be recompiled based on the kind of change made. 
+
+7. **Real-world Example**: They use the Jest project from Facebook as a case study to show the improved build performance in a large, real-world monorepo.
+
+In summary, the speaker highlights the community's role, details significant improvements made in TypeScript over the past year, and shows how these improvements lead to better performance and user experience.
+
+The text discusses TypeScript improvements in two primary areas: build performance and advanced language features.
+
+1. **Build Performance**: The speaker emphasizes the time-saving benefit of using composite projects, especially in large monorepos. Using this feature, the build process becomes more efficient, only recompiling what is needed. The speaker urges anyone who isn't using composite projects to check it out, as it's a significant time-saver.
+
+2. **Advanced Language Features**: 
+   - **Tuples**: In TypeScript 3.0 and beyond, tuples can now have optional elements and support rest elements. This creates a symmetry between tuples and parameter lists in functions.
+   - **Variadic Functions**: These functions can accept a variable number of parameters. With the new features, you can strongly type these functions, capturing both the argument types and return types.
+   - **Function Call Utility**: The speaker demonstrates how a simple utility function (`call`) that takes another function and its arguments becomes strongly typed. By leveraging the newly added tuple and variadic function features, TypeScript can infer the correct argument and return types, improving code quality and developer experience.
+
+The speaker suggests that these language features not only make coding more efficient but also more robust by enabling stronger type checking and better developer tooling.
+
+The TypeScript text discusses several advanced language features that enhance both the typing system and the developer's experience:
+
+1. **Strongly Typed Method Calls**: Features like the `.call` and `.bind` methods on functions are now strongly typed. For example, if you bind the first argument of a function, the type system will understand this and reflect it in the resulting function type.
+
+2. **Immutability and Const Assertions**: To address issues with mutable locations in object literals or arrays, TypeScript introduced "const assertions". These assertions tell the type system to infer the most immutable type possible, including read-only properties and exact literal types for elements. 
+
+3. **Higher-Order Functions**: TypeScript now allows for better type inference when working with higher-order functions. The speaker gives an example of a `compose` function that takes two other functions as arguments and returns a new function. TypeScript can now infer the types of these composed functions more accurately, making it highly useful in functional programming.
+
+4. **Advanced Type Inference**: The speaker provides several examples where complex types are inferred correctly, even in the context of arrays and objects. This is especially useful when combining features like `zip` and `map` in functional programming. 
+
+Overall, these features significantly enhance the developer's ability to write strongly-typed and maintainable code.
+
+The TypeScript text discusses several advanced features and upcoming changes in TypeScript 3.7:
+
+1. **Higher-Order Function Composition**: The text starts with discussing improvements to higher-order functional composition. In previous versions, it wasn't easy to infer the types when dealing with generic functions. With new features, TypeScript can now infer more complex types, such as a function that takes two arrays and returns a map. This makes it easier to annotate parameters and have everything else inferred automatically.
+
+2. **Optional Chaining**: One of the most requested features, optional chaining simplifies how you can access nested properties, each of which might be `undefined` or `null`. The conventional approach requires multiple null checks. With optional chaining, you can access these nested properties by using a `?.` operator, making the code cleaner and less error-prone.
+
+3. **Knowledge Coalescing**: This is another new feature coming up in TypeScript 3.7. While the text doesn't delve into it much, it generally allows for cleaner handling of `undefined` or `null` values.
+
+4. **Other Upcoming Features**: The text briefly mentions some other features coming up in TypeScript 3.7 like assertions and recursive type inferences.
+
+5. **Generated Code and Type Inference**: The speaker demonstrates that TypeScript generates fairly simple and readable JavaScript code, making use of temporary variables to implement optional chaining. This means that TypeScript can efficiently convert optional chaining into JavaScript that checks for null or undefined before accessing a property.
+
+6. **Null Handling**: The discussion ends with the issue of still needing to handle potential undefined values even after using optional chaining.
+
+Overall, the talk discusses how TypeScript has improved and continues to improve, particularly in making it easier for developers to write complex, type-safe code.
+
+The TypeScript text discusses several advanced features and improvements in TypeScript 3.7:
+
+1. **Knowledge Coalescing**: This operator checks for null and undefined values, making it easier to handle these edge cases. For example, you can set a default value if the variable is null or undefined.
+
+2. **Assertion Predicates**: A new feature that allows developers to add an annotation to a function, stating what the function asserts about a variable's type. This feature can be useful for making TypeScript's type inference smarter and less "irritating."
+
+3. **Control Flow Analysis**: TypeScript 3.7 now picks up on the `never` type to flag unreachable code after a function that never returns.
+
+4. **Switch Statement Enhancements**: TypeScript has improved at detecting unreachable ends of switch statements. The system now recognizes when all cases in a switch statement have been handled.
+
+5. **Recursive Types**: TypeScript 3.7 now supports recursive types, making it easier to represent nested structures.
+
+6. **Function Call Checks**: TypeScript now warns you if you are using a function as a boolean in an `if` statement but haven't actually called it. It catches the mistake of not calling a function when you intended to and prevents bugs.
+
+7. **Defensive Programming**: The text also touches upon some of the challenges faced when trying to implement new features without breaking existing code. Specifically, it mentions how certain errors are only flagged if they are not used within the scope that they're supposed to be affecting, which is considered a clever workaround.
+
+8. **Comparison of Objects**: Although cut-off, it seems the text was moving towards discussing object comparison in TypeScript.
+
+The text outlines how TypeScript continues to evolve, providing more powerful type checking and easier ways to write safe and robust code.
+
+
+The TypeScript text discusses several advanced and new features in TypeScript 3.7, as well as TypeScript's compatibility with JSDoc annotations and JavaScript:
+
+1. **Error Messages**: TypeScript 3.7 improves the readability and informativeness of type error messages, making it easier to find out what the issue is.
+  
+2. **JSDoc Annotations**: TypeScript can work very closely with JSDoc-annotated JavaScript code. It can give a development experience almost identical to TypeScript itself.
+
+3. **Declaration Files**: TypeScript 3.7 allows you to generate declaration files from JavaScript code that uses JSDoc annotations. This is useful for type checking in both TypeScript and JavaScript projects that consume these annotations.
+
+4. **Automatic Type Acquisition**: The language service can automatically download type definitions for JavaScript packages and provide statement completion, even in a plain JavaScript file.
+
+5. **Uncalled Functions**: TypeScript now catches cases where you intended to call a function but forgot, which was shown to help find real bugs in practical applications like VS Code.
+
+6. **JavaScript Development**: The text emphasizes TypeScript's ongoing commitment to making JavaScript a better experience, even if developers do not want to fully adopt TypeScript.
+
+7. **Dynamic Nature of JavaScript**: TypeScript recognizes the dynamic nature of JavaScript and provides relevant tooling, while still enabling type checking where annotations exist.
+
+The text demonstrates how TypeScript continues to evolve to make development easier, safer, and more robust, even for those who primarily write in JavaScript.
+
+
+The TypeScript text emphasizes the flexibility of TypeScript in accommodating different programming needs. It discusses how TypeScript can check JavaScript code conservatively, giving refactorings and errors when something is definitively wrong. The aim is to meet programmers where they are; you can fully adopt TypeScript by renaming your files to `.ts`, or not—it's up to you.
+
+The speaker also makes some "wishes" or recommendations:
+
+1. **Use Strict Mode**: Encourages the audience to use "strict mode" in TypeScript, noting it's not the default to maintain backward compatibility.
+
+2. **Try Nightly Builds**: Urges developers to use nightly builds to help improve TypeScript and catch issues early.
+
+3. **File Issues**: Asks developers to file issues, preferably reduced to less than ten lines of code, and not to ask questions in the issue tracker (use Stack Overflow for that).
+
+4. **Vote on Suggestions**: Recommends voting on existing suggestions to guide the TypeScript team on what features the community wants.
+
+5. **Help on Stack Overflow**: Encourages knowledgeable developers to help answer TypeScript questions on Stack Overflow.
+
+The text concludes with a thank-you and an expression of excitement for the rest of the conference.
+
