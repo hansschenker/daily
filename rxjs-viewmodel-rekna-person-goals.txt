@@ -1,0 +1,22 @@
+a technique to code Angular apps in a more reactive way. It relies heavily on the use of observables for all actions inside a component.
+
+Goals
+This technique tries to accomplish the following goals:
+
+- avoid having to manually unsubscribe any subscription.
+- being able to use ChangeDetectionStrategy.onPush (for performance reasons)
+- being a solution with no dependencies.
+- it must be applicable in all cases.
+- use observables for all viewmodel mutations and interactions
+
+Basic principle
+The solution builds upon three basic principles:
+
+- each component has a viewmodel, and all changes to the viewmodel result from a single (composed) observable.
+- the viewmodel observable is defined as an observable of viewmodel mutation functions.
+- the use of the rxjs scan operator which accumulates all viewmodel mutations.
+- The first allows me to have a single subscription using the async operator which ensures that all - subscriptions are unsubscribed automatically.
+
+- Viewmodel mutation functions allow me to map any observable to a change in the viewmodel.
+
+- The scan operator relies on these viewmodel mutation functions to apply the changes to the previous state of   the viewmodel to create the new mutated state when any of the source observables emit a value.

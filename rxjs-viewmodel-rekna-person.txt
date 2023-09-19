@@ -1,0 +1,210 @@
+https://indepth.dev/angular-viewmodel-as-observable/
+
+interface IPersonVm {
+  persons:IPerson[];
+  personDetail:IPersonDetail;
+}
+
+// this subject will be used to pass the person object 
+// when selecting a person from the list
+// <div class="personrow" *ngFor="let person of vm.persons" (click)="personDetailSubj.next(person)"> ... </div>
+
+public personDetailSubj = new Subject<IPerson>();
+public vm$ : Observable<IPersonVm>;
+
+constructor(private personService:PersonService) {
+
+  // retrieving list of persons (could be a http request)
+  const personList$ = this.personService.getPersons().pipe(
+    map( persons => (vm:IPersonVm) => ({...vm, persons}) )
+  );
+
+  // select a person, get detail and set it on viewmodel
+  const personDetail$ = this.personDetailSubj.pipe(
+    mergeMap( person => this.personService.getPersonDetail(person.id) ),
+    map( personDetail => (vm:IPersonVm) => ({...vm, personDetail }))
+  );
+
+  // in this example the initial viewmodel state is provided with the second 
+  // parameter of the scan function. Alternatively one could provide an initial 
+  // state with the rxjs of function 
+  const vm$ = merge(personList$, personDetail$).pipe(
+    scan( (vm:IPersonVm, mutationFn:(vm:IPersonVm)=>IPersonVm)
+       => mutationFn(vm), {persons:[], personDetail:null}
+    )
+  )
+  
+}
+
+/***  add example ***/
+// add 
+public addSubj = new Subject<IPerson>();
+
+// don't forget to add addPerson$ to the merge operator
+const addPerson$ = this.addSubj.pipe(
+  // spread operator is used on the existing persons list 
+  // to add the new person
+  map( newPerson => (vm:IPersonVm) => ({
+    ...vm, 
+    persons:[...vm.persons, newPerson ]
+  }))
+);
+
+/*** delete example ***/
+public deleteSubj = new Subject<IPerson>();
+
+const deletePerson$ = this.deleteSubj.pipe(
+  map( personToDelete => (vm:IPersonVm)=>({
+    ...vm, 
+    persons:vm.persons.filter(p=>p!==personToDelete )
+  }))
+);
+
+/*** update example ***/
+public updateSubj = new Subject<IPerson>();
+
+const updatePerson$ = this.updateSubj.pipe(
+  map( personToUpdate => (vm:IPersonVm)=>{
+    const indexOfPerson = vm.persons.findIndex(p=>p===personToUpdate);
+    // spread operator to maintain immutability of the persons array
+    const persons = [
+      ...vm.persons.slice(0,indexOfPerson),
+      personToUpdate,
+      ...vm.persons.slice(indexOfPerson+ 1)
+    ];
+    return {...vm, persons};
+  })
+);
+
+---------- server update
+public updateSubj = new Subject<IPerson>();
+
+const updatePerson$ = this.updateSubj.pipe(
+  mergeMap( personToUpdate => this.personService.update(personToUpdate) ),
+  map( updatedPerson => {
+    // this time we can not use the object equality, 
+    // because it will be a new object deserialized 
+    // from json of update response. In this case 
+    // I assume a person has an unqiue identifier called **id**
+    const indexOfPerson = vm.persons.findIndex(p=>p.id === updatedPerson.id );
+    const persons = [
+      ...vm.persons.slice(0,indexOfPerson),
+      personToUpdate,
+      ...vm.persons.slice(indexOfPerson+ 1)
+    ];
+    return {...vm, persons};
+  })
+)
+
+---------- angular routing -------
+ constructor(private route:ActivatedRoute) {
+    const retrieveData$ = route.paramMap.pipe(
+      map( paramMap => +this.paramMap.get('id') ),
+      switchMap( id => this.personService.getPerson(id)),
+      map( personDetail => (vm:IPersonVm)=> ({...vm, personDetail }))
+    )
+  };
+
+  this.vm$ = merge(retrieveData$, /* other viewmodel mutations */);
+
+----- reload data ------------------
+public reloadSubj = new Subject<boolean>();
+public deleteSubj = new Subject<IItem>();
+
+private delete$ = this.deleteSubj.pipe(
+  mergeMap( item => this.itemService.delete(item.Id)),
+  map( _ => (vm:IItemListVm) => vm)
+);
+
+private reload$ = this.reloadSubj.pipe(
+  switchMap( _ => this.itemService.getItems() ),
+  map( items => (vm:IItemListVm) => ({...vm, items}))
+)
+
+constructor() {
+  vm$ = merge(this.reload$, this.delete$).pipe(
+    scan( ... )
+  )
+}
+
+private reload$ = merge(this.reloadSubj, this.delete$).pipe(
+  swicthMap( _ => this.itemService.getItems() ),
+  map( items => (vm:IItemListVm)=>({...vm, items}))
+);
+
+private delete$ = this.deleteSubj.pipe(
+  mergeMap( item => this.itemService.delete(item.Id)),
+  share(),
+  map( _ => (vm:IItemListVm) => vm)
+);
+
+------ client side filtering  -----------------
+interface IPersonVm {
+    persons:IPerson[];
+  }
+
+  class PersonListComponent {
+    public vm$ : Observable<IPersonVm>;
+    public filterSubj : BehaviorSubj<string>(null);
+
+    constructor(private dataService:DataService) {
+      this.vm$ = merge(this.retrievePerson$, this.filterPersons$).pipe(
+        scan( (vm:IPersonVm, mutationFn:(vm:IPersonVm)=>IPersonVm)
+            => mutationFn(vm), {persons:[], personDetail:null}
+          )
+      );
+    }
+    private retrievePersons$ = this.dataService.getPersons().pipe(
+      map( persons => ({...vm, persons }) )
+    );
+    // attempt filtering as another mutation on the viewmodel 
+    private filterPersons$ = this.filterSubj.pipe(
+      map( filterArg => ({
+        ...vm, 
+        persons:persons.filter(p=>filterArg==null || p.name.includes(filterArg))
+      }) )
+    )
+  }
+
+-------------- dataservice ----------------------------------
+ constructor(private dataService) {
+    
+    const unfilteredVm$ =  merge(this.retrievePerson$).pipe(
+        scan( (vm:IPersonVm, mutationFn:(vm:IPersonVm)=>IPersonVm)
+            => mutationFn(vm), {persons:[], personDetail:null}
+          )
+    );
+ 
+    // not anymore part of the viewmodel mutation scan cycle
+    this.vm$ = combineLatest(unfilteredVm$, this.filterSubj).pipe(
+      map( ([vm, filterArg]) => ({
+          ...vm, 
+          persons:vm.persons.filter(filterArg==null || p.name.includes(filterArg))
+      }))
+    )
+
+  }
+
+--------  only run when filter changed -------
+ this.vm$ = combineLatest(unfilterdVm$, this.filterSubj).pipe(
+    scan( ([prevVm, prevFilterArg],[nextVm, nextFilterArg]) => {
+      const shouldFilter = prevFilterArg!=nextFilterArg;
+      const persons = shouldFilter 
+        ? nextVm.persons.filter(p=>p.name.includes(nextFilterArg))
+        : prevVm.persons
+      return [{...nextVm,persons},nextFilterArg];
+    }),
+    map( [vm,_] => vm)
+  )
+
+------ scan ----------------
+ scan( (prev, next) => {
+   const prevVm = prev[0];
+   const prevFilterArg = prev[1];
+   const nextVm = next[0];
+   const nextFilterArg = next[1]; 
+   ...
+ })
+
+ const shouldFilter = (prevFilterArg!=nextFilterArg) || (prevVm.persons!==nextVm.persons)
+

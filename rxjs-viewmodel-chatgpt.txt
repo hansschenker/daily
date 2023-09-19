@@ -1,0 +1,167 @@
+This article is about a technique to code Angular apps in a more reactive way. It relies heavily on the use of observables for all actions inside a component.
+
+Goals
+This technique tries to accomplish the following goals:
+
+avoid having to manually unsubscribe any subscription.
+being able to use ChangeDetectionStrategy.onPush (for performance reasons)
+being a solution with no dependencies.
+it must be applicable in all cases.
+use observables for all viewmodel mutations and interactions
+Basic principle
+The solution builds upon three basic principles:
+
+each component has a viewmodel, and all changes to the viewmodel result from a single (composed) observable.
+the viewmodel observable is defined as an observable of viewmodel mutation functions.
+the use of the rxjs scan operator which accumulates all viewmodel mutations.
+The first allows me to have a single subscription using the async operator which ensures that all subscriptions are unsubscribed automatically.
+
+Viewmodel mutation functions allow me to map any observable to a change in the viewmodel.
+
+The scan operator relies on these viewmodel mutation functions to apply the changes to the previous state of the viewmodel to create the new mutated state when any of the source observables emit a value.
+
+First example
+Let's start with some code, a very simple (but otherwise useless) example to show the basics of the implementation (a simple counter using buttons).
+
+First we define the viewmodel interface :
+
+<>
+interface ICounterVm {   
+    counter:number; 
+}
+We'll define 2 subjects for the increment and decrement button
+
+<>
+// normally it could be done with a single subject, but for demonstration  
+// purposes, I'll use 2 subjects  
+public incrSubj = new Subject<number>;   
+public decrSubj = new Subject<number>;
+We define our viewmodel observable and in the constructor of the component, I define all interactions:
+
+<>
+public vm$ : Observable<ICounterVm>;
+public incrSubj = new Subject<number>;
+public decrSubj = new Subject<number>;
+constructor() {
+
+  // the subjects are mapped to an anonymous function that 
+  // - accepts as parameter the previous state of the viewmodel (vm:ICounterVm)
+  // - and that returns the mutated viewmodel
+  // they are the viewmodel mutation functions
+  const incr$ = this.incrSubj.pipe(
+    map( delta => (vm:ICounterVm) => ({...vm, counter:vm.counter+delta}) )
+  );
+  const decr$ = this.decrSubj.pipe(
+    map( delta => (vm:ICounterVm) => ({...vm, counter:vm.counter-delta}))
+  );
+
+  // the viewmodel observable is a merge of all mutation observables (incr$ and decr$) 
+  // piped into a scan function 
+  // scan has two arguments
+  // the first is the accumulator (the viewmodel) and the second the mutation function
+  // the body of the scan operator executes the mutation function : mutationFn(prevVm) passing the previous state of the viewmodel.
+  // this function returns the mutated viewmodel which is the new accumulated value of the vm$ observable
+  this.vm$ = merge(of({counter:0}), incr$, decr$).pipe(
+    scan( (prevVm:ICounterVm, mutationFn:(vm:ICounterVm)=>ICountVm) 
+      => mutationFn(prevVm)
+    )
+  )
+}
+The view is defined as follows:
+
+<>Copy
+<!-- vm$ is subscribed by async pipe and exposes a variable named vm -->
+<div *ngIf="vm$ | async as vm">
+  Current counter : {{vm.counter}}
+  <button type="button" (click)="decrSubj.next(1)">Decrement</button>
+  <button type="button" (click)="incrSubj.next(1)">Increment</button> 
+</div>
+
+Certainly! Below is an example Angular component that implements a viewmodel for a `Person` object. This example uses RxJS observables and operators to handle the CRUD (Create, Read, Update, Delete) and List operations in a reactive manner.
+
+First, we define the viewmodel interface for a `Person`:
+
+```typescript
+interface IPersonVm {
+  id: string;
+  name: string;
+  age: number;
+}
+```
+
+Then, we define the component:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { Subject, Observable, of, merge } from 'rxjs';
+import { map, scan } from 'rxjs/operators';
+
+@Component({
+  selector: 'app-person',
+  template: `
+    <div *ngIf="vm$ | async as vm">
+      <h1>Person List</h1>
+      <ul>
+        <li *ngFor="let person of vm">
+          {{ person.name }} ({{ person.age }} years) 
+          <button (click)="updateSubj.next({id: person.id, name: person.name, age: person.age + 1})">Increase Age</button>
+          <button (click)="deleteSubj.next(person.id)">Delete</button>
+        </li>
+      </ul>
+      <button (click)="createSubj.next({id: 'newId', name: 'New Person', age: 0})">Create New Person</button>
+    </div>
+  `,
+})
+export class PersonComponent implements OnInit {
+  public vm$: Observable<IPersonVm[]>;
+  public createSubj = new Subject<IPersonVm>();
+  public readSubj = new Subject<string>();
+  public updateSubj = new Subject<IPersonVm>();
+  public deleteSubj = new Subject<string>();
+  public listSubj = new Subject<void>();
+
+  ngOnInit() {
+    const create$ = this.createSubj.pipe(
+      map((newPerson) => (vm: IPersonVm[]) => [...vm, newPerson])
+    );
+
+    const read$ = this.readSubj.pipe(
+      map((id) => (vm: IPersonVm[]) => vm.filter((person) => person.id === id))
+    );
+
+    const update$ = this.updateSubj.pipe(
+      map((updatedPerson) => (vm: IPersonVm[]) => 
+        vm.map((person) => person.id === updatedPerson.id ? updatedPerson : person)
+      )
+    );
+
+    const delete$ = this.deleteSubj.pipe(
+      map((id) => (vm: IPersonVm[]) => vm.filter((person) => person.id !== id))
+    );
+
+    const list$ = this.listSubj.pipe(
+      map(() => (vm: IPersonVm[]) => [...vm])
+    );
+
+    this.vm$ = merge(
+      of([]),
+      create$,
+      read$,
+      update$,
+      delete$,
+      list$
+    ).pipe(
+      scan((prevVm: IPersonVm[], mutationFn: (vm: IPersonVm[]) => IPersonVm[]) => mutationFn(prevVm))
+    );
+  }
+}
+```
+
+Explanation:
+
+- `createSubj`, `readSubj`, `updateSubj`, `deleteSubj`, and `listSubj` are the subjects that trigger CRUD and List operations.
+- We map each subject to a function that mutates the viewmodel in response to actions. These are our viewmodel mutation functions.
+- We merge all these viewmodel mutations into a single observable `vm$`.
+- We use the `scan` operator to accumulate the viewmodel changes over time.
+
+To try out this component, you can place it inside your Angular application and add it to your module declarations. Then you should be able to perform CRUD operations on the `Person` list reactively.

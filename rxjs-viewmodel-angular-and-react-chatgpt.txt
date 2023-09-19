@@ -1,0 +1,308 @@
+a technique to code Angular apps in a more reactive way. It relies heavily on the use of observables for all actions inside a component.
+
+Goals
+This technique tries to accomplish the following goals:
+
+- avoid having to manually unsubscribe any subscription.
+- being able to use ChangeDetectionStrategy.onPush (for performance reasons)
+- being a solution with no dependencies.
+- it must be applicable in all cases.
+- use observables for all viewmodel mutations and interactions
+
+Basic principle
+The solution builds upon three basic principles:
+
+- each component has a viewmodel, and all changes to the viewmodel result from a single (composed) observable.
+- the viewmodel observable is defined as an observable of viewmodel mutation functions.
+- the use of the rxjs scan operator which accumulates all viewmodel mutations.
+- The first allows me to have a single subscription using the async operator which ensures that all - subscriptions are unsubscribed automatically.
+
+- Viewmodel mutation functions allow me to map any observable to a change in the viewmodel.
+
+- The scan operator relies on these viewmodel mutation functions to apply the changes to the previous state of   the viewmodel to create the new mutated state when any of the source observables emit a value.
+
+Your approach to Angular application development focuses on a more reactive paradigm, primarily using RxJS observables. This pattern is akin to some other functional reactive programming practices and could have a number of benefits, such as simplified state management and automatic subscription handling.
+
+Here's a breakdown of your core principles along with some Angular code snippets to demonstrate how they can be implemented.
+
+### Single ViewModel Observable
+
+You propose that each component will have a ViewModel, and all changes to that ViewModel will come from a single observable. In Angular, you can achieve this by defining a single ViewModel observable and using the `async` pipe in the template to unwrap the emitted values.
+
+```typescript
+viewModel$: Observable<MyViewModel>;
+```
+
+In your template:
+
+```html
+<div *ngIf="viewModel$ | async as vm">
+  <!-- use vm to bind to your view -->
+</div>
+```
+
+### ViewModel Mutation Functions
+
+You can define functions that take a ViewModel and a payload, and return a new mutated ViewModel. These functions will be your "reducers" in a sense.
+
+```typescript
+function mutateSomething(viewModel: MyViewModel, someValue: string): MyViewModel {
+  return {
+    ...viewModel,
+    someProperty: someValue
+  };
+}
+```
+
+### Scan Operator
+
+The scan operator can then be used to accumulate the mutations in your ViewModel. You can define an observable of ViewModel mutation functions and then apply them to the ViewModel state sequentially.
+
+```typescript
+type ViewModelMutation = (vm: MyViewModel) => MyViewModel;
+
+const initialViewModel: MyViewModel = {
+  // initial state
+};
+
+const mutations$: Observable<ViewModelMutation> = // define your observable of mutations here
+
+this.viewModel$ = mutations$.pipe(
+  scan((viewModel, mutation) => mutation(viewModel), initialViewModel)
+);
+```
+
+### Putting It All Together
+
+Here is a simple example putting it all together in an Angular component:
+
+```typescript
+@Component({
+  selector: 'my-component',
+  template: `
+    <div *ngIf="viewModel$ | async as vm">
+      <button (click)="onClick()">Click Me</button>
+      <p>{{ vm.someProperty }}</p>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class MyComponent implements OnInit {
+  viewModel$: Observable<MyViewModel>;
+  private clickSubject = new Subject<void>();
+
+  ngOnInit() {
+    const initialViewModel: MyViewModel = {
+      someProperty: 'Initial Value'
+    };
+
+    const clickMutation$: Observable<ViewModelMutation> = this.clickSubject.pipe(
+      map(() => (vm: MyViewModel) => ({ ...vm, someProperty: 'Clicked!' }))
+    );
+
+    this.viewModel$ = merge(
+      clickMutation$
+    ).pipe(
+      scan((viewModel, mutation) => mutation(viewModel), initialViewModel)
+    );
+  }
+
+  onClick() {
+    this.clickSubject.next();
+  }
+}
+
+interface MyViewModel {
+  someProperty: string;
+}
+```
+
+This approach appears to meet all your specified goals:
+
+- It avoids manual unsubscribes by using the `async` pipe.
+- It supports `ChangeDetectionStrategy.OnPush`.
+- It has no additional dependencies.
+- It's a pattern that can be applied generally.
+- It uses observables for all ViewModel mutations and interactions.
+
+Certainly! Below is a simple Angular example that applies your ViewModel pattern to a `Person` object, which includes a `name` and `age` property.
+
+First, let's define the `Person` model and ViewModel Mutation function type:
+
+```typescript
+interface Person {
+  name: string;
+  age: number;
+}
+
+type PersonViewModelMutation = (person: Person) => Person;
+```
+
+Now, let's build the Angular component that uses this `Person` model.
+
+```typescript
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Observable, Subject, merge } from 'rxjs';
+import { map, scan } from 'rxjs/operators';
+
+@Component({
+  selector: 'app-person',
+  template: `
+    <div *ngIf="personViewModel$ | async as person">
+      <h2>{{ person.name }}</h2>
+      <p>Age: {{ person.age }}</p>
+      <button (click)="updateName('John')">Change Name to John</button>
+      <button (click)="incrementAge()">Increment Age</button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class PersonComponent implements OnInit {
+  personViewModel$: Observable<Person>;
+  private nameSubject = new Subject<string>();
+  private ageSubject = new Subject<number>();
+
+  ngOnInit() {
+    const initialPerson: Person = {
+      name: 'Jane',
+      age: 30
+    };
+
+    const nameMutation$: Observable<PersonViewModelMutation> = this.nameSubject.pipe(
+      map(name => (person: Person) => ({ ...person, name }))
+    );
+
+    const ageMutation$: Observable<PersonViewModelMutation> = this.ageSubject.pipe(
+      map(ageDelta => (person: Person) => ({ ...person, age: person.age + ageDelta }))
+    );
+
+    this.personViewModel$ = merge(
+      nameMutation$,
+      ageMutation$
+    ).pipe(
+      scan((person, mutation) => mutation(person), initialPerson)
+    );
+  }
+
+  updateName(name: string): void {
+    this.nameSubject.next(name);
+  }
+
+  incrementAge(): void {
+    this.ageSubject.next(1);
+  }
+}
+```
+
+In this example:
+
+- The `Person` ViewModel is represented as an `Observable<Person>` called `personViewModel$`.
+- Two buttons in the template allow you to change the name to "John" and increment the age.
+- We have two `Subject`s (`nameSubject` and `ageSubject`) that we use to emit new name and age mutations.
+- Each `Subject` is mapped to a corresponding ViewModel mutation observable (`nameMutation$` and `ageMutation$`).
+- The `scan` operator accumulates these mutations, starting with an `initialPerson`.
+
+To make this work, you'll need to add the component to your Angular module, and don't forget to import the necessary modules from Angular and RxJS.
+
+This example meets all the criteria you've mentioned:
+
+- Automatic unsubscribe: Utilizes the `async` pipe for unwrapping the observable, which handles subscription and unsubscription.
+- Performance: Uses `ChangeDetectionStrategy.OnPush` to minimize unnecessary change detection runs.
+- No additional dependencies: Only relies on Angular and RxJS.
+- General applicability: This pattern can be applied to any component needing to manage a view model.
+- Reactive: Uses observables for all ViewModel mutations and interactions.
+
+React code:
+-------------------------------------------------------------------------------------------------------------
+Certainly! You can use a similar ViewModel pattern in React using RxJS. Below is a simple React example that applies the ViewModel pattern to a `Person` object with `name` and `age` properties.
+
+First, let's install `rxjs`:
+
+```bash
+npm install rxjs
+```
+
+Now, create a file for the React component (`PersonComponent.jsx` for example):
+
+```jsx
+import React, { useEffect, useState } from 'react';
+import { Subject, merge } from 'rxjs';
+import { map, scan } from 'rxjs/operators';
+
+const PersonComponent = () => {
+  const [person, setPerson] = useState(null);
+  const nameSubject = new Subject();
+  const ageSubject = new Subject();
+
+  useEffect(() => {
+    const initialPerson = {
+      name: 'Jane',
+      age: 30
+    };
+
+    const nameMutation$ = nameSubject.pipe(
+      map(name => person => ({ ...person, name }))
+    );
+
+    const ageMutation$ = ageSubject.pipe(
+      map(ageDelta => person => ({ ...person, age: person.age + ageDelta }))
+    );
+
+    const personViewModel$ = merge(
+      nameMutation$,
+      ageMutation$
+    ).pipe(
+      scan((person, mutation) => mutation(person), initialPerson)
+    );
+
+    const subscription = personViewModel$.subscribe(newPerson => {
+      setPerson(newPerson);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const updateName = (name) => {
+    nameSubject.next(name);
+  };
+
+  const incrementAge = () => {
+    ageSubject.next(1);
+  };
+
+  return (
+    <div>
+      {person && (
+        <>
+          <h2>{person.name}</h2>
+          <p>Age: {person.age}</p>
+          <button onClick={() => updateName('John')}>Change Name to John</button>
+          <button onClick={() => incrementAge()}>Increment Age</button>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default PersonComponent;
+```
+
+In this example:
+
+- The `Person` ViewModel is represented using state, which is updated by subscribing to an RxJS observable.
+- Two buttons allow you to change the name to "John" and increment the age.
+- We have two RxJS `Subject`s (`nameSubject` and `ageSubject`) that we use to emit new name and age mutations.
+- Each `Subject` is mapped to a ViewModel mutation function, which produces a new `Person` object.
+- The `scan` operator accumulates these mutations, starting with an `initialPerson`.
+
+This approach meets your criteria:
+
+- It avoids manual unsubscribes by using the `useEffect` hook to manage the subscription lifecycle.
+- It should be performant as it avoids unnecessary renders by maintaining a single source of truth.
+- It has no additional dependencies beyond React and RxJS.
+- It's a pattern that can be applied generally.
+- It uses observables for all ViewModel mutations and interactions.
+
+You would typically include this `PersonComponent` in your larger React application to see it in action.
