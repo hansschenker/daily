@@ -1,0 +1,67 @@
+You can subscribe to changes in your form group and use it to update your model. But this is not safety. Because you must ensure that your form fields match the model fields or add verification that the fields in the model exist.
+
+bindModelToForm(model: any, form: FormGroup) {
+    const keys = Object.keys(form.controls);
+    keys.forEach(key => {
+        form.controls[key].valueChanges.subscribe(
+            (newValue) => {
+                model[key] = newValue;
+            }
+        )
+    });
+}
+Full code of my service:
+referenceFields - means if you have complex fields like student: { name, group } where group is a referenced model, and you need to be able to get only id from this model:
+
+import { Injectable } from '@angular/core';
+import { FormGroup } from "@angular/forms";
+
+@Injectable({
+    providedIn: 'root'
+})
+export class FormService {
+
+    constructor() {
+    }
+
+    bindModelToForm(model: any, form: FormGroup, referenceFields: string[] = []) {
+        if (!this.checkFieldsMatching(model, form)) {
+            throw new Error('FormService -> bindModelToForm: Model and Form fields is not matching');
+        }
+        this.initForm(model, form);
+        const formKeys = Object.keys(form.controls);
+        formKeys.forEach(key => {
+            if (referenceFields.includes(key)) {
+                form.controls[key].valueChanges.subscribe(
+                    (newValue) => {
+                        model[key] = newValue.id;
+                    }
+                )
+            } else {
+                form.controls[key].valueChanges.subscribe(
+                    (newValue) => {
+                        model[key] = newValue;
+                    }
+                )
+            }
+        });
+    }
+
+    private initForm(model: any, form: FormGroup) {
+        const keys = Object.keys(form.controls);
+        keys.forEach(key => {
+            form.controls[key].setValue(model[key]);
+        });
+    }
+
+    private checkFieldsMatching(model: any, form: FormGroup): boolean {
+        const formKeys = Object.keys(form.controls);
+        const modelKeys = Object.keys(model);
+        formKeys.forEach(formKey => {
+            if (!modelKeys.includes(formKey)) {
+                return false;
+            }
+        });
+        return true;
+    }
+}

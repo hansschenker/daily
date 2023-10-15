@@ -1,0 +1,123 @@
+RouterState
+----------------------------------------------------------------
+interface RouterState {
+  snapshot: RouterStateSnapshot; //returns current snapshot
+
+  root: ActivatedRoute;
+}
+
+interface ActivatedRoute {
+  snapshot: ActivatedRouteSnapshot; //returns current snapshot
+
+  url: Observable<UrlSegment[]>;
+  params: Observable<{[name:string]:string}>;
+  data: Observable<{[name:string]:any}>;
+
+  queryParams: Observable<{[name:string]:string}>;
+  fragment: Observable<string>;
+  
+  root: ActivatedRout;
+  parent: ActivatedRout;
+  firstchild: ActivatedRout;
+  children: ActivatedRout[];
+}
+
+
+
+Represents the state of the router as a tree of activated routes.
+RouterState is similar to RouteStateSnapshot, 
+except that it represents the state of the router changing over time
+
+class RouterState extends Tree<ActivatedRoute> {
+  snapshot: RouterStateSnapshot
+  override
+  toString(): string
+}
+
+RouterStateSnapshot
+------------------------------------------------------------------------
+RouteStateSnapshot is an immutable data structure representing the state of the router 
+at a particular moment in time. Any time a component is 
+added or removed or parameter is updated, a new snapshot is created.
+
+Node: url segments, parameters, resolved data
+---------------------------------------------s 
+Every node in this tree knows about the “consumed” URL segments, 
+the extracted parameters, and the resolved data
+
+
+
+
+ActivatedRoute - route associated with a component that is loaded in an outlet
+------------------------------------------------------------------
+Provides access to information about a route associated with a component that is loaded in an outlet. 
+Use to traverse the RouterState tree and extract information from nodes.
+
+See more...
+
+class ActivatedRoute {
+
+  snapshot: ActivatedRouteSnapshot
+  url: Observable<UrlSegment[]>
+
+  params: Observable<Params>
+  paramMap: Observable<ParamMap>
+
+  queryParams: Observable<Params>
+  queryParamMap: Observable<ParamMap>
+
+  fragment: Observable<string | null>
+
+  data: Observable<Data>
+
+  outlet: string
+
+  component: Type<any> | string | null
+
+  routeConfig: Route | null
+  root: ActivatedRoute
+  parent: ActivatedRoute | null
+  firstChild: ActivatedRoute | null
+
+  children: ActivatedRoute[]
+
+  pathFromRoot: ActivatedRoute[]
+
+
+  toString(): string
+}
+
+
+
+
+
+
+RouterStateSnapshot
+------------------------------------------------------------------
+class ActivatedRouteSnapshot {
+
+  routeConfig: Route | null
+  url: UrlSegment[]
+
+  params: Params
+  queryParams: Params
+
+  paramMap: ParamMap
+  queryParamMap: ParamMap
+  fragment: string | null
+
+  data: Data
+  outlet: string
+
+  component: Type<any> | string | null
+
+  root: ActivatedRouteSnapshot
+  parent: ActivatedRouteSnapshot | null
+  firstChild: ActivatedRouteSnapshot | null
+
+  children: ActivatedRouteSnapshot[]
+
+  pathFromRoot: ActivatedRouteSnapshot[]
+
+  toString(): string
+}

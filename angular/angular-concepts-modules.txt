@@ -1,0 +1,153 @@
+angularjs developer guide: https://docs.angularjs.org/guide
+
+Victor Savkin: Essential Angular
+---------------------------------------------------------------
+he core of Angular is a sophisticated compiler, which takes an 
+- NgModule -> NgModuleFactory -> NgModuleRef (Instance of a module)
+
+An NgModule has components declared in it. While creating the module factory, the 
+compiler will take the template of every component in the module, and using the information about declared components and pipes, 
+will produces a component factory. 
+The component factory is a JavaScript class the framework can use to stamp out components.
+
+- declarations (components list)
+- imports
+- exports
+- providers
+- viewProviders
+
+summary:
+Because Angular starts with a Template filled with Directives it needs a compiler to compile these artefacts
+into parts the browser can understand
+
+The central part of Angular is its compiler.
+The compilation can be done just in time (at runtime) and ahead of time (as a build step).
+The AOT compilation creates smaller bundles, tree shakes dead code, makes your templates type-safe, and improves the bootstrap time of your application.
+The AOT compilation requires certain metadata to be known statically, so the compilation can happen without actually executing the code.
+
+Declarations, Imports, and Exports
+NgModules are the unit of compilation and distribution of Angular components and pipes. 
+In many ways they are similar to ES6 modules, in that they have declarations, imports, and exports.
+
+NgModules are akin to ES modules: they have declarations, imports, and exports.
+NgModules define the compilation context of their components.
+
+Injecting NgModules and Module Initialization
+Angular instantiates NgModules and registers them with dependency injection. 
+This means that you can inject modules into other modules or components
+
+Lazy Loading
+As I mentioned above NgModules are not just the units of compilation, they are also the units of distribution. 
+That is why we bootstrap an NgModule, and not a component–we don’t distribute components, we distribute modules. 
+And that’s why we lazy load NgModules as well.
+
+summary
+--------
+- NgModules are the units of compilation. They tell Angular how components should be compiled.
+- Similar to ES module they have declarations, imports, and exports.
+- Every component belongs to a NgModule.
+- Bootstrap and entry components are configured in NgModules.
+- NgModules configure dependency injection.
+- NgModules are used to bootstrap applications.
+- NgModules are used to lazy load code.
+
+------------------------------------------------------------------
+
+What is a Module?
+
+You can think of a module as a container for the different parts of your app 
+
+– components, 
+- providers, 
+- filters, 
+- directives
+- pipes
+
+Unit of compilation
+-----------------
+An Angular module encapsulates these artifacts as one compilation unit
+
+Examples include FormsModule, HttpClientModule, and RouterModule. 
+Many external libraries are also available as Angular modules, for example, Material Design, Ionic, and AngularFire2.
+
+A Module designated a Feature Area
+-----------------------------------
+Angular components, directives, and pipes focus on particular 
+- feature areas, business domains, workflows, or common utilities
+But as the app grows, you should refactor the root module into feature modules, 
+which represents related functionality. You may then import these modules in the app-level module 
+if you want these modules to be eagerly loaded or in the routing module through routes if you want them to be lazily loaded.
+
+Types of Feature Modules
+---------------------
+
+Domain Feature Modules
+Routed Feature Modules
+Routing Modules
+Service Feature Modules
+Widget Feature Modules
+
+Domain Feature Modules
+---------------------------
+
+- placing an order, for a particular app is delivered by a domain feature module.
+  Domain feature modules rarely have providers. If they have providers, 
+  the lifetime of the provided services should be the same as the lifetime of the module. 
+  Domain feature modules are imported exactly once by a larger feature module.
+
+They might be imported by the root AppModule of a small application that lacks routing.
+
+Routing Modules
+--------------------------
+The routing module define routes and provides the routing configuration. 
+It adds router configuration to the module's import and 
+- separates routing concerns 
+- from its companion module. 
+A routing module should only be imported by its companion module, and it does not have its own declarations.
+
+Service Feature Modules
+-------------------------
+Utility services such as messaging and accessing data are provided by service feature modules. 
+These modules consist of providers only and have no declarations. 
+The root AppModule is the only module that should import service modules.
+
+Widget Feature Modules
+---------------------
+Components, directives, and pipes are made available to external modules using widget feature modules. 
+A widget feature module consists entirely of declarations and rarely has any providers.
+
+
+Eager or Lazy Loaded
+--------------------
+Modules can be eagerly loaded when the app starts or lazily loaded asynchronously by the router.
+
+NgModule Decorator
+-------------------
+An Angular Module's Metadata
+An Angular module's metadata, which is specified using the @NgModule decorator, does the following:
+
+- declare components, directives, and pipes belong to the module
+- esport some of those components, directives, and pipes public so that other module's component templates can use them
+- imports other modules with the components, directives, and pipes that components in the current module need
+- provides services that other app components can use Source: https://angular.io/guide/ngmodules
+
+Angular Architecture
+--------------------
+We use modules to organize our applications into components and services. 
+This establishes the context for component resolution and dependency injection
+the compiler looks inside the modules to figure out which components are available 
+for other components to use. So unlike AngularJS, pipes and components are not globally available; 
+they are only available in the context of the module that declared them or imported them from another module. 
+This helps preventing naming collisions when building large-scale applications with Angular
+
+Why?
+Most applications have a main method that instantiates and wires together the different parts of the application.
+
+AngularJS apps don't have a main method. Instead modules declaratively specify how an application should be bootstrapped. 
+There are several advantages to this approach:
+
+The declarative process is easier to understand.
+You can package code as reusable modules.
+The modules can be loaded in any order (or even in parallel) because modules delay execution.
+Unit tests only have to load relevant modules, which keeps them fast.
+End-to-end tests can use modules to override configuration.

@@ -1,0 +1,287 @@
+Built in Directives
+
+Angular Directives
+-----------------------------------------------------------
+*** ng-template
+---------------------
+Angular's <ng-template> element defines a template that is not rendered by default.
+It then wraps the host element inside an ng-template, this is the same for other structural directives
+
+With <ng-template>, you can define template content that is 
+- only being rendered by Angular when you, whether directly or indirectly, specifically instruct it to do so, 
+  allowing you to have full control over how and when the content is displayed.
+
+Note that if you wrap content inside an <ng-template> without instructing Angular to render it, 
+such content will not appear on a page.
+
+--------------------------------------------------
+<!-- use case for If else -->
+<div *ngIf="result else loading">
+   <p>{{result}}</p>
+</div>
+
+
+<!-- our loader template -->
+
+<ng-template #loading>
+    Loading ...
+</ng-template>
+----------------------------------------------------
+
+
+Usage notes
+------------------------------------------------------------------
+
+Structural Template Directives
+------------------------------
+- hold template content that will be used by Structural(template) directives. 
+  Those directives can add and remove copies of the template content based on their own logic (NgIf, NgFor,NgSwitch).
+
+
+TemplateRef - a reference to a ng-template
+-------------------------------------------------------------------------------
+<ng-template> elements are represented as instances of the TemplateRef class.
+
+- ViewContainerRef vcr adds copies of the template to the DOM, 
+  pass TempateRef to the ViewContainerRef method vcr.createEmbeddedView(tplRef).
+
+Template Variables: ng-template #myTpl (can be accessed with the help of ViewChild Decorator)
+------------------------------------------------------------------------------------------
+<ng-template> elements can be referenced in templates using standard template variables.
+
+
+Render template: ngTemplateOutlet + ng-template
+--------------------------------------------------
+Such template variables can be used in conjunction with ngTemplateOutlet directives 
+to render the content defined inside <ng-template> tags.
+
+Querying the template
+------------------------------------------------------
+A Query (such as ViewChild) can find the TemplateRef associated to an <ng-template> element 
+so that it can be used programmatically; for instance, to pass it to the ViewContainerRef method createEmbeddedView().
+
+Template Context
+------------------------------------------------------------
+Inside the <ng-template> tags you can reference variables present in the surrounding outer template. 
+
+Context Object
+------------------------------------------------------------
+Additionally, a context object can be associated with <ng-template> elements. 
+
+Such an object contains variables that can 
+- be accessed from within the template contents via template (
+  - let and 
+  - as declarations.
+ 
+
+*** ng-container : container for template directives
+--------------------------------------------------------
+A special element that can hold structural directives without adding new elements to the DOM.
+
+The <ng-container> allows us to use structural directives without any extra element, 
+making sure that the only DOM changes being applied are those dictated by the directives themselves.
+
+This not only increases performance (even so slightly) since the browser ends up rendering less elements 
+but can also be a valuable asset in having cleaner DOMs and styles alike.
+
+It can for example enable us to use structural directives 
+- without breaking styling dependent on a precise DOM structure 
+  (as for example the ones we get when using flex containers, margins, the child combinator selector, etc.).
+
+<ng-container *ngIf="condition">
+  …
+</ng-container>
+
+----------------------
+<ng-container *ngIf="condition; else templateA">
+  …
+</ng-container>
+
+<ng-template #templateA>
+  …
+</ng-template>
+
+---------------------------
+<ul>
+  <li *ngFor="let item of items" *ngIf="item.isValid">
+    {{ item.name }}
+  </li>
+</ul>
+----------------------------
+<ul>
+  <ng-container *ngFor="let item of items">
+    <li *ngIf="item.isValid">
+      {{ item.name }}
+    </li>
+  </ng-container>
+</ul>
+...............................
+
+
+
+
+
+
+*** ng-templateOutlet - inserts an embedded view from a prepared TemplateRef.
+------------------------------------------------------------------------------
+
+You can attach a context object to the EmbeddedViewRef by setting [ngTemplateOutletContext]. 
+[ngTemplateOutletContext] should be an object, 
+the object's keys will be available for binding by the local template let declarations.
+
+<ng-container *ngTemplateOutlet="templateRefExp; context: contextExp"></ng-container>
+- $implicit in the context object will set its value as default
+-------------------------------------------------------------------------------------
+@Component({
+  selector: 'ng-template-outlet-example',
+  template: `
+    <ng-container *ngTemplateOutlet="greet"></ng-container>
+    <hr>
+    <ng-container *ngTemplateOutlet="eng; context: myContext"></ng-container>
+    <hr>
+    <ng-container *ngTemplateOutlet="svk; context: myContext"></ng-container>
+    <hr>
+
+    <ng-template #greet><span>Hello</span></ng-template>
+
+    <ng-template #eng let-name><span>Hello {{name}}!</span></ng-template>
+
+    <ng-template #svk let-person="localSk"><span>Ahoj {{person}}!</span></ng-template>
+`
+})
+export class NgTemplateOutletExample {
+  myContext = {$implicit: 'World', localSk: 'Svet'};
+}
+----------------------------------------------------------------------------------------
+
+The NgTemplateOutlet directive can be applied to any element but most of the time it's 
+- applied to <ng-container> ones. 
+By combining the two, we get a very clear and easy to follow HTML and DOM structure in which no extra elements are necessary 
+- and template views are instantiated where requested.
+
+For example, imagine a situation in which we have a large HTML, in which a small portion needs to be repeated in different places. 
+
+A simple solution is to 
+- define an <ng-template> containing our repeating HTML and 
+- render that where necessary by using <ng-container> alongside an NgTemplateOutlet.
+
+
+
+<ng-container *ngTemplateOutlet="tmpl; context: {$implicit: 'Hello'}">
+</ng-container>
+
+
+<ng-container *ngTemplateOutlet="tmpl; context: {$implicit: 'World'}">
+</ng-container>
+
+
+<ng-template #tmpl let-text>
+  <h1>{{ text }}</h1>
+</ng-template>
+-----------------------------------------
+
+
+*** ng-content
+----------------------
+
+
+
+
+
+Router Directives
+------------------------------------------------------
+RouterLink	
+When applied to an element in a template, makes that element a link that initiates navigation to a route. 
+Navigation opens one or more routed components in one or more <router-outlet> locations on the page.
+
+RouterLinkActive	
+Tracks whether the linked route of an element is currently active, and allows you to specify 
+one or more CSS classes to add to the element when the linked route is active.
+
+RouterLinkWithHref	
+Lets you link to specific routes in your app.
+
+RouterOutlet	
+Acts as a placeholder that Angular dynamically fills based on the current router state.
+
+
+Common package Directives
+-------------------------------------------------------------
+
+Attribute Directives
+---------------------------------------------
+NgClass
+NgOptimizedImage
+NgStyle
+
+
+Template Directives
+-------------------------------------------
+NgIf
+NgFor
+NgForOf
+
+NgPlural
+NgSwitch
+NgSwitchCase
+NgSwitchDefault
+NgComponentOutlet
+NgTemplateOutlet
+
+
+Forms Directives
+------------------------------------------------------------
+AbstractControlDirective
+CheckboxControlValueAccessor
+DefaultValueAccessor
+MaxValidator
+
+Template Driven Forms
+-------------------------
+NgForm
+FormArrayName
+NgModelGroup
+NgModel
+FormControlDirective
+FormGroupDirective
+
+
+
+Reactive Forms
+----------------------------
+FormControlName
+FormGroupName
+
+
+
+
+Validators
+------------------------------------
+MinValidator
+MaxLengthValidator
+EmailValidator
+MinLengthValidator
+PatternValidator
+CheckboxRequiredValidator
+RequiredValidator
+
+Control status
+-------------------------------------------
+NgControlStatusGroup
+NgControlStatus
+
+
+
+
+Input type specific directives
+-------------------------------
+NgSelectOption
+SelectControlValueAccessor
+NumberValueAccessor
+RangeValueAccessor
+SelectMultipleControlValueAccessor
+RadioControlValueAccessor
+
+
+Template Directives
+---------------------------------------------------------------------------------------------------------------

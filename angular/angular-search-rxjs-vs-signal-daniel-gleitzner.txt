@@ -1,0 +1,283 @@
+Angular 16 is out now: Learn how to Replace RxJS with Signals
+Here I have one specific real world example for you, raw code comparison. Nothing more, nothing less!
+
+
+
+But but but… Signals & RxJS right — it’s not supposed to replace it?
+Couldn’t help myself and spark a little controversy in the title. Example I have is completely 
+replacing RxJS implementation with Signals.
+
+Signals are meant to replace RxJS to simplify your reactive code. 
+However, only synchronous RxJS code — 
+I wouldn’t replace asynchronous parts :).
+
+
+
+Search & Pagination (RxJS)
+----------------------------
+Here is RxJS code of small feature that allows you to 
+- search for a user and 
+- use pagination. 
+It’s meant to showcase how synchronous RxJS code can be simplified with Signals.
+
+I asked for code review for this parts. While I have been talking with my friends — each one of 
+them found different things to improve in my initial code and had different vision on how this 
+could look like.
+
+Additionally there have been occasional bugs and potential memory leaks. This is exactly why 
+working with synchronous RxJS is not ideal. I also bet that looking at this example you also 
+have a different kind of implementation in mind!
+
+    const users = [
+      { id: 1, name: 'Spiderman' },
+      { id: 2, name: 'Hulk' },
+      { id: 3, name: 'Wolverine' },
+      { id: 4, name: 'Cyclops' },
+      { id: 5, name: 'Venom' },
+    ];
+
+    @Component({
+      selector: 'my-app',
+      standalone: true,
+      imports: [CommonModule, FormsModule],
+      template: `
+      <input [ngModel]="searchInput$ | async" (ngModelChange)="searchUser($event)" placeholder="Search">
+
+      <ul>
+        <li *ngFor="let user of paginatedAndFilteredUsers$ | async">{{ user.name }}</li>
+      </ul>
+
+      <button (click)="goToPrevPage()">Previous</button>
+      pag. {{ currentPage$ | async }}
+      <button (click)="goToNextPage()">Next</button>
+    `,
+    })
+
+    export class App {
+      readonly firstPage = 1;
+
+      itemsPerPage = 2;
+
+      searchInput$ = new BehaviorSubject('');
+      currentPage$ = new BehaviorSubject(this.firstPage);
+
+      paginatedAndFilteredUsers$ = combineLatest([
+
+        this.currentPage$.pipe(distinctUntilChanged()), // trigger only when it actually changes
+        this.searchInput$.pipe(
+          distinctUntilChanged(),
+          map((searchText) => users.filter((user) => user.name.toLowerCase().includes(searchText.toLowerCase())
+            )
+          )
+        ),
+      ]).pipe(
+        map(([currentPage, filteredUsers]) => {
+          const startIndex = (currentPage - 1) * this.itemsPerPage;
+          const endIndex = startIndex + this.itemsPerPage;
+          return filteredUsers.slice(startIndex, endIndex);
+        })
+      );
+
+      searchUser(searchText: string): void {
+        this.searchInput$.next(searchText);
+        if (this.currentPage$.value > this.firstPage) {
+          this.currentPage$.next(this.firstPage);
+        }
+      }
+
+      goToPrevPage(): void {
+        this.currentPage$.next(Math.max(this.currentPage$.value - 1, 1));
+      }
+
+      goToNextPage(): void {
+        this.currentPage$.next(
+          Math.min(this.currentPage$.value + 1, this.itemsPerPage + 1)
+        );
+      }
+    }
+
+
+// signals -------------------------------------------------------------------------------
+Search & Pagination (Signals)
+
+Exactly the same implementation but done with Signals
+    const users = [
+      { id: 1, name: 'Spiderman' },
+      { id: 2, name: 'Hulk' },
+      { id: 3, name: 'Wolverine' },
+      { id: 4, name: 'Cyclops' },
+      { id: 5, name: 'Venom' },
+    ];
+
+    @Component({
+      selector: 'my-app',
+      standalone: true,
+      imports: [CommonModule, FormsModule],
+      template: `
+      <input [ngModel]="searchInput()" (ngModelChange)="searchUser($event)" placeholder="Search">
+
+      <ul>
+        <li *ngFor="let user of paginatedAndFilteredUsers()">{{ user.name }}</li>
+      </ul>
+
+      <button (click)="goToPrevPage()">Previous</button>
+      pag. {{ currentPage() }}
+      <button (click)="goToNextPage()">Next</button>
+    `,
+    })
+    export class App {
+      readonly firstPage = 1;
+
+      itemsPerPage = 2;
+
+      searchInput = signal('');
+      currentPage = signal(this.firstPage);
+
+      paginatedAndFilteredUsers = computed(() => {
+        const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        return users
+          .filter((user) =>
+            user.name.toLowerCase().includes(this.searchInput().toLowerCase())
+          )
+          .slice(startIndex, endIndex);
+      });
+
+      searchUser(searchText: string): void {
+        this.searchInput.set(searchText);
+        if (this.currentPage() > this.firstPage) {
+          this.currentPage.set(this.firstPage);
+        }
+      }
+
+      goToPrevPage(): void {
+        this.currentPage.update((currentPage) => Math.max(currentPage - 1, 1));
+      }
+
+      goToNextPage(): void {
+        this.currentPage.update((currentPage) =>
+          Math.min(currentPage + 1, this.itemsPerPage + 1)
+        );
+      }
+    }
+
+// rxjss -------------------------------------------------------------------------------
+    //RxJs
+    @Component({
+      selector: 'my-app',
+      standalone: true,
+      imports: [CommonModule, FormsModule],
+      template: `
+      <input [ngModel]="searchInput$ | async" (ngModelChange)="searchUser($event)" placeholder="Search">
+
+      <ul>
+        <li *ngFor="let user of paginatedAndFilteredUsers$ | async">{{ user.name }}</li>
+      </ul>
+
+      <button (click)="goToPrevPage()">Previous</button>
+      pag. {{ currentPage$ | async }}
+      <button (click)="goToNextPage()">Next</button>
+    `,
+    })
+
+// signals -------------------------------------------------------------------------------
+    @Component({
+      selector: 'my-app',
+      standalone: true,
+      imports: [CommonModule, FormsModule],
+    template: `
+      <input [ngModel]="searchInput()" (ngModelChange)="searchUser($event)" placeholder="Search">
+
+      <ul>
+        <li *ngFor="let user of paginatedAndFilteredUsers()">{{ user.name }}</li>
+      </ul>
+
+      <button (click)="goToPrevPage()">Previous</button>
+      pag. {{ currentPage() }}
+      <button (click)="goToNextPage()">Next</button>
+    `,
+    })
+// rxjs -------------------------------------------------------------------------------
+    readonly firstPage = 1;
+
+      itemsPerPage = 2;
+
+      searchInput$ = new BehaviorSubject('');
+      currentPage$ = new BehaviorSubject(this.firstPage);
+
+      paginatedAndFilteredUsers$ = combineLatest([
+        this.currentPage$.pipe(distinctUntilChanged()),
+        this.searchInput$.pipe(
+          distinctUntilChanged(),
+          map((searchText) =>
+            users.filter((user) =>
+              user.name.toLowerCase().includes(searchText.toLowerCase())
+            )
+          )
+        ),
+      ]).pipe(
+        map(([currentPage, filteredUsers]) => {
+          const startIndex = (currentPage - 1) * this.itemsPerPage;
+          const endIndex = startIndex + this.itemsPerPage;
+          return filteredUsers.slice(startIndex, endIndex);
+        })
+      );
+// signals -------------------------------------------------------------------------------
+    readonly firstPage = 1;
+
+      itemsPerPage = 2;
+
+      searchInput = signal('');
+      currentPage = signal(this.firstPage);
+
+      paginatedAndFilteredUsers = computed(() => {
+        const startIndex = (this.currentPage() - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        return users
+          .filter((user) =>
+            user.name.toLowerCase().includes(this.searchInput().toLowerCase())
+          )
+          .slice(startIndex, endIndex);
+      });
+
+    //RxJS
+    searchUser(searchText: string): void {
+        this.searchInput$.next(searchText);
+        if (this.currentPage$.value > this.firstPage) {
+          this.currentPage$.next(this.firstPage);
+        }
+      }
+
+    //Signals
+    searchUser(searchText: string): void {
+        this.searchInput.set(searchText);
+        if (this.currentPage() > this.firstPage) {
+          this.currentPage.set(this.firstPage);
+        }
+      }
+
+    //RxJS
+    goToPrevPage(): void {
+        this.currentPage$.next(Math.max(this.currentPage$.value - 1, 1));
+      }
+
+    goToNextPage(): void {
+        this.currentPage$.next(
+          Math.min(this.currentPage$.value + 1, this.itemsPerPage + 1)
+        );
+      }
+
+    //Signals
+    goToPrevPage(): void {
+        this.currentPage.update((currentPage) => Math.max(currentPage - 1, 1));
+      }
+
+    goToNextPage(): void {
+        this.currentPage.update((currentPage) => Math.min(currentPage + 1, this.itemsPerPage + 1)
+        );
+      }
+
+Conclusion
+Please remember that currently Signals are in developer preview only! 
+However they are here to stay —
+and I have to say I love how they replace and simplify code initially written with synchronous RxJS in mind.

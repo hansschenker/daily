@@ -1,0 +1,174 @@
+A guide to lifecycle hooks in Angular
+----------------------------------------
+You will need to have Node 11+, Node Package Manager version 6+, Angular CLI 7+ and Angular 7+ installed on your machine.
+
+Learn about all the hooks available for use in your Angular workflow for building awesome applications.
+
+Angular
+--------------------------------
+Angular is a TypeScript framework for building web applications, mobile or desktop with over 49,000 stars on GitHub. 
+Maintained by the Angular team at Google and a host of community members and organizations, it combines declarative 
+templates, dependency injection, end to end tooling, and integrated best practices to solve development challenges. 
+Angular empowers developers to build applications that live on the web, mobile, or the desktop. It has a very useful 
+CLI tool for beginners to easily get started, there is even a GUI client called Console.
+
+Lifecycle hooks
+----------------
+Every Angular component goes through the process of 
+
+- creation, then Angular goes on to 
+- execute all the functions it was created to execute and then go to 
+- possible destruction, this is called the lifecycle of a component. 
+
+Angular does this by 
+---------------------
+- creating the component, 
+- rendering it as well as creating and 
+- rendering all its children. 
+- checks for changes in the data properties or in the DOM, and makes the appropriate updates and 
+- destroys it then removes it from the DOM.
+
+Angular offers lifecycle hooks that provide visibility into these key life moments and 
+the ability to act when they occur.
+
+There are eight lifecycle hooks in Angular:
+
+1 - ngOnChanges()
+2 - ngOnInit()
+3 - ngDoCheck()
+4 - ngAfterContentInit()
+5 - ngAfterContentChecked()
+6 - ngAfterViewInit()
+7 - ngAfterViewChecked()
+8 - ngonDestroy()
+
+content projection lifecycle hooks: 
+----------------------------
+- ngAfterContentInit(), 
+- ngAfterContentChecked(), 
+- ngAfterViewInit(), 
+- ngAfterViewChecked(). It will be briefly treated in this section. 
+
+If you have a custom Angular component you are displaying in your template component.html file, 
+you are allowed to have child elements inside your custom component. Here is a good example:
+
+
+content projection: efficiency for working with child components. 
+-----------------------------------------------------------------
+Using the above illustration, if you had in the CSS file two classes called pink and green that sets 
+the background color of an element to pink or green. To apply the classes on the child component 
+can look very cumbersome and with a lot of repetition.
+
+  <my-party-component>
+    <h2>Vote your favorite party</h2>
+    <option class="pink" value="100"><h3>Vote APC</h3></option>
+    <option class="green" value="100"><span>Vote PDP</span></option>
+    <option class="pink" value="100"><h3>Vote APC</h3></option>
+  </my-party-component>
+
+This can however be reduced to one line of code with content projection in the my-party-component definition:
+
+    <ng-content select="span"></ng-content>
+    <ng-content select="h3"></ng-content>
+
+Lifecycle hooks explained
+---------------------------
+In this article you will be introduced to every one of them, why they were built and how they are used. 
+
+After creating a component by calling its constructor, Angular calls the lifecycle hook methods
+in the following sequence at specific moments:
+
+1 - ngOnChanges() - class constructing counts as data property chang
+---------------------------------------------------------------
+- called right after your class gets initialized and the 
+- component is created the ngOnChanges() is called. 
+
+You might want to wonder why ngOnInit hook is not called first, but that is because Angular counts 
+- class initialization as a data property change. 
+- any time there is a property change inside your component.
+
+
+2 - ngOnInit()
+---------------------------------------------------------------
+- called after first ngOnChange, only called once, it initializes the component, 
+  sets and displays component input properties. It is the most important 
+- signals the activation of the created component. (time for fetching api data)
+
+3 - ngDoCheck()
+---------------------------------------------------------------
+- called during every change detection run, 
+
+4 - ngAfterContentInit() - change detection for content projection
+------------------------------------------------------------------------
+- called once immediately after the first ngDoCheck hook is called, it is a kind of ngDoCheck but for content projected
+
+
+5 - ngAfterContentChecked()
+------------------------------------------------
+- called after the content projected into a component view is initialized, after the ngAfterContentInit 
+  hook and every subsequent ngDoCheck hook is called.
+
+
+6 - ngAfterViewInit()
+--------------------------------------------------
+- once after the very first ngAfterContentChecked hook is called. 
+- after Angular initializes component views and the subsequent child views under 
+  each component (include views content projection) 
+
+7 - nfAfterViewChecked()
+8 - ngOnDestroy() unscribe rxjs subscriptions
+
+Angular.io
+................
+
+Hook method	
+
+ngOnChanges()	- sets or resets data-bound input properties
+--------------------------------------------------------------
+Respond when Angular sets or resets data-bound input properties. 
+The method receives a SimpleChanges object of current and previous property values.
+Note that this happens very frequently, so any operation you perform here impacts performance significantly.
+Timing:
+Called before ngOnInit() (if the component has bound inputs) and whenever one or more data-bound input properties change.
+Note that if your component has no inputs or you use it without providing any inputs, the framework will not call ngOnChanges().
+
+ngOnInit() - Initialize the directive or component after Angular first displays the data-bound properties
+----------------------------------------------------------------------------------------------------------	
+Initialize the directive or component after Angular first displays the data-bound properties and sets the directive 
+or component's input properties. See details in Initializing a component or directive in this document.
+Timing:
+Called once, after the first ngOnChanges(). ngOnInit() is still called even when ngOnChanges()
+is not (which is the case when there are no template-bound inputs).
+
+ngDoCheck()	- Detect and act upon changes
+----------------------------------------------------------------------
+Detect and act upon changes that Angular can't or won't detect on its own. 
+See details and example in Defining custom change detection in this document.
+Timing:
+Called immediately after ngOnChanges() on every change detection run, 
+and immediately after ngOnInit() on the first run.
+
+ngAfterContentChecked()	- after Angular checks the content projected
+--------------------------------------------------------------------
+Respond after Angular checks the content projected into the directive or component.
+Timing:
+Called after ngAfterContentInit() and every subsequent ngDoCheck().
+
+ngAfterViewInit() - after Angular initializes the component's views and child views	
+-----------------------------------------------------------------------
+Respond after Angular initializes the component's views and child views, or the view that contains the directive.
+Timing:
+Called once after the first ngAfterContentChecked().
+
+ngAfterViewChecked() - checks the component's views and child views	
+--------------------------------------------------------------------
+Respond after Angular checks the component's views and child views, or the view that contains the directive.
+Timing:
+Called after the ngAfterViewInit() and every subsequent ngAfterContentChecked().
+
+ngOnDestroy()	- before Angular destroys the directive or component
+--------------------------------------------------------------
+Cleanup just before Angular destroys the directive or component. 
+Unsubscribe Observables and detach event handlers to avoid memory leaks.
+Timing:
+Called immediately before Angular destroys the directive or component.

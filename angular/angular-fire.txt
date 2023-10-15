@@ -1,0 +1,217 @@
+ngn links
+npm install firebase @angular/fire
+
+// 1. Import the libs you need
+import { environment } from '../environments/environment';
+import { AngularFireModule } from '@angular/fire';
+import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { AngularFireStorageModule } from '@angular/fire/storage';
+import { AngularFireAuthModule } from '@angular/fire/auth';
+
+// 2. Add your credentials from step 1
+
+    // 3. Initialize
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule, // firestore
+    AngularFireAuthModule, // auth
+    AngularFireStorageModule, // storage
+
+// 4. use in component
+import { AngularFirestore } from '@angular/fire/firestore';
+
+@Component(...)
+export class SomeComponent {
+
+  constructor(private db: AngularFirestore) {
+      const things = db.collection('things').valueChanges();
+      things.subscribe(console.log);
+  }
+}
+
+// add a angular eature module
+ngm link
+
+// db service
+import { Injectable } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/firestore';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DbService {
+  constructor(private afs: AngularFirestore) {}
+
+  collection$(path, query?) {
+    return this.afs
+      .collection(path, query)
+      .snapshotChanges()
+      .pipe(
+        map(actions => {
+          return actions.map(a => {
+            const data: Object = a.payload.doc.data();
+            const id = a.payload.doc.id;
+            return { id, ...data };
+          });
+        })
+      );
+  }
+
+  doc$(path): Observable<any> {
+    return this.afs
+      .doc(path)
+      .snapshotChanges()
+      .pipe(
+        map(doc => {
+          return { id: doc.payload.id, ...doc.payload.data() };
+        })
+      );
+  }
+
+  /**
+   * @param  {string} path 'collection' or 'collection/docID'
+   * @param  {object} data new data
+   *
+   * Creates or updates data on a collection or document.
+   **/
+  updateAt(path: string, data: Object): Promise<any> {
+    const segments = path.split('/').filter(v => v);
+    if (segments.length % 2) {
+      // Odd is always a collection
+      return this.afs.collection(path).add(data);
+    } else {
+      // Even is always document
+      return this.afs.doc(path).set(data, { merge: true });
+    }
+  }
+
+  /**
+   * @param  {string} path path to document
+   *
+   * Deletes document from Firestore
+   **/
+  delete(path) {
+    return this.afs.doc(path).delete();
+  }
+}
+
+--------------------------------------
+todo details
+
+ ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id');
+    this.todo$ = this.db.doc$(`todos/${id}`);
+  }
+}
+--------------------------------------
+todo form
+todoForm: FormGroup;
+
+  todo;
+
+  ngOnInit() {
+    const data = {
+      content: '',
+      status: 'pending',
+      ...this.todo
+    };
+    this.todoForm = this.fb.group({
+      content: [
+        data.content,
+        [
+          Validators.required,
+          Validators.minLength(1),
+          Validators.maxLength(250)
+        ]
+      ],
+      status: [data.status, [Validators.required]]
+    });
+  }
+
+  async createTodo() {
+    const uid = await this.auth.uid();
+    const id = this.todo ? this.todo.id : '';
+    const data = {
+      uid,
+      createdAt: Date.now(),
+      ...this.todo,
+      ...this.todoForm.value
+    };
+
+    this.db.updateAt(`todos/${id}`, data);
+    this.modal.dismiss();
+  }
+-------------------------------------------
+todo list
+<ion-item *ngFor="let todo of filtered | async; trackBy: trackById">
+-----------------------------------------
+ todos;
+  filtered;
+
+  filter = new BehaviorSubject(null);
+
+  constructor(
+    public db: DbService,
+    public auth: AuthService
+  ) {}
+
+  ngOnInit() {
+    this.todos = this.auth.user$.pipe(
+      switchMap(user =>
+        this.db.collection$('todos', ref =>
+          ref
+            .where('uid', '==', user.uid)
+            .orderBy('createdAt', 'desc')
+            .limit(25)
+        )
+      ),
+      shareReplay(1)
+    );
+
+    this.filtered = this.filter.pipe(
+      switchMap(status => {
+        return this.todos.pipe(
+          map(arr =>
+            (arr as any[]).filter(
+              obj => (status ? obj.status === status : true)
+            )
+          )
+        );
+      })
+    );
+  }
+
+  deleteTodo(todo) {
+    this.db.delete(`todos/${todo.id}`);
+  }
+
+  toggleStatus(todo) {
+    const status = todo.status === 'complete' ? 'pending' : 'complete';
+    this.db.updateAt(`todos/${todo.id}`, { status });
+  }
+
+  updateFilter(val) {
+    this.filter.next(val);
+  }
+
+  async presentTodoForm(todo?: any) {
+    const modal = await this.modal.create({
+      component: TodoFormComponent,
+      componentProps: { todo }
+    });
+    return await modal.present();
+  }
+
+  trackById(idx, todo) {
+    return todo.id;
+  }
+-----------------------------------------------------------------
+todo delete
+  deleteTodo(todo) {
+    this.db.delete(`todos/${todo.id}`);
+  }
+
+
+
+--------------------------------------------------------------------------

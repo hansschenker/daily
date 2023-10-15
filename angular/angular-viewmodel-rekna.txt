@@ -1,0 +1,430 @@
+angular-viewmodel,      rekna, https://indepth.dev/angular-viewmodel-as-observable/
+angular-viewmodel,      rekna, https://stackblitz.com/edit/angular-viewmodel-rekna?file=src/app/app.component.ts
+angular-viewmodel,      rekna, https://github.com/rekna1/AngularVmAsObservable
+angular-viewmodel,      rekna, C:\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna
+
+angular-viewmodel,      rekna, https://indepth.dev/angular-viewmodel-as-observable/
+--------------------------------------------------------------------------------------------------------------------------
+- implement Angular View Model (vm$ as vm) as a single observable stream
+- by mergin all observables into that single observable stream (merge: each merge obs is a separate value on output stream )
+- use of subject to store action (user input: input, button, select)
+- use async as for subscription and unsubscription
+- use ChangeDetectionStrategy.onPush by applying Immuability (Observables are immutable)
+- angular changedetection on input, output and bound Observable
+
+ Generic Viewmodel
+ ----------------------------------------------------------------
+export interface ViewModel<T> {
+  item: T;
+  items: T[];
+  searchItem?: T;
+  searchItems?: T[];
+  selectedItem?: T;
+  pageItems: T[];
+}
+
+Viewmodel reducer function: takes a Vm and returs a Vm
+--------------------------------------------------------------------
+ export type vmReducer<T> = (vm: ViewModel<T>) => ViewModel<T>;
+ const itemReducer: vmReducer<Item>    // = (vm: ViewModel<Item> => ViewModel<Item>
+
+ scan((oldVm: ItemVm, itemReducer) => reduceVm(oldVm), { items: [], } as ProductVm));
+      -----------------  -----------------------     ---------------  ------------------------------ 
+         oldVm           typed reduce function       applied reduce fn  initial typed vm object
+
+
+Component Viewmodel
+-------------------------------------------------------------
+- vm$: 		single composed observable: use merge, each component has a viewmodel, 
+		and all changes to the viewmodel result from a single (composed) observable.
+- map: 		the viewmodel observable is defined as an observable of viewmodel mutation functions.
+- scan: 	scan operator which accumulates all viewmodel mutations.
+
+Viewmodel Reduce Function with scan operator
+---------------------------------------------------------------------------------------------
+- map any observable to a change in the viewmodel with the help of the Vm Reduce Function
+
+Vm Reduce Function VmFn used in the scan opperator
+---------------------------------------------
+ scan (acc, val) => acc + val, initialstate
+
+ scan (oldVm, VmFn) => VmFn(oldVm), initialstate
+      .............    -----------
+ sample
+----------------------------------------------------------------------------------------------
+
+    this.vm$ = merge(
+
+      this.itemsChange$,
+      this.addChange$,
+      this.deleteChange$,
+      this.detailChange$,
+      this.closeDetailChange$,
+      this.searchItemChange$
+      
+    ).pipe(
+      scan(
+         accumulated Viewmodel       vmReduce: takes a vm as input and outputs a new vm           by applying the vmReduce Function on the oldVm
+          .........................  .........................................................    ...............   ...................................
+        ( oldVm: ViewModel<Product>, vmReduce: (vm: ViewModel<Product>) => ViewModel<Product>) => vmReduce(oldVm), { items: [] } as ViewModel<Product> )
+          .........................  .........................................................    ----------------  ....... initial Vm ...............  
+                                                                                                                    init the vm with an empty items array
+  // add products from http request onto vm
+  --------------------------------------------------------------------------------------------
+  private itemsChange$ = this.http.get<Product[]>(`api/products`).pipe(   
+    map((products: Product[]) => (vm: ViewModel<Product>) => ({ ...vm, items: products,}))
+  );
+
+  // add product from user form onto vm
+  --------------------------------------------------------------------------------------------
+  private addChange$ = this.addState.pipe(  
+    // from addState we get a new item 
+    map((product) => (vm: ViewModel<Product>) => ({...vm,items: [...vm.items,{ id: product.id, name: product.name, color: product.color }],}))
+  );
+
+  // delete product from items with filter initated by a list delete button click
+  --------------------------------------------------------------------------------------------
+  private deleteChange$ = this.deleteState.pipe(
+    map((item) => (vm: ViewModel<Product>) => ({...vm, items: vm.items.filter((p) => p !== item)}))
+  );
+
+  // show product details page initiated by a details button click on list
+  --------------------------------------------------------------------------------------------
+  private detailChange$ = this.detailState.pipe(
+    map((product) => (vm: ViewModel<Product>) => ({ ...vm, selectedItem: product }))
+  );
+
+  // close product detail page with a click on the close button on page
+  --------------------------------------------------------------------------------------------
+
+  private closeDetailChange$ = this.detailCloseState.pipe(
+    map((_) => (vm: ViewModel<Product>) => ({ ...vm, selectedItem: null }))
+  );
+
+  // filter items based on the selection of an item field and a item value (whole word case sensitive)
+  ---------------------------------------------------------------------------------------------------
+  // the searchItem is a Product with empty fields except the field we are looking for: color:"green" or name: "Product 1" (only whole case sensitive search)
+  private searchItemChange$ = this.searchItemState.pipe(
+    map((item:Product) => (vm: ViewModel<Product>) => ({ ...vm, searchItem: item, searchItems: vm.items.filter((itm) => {
+        if (item.name.length > 0) {
+          console.log("search name");
+          item.color = "";
+          item.year = 0;
+          return itm.name === item.name;
+        }
+        if (item.year > 0) {
+          console.log("search year");
+          item.color = "";
+          item.name = "";
+          return itm.year.toString() === item.year.toString();
+        }
+        if (item.color.length > 0) {
+          console.log("search color");
+          item.year = 0;
+          item.name = "";
+          return itm.color === item.color;
+        }
+      }),
+    }))
+  );
+
+todo pagination
+................
+
+
+
+
+
+
+
+
+
+
+
+
+
+The Scan Operator - apply changes to the previous state of the viewmodel
+---------------------------------------------------------------------------------------------
+- The scan operator helps to apply these viewmodel reduce functions
+  take oldVm as input and apply the vmReduce to it to generate newVm 
+  when any of the change observables emit a value it applies the new state change to the Vm 
+
+----------------------------------------------------------------------------------------------
+Simple Value sample with Counter - CounerVm
+-----------------------------------------------------------------------------------------------
+interface CounterVm {   
+    counter:number; 
+}
+const initialCounterVm {
+  counter: 0
+}
+public vm$ : Observable<ICounterVm>;
+public counterState = new Subject<number>;
+(ui: counterState.next(1))
+
+const counterChange$ = this.counterState.pipe(
+    map( next => (vm:CounterVm) => ({...vm, counter:vm.counter+next}) )
+  );
+
+this.vm$ = merge(of(initialCounterVm), counterChange$).pipe(
+    scan( (prevVm:CounterVm, mutationFn:(vm:CounterVm) => CounterVm) 
+      => mutationFn(prevVm)
+    )
+  )
+
+--------------------------------------------------------------------------------------------------
+Object sample with Person - PersonVm
+--------------------------------------------------------------------------------------------------
+interface Person {
+  id: number;
+  name: string;
+}
+interface PersonDetail {
+  person: Person
+}
+interface PersonVm {
+  persons:Person[];               // used in the list page
+  personDetail:IPersonDetail;     // used in detail page
+}
+const initialPersonVm = {
+  persons:[],
+  personDetail: null
+}
+public personDetailState = new Subject<Person>();
+public vm$ : Observable<PersonVm>;
+
+constructor(private personService:PersonService) {
+
+  // retrieving list of persons (could be a http request)
+  const personsChange$ = this.personService.Persons().pipe(
+    map( persons => (vm:PersonVm) => ({...vm, persons}) )
+  );
+
+  // select a person, get detail and set it on viewmodel
+  const personDetailChange$ = this.personDetailState.pipe(
+    mergeMap( person => this.personService.PersonDetail(person.id) ),
+    map( next => (vm:PersonVm) => ({...vm, personDetail }))
+  );
+
+  // merge into vm$
+  const vm$ = merge(personListChange$, personDetailChange$).pipe(
+    scan( (vm:PersonVm, mutationFn:(vm:PersonVm) => PersonVm) => mutationFn(vm), this.initialPersonVm )
+  //scan( ( acc       , reducer                             ) => reducer(vm)
+          (  ---------, ------------------------------------) => -----------------, initialVm -----------)
+    )
+  )
+  
+}
+
+CRUD operation on Person (public properties before constructor)
+----------------------------------------------------------------------------------------------------------
+/***  add a Person ***/
+---------------------------------------
+public addState = new Subject<Person>();
+const addChange$ = this.addState.pipe(
+  map( newPerson => (vm:IPersonVm) => ({ ...vm, persons:[...vm.persons, newPerson ]}))
+);
+
+/*** delete a Person ***/
+---------------------------------------
+public deleteState = new Subject<Person>();
+const deleteChange$ = this.deleteState.pipe(
+  map( person => (vm:PersonVm)=>({...vm, persons:vm.persons.filter(p => p!==person )}))
+);
+
+/*** update a Person ***/
+----------------------------------------------
+public updateState = new Subject<Person>();
+const updateChange$ = this.updateState.pipe(map( person => (vm:PersonVm)=>{
+    const index = vm.persons.findIndex(p=>p===person);
+    const persons = [...vm.persons.slice(0,index), person,...vm.persons.slice(index + 1)];
+    return {...vm, persons};
+  })
+);
+
+Sample with Server Update
+-----------------------------------------------------------------------------------------------------------------
+Example with server update#
+Next I will show an example of an update being pushed to the server:
+
+public updateState = new Subject<Person>();
+const updateChange$ = this.updateSubj.pipe(
+  mergeMap( person => this.personService.update(person) ),
+  map( person => {
+    const index = vm.persons.findIndex(p=>p.id === person.id );
+    const persons = [...vm.persons.slice(0,index),person,...vm.persons.slice(index + 1)];
+    return {...vm, persons};
+  })
+)
+
+Angular Routing
+-----------------------------------------------------------------------------------------------------------------------
+Often Angular routing paramMap or queryParamMap will be needed to determine the initial state of the viewmodel. 
+Since paramMap and queryParamMap are observables, they can easily be transformed to a viewmodel mutation function and added to the merge.
+
+ constructor(private route:ActivatedRoute) {
+    const retrieveDataChange$ = route.paramMap.pipe(
+      map( paramMap => +this.paramMap.get('id') ),
+      switchMap( id => this.personService.getPerson(id)),
+      map( personDetail => (vm:IPersonVm)=> ({...vm, personDetail }))
+    )
+  };
+
+  this.vm$ = merge(retrieveDataChange$, /* other viewmodel mutations */);
+
+Handling Sideeffects
+--------------------------------------------------------------------------------------------------------------------
+If you ever need to execute side effects without changing the viewmodel, just map to a mutation function 
+which executes the side effect and returns the previous viewmodel state.
+
+const sideEffect$ = sideEffectSubj.pipe(
+    map( _ => (vm:IViewModel)=>{
+      // execute side effect here
+      return vm;
+    })
+  );
+
+Reloading Data from the Server
+-------------------------------------------------------------------------------------------------------------------
+Delete an Item on the Server:
+
+This introduces the following problem : since the delete$ observable is subscribed twice 
+(merge subscribes directly to delete$ and indirectly a second time via reload$) the delete request 
+will be executed twice. Luckily this can be easily solved by the share operator.
+
+private deleteChange$ = this.deleteState.pipe(
+  mergeMap( item => this.itemService.delete(item.Id)),
+  share(),
+  map( _ => (vm:ItemListVm) => vm)
+);
+
+The share operator will share an observable result in the future, meaning that if one subscribes at some time x, 
+this subscriber will not get any value that was emitted previously to that time. So in the case of the delete$ observable 
+which is subscribed to multiple times the share operator prevents the request from being executed multiple times.
+
+
+public reloadState = new Subject<boolean>();
+private reloadChange$ = this.reloadSubj.pipe(
+  switchMap( _ => this.itemService.getItems() ),
+  map( items => (vm:ItemListVm) => ({...vm, items}))
+)
+
+constructor() {
+  vm$ = merge(this.reloadChange$, this.delete$Change).pipe(
+    scan( ... )
+  )
+}
+
+Client side Filtering:
+-------------------------------------------------------------------------------------------------------------------
+This section will describe how to perform client side filtering. You might be tempted to 
+implement filtering as another mutation function, something like this:
+
+interface PersonVm {
+    persons:Person[];
+  }
+
+  class PersonListComponent {
+    public vm$ : Observable<PersonVm>;
+    public filterState : BehaviorSubject<string>(null);
+
+    constructor(private dataService:DataService) {
+
+      this.vm$ = merge(this.personsChange$, this.filterChange$).pipe(
+        scan( (vm:PersonVm, mutationFn:(vm:PersonVm)=> PersonVm) => mutationFn(vm), {persons:[], personDetail:null})
+      );
+    }
+    private personsChange$ = this.dataService.Persons().pipe(
+      map( persons => ({...vm, persons }) )
+    );
+    // attempt filtering as another mutation on the viewmodel 
+    private filterChange$ = this.filterState.pipe(
+      map( filterArg => ({
+        ...vm, 
+        persons:persons.filter(p=>filterArg==null || p.name.includes(filterArg))
+      }) )
+    )
+  }
+
+-----------------------------------------------------------------------------------
+This will only work the first time that filterSubj changes. The second time vm.persons will contain 
+an already filtered persons array while we need to start with the original array to get the correct list. 
+As a consequence we need to pull the filtering out of the scan cycle.
+To solve this we will apply the filter on the result of the viewmodel mutation observable.
+-----------------------------------------------------------------------------------------------
+
+const unfilteredVm$ =  merge(this.personsChange$).pipe(
+        scan( (vm:PersonVm, mutationFn:(vm:PersonVm)=>PersonVm)
+            => mutationFn(vm), {persons:[], personDetail:null}
+          )
+    );
+ 
+    // not anymore part of the viewmodel mutation scan cycle
+    this.vm$ = combineLatest(unfilteredVm$, this.filterState).pipe(
+      map( ([vm, filterArg]) => ({...vm, persons:vm.persons.filter(filterArg==null || p.name.includes(filterArg))}))
+    )
+
+This will require some explanation.
+First, combineLatest will emit an array with two elements [vm: IVm, filterArg: string] each time unfilteredVm$ or filterSubj changes.
+We need the previous value of the viewmodel because if the filterArg did not change we will return the previous state of the person array and not filter again.
+We need the previous value of the filterArg to compare with the new filterArg to determine if filterArg has changed (the isFilterChanged boolean).
+The arguments of the scan functions may look a bit weird, but it is just a special case of array destructuring. 
+Remember the scan function has two arguments, the previous value and the next value. If written without destructuring, it would look like this:
+
+ scan( (prev, next) => {
+   const prevVm = prev[0];
+   const prevFilterArg = prev[1];
+   const nextVm = next[0];
+   const nextFilterArg = next[1]; 
+   ...
+ })
+<>
+Use whichever makes you most comfortable.
+If the filter has changed, we will apply filtering to nextVm.persons. nextVm.persons will be the most up to date unfiltered list of persons. 
+If the filter did not change, we will return prevVm.persons which is the already filtered list of persons from a previous run.
+
+Then for the scan function to work we need to again return an array with 2 elements: 
+the first item being the new state of the viewmodel and the second the new filterArg.
+
+Finally, we need another map function because our view expects an PersonVm object and not an array.
+
+Take care, as this example only describes the most simple use case. If for example, the viewmodel mutation functions 
+-----------------------------------------------------------------------------------------
+can add, remove or update persons, you also have to apply filtering after these mutations. 
+shouldFilter could be written like this (vm.persons must be an immutable list)
+-----------------------------------------------------------------------------------------------
+
+ const shouldFilter = (prevFilterArg!=nextFilterArg) || (prevVm.persons!==nextVm.persons)
+
+Observable patterns#
+In this article the following observable patterns were used:
+
+merge to create the composed viewmodel observable
+scan to accumulate viewmodel mutations and to optimize client side filtering
+subjects to perform interactions from the view on the viewmodel
+mergeMap to map to a server request for updates
+switchMap to map to server requests retrieving data which may be cancelled
+map to transform data especially data to a viewmodel mutation
+share to prevent multiple executions of a part of the pipeline when subscribing multiple times to an observable
+shareReplay to cache data to be used in mulitple components
+other operators not mentioned in this article
+
+zip is used sometimes when I need the value of a subject combined with the result of the pipe operator applied to the subject.
+forkJoin to wait for multiple http requests
+typescript-thinking;         	https://areknawo.com/how-to-think-and-type-in-typescript/  
+angular-viewmodel;		https://github.com/rekna1/AngularVmAsObservable
+angular-viewmodel;         	rekna; https://indepth.dev/angular-viewmodel-as-observable/ 
+angular-viewmodel;            	rekna; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src/app/app.component.ts  
+typescript-type-level;          https://areknawo.com/how-to-think-and-type-in-typescript/ 
+angular-viewmodel;         	https://github.com/rekna1/AngularVmAsObservable 
+angular-viewmodel;            	stackblitz; rekna1; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src%2Fapp%2Fapp.component.ts 
+angular-viewmodel;      	rekna; https://indepth.dev/angular-viewmodel-as-observable/ 
+angular-viewmodel;      	rekna; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src/app/app.component.ts 
+angular-viewmodel;      	rekna; https://github.com/rekna1/AngularVmAsObservable 
+angular-viewmodel;      	rekna; C;\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna 
+angular-viewmodel;      	rekna; https://stackblitz.com/edit/angular-viewmodel-rekna?file=src%2Fapp%2Fapp.component.ts 
+angular-viewmodel-rekna.txt 
+angular-viewmodel;     		rekna model summary;angular-viewmodel-rekna.txt 
+git-repo;        		change rekna vm to generic vm; C;\Users\Hans\web\frontend\angular\hans\Angular-Viewmodel-Rekna 
+angular-viewmodel,         	rekna, action state subjects and state change observables, https://stackblitz.com/edit/angular-viewmodel-rekna,
+typescript-types,     	rekna2, scan function, https://indepth.dev/angular-viewmodel-as-observable/ 

@@ -1,0 +1,257 @@
+Angular Compiler: ngc
+
+Angular University
+An Angular module is a deployment sub-set of your whole Angular application. 
+Its useful for splitting up an application into smaller parts and lazy load each separately, 
+and to create libraries of components that can be easily imported into other applications.
+
+Angular modules consolidate components, directives, and pipes into 
+- cohesive blocks of functionality... Modules can also add services
+
+the @NgModule annotation is what actually defines the module
+- list the components, directives, and pipes that are part of the module in the declarations array
+- import other modules by listing them in the imports array
+we can list the services that are part of the module in the providers array but read further on why this should only be used in some cases
+This declarative grouping is useful if for nothing else for organizing our view of the application and documenting which functionality is closely related.
+
+Why are Angular modules needed?
+An Angular module allows Angular to define a context for compiling templates. 
+For example, when Angular is parsing HTML templates, it's looking for a certain list of components, directives and pipes.
+
+Each HTML tag is compared to that list to see if a component should be applied on top of it, 
+and the same goes for each attribute. The problem is: how does Angular know which components, 
+directives and pipes should it be looking for while parsing the HTML?
+
+
+That is when Angular modules come in, they provide that exact information in a single place.
+
+So in summary, we can say the following about Angular modules:
+
+- for template parsing, both in the Just In Time or Ahead Of Time Compilation scenarios as we will see
+- also very useful simply as documentation for grouping related functionality
+- can be used to clarify which components and directives are meant to be used publicly vs internal implementation details, as we will soon see
+
+Angular Modules vs ES6 modules
+---------------------------------
+An Angular Module is something very different than an ES6 module: An ES6 is a formalization of the 
+typical Javascript module that the community has been using for many years: 
+wrap private details in a closure and expose only the public API we want.
+
+An Angular Module is mainly a template compilation context but it also helps to define a public API 
+for a subset of functionality as well as help with the dependency injection configuration of our application.
+
+Angular Root Module
+-------------------
+What is an Angular Application Root Module?
+Each application only has one root module, and each component, directive and pipe should only be associated with a single module.
+
+Angular App Module -the Root Module
+------------------------------------
+the root module has the conventional name of AppModule
+
+the root module in the case of web applications 
+- imports the BrowserModule, 
+  which for example provides Browser specific renderers, and installs core directives like ngIf, ngFor, etc.
+
+the bootstrap property is used, providing a list of components that should be used as 
+-bootstrap entry points for the application. 
+There is usually only one element in this array: the root component of the application
+
+Import without declaration -> error
+-----------------------------------
+If we try to use a component directly that is not part of a module, we will get the following error:
+Unhandled Promise rejection: Component Home is not part of any NgModule or the module has not been imported into your module.
+
+This ensures that we only use components on our templates that have been declared as part of the public API of a given module.
+
+Angular Modules and Visibility
+-------------------------------
+To understand how module visibility works in Angular,
+ 
+
+Angular Modules and Dependency Injection with Services
+------------------------------------------------------
+What about services and the providers property, when should we use it?
+
+We might think that when importing a module, if the module has providers then only the component directives 
+and pipes of that module would be able to see the service.
+
+The Angular Dependency Injection container is hierarchical, meaning that unlike 
+we could have created a separate dependency injection context if we wanted to.
+
+A service is by default a singleton and added to the root module to be seen and used application wide
+------------------------------------------------------------------------------------------------------
+This happens by design: Modules that are directly imported are usually meant to enrich the importing module functionality 
+(in this case, the root application module) and the injectables received are in most of the cases meant as application-wide singletons
+
+So the behavior of not creating a nested DI context is meant to
+help with the most common use case: importing application-wide singletons.
+
+Feature Modules
+---------------
+The HomeModule that we have been building so far is actually the beginning of a feature module. 
+A feature module is meant to extend the global application with a new set of features: 
+for example, new screens and injectable services.
+
+
+
+Reactive Forms Module
+-----------------------
+A good example of a module is the reactive form module: 
+it contains directives that are aware of each other and are very interrelated.
+
+The reactive forms module also contains injectable services like the
+FormBuilder service, which is very closely linked to the reactive form directives 
+and meant to be used together with them to configure a form model.
+
+- Compile Angular decorators, including components and their templates.
+- Apply TypeScript’s type-checking rules to component templates.
+- Re-compile quickly when the developer makes a change
+
+ ngc is built on the TypeScript compiler (called tsc) and extends the process of 
+ compiling TypeScript code to add additional code generation related to Angular’s capabilities
+
+
+NgModules
+To type-check and generate code, the compiler needs to know 
+- which directives, components, and pipes are used in each component’s template. 
+
+This isn’t straightforward because Angular components don’t directly import their dependencies. 
+Instead, Angular components describe templates using HTML, and potential dependencies 
+- are matched against elements in those templates using CSS-style selectors. 
+
+This enables a powerful abstraction layer: Angular components do not need to know exactly how their dependencies are structured. 
+Instead, each component has a set of potential dependencies (its “template compilation scope”), 
+only a subset of which will end up matching elements in its template.
+
+This indirection is resolved through the Angular @NgModule abstraction. 
+NgModules can be thought of as composable units of template scope.
+
+NgModules can be understood as each declaring two different scopes:
+
+- A “compilation scope”, representing the set of potential dependencies 
+  that are available to any components declared in the NgModule itself.
+  
+  This compilation scope is 
+  - the union of all declarations and the export scopes of any NgModules which are imported. 
+    Because of this, it’s an error in Angular to declare a component in multiple NgModules. 
+    Additionally a component and its NgModule must be compiled at the same time
+
+- An “export scope”, representing a set of potential dependencies that are made 
+  available in the compilation scope of any NgModules which imports the given NgModule.
+
+Note that for components, their relationship to the NgModule which declares them is bi-directional:
+ 
+the NgModule both defines the component’s template scope as well as makes that component available 
+in the template scopes of other components.
+
+Graph of NgModules
+To determine these scopes, the compiler builds a graph of NgModules, their declarations, and their imports and exports
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+ImageViewerModule as sample
+
+@NgModule({
+  declarations: [ImageViewerComponent, ImageResizeDirective],
+  imports: [CommonModule],
+  exports: [ImageViewerComponent],
+})
+export class ImageViewerModule {}
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+In this case, 
+- CommonModule is imported, so the compilation scope of ImageViewerModule (and thus ImageViewerComponent) 
+- includes all of the directives and pipes exported by CommonModule — NgIf, NgForOf, AsyncPipe, and a half dozen others. 
+- includes both declared directives — ImageViewerComponent and ImageResizeDirective.
+
+ImageViewerModule imports CommonModule from the @angular/common package. 
+Partial evaluation of the imports list will resolve the classes named in imports 
+to declarations within the .d.ts files from those dependencies.
+
+Just knowing the symbol of imported NgModules is not sufficient. To build its graph, 
+the compiler passes information about the declarations, imports, 
+and exports of NgModules through the .d.ts files in a special metadata type
+
+he generated declaration file for Angular’s CommonModule, this (simplified) metadata looks like:
+export declare class CommonModule {
+  static mod: ng.NgModuleDeclaration<CommonModule, 
+ [typeof NgClass, typeof NgComponentOutlet, typeof NgForOf, typeof NgIf, typeof NgTemplateOutlet, 
+  typeof NgStyle, typeof NgSwitch, typeof NgSwitchCase, typeof NgSwitchDefault, typeof AsyncPipe, ...]>;
+  // … 
+}
+
+This type declaration is not intended for type-checking by TypeScript, 
+but instead embeds information (references and other metadata) about 
+Angular’s understanding of the class in question into the type system
+
+From these special types, ngc can determine the export scope of CommonModule.
+export declare class NgIf<T> {
+  // …
+  static dir: ng.DirectiveDeclaration<NgIf<any>, "[ngIf]", never, { "ngIf": "ngIf"; "ngIfThen": "ngIfThen"; "ngIfElse": "ngIfElse"; }, {}, never>;
+}
+This gives ngc sufficient information about the structure of the program to proceed with compilation
+
+Step 4: Template Type-Checking
+ngc is capable of reporting type errors within Angular templates. For example, 
+if a template attempts to bind a value {{name.first}} but the name object does 
+not have a first property, ngc can surface this issue as a type error. 
+Performing this checking efficiently is a significant challenge for ngc.
+
+Typescript Compiler
+TypeScript by itself has no understanding of Angular template syntax and cannot type-check it directly
+the Angular compiler converts Angular templates into TypeScript code (known as a “Type Check Block”, or TCB) 
+that expresses equivalent operations at the type level, and feeds this code to TypeScript for semantic checking. 
+Any generated diagnostics are then mapped back and reported to the user in the context of the original template.
+
+<span *ngFor="let user of users">{{user.name}}</span>
+
+For this template, the compiler wants to check that the user.name property access is legal. 
+To do this, it must first understand how the type of the loop variable user is derived through the NgFor from the input array of users.
+The Type Check Block that the compiler generates for this component’s template looks like:
+
+import * as i0 from './test';
+import * as i1 from '@angular/common';
+import * as i2 from '@angular/core';
+
+const _ctor1: <T = any, U extends i2.NgIterable<T> = any>(init: Pick<i1.NgForOf<T, U>, "ngForOf" | "ngForTrackBy" | "ngForTemplate">) => i1.NgForOf<T, U> = null!;
+
+/*tcb1*/
+function _tcb1(ctx: i0.TestCmp) { if (true) {
+    var _t1 /*T:DIR*/ /*165,197*/ = _ctor1({ "ngForOf": (((ctx).users /*190,195*/) /*190,195*/) /*187,195*/, "ngForTrackBy": null as any, "ngForTemplate": null as any }) /*D:ignore*/;
+    _t1.ngForOf /*187,189*/ = (((ctx).users /*190,195*/) /*190,195*/) /*187,195*/;
+    var _t2: any = null!;
+    if (i1.NgForOf.ngTemplateContextGuard(_t1, _t2) /*165,216*/) {
+        var _t3 /*182,186*/ = _t2.$implicit /*178,187*/;
+        "" + (((_t3 /*199,203*/).name /*204,208*/) /*199,208*/);
+    }
+} }
+
+The complexity here appears to be high, but fundamentally this TCB is performing a specific sequence of operations:
+
+Input bindings:
+- It first infers the actual type of the NgForOf directive (which is generic) from its input bindings. This is named _t1.
+Check against context:
+- It validates that the users property of the component is assignable to the NgForOf input, via the assignment statement _t1.ngForOf = ctx.users.
+Express type withe embedded view context
+- it declares a type for the embedded view context of the *ngFor row template, named _t2, with an initial type of any.
+TemplateContextGuard helper
+- it uses NgForOf’s ngTemplateContextGuard helper function to narrow the type of _t2 according to how NgForOf works.
+loop variable is extractet from context
+- the loop variable (user in the template) is extracted from this context and given the name _t3.
+
+- the access _t3.name is expressed.
+
+Template Checking
+template type-checking code cannot be checked independently, and must be checked 
+- within the context of the user’s whole program (in the above example, 
+  the component type is imported from the user’s test.ts file)
+
+Typescript Compiler is the horse power in Angular Compilation Step:
+
+
+Angular’s compiler leverages the flexibility of TypeScript’s compiler APIs 
+to deliver correct and performant compilation of Angular templates and classes
+

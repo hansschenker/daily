@@ -1,0 +1,305 @@
+Form Directives
+-----------------------------------------------------------------------------------------------------------
+ControlValueAccessor
+INTERFACE
+Defines an interface that acts as a bridge between the Angular forms API and a native element in the DOM.
+
+See more...
+
+interface ControlValueAccessor {
+  writeValue(obj: any): void
+  registerOnChange(fn: any): void
+  registerOnTouched(fn: any): void
+  setDisabledState(isDisabled: boolean)?: void
+}
+
+
+Directives
+AbstractFormGroupDirective	
+A base class for code shared between the NgModelGroup and FormGroupName directives.
+
+CheckboxControlValueAccessor	
+A ControlValueAccessor for writing a value and listening to changes on a checkbox input element.
+
+CheckboxRequiredValidator	
+A Directive that adds the required validator to checkbox controls marked with the required attribute. 
+The directive is provided with the NG_VALIDATORS multi-provider list.
+
+DefaultValueAccessor	
+The default ControlValueAccessor for writing a value and listening to changes on input elements. 
+The accessor is used by the FormControlDirective, FormControlName, and NgModel directives.
+
+EmailValidator	
+A directive that adds the email validator to controls marked with the email attribute. 
+The directive is provided with the NG_VALIDATORS multi-provider list.
+
+FormArrayName	
+Syncs a nested FormArray to a DOM element.
+
+FormControlDirective	
+Synchronizes a standalone FormControl instance to a form control element.
+
+FormControlName	
+Syncs a FormControl in an existing FormGroup to a form control element by name.
+
+FormGroupDirective	
+Binds an existing FormGroup or FormRecord to a DOM element.
+
+FormGroupName	
+Syncs a nested FormGroup or FormRecord to a DOM element.
+
+MaxLengthValidator	
+A directive that adds max length validation to controls marked with the maxlength attribute. 
+The directive is provided with the NG_VALIDATORS multi-provider list.
+
+MaxValidator	
+A directive which installs the MaxValidator for any formControlName, formControl, 
+or control with ngModel that also has a max attribute.
+
+MinLengthValidator	
+A directive that adds minimum length validation to controls marked with the minlength attribute. 
+The directive is provided with the NG_VALIDATORS multi-provider list.
+
+MinValidator	
+A directive which installs the MinValidator for any formControlName, formControl, or control with 
+ngModel that also has a min attribute.
+
+NgControlStatus	
+Directive automatically applied to Angular form controls that sets CSS classes based on control status.
+
+NgControlStatusGroup	
+Directive automatically applied to Angular form groups that sets CSS classes based on control status 
+(valid/invalid/dirty/etc). On groups, this includes the additional class ng-submitted.
+
+NgForm	
+Creates a top-level FormGroup instance and binds it to a form to track aggregate form value and validation status.
+
+NgModel	
+Creates a FormControl instance from a domain model and binds it to a form control element.
+
+NgModelGroup	
+Creates and binds a FormGroup instance to a DOM element.
+
+NgSelectOption	
+Marks <option> as dynamic, so Angular can be notified when options change.
+
+NumberValueAccessor	
+The ControlValueAccessor for writing a number value and listening to number input changes. 
+The value accessor is used by the FormControlDirective, FormControlName, and NgModel directives.
+
+PatternValidator	
+A directive that adds regex pattern validation to controls marked with the pattern attribute. 
+The regex must match the entire control value. The directive is provided with the NG_VALIDATORS multi-provider list.
+
+RadioControlValueAccessor	
+The ControlValueAccessor for writing radio control values and listening to radio control changes. 
+The value accessor is used by the FormControlDirective, FormControlName, and NgModel directives.
+
+RangeValueAccessor	
+The ControlValueAccessor for writing a range value and listening to range input changes. 
+The value accessor is used by the FormControlDirective, FormControlName, and NgModel directives.
+
+RequiredValidator	
+A directive that adds the required validator to any controls marked with the required attribute. 
+The directive is provided with the NG_VALIDATORS multi-provider list.
+
+SelectControlValueAccessor	
+The ControlValueAccessor for writing select control values and listening to select control changes. 
+The value accessor is used by the FormControlDirective, FormControlName, and NgModel directives.
+
+SelectMultipleControlValueAccessor	
+The ControlValueAccessor for writing multi-select control values and listening to multi-select control changes. 
+The value accessor is used by the FormControlDirective, FormControlName, and NgModel directives.
+
+Router Directives
+-----------------------------------------------------------------------------------------------------------
+
+RouterLink	
+When applied to an element in a template, makes that element a link that initiates navigation to a route. 
+Navigation opens one or more routed components in one or more <router-outlet> locations on the page.
+
+RouterLinkActive	
+Tracks whether the linked route of an element is currently active, and allows you to specify one or more 
+CSS classes to add to the element when the linked route is active.
+
+RouterLinkWithHref	
+Lets you link to specific routes in your app.
+
+RouterOutlet	
+Acts as a placeholder that Angular dynamically fills based on the current router state.
+
+Template Directives
+-----------------------------------------------------------------------------------------------------------
+
+Template Microsyntax
+---------------------
+
+When you write your own structural directives, use the following syntax:
+
+*:prefix="( :let | :expression ) (';' | ',')? ( :let | :as | :keyExp )*"
+
+prefix		HTML attribute key
+key		HTML attribute key
+local		Local variable name used in the template
+export		Value exported by the directive under a given name
+expression	Standard Angular expression
+
+*ngFor="let item of [1,2,3]"
+<ng-template ngFor let-item [ngForOf]="[1,2,3]">
+
+*ngFor="let item of [1,2,3] as items; trackBy: myTrack; index as i"
+<ng-template ngFor let-item [ngForOf]="[1,2,3]" let-items="ngForOf" [ngForTrackBy]="myTrack" let-i="index">
+
+*ngIf="exp"
+<ng-template [ngIf]="exp">
+
+*ngIf="exp as value"
+<ng-template [ngIf]="exp" let-value="ngIf">
+
+
+
+ng-container
+ng-content
+
+ng-template
+ngTemplateOutlet
+ngTemplateOutletContext
+
+
+TemplateRef
+ViewContainerRef
+EmbeddedViewRef
+
+ViewChild/ViewChildren
+ContentChild/ContentChildren
+createEmbeddedView
+
+*ngFor, index, first, last, odd, even
+-------------------
+<ng-template ngFor let-hero [ngForOf]="heroes"
+  let-i="index" let-odd="odd" [ngForTrackBy]="trackById">
+  <div [class.odd]="odd">
+    ({{i}}) {{hero.name}}
+  </div>
+</ng-template>
+
+
+*ngIf , else
+---------------
+<ng-template [ngIf]="worker">
+  <div class="name">{{worker.name}}</div>
+</ng-template>
+
+
+*ngSwitch, *ngSwitchCase
+------------------------
+<div [ngSwitch]="Myshopping">
+  <p *ngSwitchCase="'cups'">cups</p>
+  <p *ngSwitchCase="'veg'">Vegetables</p>
+  <p *ngSwitchCase="'clothes'">Trousers</p>
+  <p *ngSwitchDefault>My Shopping</p>
+</div>
+
+
+carousel directive - netanel base
+import {
+  Directive,
+  Input,
+  OnDestroy,
+  OnInit,
+  TemplateRef,
+  ViewContainerRef
+} from '@angular/core';
+
+export interface CarouselContext {
+  $implicit: string;
+  controller: {
+    next: () => void;
+    prev: () => void;
+  };
+}
+
+@Directive({
+  // tslint:disable-next-line:directive-selector
+  selector: '[carousel]'
+})
+export class CarouselDirective implements OnInit, OnDestroy {
+  timerId: number | null = null;
+  context: CarouselContext | null = null;
+  index = 0;
+
+  constructor(
+    private tpl: TemplateRef<CarouselContext>,
+    private vcr: ViewContainerRef
+  ) {}
+
+  @Input('carouselFrom') images: string[];
+
+  private _autoplayDelay: number;
+
+  @Input('carouselWithDelay')
+  set autoplayDelay(autoplayDelay: number) {
+    this._autoplayDelay = autoplayDelay;
+  }
+
+  get autoplayDelay() {
+    return this._autoplayDelay || 1000;
+  }
+
+  @Input('carouselAutoplay')
+  set autoplay(autoplay: 'on' | 'off') {
+    autoplay === 'on' ? this.setAutoplayTimer() : this.clearAutoplayTimer();
+  }
+
+  ngOnInit(): void {
+    this.context = {
+      $implicit: this.images[0],
+      controller: {
+        next: () => this.next(),
+        prev: () => this.prev()
+      }
+    };
+
+    this.vcr.createEmbeddedView(this.tpl, this.context);
+  }
+
+  ngOnDestroy() {
+    this.clearAutoplayTimer();
+  }
+
+  next() {
+    this.index++;
+    if (this.index >= this.images.length) {
+      this.index = 0;
+    }
+
+    this.context.$implicit = this.images[this.index];
+  }
+
+  prev() {
+    this.index--;
+    if (this.index < 0) {
+      this.index = this.images.length - 1;
+    }
+    this.context.$implicit = this.images[this.index];
+  }
+
+  private clearAutoplayTimer() {
+    window.clearInterval(this.timerId);
+  }
+
+  private setAutoplayTimer() {
+    this.timerId = window.setInterval(() => this.next(), this.autoplayDelay);
+  }
+}
+
+-----------------------------------------------------------------------
+
+
+
+
+Attribute Directives
+-----------------------------------------------------------------------------------------------------------
+
+
+

@@ -1,0 +1,15 @@
+ViewContainerRef
+------------------------------------------------------------------------
+Represents a container where one or more Views can be attached.
+The container can contain two kinds of Views. 
+
+- Host Views, created by instantiating a Component via #createComponent, and 
+- Embedded Views, created by instantiating an Embedded Template via #createEmbeddedView.
+
+- Anchor element The location of the View Container within the containing View is specified by the 
+ Each View Container can have only one Anchor Element and each Anchor Element can only have a single View Container.
+
+- Root elements of Views attached to this container become siblings of the Anchor Element in the Rendered View.
+- reference a ViewContainerRef of an Element, you can either 
+  - constructor injection, place a Directive injected with ViewContainerRef on the Element, or you obtain it via a 
+  - ViewChild query.

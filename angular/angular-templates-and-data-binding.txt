@@ -1,0 +1,177 @@
+We covered many of the different Angular template syntax concepts like data binding or the ngIf and ngFor built-in directives. Here we’ll take an opportunity to summarize the different possibilities for syntax for an easy reference.
+
+This post covers template syntax for Angular 2+
+
+Inline vs Separate File Templates
+Templates can contain almost any regular HTML, with the exception of the script tag, for security reasons. You can define templates inline in the same file as your component class:
+
+app.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `<h1>I'm a template!</h1>`,
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+
+  constructor() {}
+
+}
+…or you can define your templates in separate files:
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+
+  constructor() {}
+
+}
+app.component.html
+<h1>I'm a template!</h1>
+It’s primarily a matter of preference really, and inline templates are often perfect for smaller components.
+
+Data Binding
+The core of Angular’s power when it comes to templates is the ability to bind to data from the component class or to bind to events. Data binding is done differently depending on the flavor you need:
+
+Interpolation
+Use interpolation binding for substituting values from the component:
+
+<span>User name: {{ name }}</span>
+The interpolation syntax can also evaluate expressions. The following will output Hello you:
+
+<span>
+  Hello {{ 1 + 1 === 3 ? 'me' : 'you' }}
+</span>
+There are 3 new operators you can use in interpolation expressions:
+
+The safe navigation operator, ?., prevents the JavaScript engine from complaining if you try to access values on objects that are null or undefined. The statement will simply be ignored instead of causing an error when the property you’re trying to access is on an null or undefined value:
+{{ user?.preferences?.avatar }}
+The pipe operator, |, allows to pass-in the interpolated value to a pipe, which can be one of the built-in ones or a custom pipe of your own:
+{{ user?.name | uppercase }}
+The non-null assertion operator, !., informs the TypeScript type checker not to error-out if it encounters a value that could be null or undefined. Use this only if you’re using the –strictNullChecks flag for TypeScript:
+{{ user!.preferences!.nickName | uppercase }}
+You can’t use expressions that change values or have side effects. For example, you can’t assign a variable in an interpolated expression.
+
+Property binding
+You can bind data from the component to a property on an element. For example, here say user is an object in our component class that has a name property:
+
+<input type="text" [value]="user.name">
+Event binding
+Bind user events to methods on the component class with the (event)=“method()” syntax:
+
+<button type="button" (click)="showProfile()">View Profile</button>
+Two-way binding
+You can use two-way binding if you want data to flow from your template to your component and also from your component to your template:
+
+<input type="text" [(ngModel)]="user.name">
+With this, changes to the input’s value will be reflected in the name property of the user object, and if you component has methods that change the value for user.name, the result will also be reflected in the input automatically.
+
+Note that you’ll have to import FormsModule in your root module to use the two-way data binding syntax.
+
+Style & Class Binding
+There are mainly 4 ways to bind to styles or classes in your templates:
+
+Style property binding
+Using the regular property binding syntax, you can define value for specific style properties:
+
+<span [style.background-color]="'pink'">{{ user.name }}</span>
+…or you can use something like this to bind to a value in your component:
+
+<span [style.background-color]="user.color">{{ user.name }}</span>
+ngStyle attribute directive
+You can apply multiple style properties at once with the ngStyle attribute directive:
+
+<p [ngStyle]="userStyles">
+  {{ user.name }}
+</p>
+And here userStyle in the component could look like this:
+
+userStyles = {
+  backgroundColor: 'papayawhip',
+  border: '2px solid #666',
+  width: '50%',
+  margin: '0 auto',
+  textAlign: 'center',
+  padding: '2rem'
+};
+Class property binding
+Similar to the style property binding, but applies a class if the expression evaluates to true. With this example, the span will have a class of highlight if there’s a color property on the user object:
+
+<span [class.highlight]="user.color">{{ user.name }}</span>
+ngClass attribute directive
+Similar to the ngStyle attribute directive, and allows to set multiple classes at once:
+
+<p [ngClass]="setClasses()">
+  {{ user.name }}
+</p>
+And in the component class:
+
+setClasses() {
+  const classes = {
+    'has-avatar': this.user.avatar,
+    'new-user': this.user.newUser,
+    bg: this.user.preferences.color
+  };
+  return classes;
+}
+The property name in the object that ngClass expects will become the applied class name if its value evaluates to true.
+
+Template References
+To allow for elements to access other elements from within a template, you can create reference variables on elements, known as template reference variables. Simply use the # sign followed by a unique identifier name:
+
+<input type="text" #color placeholder="Hex color value">
+<button (click)="printValue(color.value)">
+  Show color
+</button>
+Pipes
+Use pipes to do simple transformations on interpolated values. The following formats a property that holds a date value in a format like Tuesday, August 8, 2017:
+
+<span>
+  Published: {{ publishedDate | date:'fullDate' }}
+</span>
+Structural Directives
+Angular provides 3 built-in structural directives that affect elements in the DOM:
+
+ngIf
+If the expression passed-in to the ngIf directive evaluates to true, the element will be added to the DOM, and otherwise it will be removed from the DOM:
+
+<span *ngIf="publishedDate">
+  Published: {{ publishedDate | date:'fullDate' }}
+</span>
+Since Angular 4, you can also define an else clause with a reference to a template that will be used if the expression evaluates to false:
+
+<span *ngIf="publishedDate; else noPublishedDate">
+  Published: {{ publishedDate | date:'fullDate' }}
+</span>
+<ng-template #noPublishedDate>
+  😿 No published date
+</ng-template>
+ngFor
+Like a for loop for your templates, ngFor iterates over values in an array and creates a copy of the element that it’s attached to for each item. In this example, users is an array of user objects that’s available in our component class:
+
+<ul>
+  <li *ngFor="let user of users">
+    name: {{ user.name }}, email: {{ user.email }}
+  </li>
+</ul>
+You can also get the iteration index with the index as x syntax:
+
+<ul>
+  <li *ngFor="let user of users; index as i">
+    {{ i + 1 }}- name: {{ user.name }}, email: {{ user.email }}
+  </li>
+</ul>
+ngSwitch
+The equivalent of a switch statement where multiple possible values are evaluated, but for your templates:
+
+<div [ngSwitch]="user.gender">
+  <span *ngSwitchCase="'m'">Male</span>
+  <span *ngSwitchCase="'f'">Female</span>
+  <span *ngSwitchDefault>Not provided</span>
+</span>

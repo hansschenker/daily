@@ -1,0 +1,84 @@
+ // class level
+ // viewmodel observable viewmodel
+  public vm$ : Observable<IViewModel>;
+  // create action streams
+  public addUserState = new Subject<IUser>();
+  public deleteUserSubj = new Subject<IUser>();
+  public detailUserSubj = new Subject<IUser>();
+  public closeDetailSubj = new Subject();
+
+------------- merge actions into viewmodel observable:vm$
+    merge in class constructor
+--------------------------------
+    // type scan mutation function (take a vm and return changed vm)
+    // scan with a reducer function ( takes the previous state and a state mutation function and return the new state)
+    type VmFn<T>    = (vm: ViewModel<T>)   => ViewModel<T>;
+                      (vm:ViewModel) => ({...vm, users: [...vm.users ,{id:9, name:user}] })
+    type updater<V> = (state: T, value: V) => T
+
+                 
+    // merge action streams into one
+    // and track state with the help of scan operator
+    this.vm$ = merge(
+      this.getUserAction$, // source observable
+      this.addUserChange,
+      this.deleteUserAction$,
+      this.detailUserAction$,
+      this.closeDetailAction$
+    ).pipe(
+      scan( (oldVm:IViewModel, mutateFn:VmFn) => mutateFn(oldVm), {users:[]} as IViewModel )
+    );
+
+     template:
+     vm$ | async as vm  // sink (subscription to source observable with async pipe)
+----------------------------------
+    // define map mutation functions in constructor
+-----------------------------------
+// server state
+private getUserAction$ = this.http.get<IUser[]>(`https://jsonplaceholder.typicode.com/users`).pipe(
+  map( users => (vm:IViewModel) => ({...vm, users}))
+
+);
+// app state
+private addUserChange = this.addUserState.pipe(
+  map( user => (vm:IViewModel) => ({...vm, users: [...vm.users ,{id:9, name:user}] })),
+)
+private deleteUserAction$ = this.deleteUserSubj.pipe(
+  map( user => (vm:IViewModel) => ({...vm, users: vm.users.filter(u=>u!==user) }))
+)
+
+private detailUserAction$ = this.detailUserSubj.pipe(
+  map( selectedUser => (vm:IViewModel) => ({...vm, selectedUser }))
+)
+private closeDetailAction$ = this.closeDetailSubj.pipe(
+  map( _ => (vm:IViewModel) => ({...vm, selectedUser:null }))
+)
+
+
+interface IUser {
+  id?:number;
+  name:string;
+}
+interface IViewModel {
+  users: IUser[];
+  selectedUser?: IUser;
+}
+
+
+// users load
+map( users => 			(vm:IViewModel) => ({...vm, users}))
+
+// user add
+map( user => 			(vm:IViewModel) => ({...vm, users: [...vm.users ,{id:9, name:user}] })),
+
+// user delete
+map( selectedUser => 		(vm:IViewModel) => ({...vm, selectedUser }))
+
+// user details
+map( selectedUser => 		(vm:IViewModel) => ({...vm, selectedUser }))
+
+// user close
+map( _ => 			(vm:IViewModel) => ({...vm, selectedUser:null }))
+
+
+

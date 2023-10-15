@@ -1,0 +1,110 @@
+
+You might not need lifecycle hooks
+-----------------------------------
+Angular Effects takes a different approach. Instead of subscribing to lifecycle hooks, 
+we subscribe to the component state itself.
+
+We can use lifecycle hooks to perform complex state management, 
+coordinate control flows and finesse asynchronous events 
+that would normally result in unpredictable and volatile results.
+
+We can observe the state of a component and write effects around them. 
+Here's why you probably don't need lifecycle hooks.
+
+Solid foundation
+When Angular creates a component, it calls the constructor at first. After this occurs, 
+Angular will call on various lifecycle hooks throughout the usage of the component 
+(everything from initialization to destruction).
+The lifecycle hooks supported in Angular components are:
+
+Hooks in sequence
+ngOnChanges: called when an input or output binding value changes. Note that this will 
+only be fired if a binding has actually changed state (ngOnCheck is called each 
+time change detection is kicked off);
+ngOnInit: only after the first ngOnChanges, but only once. It basically fires when the 
+component is ready for use when all queries (content child and view child queries) and 
+inputs have been resolved. It’s the place to perform complex initializations shortly after construction;
+ngDoCheck: This is fired each time anything that can trigger change detection has fired 
+(e.g. click handlers, http requests, route changes, etc…). This lifecycle hook is mostly 
+used for debug purposes;
+ngAfterContentInit: called after external content has been projected into the component. 
+Remember content queries like @ContentChildren and @ContentChild are set before the hook callback is called;
+ngAfterContentChecked: called after every check of component content;
+ngAfterViewInit: called after component’s view(s) are initialized. Perfect for initializing
+ event third party library, that needs the view be composed before taking any action
+ (note that a view differs from content because a components view is the non-projected template);
+ngAfterViewChecked: called after every check of a component’s view(s);
+ngOnDestroy: called just before the component is destroyed. It’s important to be disciplined 
+enough to start cleaning all jQuery and third part library component initialized and not used anymore.
+There are a few important things to remember about lifecycle hooks:
+Angular’s unidirectional data flow rule forbids updates to the view after it has been composed, 
+and anytime you don’t use enableProdMode() the app will complain about your changes. 
+This basically means that you are not allowed to modify component binding data within any of lifecycle hooks.
+ If you wish to do so then wrap the changes in a promise via Promise.resolve(() => { changes… }) .
+Dealing with view, content, queries or inputs within the constructor won’t work (use ngOnInit instead). 
+The component constructor itself is used mostly for DI injection resolution.
+View data and content data exist in two different areas (the content is apart of the parent components template).
+ This means that change detection will be processed in the content area first and then the view that houses the content.
+
+1 - Angular’s unidirectional data flow rule forbids updates to the view after it has been composed, 
+and anytime you don’t use enableProdMode() the app will complain about your changes. 
+This basically means that you are not allowed to modify component binding data within any of lifecycle hooks. 
+If you wish to do so then wrap the changes in a promise via Promise.resolve(() => { changes… }) .
+
+2 - The component constructor itself is used mostly for DI injection resolution.
+
+3 -  Zone.js monkey patches most standard web APIs (like addEventListener, setTimeout, etc..) 
+and every time an event handler or some other async code is completed, Angular runs change detection.
+
+constructor vs ngOnInit: be careful on the logic that you put in your constructor because may depend 
+on that is not available yet. Data is not always immediately available in the constructor, so it should 
+do no more than set the initial local variables to simple values. Divide all the initial logic between
+ the three Init hooks. The ngOnInit is a good place for a component to fetch its initial data;
+ngOnChanges vs ngDoCheck: as we said ngOnChanges is called when a value bound to an input has changed so 
+you can run custom code when an input has changed. ngDoCheck to the other hand is called when 
+change detection runs so you can implement your custom change detection action, but be careful on
+ using it because will run all the time there is a change detection and user experience will suffer;
+ngAfterContentInit vs ngAfterViewInit: use ngAfterContent when you want to use the power of Query 
+like @ContentChildren ( Content projection is a way to import HTML content from outside the component 
+and insert that content into the component’s template in a designated spot, also as known as transclusion). 
+Instead use ngAfterViewInit for any initialization that needs the view be rendered like jQuery plugin or 
+simple external DOM manipulations, this will avoid you use setTimeout in most of the other hooks;
+ngAfterContentChecked vs ngAfterViewChecked: both hooks has to be used carefully and have a lightweight 
+implementation because every time happen a change detection these hooks are going to be called;
+ngOnChanges vs ngAfterViewChecked: there is mostly two type of components, the reusable one, and the unique one. 
+The reusable one uses more ngOnChanges the unique could use also the power of ngAfterViewCheck. 
+So it is important to understand when ngOnChanges fires and when ngAfterViewCheck fires. We will
+ come back on that when we talk about bridge the gap between AngularJS and Angular
+
+
+
+
+----------------------------------------------------------------------------------------
+OnInit
+Purpose: To allow the initial values of inputs passed in to the component 
+and static queries to be processed before doing any logic with them.
+
+Since we can just observe those values when they change, we can discard this hook.
+
+OnChanges
+Purpose: To be notified whenever the inputs of a component change.
+
+Since we can just observe those values when they change, we can discard this hook.
+
+AfterContentInit
+Purpose: To wait for content children to be initialized before doing any logic with them.
+
+We can observe both @ContentChild() and @ContentChildren() since they are 
+just properties on the component. We can discard this hook.
+
+AfterViewInit
+Purpose: To wait for view children to be initialized before doing any logic with them. 
+Additionally, this is the moment at which the component is fully initialized and DOM manipulation becomes safe to do.
+
+We can observe both @ViewChild() and @ViewChildren() since they are just properties on the component. 
+For imperative DOM manipulation, effects can be deferred until the component has rendered. We can discard this hook.
+
+OnDestroy
+Purpose: To clean up variables for garbage collection after the component is destroyed and prevent memory leaks.
+
+Since every effect is a sink for observables, we won't need this hook very often.
