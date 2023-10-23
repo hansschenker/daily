@@ -1,0 +1,76 @@
+Models Inputs and Outputs
+Using Langchain for Model IO will later allow
+us to build chains, but also give us more
+flexibility in switching LLM providers in the
+future, since the syntax is standardized across
+LLMs and only the parameters or arguments
+provided change.
+Langchain supports all major LLMs (OpenAl,
+Azure, Anthropic, Google Cloud, etc.)
+
+
+o
+O
+Models IO Section Overview
+LLMs
+Prompt Templates
+Prompts and Model Exercise
+Prompts and Model Exercise - Solution
+Few Shot Prompt Templates
+Parsing Outputs
+Serialization - Saving and Loading Prompts
+o Models IO Exercise Project
+Models IO Exercise Project - Solution
+
+Models Inputs and Outputs
+o Once we combine the ideas we learn about
+here with Data Connection and Chains, you'll
+have a very clear idea of why a developer may
+choose to use Langchain rather than building
+our their own solution.
+o It will save us a lot of time and give us greater
+flexibility, but first we need to understand the
+basics of interacting with Models for input
+and output with Langchain!
+
+Large Language Models
+o There are two main types of APIs in
+Langchain:
+. LLM
+. Text Completion Model: Returns the
+most likely text to continue
+Chat
+. Converses with back and forth
+messages, can also have a "system"
+prompt.
+
+§
+Large Language Models
+o LangChain supports many different services:
+https://python.langchain.com/docs/modu
+les/model_io/models/Ilms/
+o In this course, we will focus on the OpenAl
+API, since it is the most popular, and due to
+upcoming changes post GPT-4 wide release,
+we will also focus on the Chat Completion API.
+o Note that later when we learn about chains
+the API calls will look very similar.
+
+from langchain.llms import OpenAI
+import os
+os.environ['OPENAI_API_KEY]
+'my key example'
+
+Chat Models
+o Chat Models have a series of messages, just
+like a chat text thread, except one side of the
+conversation is an AI LLM.
+o Langchain creates 3 schema objects for this:
+SystemMessage
+. General system tone or personality
+HumanMessage
+. Human request or reply
+AlMessage: Al's reply (more on this later!)
+
+
+
