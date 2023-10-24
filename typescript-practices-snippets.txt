@@ -1,0 +1,125 @@
+// example of type alias vs interface
+
+// type TUserProps = {
+// name: string;
+age: number;
+
+interface IUserProps {
+name: string;
+age: number;
+
+export default function User({}: UserProps) {
+return <div>Card</div>;
+
+type UserProps = {
+name: string;
+age: number;
+type AdminProps = UserProps &
+role: string;
+
+// "extending"
+interface UserProps {
+name: string;
+age: number;
+I
+interface AdminProps extends UserProps
+role: string;
+
+Direrences Between Type Allases and Intertaces
+Why use Type and not Interface in TypeScript
+Type aliases and interfaces are very similar, and in many cases you can choose between
+them freely. Almost all features of an interface are available in type, the key
+distinction is that a type cannot be re-opened to add new properties vs an interface
+which is always extendable.
+Interface
+Type
+Extending an interface
+Extending a type via inter
+interface Animal {
+name: string;
+type Animal = {
+name: string;
+
+// interface can only describe object - type al
+describe object AND everything else (e.g. prim
+such as string, number, boolean)
+
+// interface can only describe object - type alias can
+with interface you always describe an object , you can not assign a simple type
+
+describe object AND everything else (e.g. primitive values
+such as string, number, boolean)
+interface Address
+street: string;
+const address: Address = "123 Main St";
+
+with type alias you can compose types
+
+// type alias can also describe union types - interface cannot
+type Address = string | number;
+const address: Address = "123 Main St";
+
+I
+// type alias can easily use utility types - intertace can too
+but only with ugly syntax
+type UserProps = {
+name: string;
+age: number;
+createdAt: Date;
+}
+type GuestProps = Omit<UserProps, "createdAt">
+
+type UserProps = {
+name: string;
+age: number;
+createdAt: Date;
+}
+// type GuestProps = Omit<UserProps, "name" | "age">;
+interface GuestProps extends Omit<UserProps, "name" | "age">
+
+as const fixes a type to a literal type
+
+// extracting type from something else
+const project = {
+title: "Project 1",
+specification: {
+areaSize: 100,
+rooms: 3,
+} as const;
+type Specification = typeof project["specification"];
+
+"interfaces are open" and "type aliases are closed"
+interface User {
+name: string;
+age: number;
+I
+interface User {
+role: string;
+}
+
+type User {
+name: string;
+age: number;
+3
+type User2 = User & {
+role: string;
+let user: User2 = {
+I
+
+type TUser = {
+name: string;
+age: number;
+}
+class User implements TUser
+name: string;
+age: number;
+constructor(name: string, age: number) {
+this.name = name;
+this.age = age;
+I
+
+🌟 Why choose Type over Interface in TypeScript? Learn the key differences and why Type is the way to go! ⚡️ #TypeScript #CodingTips
+#typescript #typescripttutorial #TypeOverInterface #TypeScript #TypeAlias #InterfaceProblems #Consideration #Classes #BestArguments #ProInterface #TypeScriptTips #vizard
+
+I've come to the conclusion that you should pretty much always favor type over interface, and here's why. So very quickly, what are the differences between type alias and interface? Well, let's say we have some kind of component, user component, and it takes some props, and we want to describe it with user props, right? So I could use type, user, props, equal sign, curly braces, and then here you can have the various properties, right? So we're describing an object here, and we could do the same thing with interface. So we could say interface, user, props, name, and age, and curly brace. Right, so this looks very similar. Instead of type, you have interface, and type has this equal sign, right? I get an error here because I'm using the same identifier twice. Now, sometimes people add, for an interface, they add the I in front of the name, and for types, or type aliases, I should say, people sometimes add a T in front to indicate that it's a type alias, right? And here, it's to indicate that it's an interface. Now, these days, it's a little bit less common. All right, now, very often, you have some kind of base type or base interface, and you want to extend upon that. So let's say, again, we have type, user, props. It's going to be an object with name, age. And now, let's say, we also...
+
