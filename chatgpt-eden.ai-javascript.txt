@@ -1,0 +1,156 @@
+const axios = require("axios").default;
+const options = {
+method: "POST",
+url: "https://api.edenai.run/v2/text/chat",
+headers: {
+authorization: "Bearer
+data: {
+show_original_response: false,
+fallback_providers: ""
+providers: "openai",
+text: "Hello i need your help ! ",
+chatbot_global_action: "Act as an assistant",
+previous_history: [],
+temperature: 0.0,
+max_tokens: 150,
+Your_API_Key",
+axios
+.request(options)
+.then((response) => {
+console. Log(response.data);
+.catch((error) => {
+console.error(error);
+})F
+
+keywords extraction
+
+const axios = require("axios").default;
+const options = {
+method: "POST",
+url: "https://api.edenai.run/v2/text/topic_extraction",
+headers: {
+authorization: "Bearer / Your_API_Key",
+data: {
+show_original_response: false,
+fallback_providers: "",
+providers: "google, ibm, openai",
+text: "this is a test",
+language: "en",
+axios
+.request(options)
+.then((response) => {
+console. Log(response.data);
+.catch((error) => {
+console.error(error);
+});
+
+eden.ai askyoda test project javascript
+
+//UpLoad pdf file
+const axios = require("axios").default;
+const fs = require("fs");
+const FormData = require("form-data");
+const form = new FormData();
+form.append("provider", "amazon");
+form.append("file", fs.createReadstream("
+const options = {
+method: "POST",
+url: "https://api.edenai.run/v2/aiproducts/askyoda/{project_id}/add_file",
+headers: {
+Authorization: "Bearer
+Your_API_Key",
+"Content-Type": "multipart/form-data; boundary=" + form.getBoundary(),
+data: form,
+path/to/your/pdf.pdf"));
+axios
+.request(options)
+.then((response) => {
+console. Log(response.data);
+.catch((error) => {
+console.error(error);
+});
+
+//UpLoad audio file
+const axios = require("axios").default;
+const fs = require("fs");
+const FormData = require("form-data");
+const form = new FormData();
+form.append("provider", "deepgram");
+form.append("file", fs.createReadStream("path/to/your/audio.mp3"));
+const options = {
+method: "POST",
+url: "https://api.edenai.run/v2/aiproducts/askyoda/{project_id}/add_audio",
+headers: {
+Authorization: "Bearer Your_API_Key",
+"Content-Type": "multipart/form-data; boundary=" + form.getBoundary(),
+data: form,
+axios
+.request(options)
+.then((response) => {
+console. Log(response.data);
+.catch((error) => {
+console.error(error);
+
+language translation
+
+const axios = require("axios").default;
+
+const options = {
+  method: "POST",
+  url: "https://api.edenai.run/v2/translation/automatic_translation",
+  headers: {
+    authorization: "Bearer 🔑 Your_API_Key",
+  },
+  data: {
+    show_original_response: false,
+    fallback_providers: "",
+    providers: "amazon,google,ibm,microsoft",
+    text: "人工智能 亦稱智械、機器智能，指由人製造出來的機器所表現出來的智慧。",
+    source_language: "zh",
+    target_language: "en",
+  },
+};
+
+axios
+  .request(options)
+  .then((response) => {
+    console.log(response.data);
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+
+edenai speech to text - javascript
+
+const axios = require("axios").default;
+const fs = require("fs");
+const FormData = require("form-data");
+
+const form = new FormData();
+form.append("show_original_response", "false");
+form.append("fallback_providers", "");
+form.append("providers", "revai,voci");
+form.append("file", fs.createReadStream("🔊 path/to/your/sound.mp3"));
+form.append("language", "en");
+
+const options = {
+  method: "POST",
+  url: "https://api.edenai.run/v2/audio/speech_to_text_async",
+  headers: {
+    Authorization: "Bearer 🔑 Your_API_Key",
+    "Content-Type": "multipart/form-data; boundary=" + form.getBoundary(),
+  },
+  data: form,
+};
+
+axios
+  .request(options)
+  .then((response) => {
+    console.log(response.data);
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+
+
+
