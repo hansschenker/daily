@@ -1,0 +1,641 @@
+1. Introduction to Models - Inputs and Outputs.mp4
+2. Using LLMs with LangChain.mp4
+3. Chat Models with LangChain.mp4
+4. Prompt Templates.mp4
+5. Prompt and Models - Exercise.mp4
+6. Prompt and Models - Exercise Solution.mp4
+7. Few Shot Prompt Template.mp4
+8. Parsing Output - Part One.mp4
+9. Parsing Output - Part Two.mp4
+10. Parsing Output - Part Three.mp4
+11. Serialization -Saving and Loading Prompts.mp4
+12. Models - Inputs and Outputs - Project Exercise.mp4
+13. Models - Inputs and Outputs - Project Exercise Solution.mp4
+1. Project Demo - Zero To Mastery Academy - 1920x1080 490K.mp4
+2. Introduction to LangChain - Zero To Mastery Academy - 1920x1080 316K.mp4
+1. Project Demo - Zero To Mastery Academy - 1920x1080 490K.mp4
+1. Project Demo - Zero To Mastery Academy - 1920x1080 490K.mp4
+2. Introduction to LangChain - Zero To Mastery Academy - 1920x1080 316K.mp4
+3. Setting Up The Environment LangChain, Pinecone, and Python-dotenv - Zero To Mastery Academy - 1920x1080 347K.mp
+4. LLM Models (Wrappers) GPT-3 - Zero To Mastery Academy - 1920x1080 307K.mp4
+5. ChatModels GPT-3.5-Turbo and GPT-4 - Zero To Mastery Academy - 1920x1080 338K.mp4
+6. Prompt Templates - Zero To Mastery Academy - 1920x1080 339K.mp4
+7. Simple Chains - Zero To Mastery Academy - 1920x1080 406K.mp4
+8. Sequential Chains - Zero To Mastery Academy - 1920x1080 384K.mp4
+9. Introduction to LangChain Agents - Zero To Mastery Academy - 1920x1080 298K.mp4
+10. LangChain Agents in Action - Zero To Mastery Academy - 1920x1080 298K.mp4
+11. Short Recap of Embeddings - Zero To Mastery Academy - 1920x1080 282K.mp4
+12. Introduction to Vector Databases - Zero To Mastery Academy - 1920x1080 288K.mp4
+13. Splitting and Embedding Text Using LangChain - Zero To Mastery Academy - 1920x1080 408K.mp4
+14. Inserting the Embeddings into a Pinecone Index - Zero To Mastery Academy - 1920x1080 320K.mp4
+15. Asking Questions (Similarity Search) - Zero To Mastery Academy - 1920x1080 354K.mp4
+16. Project Introduction - Zero To Mastery Academy - 1920x1080 311K.mp4
+17. Project Introduction - Zero To Mastery Academy - 1920x1080 331K.mp4
+18. Project Introduction - Zero To Mastery Academy - 1920x1080 400K.mp4
+19. Public and Private Service Loaders - Zero To Mastery Academy - 1920x1080 431K.mp4
+20. Chunking Strategies and Splitting the Documents - Zero To Mastery Academy - 1920x1080 339K.mp4
+21. Embedding and Uploading to a Vector Database (Pinecone) - Zero To Mastery Academy - 1920x1080 405K.mp4
+22. Asking and Getting Answers - Zero To Mastery Academy - 1920x1080 357K.mp4
+23. Adding Memory (Chat History) - Zero To Mastery Academy - 1920x1080 405K.mp4
+
+
+
+
+
+What is LangChain?
+
+LangChain is an OpenSource framework that allows
+developers working with Al to combine LLMs with external
+sources of computation and data.
+
+LLMs alone are often limited in their ability to understand
+the context, interact with the real world, or learn and adapt.
+
+LLMs have an impressive general knowledge but are
+limited to their training data.
+
+LangChain allows you to connect an LLM like GPT-4 to your
+own sources of data.
+
+Using LangChain you can make your LLM Application take
+actions.
+LangChain is data-aware and agentic-aware.
+
+
+LangChain Use-Cases
+. Chat Bots
+. Question Answering Systems
+. Summarization Tools
+
+
+
+LangChain Components
+1. LLM Wrappers
+2. Prompt Templates
+3. Indexes
+4. Memory
+
+LangChain Agents
+Agents facilitate interaction between the LLM and external
+APIs. They play a crucial role in decision-making,
+determining which actions the LLM should undertake.
+This process involves taking an action, observing the
+result, and then repeating the cycle until completion.
+
+
+!pip install -r ./requirements.txt -q
+!pip show langchain
+Name: langchain
+Version: 0.0.192
+Summary: Building applications with LLMs through composability
+Home-page: https://www.github.com/hwchase17/langchain
+
+Note: you may need to restart the kernel to use updated packages.
+pip install langchain -- upgrade -q
+Python-dotenv
+import os
+from dotenv import load_dotenv, find_dotenvT
+load_dotenv(find_dotenv(), override=True)
+os.environ.get('PINECONE_API_KEY')
+
+
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
+os.environ.get('PINECONE_API_KEY')
+
+LLM Models (Wrappers): GPT-3
+from langchain.llms import OpenAI
+11m = OpenAI(model_name='text-davinci-003', temperature=0.7, max_tokens=512)
+print(1lm)
+OpenAI
+Params: {'model_name': 'text-davinci-003', 'temperature': 0.7, 'max_tokens': 512, 'top_p': 1, 'freque
+ncy_penalty': 0, 'presence_penalty': 0, 'n': 1, 'request_timeout': None, 'logit_bias': {}}
+
+
+output = llm('explain quantum mechanics in one sentence')
+print(output)
+Quantum mechanics is a branch of physics describing the behavior of matter and energy on the scale of
+atoms and subatomic particles.
+print(llm.get_num_tokens('explain quantum mechanics in one sentence'))
+
+
+output = llm.generate([' ... is the capital of France.',
+'What is the formula for the area of a circle?'])
+print(output.generations)
+[[Generation(text='\n\nParis.', generation_info={'finish_reason': 'stop', 'logprobs': None}) ], [Gener
+ation(text='\n\nThe formula for the area of a circle is A = nr2, where A is the area of the circle, I
+is the constant (approximately 3.14) and r is the radius of the circle.', generation_info={'finish_re
+ason': 'stop', 'logprobs': None} ) ]]
+print(output.generations[0][0].text)
+:
+Paris.
+
+With sequential chains, you can make a series of calls
+to one or more LLMs. You can take the output from one
+chain and use it as the input to another chain.
+There are two types of sequential chains:
+1. SimpleSequentialChain
+2. General form of sequential chains
+SimpleSequentialChain represents a series of chains, where
+each individual chain has a single input and a single output,
+and the output of one step is used as input to the next.
+
+
+)
+from langchain.1lms import OpenAI
+from langchain import PromptTemplate
+from langchain.chains import LLMChain, SimpleSequentialChain
+11m1 = OpenAI(model_name='text-davinci-003', temperature=0.7, max_tokens=1024)
+prompt1 = PromptTemplate(
+input_variables=['concept'],
+template='''You are an experienced scientist and Python programmer.
+Write a function that implements the concept of {concept}.''
+chain1 = LLMChain(1lm=1lm1, prompt=prompt1)
+I
+)
+11m2 = ChatOpenAI(model_name='gtp-3.5-turbo', temperature=1.2)
+prompt2 = PromptTemplate(
+input_variables=['function'],
+template='Given the Python function {function}, describe it as detailed as possible.'
+chain2 = LLMChain(1lm=1lm2, prompt=promp2)
+
+overall_chain = SimpleSequentialChain(chains=[chain1, chain2], verbose=True)
+
+Embeddings
+Embeddings are the core of building LLMs applications.
+Text embeddings are numeric representations of text and
+are used in NLP and ML tasks.
+
+Embeddings Applications
+. Text Classification: assigning a label to a piece of text.
+. Text Clustering: grouping together pieces of text that are
+similar in meaning.
+. Question-Answering: answering a question posed in
+natural language.
+
+Challenges
+One of the biggest challenges of AI Applications is efficient
+data processing.
+Many of the latest Al applications rely on vector
+embeddings. Chatbots, question-answering systems, and
+machine translation rely on vector embeddings.
+
+
+û pinecone.io
+Pinecone
+Pricing
+Build
+Learn
+Company Contact
+We're hiring!
+Log In
+Sign Up Free
+Long-term
+Memory for Al
+
+
+The Pinecone vector database makes it easy to build high-performance
+vector search applications. Developer-friendly, fully managed, and
+easily scalable without infrastructure hassles.
+
+
+Vector Database
+Content
+Embedding
+Mod&
+Vector Embedding
+L0.34, -1.2, 0.34, 1.3, ... ,-0.03,1.14]
+Application
+Query
+Steps:
+1. Embedding
+2. Indexing
+3. Querying
+Query Result
+Image from pinecone.io
+
+Splitting and Embedding Text Using LangChain
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
+
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+with open('files/churcill_speech.txt') as f:
+churchill_speech = f.read()
+text_splitter = RecursiveCharacterTextSplitter(
+chunk_size=100,
+chunk_overlap=20,
+length_function=len
+)
+chunks = text_splitter.create_documents([churchill_speech])
+# print(chunks[2])
+print (ch)
+
+Embedding Cost
+def print_embedding_cost(texts):
+import tiktoken
+enc = tiktoken.encoding_for_model('text-embedding-ada-002')
+total_tokens = sum([len(enc.encode(page.page_content)) for page in texts])
+print(f'Total Tokens: {total_tokens}')
+print(f'Embedding Cost in USD: {total_tokens / 1000 * 0.0004 :. 6f}')
+print_embedding_cost(chunks)
+Total Tokens: [ 4820
+Embedding Cost in USD: 0.001928
+
+
+from langchain.embeddings import OpenAIEmbeddings
+embedding = OpenAIEmbeddings()
+vector = embedding. embed_query('fbc')
+vector
+025586106348782778,
+011146212927997112,
+009379216469824314,
+03904355317354202,
+03440695255994797,
+12107458896934986,
+0211756844073534,
+022758912295103073,
+18772568553686142,
+0005539533449336886,
+
+from langchain.vectorstores import Pinecone
+pinecone.init(api_key=os.environ.get('PINECONE_API_KEY'), environment=os.environ.get('PINECONE_ENV
+4
+# deleting all indexes
+indexes = pinecone.list_indexes()
+for i in indexes:
+print('Deleting all indexes
+pinecone.delete_index(i)
+print('Done')
+index_name = 'churchill-speech'
+if index_name not in pinecone.list_indexes():
+print(f'Creating index {index_name} ... ')
+pinecone.create_index(index_name, dimension=1536, metric='cosine')
+print('Done!')
+ting index churchill-speech
+... ', end='')
+..
+
+vectore_store = Pinecone.from_documents(chunks, embeddings, index_name=ihdex_name)
+
+Asking Questions (Similarity Search)
+query - 'Where should we fight?'
+result = vector_store.similarity_search(query)
+print(result)
+[Document(page_content='shall fight on the beaches, we shall fight on the landing grounds, we shall f
+ight in the fields and', metadata={}), Document(page_content='front, now on that, fighting', metadata
+={}), Document(page_content='end, we shall fight in France, we shall fight on the seas and oceans, we
+shall fight with growing', metadata={}), Document(page_content='When we consider how much greater wou
+ld be our advantage in defending the air above this Island', metadata={}) ]
+
+for r in result:
+print(r.page_content)
+print('-' * 50)
+shall fight on the beaches, we shall fight on the landing grounds, we shall fight in the fields and
+front, now on that, fighting
+end, we shall fight in France, we shall fight on the seas and oceans, we shall fight with growing
+When we consider how much greater would be our advantage in defending the air above this Island
+
+
+from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
+11m = ChatOpenAI(model='gpt-3.5-turbo', temperature=1)
+retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': 3})
+chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
+query = 'Where should we fight?'
+answer = chain.run(query)
+
+Question Answer System
+-----------------------
+
+1. Prepare the document (once per document)
+a) Load the data into LangChain Documents.
+b) Split the documents into chunks.
+c) Embed the chunks into numeric vectors.
+d) Save the chunks and the embeddings to a vector database
+
+
+
+How can LLMs learn new knowledge?
+1. Fine-tuning on a training set
+2. Model inputs
+
+Question-Answering Pipeline
+
+1. Prepare the document (once per document)
+----------------------------------------
+a) Load the data into LangChain Documents.
+b) Split the documents into chunks.
+c) Embed the churks into numeric vectors.
+d) Save the chunks and the embeddings to a vector database.
+
+
+2. Search (once per query)
+-----------------------------------------
+a) Embed the user's question.
+b) Using the question's embedding and the chunk
+embeddings, rank the vectors by similarity to the question's
+embedding. The nearest vectors represent chunks similar to
+the question.
+
+
+3. Ask (once per query)
+----------------------------------------------
+a) Insert the question and the most relevant chunks into a
+message to a GPT model.
+b) Return GPT's answer.
+
+ReAct - Reasoning and Acting in LLM's
+---------------------------------------
+i = 1
+print('Write Quit of Exit to quit.')
+while True:
+q = input(f'Question #{i}: ')
+i = i+1
+if q.lower() in ['quit', 'exit']:
+print('Quitting ... Bye Bye! \n')
+time.sleep(2)
+break
+answer = ask_and_get_answer(vector_store, q)
+print(f'\nAnswer: {answer}')
+e Quit of Exit to quit.
+tion #1:
+What is reasoning and acting in LLMs?
+
+Question #1: What is reasoning and acting in LLMs?
+Answer: Reasoning and acting in LLMs refer to the ability to both generate a chain-of-thought prompt
+and generate task-specific actions in an interleaved manner, allowing for greater synergy between the
+two. In other words, it is the capability of LLMs to reason and make decisions based on language inpu
+t and take appropriate actions.
+Question #2: What is Chain-of-Thought (CoT)?
+Answer: Chain-of-Thought (CoT) is a reasoning mechanism that generates a chain of related thoughts to
+answer a complex problem, including least-to-most prompting for solving complicated tasks, zero-shot-
+CoT, and reasoning with self-consistency. However, this reasoning mechanism is a static black box, in
+that it uses its own internal representations to generate thoughts and is not grounded in the externa
+1 world, which limits its ability to reason reactively or update its knowledge.
+
+
+Question #3: What is ReAct Prompting?
+Answer: ReAct is a novel prompt-based paradigm that synergizes reasoning and acting in language model
+s for general task solving. It is designed to perform either reasoning or action generation in the de
+cision basis of model actions. ReAct prompting has been shown to be effective in various experiments
+across diverse benchmarks, including few-shot learning setups. The performance of ReAct prompting has
+also been tested with different large language models, including GPT-3, and has been found to be effe
+ctive.
+
+III
+Document Loaders
+Note
+Conceptual Guide
+Contents
+Transform loaders
+Public dataset or service
+Proprietary dataset or s
+Combining language models with your own text data is a powerful way to differentiate
+them. The first step in doing this is to load the data into "Documents" - a fancy way of say
+some pieces of text. The document loader is aimed at making this easy.
+The following document loaders are provided:
+Transform loaders
+These transform loaders transform data from a specific format into the Document format.
+For example, there are transformers for CSV and SQL. Mostly, these loaders input data
+from files but sometime from URLs.
+
+
+Project: Question-Answering on Private Documents
+-----------------------------------------------------------------------------------------------
+
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
+
+pip install pypdf -q
+Note: you may need to restart the kernel to use updated packages.
+def load_document(file):
+from langchain.document_loaders import PyPDFLoader
+print(f'Loading {file}')
+loader = PyPDFLoader(file)
+data = loader.load()
+return data
+
+
+Running Code
+----------------------
+data = load_document('files/us_constitution.pdf')
+print(data[1].page_content)
+print (data[10].|
+Loading files/us_constitution.pdf
+The
+House
+
+
+Running Code
+data = load_document('files/us_constitution.pdf')
+# print(data[1].page_content)
+# print(data[10].metadata)
+print(f'You have {len(data)} pages in your data')
+print(f'There are {len(data[20].page_content)} characters in the page')
+Loading files/us_constitution.pdf
+You have 41 pages in your data
+There are 1137 characters in the page
+I
+
+# pip install pypdf -q
+I
+def load_document(file):
+import os
+name, extension = os.path.splitext(file)
+if extension == '.pdf':
+from langchain.document_loaders import PyPDFLoader
+print(f'Loading {file}')
+loader = PyPDFLoader(file)
+elif extension == '.docx':
+from langchain.document_loaders import Docx2txtLoader
+data = loader.load()
+return data
+
+# wikipedia
+def load_from_wikipedia(query, lang='en', load_max_docs=2):
+from langchain.document_loaders import WikipediaLoader
+loader = WikipediaLoader(query=query, lang=lang, load_max_docs=load_max_docs)
+data = loader.load()
+returnl data
+
+
+Chunking is the process of breaking down large pieces of
+text into smaller segments.
+It's an essential technique that helps optimize the relevance
+of the content we get back from a vector database.
+
+As a rule of thumb, if a chunk of text makes sense without
+the surrounding context to a human, it will make sense to
+the language model as well.
+Finding the optimal chunk size for the documents in the
+corpus is crucial to ensure that the search results are
+accurate and relevant.
+
+
+def chunk_data(data, chunk_size=256):
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=0)
+chunks = text_splitter.split_documents(data)
+return chunks
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+I
+Embedding and Uploading to a Vector Database (Pinecone)
+------------------------------------------------------
+def insert_or_fetch_embeddings(index_name) :
+import pinecone
+from langchain.vectorstores import Pinecone
+from langchain.embeddings.openai import OpenAIEmbeddings
+embeddings = OpenAIEmbeddings()
+pinecone.ini(api_key=os.environ.get('PINECONE_API_KEY'), environment=os.environ.get('PINECONE_
+if index_name in pinecone.list_indexes():
+print(f'Index {index_name} already exists. Loading embeddings
+vector_store = Pinecone.from_existing_index(index_name, embeddings)
+print('ok')
+else:
+print(f'Creating index {index_name} and embeddings ... ', end='')
+pinecone.create_index(index_name, dimension=1536, metric='cosine')
+vector_store = Pinecone.from_documents(chunks, embeddings, index_name)
+print('ok')
+... ', end='')
+return vector_store
+
+
+delete existing index before creating new index
+---------------------------------------------------
+def delete_pinecone_index(index_name='all'):
+import pinecone
+pinecone.ini(api_key=os.environ.get('PINECONE_API_KEY'), environment=os.environ. get( 'PINECONE_
+if index_name == 'all':
+indexes = pinecone.list_indexes()
+print('Deleting all indexes ...
+for index in indexes:
+pinecone.delete_index(index)
+print('Ok')
+else:
+priht(f'Deleting index {index_name} ... ', end='')
+pinecone.delete_index(index_name)
+print('Ok')
+
+In [8]:
+1
+2
+# data = Load_from_wikipedia( 'GPT-4 , 'de)
+# print(data[0].page_content)
+In [19]:
+1
+2
+3
+chunks = chunk_data(data)
+print(len(chunks) )
+# print(chunks[10].page_content)
+In [21]:
+1
+In [28]:
+print_embedding_cost(chunks)
+Total Tokens: 16711
+Embedding Cost in USD: 0.006684
+1 delete_pinecone_index()
+Deleting all indexes
+Ok
+In [ ]:
+1
+2
+index_name
+index_name=
+input
+insert_or_fetch_embeddings
+int
+vector_store = insert_or_fetch_embeddings(in)
+index_name = 'askadocument'
+
+
+Asking and Getting Answers
+-------------------------------------------------------------------
+def ask_and_get_answer(vector_store, q):
+from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
+11m = ChatOpenAI(model='gpt-3.5-turbo', temperature=1)
+retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': 3})
+chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
+answer = chain.run(q)
+return answer
+
+
+Letting the User put multiple questions
+------------------------------------------------------------------------
+import time
+i=1
+print('Write Quit or Exit to quit.')
+while True:
+q = input(f'Question #{i}: ')
+i = i + 1
+if q.lower() in ['quit', 'exit']:
+print('Quitting ... bye bye!')
+time.sleep(2)
+break
+answer = ask_and_get_answer(vector_store, q)
+print(f'\nAnswer: {answer}')
+print(f'\n {"-" * 50} \n')
+
+
+chat with memory
+----------------------
+def ask_with_memory(vector_store, question, chat_history=[]):
+from langchain.chains import ConversationalRetrievalChain
+from langchain.chat_models import ChatOpenAI
+1lm = ChatOpenAI(temperature=1)
+retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': 3})
+crc = ConversationalRetrievalChain.from_llm(1lm, retriever)
+result = crc({'question': question, 'chat_history': chat_history})
+chat_history.append((question, result['answer']))
+return result, chat_historyl
+
+
+running with memory
+-------------------
+# qsking with memory
+chat_history = []
+question = 'How many amendments are in the U.S. Constitution?'
+result, chat_history = ask_with_memory(vector_store, question, chat_history)
+print(result['answer'])
+print(chat_history)
+
+use memory:  2 * 27
+---------------------------
+
+question = 'Multiply that number by 2'
+result, chat_history = ask_with_memory(vector_store, question, chat_history)
+print(result['answer'])
+print(chat_history)
+The number of amendments in the U.S. Constitution is 27, so when you multiply that by 2, you get 54.
+[('How many amendments are in the U.S. Constitution?', 'There are currently 27 amendments in the U.S.
+Constitution. '), ('Multiply that number by 2', 'The number of amendments in the U.S. Constitution is
+27, so when you multiply that by 2, you get 54. ') ]
+1
+
+
