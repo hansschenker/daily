@@ -1,0 +1,123 @@
+
+Signal = data value + change notification
+       = stream of 1 value + subscription
+
+Variables vs. Signals
+
+Variables
+let x = 5;
+let y = 3;
+let z = x + y;
+console.log(z); // 8
+x = 10;
+console.log(z); // 8
+
+VS
+
+Signals
+
+const x = signal(5);
+const y = signal(3);
+const z = computed( () => x()+y());
+
+console.log(z()); // 8
+x.set(10);
+console.log(z()); // 13
+
+RxJs
+
+//const x,y as number
+
+//const z = (n1:number, n2:number) => return n1 + n2
+const renderZ = (n1:number, n2:number) => console.log((n1+n2).toString())
+
+const x = new BehaviorSubject<number>(5)
+const y = new BehaviorSubject<number>(3)
+const z = combineLatest(x,y).subscribe(renderZ)
+
+Reading a signal in a template:
+
+Returns the current signal value
+Registers the signal as a
+dependency of the template
+
+Modify a Signal
+
+quantity = signal<number>(1);
+// Replace the value
+this.quantity.set(newQty) ;
+// Update value based on current value
+this.quantity.update(qty => qty * 2);
+
+
+Define a Computed Signal
+
+computed - constructor function
+
+Computation function - exPrice = computed( () => this.selectedProduct().price * this.quantity());
+
+
+Computed Signal
+
+Creates a new
+signal that
+depends on
+other signals
+
+Is read-only
+
+Recomputed if a
+dependent signal
+changes AND
+value is read
+
+Should be
+side-effect free
+
+<div *ngIf="exPrice()">
+Total: {{ exPrice() }}
+</div>
+
+Computed value is memoized, meaning
+it stores the computed result
+
+That computed value is reused next
+time the computed signal is read
+
+
+Signal Effect
+
+An effect is an operation that runs whenever one or
+more signal values change.
+
+Defining an effect
+
+effect function
+                    Operation to execute
+effect(() => console.log(this.selectedVehicle()));
+
+Defining an effect
+effect function
+Operation to execute
+effect(() => console.log(this.selectedVehicle()));
+
+Scheduled to re-run
+whenever any of the
+dependent signals
+change
+
+                                Dependent signal
+
+
+Signal Effect
+
+Should not normally change state/value of a signal
+Executes at least once
+Tracks its dependent signals
+When its dependencies change, effect is scheduled to be re-run
+
+
+
+
+
+
