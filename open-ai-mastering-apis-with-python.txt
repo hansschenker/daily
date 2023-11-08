@@ -1,0 +1,158 @@
+C:\Users\HP\Learning-Local\Openai-Api-Mastering-with-Python-Colt-Steel
+
+What is Openai
+
+· OpenAl is an artificial intelligence research
+company, created with the goal of developing Al in
+a safe and beneficial way
+· The company conducts cutting-edge research in
+machine learning and artificial intelligence
+. OpenAl also develops tools and frameworks that
+make it easier for developers to harness Al
+
+Openai Founters
+
+The Founders
+OpenAl was founded in 2015 by a group
+of high-profile individuals in tech, including:
+o Elon Musk
+Sam Altman
+o Greg Brockman
+Ilya Sutskever
+o John Schulman
+o Wojciech Zaremba
+
+
+GPT-3
+Generative Pre-Trained Transformer
+
+Training
+. GPT-3 was trained on over 45TB of text data:
+A quality-filtered subset of the CommonCrawl Dataset
+An expanded version of the Webtext dataset
+. All outbound links from Reddit with >3 Karma
+o Two databases of online books
+· English-language Wikipedia
+. Nearly 500 billion tokens of training data
+. Open Al has not released information on the training of GPT-4
+
+Size
+· GPT-3 is absolutely massive compared to GPT-2
+. GPT-3 has 175 billion parameters and takes
+800gb just to store the model itself
+That's 800gb of basically numeric data that
+forms the model.
+. It cost over $4.6 million in GPU costs to initially
+train GPT-3
+. OpenAl has not released the technical details of
+GPT-4
+
+
+The 2 ways we can "talk" to GPT models
+Chat
+· Expects a list of messages
+in a chat-based format
+· Supports GPT-4
+Completion
+· Expects a single text prompt
+. Does not support GPT-4
+
+DL Transformers (process sequential text)
+
+. GPT-4 is based on a type of neural
+network called a transformer
+. Transformers are a deep learning
+model that excel at processing
+sequential data (like natural
+language text!)
+
+Recurrent
+Neural Networks
+RNNs work sequentially, processing text one
+word at a time, but they have some problems:
+· They're not great at analyzing large pieces
+of text
+. They're slow to train. This means they
+can't be trained on huge amounts of data
+easily
+. Training can't be parallelized because they
+process sequentially
+
+Enter ...
+Transformers
+
+. Transformers are a relatively recent
+approach (2017)
+. Transformers process the entire input
+at once, rather than sequentially,
+meaning there is less risk of
+"forgetting" previous context.
+. This means they can be trained in
+parallel!
+
+Positional Encoding
+
+. Instead of dealing with each word sequentially, one
+at a time, transformers encode positional data
+. Before feeding each piece of the input into the
+neural network, we label it with positional information
+. Word-order information is stored in the actual data
+itself rather than in the network structure
+. The network learns the significance of word-order
+from the data itself
+
+pickles are overrated
+pickles  are  overrated
+1        2     3
+
+Attention
+· Attention in a neural network is a
+mechanism that allows the network to
+selectively focus on certain parts of input
+data, while ignoring others
+. Think of how humans focus our attention
+on certain aspects of the world, while
+filtering out irrelevant information
+
+Attention
+. Attention allows the network to focus on
+parts of the input data and dynamically
+asjust its focus as it processes the data
+. There are different attention mechanisms but
+most involve computing an attention score
+for each piece of input data
+. These scores are then used to compute a
+weighted sum or average of the input
+elements
+
+Self-Attention
+. Self-attention is one of the key innovations that
+makes the transformer model so effective
+· In self-attention, each element in the input
+sequence is compared to every other element in
+the sequence, and a set of attention weights is
+computed based on the similarity between each
+pair of elements
+. The "self" in self-attention refers to the the same
+sequence which is currently being encoded.
+
+openai completion api in jupyter notebook
+
+
+jupyter Our_First_Request Last Checkpoint: 3 minutes ago (unsaved changes)
+
+openai.Completion.create(
+  model="text-davinci-003",
+  prompt="The dog says "
+  import openai
+  openai.api_key = "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"
+)
+
+
+Prompt Design
+. Main Instructions - a task you want the
+model to perform
+· Data - any input data (if necessary)
+· Output Instructions - what type of output
+do you want? What format?
+

@@ -1,0 +1,206 @@
+Michael Hladky 2019, https://www.youtube.com/watch?v=_SVepyvg3XI
+
+Agenda
+
+· Terminology
+· Overview Of Explained Operators
+· Categorisation
+· Algebraic Approach
+· Primitive Operator Parts
+· Merging And Flattening Operators
+· Combining Operators
+· "All" Operators
+
+38 operators
+-------------
+switchMap
+switchMapTo
+switchAll
+
+merge
+merge
+(deprecated)
+mergeMap
+(aligs fatMap)
+mergeAll
+mergeScan
+
+concat
+concat
+(deprocated)
+concatMap
+concatMapTo
+concatAll
+
+startsWith
+endsWith
+exhaustMap
+exhaust
+
+catchError
+expand
+onError
+ResumeNext
+
+combine
+Latest
+combineAll
+forxJoin
+audit
+zip
+
+38
+Operators
+
+zipAll
+takeUntil
+debounce
+withLatest
+From
+skipUntil
+mapTo
+
+groupBy
+buffer
+bufferT
+oggle
+
+window
+windowCount
+windowTime
+windowToggle
+windowWhen
+
+Algebra: Reunion Of Broken Parts
+--------------------------------
+
+Map
+concat
+merge
+switch
+AIl
+switchMapTo
+switch
+To
+exhaust
+
+operators explained
+--------------------------------
+switchMap
+switchMapTo
+switchAll
+
+merge
+mergeMap
+(alias flatMap)
+mergeAll
+
+concat
+concat
+(deprecated)
+concatMap
+concatMapTo
+concatAll
+
+startsWith
+endsWith
+
+exhaustMap
+exhaust
+
+combine
+Latest
+
+Operators
+Explained
+
+combineAll
+npAll
+withLatest
+From
+fork Join
+
+
+When to use map?
+----------------------------------
+- Transformation of values
+(trans = from A to B, formatio related to a shape)
+
+Higher Order Observable
+--------------------------------
+concat
+exhaust
+switch
+merge
+Sorting Of Values Related To Time (concurreny)
+
+merge operators
+--------------------------------------
+
+
+merge no order, adds concurrency
+--------------------
+merge
+mergeMap (alias flatMap)
+mergeTo
+
+When to use merge?
+- Single subscription
+- Don't care about order, introduces concurrency
+- Handle number of concurrent processes (concurrent param)
+
+
+concat in order, sequentially
+When to use concat?
+- Sequencialice async operations
+- Used to start or end a with a specific value
+- Most save to use operator
+
+concat has 7 variations
+-------------------------------------
+concat
+concatTo
+concatMap
+concatMapTo
+
+startsWith
+endsWith
+
+
+switch
+When to use switch?
+- Focus on the most recent initialized observable
+- Cancels older subscriptions
+- Perfect for fetch request
+----------------------------------------
+switchTo
+switchMap
+switchMapTo
+switchAll
+
+
+grouping operators
+---------------------------------------
+combine
+zip (create a zip when both have emitted)
+withLatest (zip the latest value when either source emitted)
+withLatestFrom( when the input source emits, take the last value)
+Grouping Of Values Triggered By Events
+
+When to use forkJoin?
+- Like combineLatest but only the last values
+- Best for http requests
+
+When to use withLatestFrom?
+- If a primary stream should controls emission of a secondary
+
+the combinations of All operator
+--------------------------------
+OPERATOR
+zipAll
+combineAll
+switchAll
+mergeAll
+concatAll
+exhaust
+
