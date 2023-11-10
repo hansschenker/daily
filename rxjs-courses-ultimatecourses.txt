@@ -1,0 +1,916 @@
+const observer = {
+    next: value => console.log('next', value),
+    error: error => console.log('error', error),
+    complete: () => console.log('complete!')
+};
+
+const observable = new Observable(subscriber => {
+    subscriber.next('Hello');
+    subscriber.next('World');
+    subscriber.complete();
+});
+
+createion operators
+
+1
+of('https://api.github.com/users/octocat')
+2
+from([1, 2, 3, 4, 5])
+3
+fromEvent (document, 'click')
+4
+interval(1000)
+01-2
+
+
+Observable
+    ¦
+Pipeable Operator
+    ¦
+Pipeable Operator
+    ¦
+Observer
+	
+· Introducing Pipeable Operators
+· combine streams
+· filter streams
+· transform streams
+· + more ...
+
+*
+ * Calculate progress based on scroll position
+ */
+function calculateScrollPercent(element) {
+  const { scrollTop, scrollHeight, clientHeight } = element;
+
+  return (scrollTop / (scrollHeight - clientHeight)) * 100;
+}
+
+// elems
+const progressBar: any = document.querySelector('.progress-bar');
+
+// streams
+const scroll$ = fromEvent(document, 'scroll');
+
+const progress$ = scroll$.pipe(
+  /*
+   * For every scroll event, we use our helper function to 
+   * map to a current scroll progress value.
+   */
+  map(({ target }: any) => calculateScrollPercent(target.scrollingElement))
+);
+/*
+ * We can then take the emitted percent and set the width
+ * on our progress bar.
+ */
+progress$.subscribe(percent => {
+  progressBar.style.width = `${percent}%`;
+});
+
+
+const numbers = [1, 2, 3, 4, 5];
+
+/*
+ * Reducer functions take the accumulated value (last return) 
+ * and current value, returning a new accumulated value. 
+ * You can think of this like a snowball rolling downhill, 
+ * collecting values over time.
+ */
+const totalReducer = (accumulator, currentValue) => {
+  return accumulator + currentValue;
+};
+
+/*
+ * Our reducer function is invoked on each emission and the accumulated
+ * value stored. On completion the current accumulated value is emitted.
+ * In this example we are supplying a seed value (initial accumulator) of 0
+ * as the second parameter.
+ */
+from(numbers)
+  .pipe(reduce(totalReducer, 0))
+  .subscribe(console.log);
+
+interval(1000)
+  .pipe(
+    /*
+     * Important! reduce only emits one value, the final accumulated value
+     * on completion. We are forcing completion by using the take operator.
+     * If you want to emit each new accumulated value, you will use the scan
+     * operator, which is the focus of the next lesson.
+     */
+    take(3),
+    reduce(totalReducer, 0)
+  )
+  .subscribe({
+    next: console.log,
+    complete: () => console.log('Complete!')
+  });
+
+scan
+-----
+const numbers = [1, 2, 3, 4, 5];
+
+
+/*
+ * scan is similar to reduce, except it emits each new acculumated
+ * value as it occurs. This is great for managing state changes 
+ * in your application over time.
+ */
+from(numbers)
+  .pipe(scan((accumulator, currentValue) => {
+    return accumulator + currentValue;
+   }, 0))
+  .subscribe(console.log);
+
+const user = [
+  { name: 'Brian', loggedIn: false, token: null },
+  { name: 'Brian', loggedIn: true, token: 'abc' },
+  { name: 'Brian', loggedIn: true, token: '123' }
+];
+
+/*
+ * For instance, in this example we are building up an object 
+ * as new entries are emitted. Using scan, you can create a redux-like
+ * pattern with just one operator. In fact, early versions of @ngrx/store,
+ * Angular's reactive redux solution, were not much more than this:
+ * https://github.com/ngrx/store/blob/d3a786aecafcda9b81fe60215af5852aae9de3a5/src/store.ts#L22
+ */
+const state$ = from(user).pipe(scan((accumulator, currentValue) => {
+    return { ...accumulator, ...currentValue }
+  }, {})
+);
+
+/*
+ * We could then use map to grab certain properties from our
+ * state for display. As it stands, even if the name doesn't change 
+ * the name will be emitted on any emissions from scan. In future lessons
+ * we will see how to only emit unique values based on the previous
+ * emission. We will also see how to share an execution path between 
+ * subscribers when necessary.
+ */
+const name$ = state$.pipe(
+  map((state: any) => state.name)
+);
+
+name$.subscribe(console.log);
+
+
+// elem refs
+const countdown = document.getElementById('countdown');
+const message = document.getElementById('message');
+
+// streams
+const counter$ = interval(1000);
+
+/*
+ * Starting countdown example. In future lessons we will learn
+ * about how to seed our countdown, complete when the timer hits zero, 
+ * pause the countdown, and resume. More to come!
+ */
+counter$
+  .pipe(
+    // since we have learned about mapTo, let's use it!
+    mapTo(-1),
+    scan((accumulator, current) => {
+      return accumulator + current;
+    }, 10),
+    // prevent entering the negatives
+    filter(value => value >= 0)
+  )
+  .subscribe((value: any) => {
+    // for every emitted value, update our countdown display
+    countdown.innerHTML = value;
+    if (!value) {
+      message.innerHTML = 'Liftoff!';
+    }
+  });
+
+takewhile
+---------
+// streams
+const counter$ = interval(1000);
+
+counter$
+  .pipe(
+    mapTo(-1),
+    scan((accumulator, current) => {
+      return accumulator + current;
+    }, 10),
+    // proving the interval stops
+    tap(console.log),
+    /*
+     * Instead of filter let's use takeWhile. This will
+     * complete the observable and clean up the interval
+     * once the countdown goes below zero, rather than 
+     * just preventing the numbers from being emitted.
+     */
+    takeWhile(value => value >= 0)
+  )
+  .subscribe((value: any) => {
+    countdown.innerHTML = value;
+    if (!value) {
+      message.innerHTML = 'Liftoff!';
+    }
+  });
+
+
+takeuntil
+---------------------------------------
+
+
+ * CODE FOR FOR FIRST SECTION OF LESSON
+ */
+// const counter$ = interval(1000);
+// const click$ = fromEvent(document, 'click');
+
+/*
+ * takeUntil lets you complete a stream based
+ * on when another stream emits a value. For instance,
+ * in this example our counter will run until the click$
+ * stream emits a value, at which point the observable
+ * will be completed.
+ */
+// counter$.pipe(
+//   takeUntil(click$)
+// ).subscribe(console.log);
+
+/*
+ * BEGIN SECOND SECTION OF LESSON
+ */
+// elem refs
+const countdown = document.getElementById('countdown');
+const message = document.getElementById('message');
+const abortButton = document.getElementById('abort');
+
+// streams
+const counter$ = interval(1000);
+const abort$ = fromEvent(abortButton, 'click');
+
+counter$
+  .pipe(
+    mapTo(-1),
+    scan((accumulator, current) => {
+      return accumulator + current;
+    }, 10),
+    takeWhile(value => value >= 0),
+    /*
+     * When you want to complete a stream based on another
+     * stream you can use takeUntil. In this case, whenever
+     * our button click stream emits the observable will
+     * complete, letting us stop the countdown before
+     * it reaches zero.
+     */
+    takeUntil(abort$)
+  )
+  .subscribe((value: any) => {
+    countdown.innerHTML = value;
+    if (!value) {
+      message.innerHTML = 'Liftoff!';
+    }
+  });
+
+distinctUntilChanged
+----------------------
+const numbers$ = of(1, '1', 2, 3, 3, 3, 4, 5, 3);
+
+/*
+ * distinctUntilChanged emits unique values based
+ * on a === comparison to the last emitted value.
+ */
+numbers$.pipe(distinctUntilChanged()).subscribe(console.log);
+
+const user = [
+  { name: 'Brian', loggedIn: false, token: null },
+  { name: 'Brian', loggedIn: true, token: 'abc' },
+  { name: 'Brian', loggedIn: true, token: '123' }
+];
+
+const state$ = from(user).pipe(
+  scan((accumulator, currentValue) => {
+    return { ...accumulator, ...currentValue };
+  }, {})
+);
+
+const name$ = state$.pipe(
+  /*
+   * If comparing based on a property you can use
+   * the distinctUntilKeyChanged helper operator instead.
+   */
+  // @ts-ignore
+  distinctUntilKeyChanged('name'),
+  /*
+   * If you need to use a custom comparer, you can
+   * pass distinctUntilChanged a comparer function.
+   * ex. distinctUntilChanged((prev, curr) => {
+   *   return prev.name === curr.name;
+   * })
+   */
+  map((state: any) => state.name)
+);
+
+name$.subscribe(console.log);
+
+
+Rate limiting operators
+------------------------
+· Essential Rate Limiting Operators
+. Time based filtering operators
+· emitting latest value after a pause
+· sampling stream on certain duration
+· other time based conditions ...
+
+//elems
+const inputBox = document.getElementById('text-input');
+
+// streams
+const click$ = fromEvent(document, 'click');
+const input$ = fromEvent(inputBox, 'keyup');
+
+input$
+  .pipe(
+    /*
+     * debounceTime emits the last emitted value from the source 
+     * after a pause, based on a duration you specify.
+     * For instance, in this case when the user starts typing all values
+     * will be ignored until they paused for at least 200ms,
+     * at which point the last value will be emitted.
+     */
+    debounceTime(200),
+    // we could also use map here
+    pluck('target', 'value'),
+    /* 
+     * If the user types, then backspaces quickly, the same value could
+     * be emitted twice in a row. Using distinctUntilChanged will prevent
+     * this from happening.
+     */
+    distinctUntilChanged()
+  )
+  .subscribe(console.log);
+
+
+*
+ * BEGIN FIRST SECTION OF LESSON
+ */
+// const click$ = fromEvent(document, 'click');
+
+// click$.pipe(
+     /*
+      * throttleTime will emit the first value, then ignore
+      * values for the specified duration. After that duration
+      * has passed, the next value from the source will be
+      * emitted, with the previous behavior repeated.
+      */
+//   throttleTime(3000),
+// ).subscribe(console.log);
+
+/*
+ * BEGIN SECTION SECTION OF LESSON
+ */
+/*
+ * Calculate progress based on scroll position
+ */
+function calculateScrollPercent(element) {
+  const { scrollTop, scrollHeight, clientHeight } = element;
+
+  return (scrollTop / (scrollHeight - clientHeight)) * 100;
+}
+
+// elems
+const progressBar: any = document.querySelector('.progress-bar');
+
+// streams
+const scroll$ = fromEvent(document, 'scroll');
+
+const progress$ = scroll$.pipe(
+  /*
+   * For extremely active streams like scroll events,
+   * throttleTime can be used to limit the number of emitted
+   * values. In this case, we'll just update our scroll bar every
+   * 30ms of scrolling.
+   */
+  throttleTime(30),
+  /*
+   * For every scroll event, we use our helper function to 
+   * map to a current scroll progress value.
+   */
+  map(({ target }: any) => calculateScrollPercent(target.documentElement)),
+  tap(console.log)
+);
+/*
+ * We can then take the emitted percent and set the width
+ * on our progress bar.
+ */
+progress$.subscribe(percent => {
+  progressBar.style.width = `${percent}%`;
+});
+
+const click$ = fromEvent(document, 'click');
+const timer$ = interval(1000);
+
+click$
+  .pipe(
+    /*
+     * At the duration you specify, sample time will emit the last
+     * emitted value within that window. For instance, in this 
+     * example we are sampling at an interval of 4s. When the 4s
+     * interval timer begins, you can click twice. Once 4s passes,
+     * the second click will be emitted. This behavior is then repeated.
+     * If no values are emitted from the source in the sample
+     * window no values are emitted by sampleTime.
+     */
+    sampleTime(4000),
+    // @ts-ignore
+    map(({ clientX, clientY }) => ({
+      clientX,
+      clientY
+    }))
+  )
+  .subscribe(console.log);
+
+timer$.pipe(
+  /*
+   * The sample window can also be based off another stream. 
+   * For instance, in this example every time you click the
+   * last value emitted by the timer$ observable will be emitted
+   * by sample.
+   */
+  sample(click$)
+).subscribe(console.log);
+
+// begin lesson code
+import { fromEvent } from 'rxjs';
+import { auditTime, map } from 'rxjs/operators';
+
+const click$ = fromEvent(document, 'click');
+
+click$
+  .pipe(
+    /*
+     * auditTime will begin window when the source emits. Then,
+     * once the window passes, the last emitted value
+     * from the source will be emitted. For instance, in this
+     * example if you click a 4s timer will be started. 
+     * At the end, the last click event during that window
+     * will be emitted by auditTime. This is similar to the
+     * behavior of throttleTime, if you were to pass in a config
+     * to emit the value on the trailing edge.
+     */
+    auditTime(4000),
+    /*
+     * adding mapping to stackblitz example since logging
+     * raw events is flaky
+     */
+    // @ts-ignore
+    map(({clientX, clientY}) => ({clientX, clientY}))
+  )
+  .subscribe(console.log);
+
+
+Transformation Operators
+-------------------------
+· Essential Transformation Operators
+· Transform values as they flow through stream
+· Flattening operators
+· What does flattening mean?
+· Comparing mergeMap, concatMap, switchMap, exhaustMap
+· Also learn about ...
+· catchError, finalize, and delay
+
+Observables that return Observables must be flatten befor values can be accessed
+
+const textInput = document.getElementById(
+'text-input'
+streams
+const input$ = fromEvent(textInput, 'keyup');
+input$. pipe(
+map(event = {
+const term = event. target. value;
+return ajax.getJSON(
+`https://api.github. com/users/${term
+3),
+debounceTime(1000)
+subecrihel concale laa):
+02:35
+
+flatten with mergeAll
+--------------------
+const input$ = fromEvent(textInput, 'keyup');
+input$. pipe(
+map(event = {
+const term = event. target. value;
+neturn ajax.getJSON(
+https://api. github. com/users/${term}
+3),
+debounceTime(1000),
+mergeA11()
+). subscribe(console.log);
+
+pattern: map + mergeAll = mergeMap
+-----------------------------------
+// streams
+const input$ = fromEvent(textInput, 'keyup');
+input$. pipe(
+------------------
+mergeMap(event = {
+-----------------
+const term = event. target. value;
+return ajax. getJSON(
+https://api. github. com/users/${term3
+I
+3),
+debounceTime(1000)
+). subscribe(console.log);
+
+
+switchMap
+------------
+// begin lesson code
+import { fromEvent, empty, interval } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
+import {
+  debounceTime,
+  pluck,
+  distinctUntilChanged,
+  switchMap,
+  catchError
+} from 'rxjs/operators';
+
+/*
+ * BEGIN FIRST SECTION
+ */
+const interval$ = interval(1000);
+const click$ = fromEvent(document, 'click');
+
+click$.pipe(
+  /*
+   * switchMap switches to a new observable on each emission
+   * from the source, cancelling any previous inner 
+   * observables. For instance, if you click once a new
+   * interval observable will be subscribed to internally,
+   * with it's values emitted. When you click again,
+   * that observable will be completed, and the next 
+   * interval will be subscribed to, restarting
+   * the count. This will happen on each emission from
+   * the click$ observable.
+   */
+  switchMap(() => interval$)
+).subscribe(console.log);
+
+/*
+ * BEGIN SECOND SECTION
+ */
+const BASE_URL = 'https://api.openbrewerydb.org/breweries';
+
+//elems
+const inputBox = document.getElementById('text-input');
+const typeaheadContainer = document.getElementById('typeahead-container');
+
+// streams
+const input$ = fromEvent(inputBox, 'keyup');
+
+input$
+  .pipe(
+    debounceTime(200),
+    pluck('target', 'value'),
+    distinctUntilChanged(),
+    /*
+     * switchMap is perfect for GET requests, as you do
+     * not normally care about the previous request
+     * to the same URL if another has fired. For instance,
+     * in this example if the user continues typing
+     * and the previuos request has not returned,
+     * switchMap will go ahead and cancel it and only
+     * the current request will be considered.
+     */
+    switchMap(searchTerm => ajax.getJSON(
+      `${BASE_URL}?by_name=${searchTerm}`
+      )
+    )
+  )
+  .subscribe((response: any[]) => {
+    // update ui
+    typeaheadContainer.innerHTML = response.map(b => b.name).join('<br>');
+  });
+
+concatMap: source Obs runs inner observables as long as a new source value is emitted
+---------
+
+const saveAnswer = answer => {
+  // simulate delayed request
+  return of(`Saved: ${answer}`).pipe(delay(1500));
+};
+
+// elems
+const radioButtons = document.querySelectorAll('.radio-option');
+
+// streams
+const answerChange$ = fromEvent(radioButtons, 'click');
+
+answerChange$
+  .pipe(
+    /*
+     * concatMap can be useful if you need to queue
+     * requests client side. For instance, in this example
+     * we are emulating save requests on a quiz, ensuring
+     * order remains in tact by not initiating the next 
+     * request until the previous completes. Be careful though,
+     * as long running inner observables could cause backups.
+     */
+    concatMap((event: any) => saveAnswer(event.target.value))
+  )
+  .subscribe(console.log);
+
+
+exhaustMap - maintains only 1 inner observable at at a time
+------------------------------------------------------------
+
+
+handling errors when ocurred
+------------------------------
+const BASE_URL = 'https://api.openbrewerydb.org/breweries';
+
+//elems
+const inputBox = document.getElementById('text-input');
+const typeaheadContainer = document.getElementById('typeahead-container');
+
+// streams
+const input$ = fromEvent(inputBox, 'keyup');
+
+input$
+  .pipe(
+    debounceTime(200),
+    pluck('target', 'value'),
+    distinctUntilChanged(),
+    switchMap(searchTerm => ajax.getJSON(
+      `${BASE_URL}?by_name=${searchTerm}`
+      ).pipe(
+        /*
+         * catchError receives the error and the
+         * observable on which the error was caught
+         * (in case you wish to retry). In this case,
+         * we are catching the error on the ajax
+         * observable returned by our switchMap
+         * function, as we don't want the entire
+         * input$ stream to be completed in the
+         * case of an error.
+         */
+        catchError((error, caught) => {
+          /*
+           * In this case, we just want to ignore
+           * any errors and hope the next request
+           * succeeds so we will just return an 
+           * empty observable (completes without
+           * emitting any values).
+           * 
+           * You can also use the EMPTY import, 
+           * which is just a shortcut for empty(). 
+           * Behind the scenes empty() returns the
+           * EMPTY constant when a scheduler is not provided.
+           * ex. import { EMPTY } from 'rxjs';
+           * return EMPTY;
+           * https://github.com/ReactiveX/rxjs/blob/fc3d4264395d88887cae1df2de1b931964f3e684/src/internal/observable/empty.ts#L62-L64
+           */
+          return empty();
+        })
+      )
+    )
+  )
+  .subscribe((response: any[]) => {
+    // update ui
+    typeaheadContainer.innerHTML = response.map(b => b.name).join('<br>');
+  });
+
+polling http request to image provider
+---------------------------------------
+
+import { fromEvent, timer } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
+import {
+  takeUntil,
+  pluck,
+  mergeMapTo,
+  exhaustMap,
+  tap,
+  finalize,
+  switchMapTo
+} from 'rxjs/operators';
+
+// elems
+const startButton = document.getElementById('start');
+const stopButton = document.getElementById('stop');
+const pollingStatus = document.getElementById('polling-status');
+const dogImage: any = document.getElementById('dog');
+
+// streams
+const startClick$ = fromEvent(startButton, 'click');
+const stopClick$ = fromEvent(stopButton, 'click');
+
+startClick$
+  .pipe(
+    /*
+     * Every start click we will map to an interval which
+     * emits every 5 seconds to request a new image.
+     * Since we do not want multiple polls active at once,
+     * we'll use exhaustMap to ignore any emissions
+     * while the inner interval is running.
+     */
+    exhaustMap(() =>
+      timer(0, 5000).pipe(
+        tap(() => (pollingStatus.innerHTML = 'Active')),
+        switchMapTo(
+          ajax.getJSON('https://random.dog/woof.json').pipe(pluck('url'))
+        ),
+        /*
+         * Cancel the poll when stop click stream emits
+         */
+        takeUntil(stopClick$),
+        /*
+         * We'll use finalize to update the status to stopped
+         * each time the inner observable completes.
+         */
+        finalize(() => (pollingStatus.innerHTML = 'Stopped'))
+      )
+    )
+  )
+  .subscribe(url => (dogImage.src = url));
+
+
+combination operators
+------------------------------
+· Essential Combination Operators
+· Join multiple observables into a single stream
+· Combine multiple requests
+· Perform calculations based on multiple stream inputs
+· Tacking on values to beginning or end of stream
+· startWith, concat, merge, combineLatest, forkJoin ...
+
+· Essential Combination Operators
+· Join multiple observables into a single stream
+· Combine multiple requests
+· Perform calculations based on multiple stream inputs
+· Tacking on values to beginning or end of stream
+
+startWith
+----------------------------------
+const numbers$ = of(1,2,3);
+
+numbers$.pipe(
+  /*
+   * startWith lets you seed a stream with 1:M values.
+   * On subscription, these values will be emitted
+   * immediately, followed by any future values from
+   * the source.
+   */
+  startWith('a', 'b', 'c'),
+  /*
+   * You can also end a stream with any number of values,
+   * emitted on completion.
+   */
+  endWith('d', 'e', 'f')
+).subscribe(console.log);
+
+/*
+ * BEGIN SECOND SECTION OF LESSON
+ */
+// elem refs
+const countdown = document.getElementById('countdown');
+const message = document.getElementById('message');
+const abortButton = document.getElementById('abort');
+
+// streams
+const counter$ = interval(1000);
+const abort$ = fromEvent(abortButton, 'click');
+
+const COUNTDOWN_FROM = 10;
+
+counter$
+  .pipe(
+    mapTo(-1),
+    scan((accumulator, current) => {
+      return accumulator + current;
+    }, COUNTDOWN_FROM),
+    takeWhile(value => value >= 0),
+    takeUntil(abort$),
+    /*
+     * With startWith, we can seed the stream with
+     * the starting countdown value.
+     */
+    startWith(COUNTDOWN_FROM)
+  )
+  .subscribe((value: any) => {
+    countdown.innerHTML = value;
+    if (!value) {
+      message.innerHTML = 'Liftoff!';
+    }
+  });
+
+concat
+------
+
+
+merge
+-------
+
+
+
+combineLatest
+-------------
+// elems
+const first = document.getElementById('first');
+const second = document.getElementById('second');
+
+// streams
+const keyup$ = fromEvent(document, 'keyup');
+const click$ = fromEvent(document, 'click');
+
+// helpers
+const keyupAsValue = elem => {
+  return fromEvent(elem, 'keyup').pipe(
+    map((event: any) => event.target.valueAsNumber)
+  );
+};
+
+forkJoin (start multiple obs, when all completed, return the last value from each as an array)
+--------
+
+const GITHUB_API_BASE = 'https://api.github.com';
+
+/*
+ * forkJoin waits for all inner observables to complete 
+ * before emitting the last emitted value of each.
+ * The use cases for forkJoin are generally similar to
+ * Promise.all
+ */
+forkJoin({
+  user: ajax.getJSON(`${GITHUB_API_BASE}/users/reactivex`),
+  repo: ajax.getJSON(`${GITHUB_API_BASE}/users/reactivex/repos`)
+}).subscribe(console.log);
+
+/*
+ * You can also pass in comma seperated arugments and
+ * receieve an array in return. This is the only option if
+ * you are using less than RxJS 6.5
+ */
+
+// forkJoin(
+//   ajax.getJSON(`${GITHUB_API_BASE}/users/reactivex`),
+//   ajax.getJSON(`${GITHUB_API_BASE}/users/reactivex/repos`)
+// ).subscribe(([user, repos]) => {
+//   // perform action
+// });
+
+Mortgage Calculator (using combineLatest)
+--------------------------------------------
+// begin lesson code
+import { combineLatest, fromEvent, of } from 'rxjs';
+import { map, filter, delay, mergeMap, tap, share } from 'rxjs/operators';
+import { calculateMortgage } from './helpers';
+
+// elems
+const loanAmount = document.getElementById('loanAmount');
+const interest = document.getElementById('interest');
+const loanLength = document.querySelectorAll('.loanLength');
+const expected = document.getElementById('expected');
+
+// helpers
+const createInputValueStream = elem => {
+  return fromEvent(elem, 'input').pipe(
+    map((event: any) => parseFloat(event.target.value))
+  );
+};
+
+// simulating a save request
+const saveResponse = mortageAmount => {
+  return of(mortageAmount).pipe(delay(1000));
+};
+
+// streams
+const interest$ = createInputValueStream(interest);
+const loanLength$ = createInputValueStream(loanLength);
+const loanAmount$ = createInputValueStream(loanAmount);
+
+/*
+ * Combine streams of the three values needed to complete
+ * our mortgage calculation. Once all three are filled out
+ * any subsequent updates will trigger a new calculation.
+ */
+const calculation$ = combineLatest(interest$, loanAmount$, loanLength$).pipe(
+  map(([interest, loanAmount, loanLength]) => {
+    return calculateMortgage(interest, loanAmount, loanLength);
+  }),
+  // proving the stream is shared
+  tap(console.log),
+  /*
+   *  If a field is empty, we'll just ignore the update for now
+   *  by filtering out invalid values.
+   */
+  filter(mortageAmount => !isNaN(mortageAmount)),
+  /*
+   *  Demonstrate sharing a stream so saves won't impact
+   *  display updates. Behind the scenes this uses a Subject,
+   *  which we we learn about in the first lessons of the
+   *  Masterclass course.
+   */
+  share()
+);
+
