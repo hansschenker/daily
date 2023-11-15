@@ -1,0 +1,323 @@
+e
+Schedulers
+time based operations & operators
+testing
+observeOn
+subscribeOn
+
+Synchronous Execution
+---------------------
+1 console. log('first');
+2 console. log('second');
+Console
+first
+second
+
+
+Asynchronous Execution
+1 setTimeout(
+2 console.log('first');
+3 console. log('second');
+() => console. log('setTimeout'
+4
+
+Asynchronous Execution - Microtask
+1 setTimeout(() => console.log('setTimeout'));
+2 queueMicrotask(() => console.log('microtask'));
+3 console. log('first');
+4 console. log('second');
+Console
+first
+second
+microtask
+setTimeout
+
+asyncScheduler.schedule(() => console.log('async') );
+2
+asapScheduler.schedule(() => console. log('microtask') );
+3
+animationFrameScheduler.schedule(() => console. log('aframe' ) ) ;
+4
+queueScheduler.schedule(() => { // schedule additional tasks });
+
+asyncScheduler
+asapScheduler
+animationFrameScheduler
+queueScheduler
+
+import './style.css';
+console.clear();
+// begin lesson code
+
+import { asyncScheduler, of, fromEvent } from 'rxjs';
+import { observeOn, subscribeOn, tap} from 'rxjs/operators';
+
+const observer = {
+  next: val => console.log('next', val),
+  error: err => console.log('error', err),
+  complete: () => console.log('complete')
+};
+
+/*
+ * The asyncScheduler lets you schedule tasks asynchronously,
+ * similar to a setTimeout. All schedulers have a signature
+ * of work, delay, state, but providing a delay for any other
+ * scheduler will simply default it to the asyncScheduler
+ * behind the scenes.
+ * 
+ * The schedule call returns a subscription, so if you need
+ * to cancel work before it is performed you can simply
+ * unsubscribe, similar to observables.
+ */
+const sub = asyncScheduler.schedule(
+  // work
+  console.log,
+  // delay
+  2000,
+  // state
+  'Hello World!'
+);
+
+// sub.unsubscribe();
+
+/*
+ * Most static creation operators accept a scheduler as 
+ * the last argument. For instance, if we want to emit
+ * values from of asynchronously, we can supply the
+ * asyncScheduler as the last argument. 
+ * 
+ * Output: 4,5,6,1,2,3
+ */
+// of(1,2,3, asyncScheduler).subscribe(observer);
+// of(4,5,6).subscribe(observer);
+
+/*
+ * You can also introduce schedulers by using the 
+ * observeOn operator. This is equivalent to wrapping
+ * next, error, and complete functions in appropriate
+ * scheduler.
+ */
+// of(1,2,3).pipe(
+//   // logging values before scheduler
+//   tap(observer),
+//   // delay can also be supplied as second argument
+//   observeOn(asyncScheduler, 2000)
+// ).subscribe(observer);
+
+/*
+ * Lastly, you can use schedulers to determine when
+ * subscriptions occur by using the subscribeOn 
+ * operator. This is equivalent to wrapping your entire 
+ * subscription in a scheduler.
+ */
+of(1,2,3).pipe(
+  tap(observer),
+  subscribeOn(asyncScheduler, 2000)
+).subscribe(observer);
+
+
+
+/********************
+ * Have a question, comment, or just want to chat about RxJS?
+ * Ping me on Ultimate Courses slack or on
+ * Twitter https://twitter.com/btroncone
+ * I look forward to hearing from you!
+ * For additional RxJS info and operator examples check out
+ * Learn RxJS (https://www.learnrxjs.io) and
+ * the Ultimate Course RxJS blog!
+ * (https://ultimatecourses.com/blog/category/rxjs)
+ ********************/
+
+import './style.css';
+console.clear();
+// begin lesson code
+
+import { asyncScheduler, asapScheduler, of } from 'rxjs';
+import { observeOn, subscribeOn, tap} from 'rxjs/operators';
+
+const observer = {
+  next: val => console.log('next', val),
+  error: err => console.log('error', err),
+  complete: () => console.log('complete')
+};
+
+/*
+ * The asapScheduler executes tasks asynchronously but
+ * 'as quickly as possible', similar to microtasks.
+ * For instance, even though our task scheduled with
+ * the asapScheduler appears after the asyncScheduler
+ * task, it will be executed before, but not before the 
+ * synchronous console.log. This is the same behavior
+ * you would see with Promise.resolve or queueMicrotask.
+ */
+asyncScheduler.schedule(() => console.log('asyncScheduler'));
+// queueMicrotask(() => console.log('queueMicrotask'));
+// Promise.resolve('fromPromise').then(console.log);
+asapScheduler.schedule(() => console.log('asapScheduler'));
+console.log('synchronous');
+
+/*
+ * Like other schedulers it can be provided as an
+ * argument to most static operators, or by using the observeOn
+ * or subscribeOn operators.
+ */
+// as argument to static operator
+// of(1,2,3, asapScheduler).subscribe(observer);
+
+// using observeOn
+// of(1,2,3).pipe(
+//   // logging values before scheduler
+//   tap(observer),
+//   observeOn(asapScheduler)
+// ).subscribe(observer);
+
+// using subscribeOn
+// of(1,2,3).pipe(
+//   tap(observer),
+//   subscribeOn(asapScheduler)
+// ).subscribe(observer);
+
+/********************
+ * Have a question, comment, or just want to chat about RxJS?
+ * Ping me on Ultimate Courses slack or on
+ * Twitter https://twitter.com/btroncone
+ * I look forward to hearing from you!
+ * For additional RxJS info and operator examples check out
+ * Learn RxJS (https://www.learnrxjs.io) and
+ * the Ultimate Course RxJS blog!
+ * (https://ultimatecourses.com/blog/category/rxjs)
+ ********************/
+
+import { animationFramescheduler } from 'rxjs';
+const ball = document.getElementById('ball');
+animationFrameScheduler.schedule(function
+(position){
+ball.style.transform = translate3d(0, $
+{position}px, 0)`;
+this. schedule(position + 1);
+3, 0, 0)
+
+interval(0, animationFrameScheduler).pipe(
+takeWhile(val = val < 300)
+). subscribe(val = {
+ball.style. transform = translate3d(0, ${val}px,
+0)`;
+3);
+
+
+interval(0, animationFrameScheduler).pipe(
+takeWhile(val = val < 300)
+). subscribe(val = {
+ball.style. transform = translate3d(0, ${val}px,
+0)`;
+3);
+
+Schedulers
+Download Video
+?
+asyncScheduler
+similar to setTimeout
+similar to queueMicrotask or Promise.resolve
+asapScheduler
+animationFrameScheduler
+similar to requestAnimationFrame
+
+import './style.css';
+console.clear();
+// begin lesson code
+
+import { animationFrameScheduler, interval } from 'rxjs';
+import { takeWhile } from 'rxjs/operators';
+
+const ball = document.getElementById('ball');
+/*
+ * The animationFrameScheduler let's you schedule
+ * tasks before browser repaint.
+ */
+// animationFrameScheduler.schedule(function(position){
+//   ball.style.transform = `translate3d(0, ${position}px, 0`;
+//   if(position <= 200) {
+//     this.schedule(position + 1)
+//   }
+// }, 0, 0);
+
+interval(0, animationFrameScheduler).pipe(
+  takeWhile(val => val <= 200)
+).subscribe(val => {
+  ball.style.transform = `translate3d(0, ${val}px, 0`;
+});
+
+/********************
+ * Have a question, comment, or just want to chat about RxJS?
+ * Ping me on Ultimate Courses slack or on
+ * Twitter https://twitter.com/btroncone
+ * I look forward to hearing from you!
+ * For additional RxJS info and operator examples check out
+ * Learn RxJS (https://www.learnrxjs.io) and
+ * the Ultimate Course RxJS blog!
+ * (https://ultimatecourses.com/blog/category/rxjs)
+ ********************/
+
+queuescheduler. schedule(() =
+console.log('first queue');
+3);
+console.log('sync');
+
+
+first queue
+sync
+
+...
+
+asyncScheduler			similar to setTimeout
+asapScheduler			similar to queueMicrotask or Promise.resolve
+animationFrameScheduler		similar to requestAnimationFrame
+execute tasks synchronously, on queuequeueScheduler
+
+import './style.css';
+console.clear();
+// begin lesson code
+
+import { asyncScheduler, asapScheduler, queueScheduler, of } from 'rxjs';
+import { observeOn, subscribeOn, tap} from 'rxjs/operators';
+
+const observer = {
+  next: val => console.log('next', val),
+  error: err => console.log('error', err),
+  complete: () => console.log('complete')
+};
+
+/*
+ * The queueScheduler executes tasks synchronously by default,
+ * allowing you to queue tasks inside other tasks.
+ */
+asyncScheduler.schedule(() => console.log('asyncScheduler'));
+asapScheduler.schedule(() => console.log('asapScheduler'));
+queueScheduler.schedule(() => console.log('queueScheduler'));
+console.log('synchronous');
+
+/*
+ * Scheduling tasks with queue scheduler inside another
+ * queue will always execute the outer tasks first.
+ */
+queueScheduler.schedule(() => {
+  queueScheduler.schedule(() => {
+    console.log('inside second queue');
+    queueScheduler.schedule(() => {
+      console.log('inside third queue');
+    });
+  });
+  console.log('inside first queue');
+})
+
+/********************
+ * Have a question, comment, or just want to chat about RxJS?
+ * Ping me on Ultimate Courses slack or on
+ * Twitter https://twitter.com/btroncone
+ * I look forward to hearing from you!
+ * For additional RxJS info and operator examples check out
+ * Learn RxJS (https://www.learnrxjs.io) and
+ * the Ultimate Course RxJS blog!
+ * (https://ultimatecourses.com/blog/category/rxjs)
+ ********************/
+

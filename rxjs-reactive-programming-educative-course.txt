@@ -1,0 +1,214 @@
+https://www.educative.io/courses/reactive-programming-rxjs/main-objectives
+
+erik meijer: 'Your mouse is a database'
+"
+The goal of Rx is to coordinate and orchestrate event-based and asynchronous computations such as low-latency sensor streams, Twitter and social media status updates, SMS messages, GPS coordinates, mouse moves and other UI events, Web sockets, and high-latency calls to Web services using standard object-oriented programming languages such as Java, C#, or Visual Basic.
+
+shows how every developer could have invented Rx by crossing the standard JDK (Java Development Kit) Future<T> interface with the GWT (Google Web Toolkit) AsyncCallBack<T> interface to create the pair of interfaces IObservable<T> and IObserver<T> that model asynchronous data streams with values of type T. This corresponds to the well-known Subject/Observer design pattern
+
+ the IObservable<T> and IObserver<T> interfaces represent functions of type (T->())->(), which is the continuation monad, the mother of all monads, and a co-monad.
+
+we applied the definition of categorical duality from Wikipedia literally to the IEnumerable<T> and IEnumerator<T> interfaces for pull-based collections, and thus derived the IObservable<T> and IObserver<T> interfaces completely mechanically by swapping the arguments and results of all method signatures, not guided by any operational intuition in the process.
+
+We parameterize over concurrency and logical clocks by another interface IScheduler (slightly simplified here), which represents an execution context that has a local notion of time on which work can be scheduled in the future
+
+Web and mobile applications are increasingly composed of asynchronous and realtime streaming services and push notifications, a particular form of big data where the data has positive velocity. This article has shown how to expose asynchronous data streams as push-based collections of type IObservable<T> (in contrast to pull-based collections of type IEnumerable<T>) and how to query asynchronous data streams using the fluent API operators provided by the Rx library
+"
+
+Put more simply, an Observable is a sequence whose items become available over time. The consumers of Observables, Observers, are the equivalent of listeners in the Observer pattern. When an Observer is subscribed to an Observable, it will receive the values in the sequence as they become available, without having to request them
+
+Course contents
+Patterns used in RxJS
+RxJS Observables and operators
+Concurrent programs and pipelining
+RxJS subject class
+
+Why reactive programming:
+
+- deal with data that’s only available over time. 
+- deal with data that is realtime, in high speed, we are too slow to consume synchronously (sensor data)
+- Websites load remote resources and respond to complex user interactions, 
+- servers are distributed across multiple physical locations, and 
+- people have mobile devices that they expect to work at all times, whether on high-speed Wi-Fi or spotty cellular networks. 
+- Any serious application involves several moving and asynchronous parts that need to be efficiently coordinated, and 
+- that level of coordination is difficult to achieve with the programming techniques that we currently have. On top of that, we have 
+- to deal with issues that have always been there, for example, 
+  - servers crashing, 
+  - slow networks, and 
+  - software bugs.
+
+How to handle asynchronous operations:
+
+Callback functions
+-----------------
+A callback is a function (A) that is passed as a parameter to another function (B) that performs an asynchronous operation. 
+When B completes the asynchronous operation, it calls back A with the results of the operation. Callbacks are used to 
+manage asynchronous flows, such as network I/O, database access, or user input.
+
+
+Promises 
+-----------------
+exist to save us from callbacks. A promise represents the result of an asynchronous operation. In promise-based code, 
+calling an asynchronous function immediately returns a “promise”, which is eventually either resolved with the result of 
+the operation or rejected with an error. In the meantime, the pending promise can be used as a placeholder for the final value.
+
+have a major shortcoming: they only ever yield a single value. 
+That makes them useless for handling recurrent events such as mouse clicks or streams of data coming from the server, 
+because we would have to create a promise for each separate event
+
+Event emitters
+---------------------
+When we emit an event, event listeners that are subscribed to it will fire. Using events is a great way to decouple 
+functionality and, in JavaScript, event programming is common and generally considered a good practice.
+But, you guessed it, event listeners come with their own set of problems:
+
+Events force side effects: Event listener functions always ignore their return values, which forces the listener to have side effects if it wants to have any impact in the world.
+
+Events are not first-class values: For example, a series of click events can’t be passed as a parameter or manipulated as the sequence it actually is. We’re limited to handling each event individually, and only after the event happens.
+
+It is easy to miss events if we start listening too late: An infamous example of that is the first version of the streams interface in Node.js, which would often emit its data event before listeners had time to listen to it, losing it forever.
+
+RxJs
+-------------------
+RxJS is a JavaScript implementation of Reactive Extensions or Rx. Rx is a reactive programming model originally created at Microsoft, 
+- which allows developers to easily compose asynchronous streams of data. 
+
+- It provides a common interface to combine and transform data from wildly different sources, 
+  - such as filesystem operations, 
+  - user interaction, and 
+  - social-network updates.
+
+Observable is a monad:
+---------------------
+A monad is nothing more than an algebraic data type that follows a certain interface or protocol 
+(this is by no means a complete explanation of monads, so I’ll refer you to this page for more info on this topic):
+
+- A unit function used to place (lift) a value into the monad container. You could also find it as from() or return().
+- A mapping function that lifts regular functions that work over these values, returning back a new instance of (generally) the same type containing the   newly computed value.
+- A flatMap() also known as (bind()) that lifts a monad-returning function to work over the value in the container and flatten its result into a single structure.
+
+- writing asynchronous code is necessary to keep applications responsive
+
+- Modern applications need super-fast responses and the ability to process data from different sources at the same time without missing a beat.
+
+- An Observable provides us with a sequence or stream of events that we can manipulate as a whole instead of as a single isolated event each time. Dealing with sequences gives us enormous power. We can merge, transform, or pass around Observables easily
+
+
+
+Functor Concept:
+--------------------
+
+A Functor is a type class in Haskell, representing types that can be mapped over. It's like a container holding values that you can apply a function to, without altering the structure of the container.
+Key Properties:
+
+Map Function: The primary function of a Functor is fmap, which applies a function to the values inside the container.
+Example:
+
+haskell
+Copy code
+instance Functor [] where
+    fmap = map
+Here, [] (the list type) is an instance of Functor, and fmap is implemented using the standard map function.
+
+Usage:
+
+If you have a function a -> b and a container f a (where f is a Functor), you can turn it into f b using fmap.
+
+Applicative Concept:
+---------------------
+
+Applicatives are a step up from Functors. They allow you to apply functions that are themselves inside a context (or container) to values in another context.
+Key Properties:
+
+Apply Function: Applicatives have the (<*>) function, which applies a function wrapped in a context to a value in a context.
+Example:
+
+haskell
+Copy code
+instance Applicative Maybe where
+    pure = Just
+    Nothing <*> _ = Nothing
+    (Just f) <*> something = fmap f something
+Usage:
+
+Useful when you have something like f (a -> b) and f a, and you want to get f b.
+
+
+Monad Concept:
+----------------
+
+Monads are about chaining operations together, especially where each operation could fail or result in multiple outcomes (like Applicatives, but with the ability to change the structure of the container).
+Key Properties:
+
+Bind Function: The essential function for Monads is (>>=) (bind), which applies a function that returns a wrapped value to a wrapped value.
+Example:
+
+haskell
+Copy code
+instance Monad Maybe where
+    return = Just
+    Nothing >>= _ = Nothing
+    Just x >>= f = f x
+Usage:
+
+Monads are powerful in handling sequences of computations where each step might depend on the previous one, especially useful in managing side effects and uncertainties
+
+
+- a sequence of simple operators that bend time. 
+------------------------------------------------
+- the unit function (also called static factory operator) is interval(), which lifts a sequence of integers separated by 100 milliseconds. 
+- using a simple map() with a pure function, and then take(), which you can think as a filter() underneath. 
+- RxJS also has a flatMap() operation (called mergeMap() in RxJS
+
+- Observable is just a specialized form of IO — the AsyncIO monad ?— with a whole arsenal of timer and async operators built-in to it.
+
+Observable as a Producer:
+------------------------
+it’s hard to hear about Observables and not think of the venerable Observer pattern. In it, we have an object called Producer that keeps an internal list of Listeners subscribed to it. Listeners are notified, by calling their update method, whenever the state of the Producer changes. In most explanations of the Observer pattern, this entity is called Subject, but to avoid confusion with RxJS’s own Subject type, we call it Producer.
+
+The Observable monad, has built-in logic that allows you to thread together a sequence of asynchronous computations as if you we’re mapping regular synchronous functions
+
+
+The Producer keeps a list of Listeners:
+---------------------------------------
+The Producer object keeps a dynamic list of Listeners in the instance’s listeners array, which will be updated whenever the Producer calls its notify method. In the following code, we create two objects that listen to notifier, an instance of Producer:
+
+
+The Observer Patterns allows for separation of the source of data (Observable) and the listeners (Observer)
+-------------------------------------------
+Observer pattern allows decoupling between the events and the listener objects that react to them
+
+The Iterator Pattern
+----------------------------
+An Iterator is an object that provides a consumer with an easy way to traverse its contents, hiding the implementation from the consumer.
+
+The Iterator interface is simple. It requires only two methods: 
+- The next() method to get the next item in the sequence and the 
+- hasNext() method to check if any items are left in the sequence.
+
+Here’s how we’d write an Iterator that operates on an array of numbers and yields only elements that are multiples of the divisor parameter:
+
+Observables are an essential concept in RxJS. The foundation of Observables lies in two software design patterns:
+
+The Observer pattern
+The Iterator pattern
+Ideally, RxJS combines the 
+
+- Observer pattern with the 
+- Iterator pattern and 
+- functional programming with collections to fill the ideal way of managing sequences of events. 
+
+Observer software pattern 
+-------------------------
+is when an object maintains a list of its dependents and automatically notifies them of any state changes by calling one of their functions.
+
+In RxJS, an object called Subject keeps a list of Listeners subscribed to it. Whenever the Subject state changes, it notifies all of its Listeners by calling a Listener’s update() function.
+
+The Iterator pattern in RxJS
+------------------------------
+In the Iterator pattern, an iterator is implemented to traverse a container and access the elements stored in the container. The iterator pattern decouples algorithms from containers.
+
+Like other implementations of the iterator pattern, JavaScript iterators don’t have a hasNext() method. Instead, an object with two properties is returned every time. These two properties are:
+
+value: the next available value in the sequence
+done: a flag with value “true” if traversal has been reached to the last value in the sequence, and “false” in every other case.

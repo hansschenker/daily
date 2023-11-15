@@ -1,0 +1,80 @@
+Kwinten Pisman - https://blog.strongbrew.io/build-the-operators-from-rxjs-from-scratch
+source code: https://github.com/KwintenP/rxjs-operators-from-scratch
+https://stackblitz.com/edit/rxjs-dhxyqk?devtoolsheight=60&file=index.ts
+
+
+
+
+Observable in the form of a class because it needs to hold state
+---------------------------------------------------------------
+
+The RxJs base components
+-----------------------
+- Observable 	(data producer, data source in the form of a stream)
+- Observer 	(data consumer with 3 possibilities: next, error, complete
+- Subscription 	(data connection between Observable and Observer)
+
+// Producer
+class MyObservable<T> {
+  constructor(private producer: (observer: MyObserver<T>) = void) {}
+  subscribe(observer: MyObserver<T>) {
+  this.producer(observer);|
+}
+ 
+// create a Consumer that is the communiction channel between Observable and Observer
+ const obs$ = new MyObservable<number>((observer: MyObserver<number>) = {
+  // publish/emit values/notification
+  observer.next(1);
+  setTimeout(() = observer.next(2), 20);
+  setTimeout(() = observer.complete(), 40);
+}
+ // start the communication/data flow
+ obs$. subscribe({
+  // pass an observer
+  next: (n: number) =console. log('next', n), next 1, next 2
+  error: (err: any) =console. log('error', err],
+  complete: () =console. log('complete') complete
+}
+
+
+What is an Operator: immutable function which takes an Observable as input and returns an observable
+---------------------------------------------------------------------------------------------------
+ 
+                      
+                              Operator Pipeline
+                           -----------------------
+SOURCE	(source producer)  -> Operator (function)	-> Result Observable
+                                                           listening to source producer
+                           -> Operator
+                           
+                           -> Operator
+
+
+Observer is a communication protocol in form of an interface
+----------------------------------------------
+interface MyObserver<T> {
+next: (n: T) = void;
+error: (err: any) = void;
+complete: () = void;
+
+Custom Operator: myOperator
+
+const myOperator = <T>(source: Observable<T>) = {
+  return new Observable((observer: Observer<T>) = {
+  source.subscribe(
+    (next: T) = {
+    console. log('next', next); next 1
+    observer.next(next);
+    (error: any) = {
+    console. log('erorr', error);
+    observer.error(error);
+}
+console. log('complete'); complete
+observer.complete();
+)
+});
+
+of(1).pipe(
+myOperator
+). subscribe();
+

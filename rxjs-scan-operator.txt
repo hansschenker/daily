@@ -1,0 +1,95 @@
+Observable (acts only as a source)
+--------------------------------------------------
+(source)				-> next
+Observable				-> error
+					-> complete
+
+Create a source of value
+
+
+
+Subject (acts an intermediary memory, and as a source
+----------------------------------------------------
+(memory)		   (source)
+next			->		-> next
+error			-> Subject	-> error
+complete		->		-> complete
+
+stateSubject = new Subject();
+We can use stateSubject.next(someValue) to push in new values. 
+To allow others to listen we expose it as an Observable:
+
+state$ = this.stateSubject.asObservable();
+With the above however,
+
+each subscriber gets a new observable (cold)
+only gets values that are emitted after the subscriber joined (it won’t get old ones)
+
+We can thus either use a BehaviorSubject
+
+initialState = [] as State;
+
+stateSubject = new BehaviorSubject<State>(this.initialState);
+
+// or we can use shareReplay.
+
+state$ = this.stateSubject.asObservable()
+  .pipe(
+    shareReplay(1)
+  );
+
+The BehaviorSubject requires some initial value that gets broadcasted. 
+If we just use Subject we also might want to use startWith(…) operator 
+to push out the initial state value to subscribers.
+
+state$ = this.stateSubject.asObservable()
+    .pipe(
+      startWith(this.initialState),
+      shareReplay(1)
+    );
+Accumulating values In our example so far, executing
+
+this.stateSubject.next({ name: 'Juri' });
+this.stateSubject.next({ age: 33 });
+
+..we would get each single value individually at our subscribers,
+ first { name: 'Juri }' followed by { age: 33 }. 
+
+Usually however what we’d like to get is the aggregated state:
+
+// after the 1st .next({ name: 'Juri' })
+{
+    name: 'Juri'
+}
+
+// after the 2nd .next({ age: 33 })
+{
+    name: 'Juri',
+    age: 33
+}
+
+As you can see we want to get the accumulated state as we continue to push values to our subject. 
+In order to achieve that we can use the scan operator. 
+If you pay close attention to the learnrxjs.io website you may have seen this:
+
+See the “You can create Redux-like state management with scan!” part? That’s exactly what we want, right 🙂.
+
+So let’s use scan to complete our state$ Observable:
+
+interface StateProp<T> {
+  [prop: string]: T;
+}
+
+interface State {
+   props: StateProp[]
+}
+
+...
+state$ = this.stateSubject.asObservable().pipe(
+  scan((acc: State, newState: State) => {
+    // create a new State
+    return { ...acc, ...newState };
+  }, this.initialState),
+  startWith(this.initialState),
+  //shareReplay(1) not used because State is BehaviorSubject
+);
