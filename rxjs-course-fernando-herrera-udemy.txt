@@ -1,0 +1,132 @@
+RxJs is a combination of the Observer and Iterator pattern combined with functional programming style
+
+
+Well, the answer is very simple: because we all want real-time information.
+
+Imagine, for instance, you are on Twitter, and you obviously want to have the latest tweets exactly at the moment they are posted.
+
+If you are using an application that 
+- deals with prices, you will obviously want to know the price at the moment it changes. 
+- In the world of video games, practically everything could be handled with reactive extensions.
+
+Not necessarily speaking about online games.
+
+The distance from our character to a wall or an enemy, everything could be calculated based on reactive extensions.
+
+- like a chat, at this point in time, thinking about refreshing the web browser to get the latest data is not viable today.
+
+If you refresh your application to load new information coming from the server, your users or operators will feel that this application is outdated and possibly you yourself will consider this a problem in your development.
+
+We want our application to be able to make network requests and at the same time continue interacting with the user interface, and when the information from an API, for example, is returned, we can update the user interface to show dynamic, real-time changes.
+
+All this without the application feeling like it freezes or its performance significantly declines.
+
+This leads us to a very interesting question: When to use reactive extensions?
+
+Basically, for handling any user interface event when it's necessary to notify about changes in an object or several objects, when you are working with socket communication.
+
+It's extremely useful, and basically, when we need to work with information streams, like information streams, there are three fundamental pieces in reactive programming.
+
+We are talking about observables, subscribers, and operators. Let's focus on the first part, observables, which are the fundamental piece of reactive extensions and basically are the source of information. They can emit multiple values, just one, or not emit anything at all.
+
+They can also emit errors, can be infinite or finite. When finite, they can complete themselves.
+
+They can also be synchronous or asynchronous.
+
+Many people think that reactive programming cannot be synchronous, but here we will make several examples to prove that it does work synchronously.
+
+But obviously, one of its strengths is working asynchronously. Talking about another interesting part of reactive expressions, there are the subscribers. The subscribers subscribe to an observable, that is, they are aware of what an observable does, they consume or observe the data that comes from the observable and can receive errors and events from the observable.
+
+An interesting thing is that they are unaware of everything that lies behind in the observable, that is, they don't know if the information comes filtered, transformed, or from some other source.
+
+They went through several places, but they don't care.
+
+Finally, we have the operators, which are the fundamental piece of reactive extensions.
+
+And this is where their power can be appreciated.
+
+They are widely used to transform observables, for example, Map, groups, scan, and others that we will see in the course.
+
+They are also used to filter observables like the filter, distinction, among others that we will also see in the course. They are used to combine observables and also to create new observables.
+
+I want to present you the following example: imagine that reactive extensions do not exist, we are not working with RxJS or any version of RX, and we have to do the following work: create some function that allows me to maintain the user's location, but from that user's location, I am only interested when the accuracy is less than 20 meters.
+
+That is, the user is approximately within an error margin of 20 meters from their location that I am receiving from my device.
+
+At the same time, I also need to maintain the acceleration or follow the acceleration and the magnetic sensor to determine the azimuth, that is, the Earth's magnetic north, to know if the user was walking north, south, or in some direction.
+
+Later, I need to combine these two values, the location, the azimuth, and possibly the acceleration too, and send this information every 5 seconds to an API.
+
+This API will allow me to notify the people who are following him or store this information in a database for future reference.
+
+Finally, with that response, we will want to draw something on the user interface to show the desired information.
+
+If we think about doing this without reactive extensions, it is quite a lot of work, not to mention that we will have to be emitting every second in some way, creating these new requests, receiving them, processing them, maybe through promises, combine them, and that way I can more or less meet this need.
+
+By the end of this course, you would have a better understanding of how to solve this problem.
+
+But let's talk a little about the benefits of reactive programming.
+
+The main one is to avoid nesting callbacks, that is, having callbacks within callbacks within callbacks, which makes our code very difficult to maintain.
+
+It also allows us to work simply with asynchronous and synchronous tasks, the use of operators to reduce and simplify work.
+
+It helps us a lot to keep our code simple to maintain, it's easy to transform the flows or streams of information into what we need or desire.
+
+It's cleaner and easier to read code.
+
+Reactive extensions are really easy to implement.
+
+Perhaps the only difficult thing is to decide which operator, which observable is what I need to solve my problem efficiently, and one of the strengths is that it is very easy to add procedures without altering the final result, that is, imagine that you have already implemented your entire solution, but at the same time, you need to make another call to the API to maintain a log to follow a user, but the whole procedure is working correctly.
+
+We would simply have to attach a new operator to my observable that performs this task but does not modify the stream of information or the flow of data.
+
+As a result, the output would be exactly the same, and the modification of our code would be quite easy to execute.
+
+
+Translation from Spanish to English:
+
+What is Reactive and How Does it Work?
+
+If we go to the ReactiveX website, it tells us that it is an API for asynchronous programming using observables.
+
+I know that in the previous class I mentioned that it can also work synchronously, and we will see a little more about this later on the same ReactiveX site.
+
+They claim to be the Observer pattern done correctly or implemented correctly.
+
+It mentions that ReactiveX is the combination of the best ideas from the Observer pattern, the Iterator pattern, and functional programming. But what are each of these patterns?
+
+Let me briefly explain each of them, starting with the Observer pattern.
+
+It is nothing more than a software design pattern that defines a one-to-many dependency between objects so that when one of the objects changes its state, it notifies this change to all its dependents.
+
+We could think of a traffic light, for example. The traffic light is red, and two trucks appear. At this precise moment, our traffic light would be the observable because it is the one emitting the information. The trucks would be the observers or subscribers to the traffic light.
+
+As soon as the traffic light turns green, the trucks that are subscribed notice the change and proceed on their way.
+
+Once they pass the traffic light, the trucks could cancel the subscription because they no longer need that traffic light, but the traffic light can continue emitting values indefinitely.
+
+Now let's talk a little about the Iterator pattern. In object-oriented programming, the Iterator pattern defines an interface that declares the necessary methods to access a group of objects in a collection sequentially.
+
+In other words, we would create functions or methods that allow us to know what is the first element, what is the next one if there are more, and what is the current element.
+
+If we present this array of numbers and see which is the first, in this case, it would be 1, the next would be 2, the one after that another, and what is the current element. Well, I am at 1.
+
+In this way, I can sweep each of the elements found in that list sequentially and in an organized manner.
+
+Now let's talk a little about functional programming, which is basically creating a set of functions that have a specific objective.
+
+That is, if I have a function that receives and returns a +1, every time I call that function, it will return a +1 without side effects and without mutating the data.
+
+This is essential because we know that in JavaScript, as in other programming languages, all objects are passed by reference, and RX or Reactive Extensions prevent these objects from accidentally mutating when we transform the data with operators, or simply let the data flow through that observable, which could lead to certain problems that are very difficult to track. ReactiveX has been thought of with these three basic principles since its inception.
+
+In summary, if I can give you at least one line about each of these patterns, what I need you to remember is: the Observer pattern notifies when changes occur and remember that it is one-to-many.
+
+Then we have the Iterator pattern, which is basically all the operations I need to execute tasks sequentially.
+
+And the part of functional programming. Basically, we could summarize it as having functions with specific tasks that receive arguments and do not mutate the information.
+
+That's why the people of ReactiveX make it seem like it's the Observer pattern implemented correctly, and that's a great summary of what the Observer pattern, the Iterator pattern, and functional programming are.
+
+I know that you already want to start creating programming code, using observers, operators, and all this, but there is one more theoretical class that I need you to see before we start implementing ReactiveX in our exercises, so I'll see you in the next class.
+

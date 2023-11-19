@@ -504,6 +504,62 @@ update : (state:TState, event:TEvent) => TState
 Can you write TypeScript in JSX?
 TypeScript is a popular way to add type definitions to JavaScript codebases. Out of the box, TypeScript supports JSX and you can get full React Web support by adding @types/react and @types/react-dom to your project.
 
+A stream is nothing more than a sequence of events over time.
+
+The essential concepts in RxJS which solve async event management are:
+
+Observable: represents the idea of an invokable collection of future values or events.
+
+Observer: is a collection of callbacks that knows how to listen to values delivered by the Observable.
+
+Subscription: represents the execution of an Observable, is primarily useful for cancelling the execution.
+
+Operators: are pure functions that enable a functional programming style of dealing with collections with operations like map, filter, concat, reduce, etc.
+
+Subject: is equivalent to an EventEmitter, and the only way of multicasting a value or event to multiple Observers.
+
+Schedulers: are centralized dispatchers to control concurrency, allowing us to coordinate when computation happens on e.g. setTimeout or requestAnimationFrame or others.
+
+The foundation of Observables lies in two software design patterns:
+
+The Observer pattern
+The Iterator pattern
+
+RxJS combines the Observer pattern with the Iterator pattern and functional programming with collections to fill the ideal way of managing sequences of events
+
+In RxJS, an object called Subject keeps a list of Listeners subscribed to it. Whenever the Subject state changes, it notifies all of its Listeners by calling a Listener’s update() function.
+
+In the Iterator pattern, an iterator is implemented to traverse a container and access the elements stored in the container. The iterator pattern decouples algorithms from containers.
+
+Observable is a Container that implements the Iterator pattern in a push based Form
+
+An RxJS Subject is a special type of Observable thru which values can be multicasted to many Observers at a time. As plain Observables are unicast, Subjects are multicast.
+
+RxJS have different classes of Subjects for different use cases, like:
+
+Behavior Subjects
+Async Subjects
+Replay Subjects
+
+Behavior subject
+Behavior Subject buffers the latest emitted value and pushes that value to every new Observer that subscribes to it.
+
+Replay Subject
+Replay Subject can send some previous values to the new Observers. To do this, the replay Subject must store a certain amount of emitted values in an internal buffer and constantly update that buffer as new values are pushed to the Subject.
+
+Async Subject
+Async Subject works based on a simple principle: Every subscriber to an AsyncSubject receives the last emitted value only when the execution completes.
+
+
+Observable
+The lifecycle of an Observable
+Every Observable instance passes through four stages throughout its lifetime:
+
+Creation
+Subscription
+Execution
+Destruction
+
 
 
 
