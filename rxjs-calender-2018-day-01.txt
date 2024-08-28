@@ -1,0 +1,504 @@
+# Day 1 - Creating an Observable
+----------------------------------
+
+The first entry for our calendar is creating an Observable. 
+
+## What is this RxJS stuff?
+
+What is an Observable? 
+
+Simply put, it is a push-based event emitter which can push 0 to infinite amounts of data.  
+
+create an Observer, 
+which is a sink that an Observable push data into when you want to listen for the data in the cases of more data via `next`, and error occurred via `error`, or the stream has completed via `complete`.  
+
+Subscription
+subscribing the observer to the observable.  This subscription process by calling `subscribe` on the Observable, passing in our Observer.  This returns a Subscription which contains the teardown logic required to clean up any resources created by the Observable stream.
+
+Day 2 - Sequences over time
+
+---------------------------
+
+# Day 2 - Sequences over time
+
+- creating Observables and the parts required such as Observers and Subscriptions. 
+- Observables are push based sequences over time, noting that last part, time. 
+- Schedulers RxJS was designed with the notion of virtual time and a virtual clock which means you can say when a particular action happens. This concept   is introduced with the idea of Schedulers, which not only controls when a particular action happens, but also the context of an action as well. 
+
+Day 3 - Creating Observables the easy way!
+------------------------------
+
+In the [previous entry](../02/readme.md), we covered a bit more about Observable creation, but once again we were in the weeds showing how the magic is made. Now that you understand the basics, let's make it easy for you going forward.  Built into RxJS are a number of predefined ways of creating Observables such as:
+
+Conversions:
+- `bindCallback` - binds a callback to an Observable
+- `bindNodeCallback` - binds a Node.js style error callback to an Observable
+- `from` - converts a number of structures to an Observable such as Arrays, Promises, Observables, Iterables, etc.
+- `fromEvent`/`fromEventPattern` - converts DOM events and `EventEmitter`
+
+Creation:
+- `generate` - creates an Observable based upon a for loop behavior
+- `empty` - creates an Observable that emits only a `complete`
+- `interval` - creates an Observable that emits on the given time sequence
+- `never` - creates an Observable that never emits a value
+- `of` - creates an Observable from a list of arguments
+- `range` - creates an Observable from a range of numbers
+- `throwError` - creates an error Observable which throws the given error
+- `timer` - creates an Observable that emits at the first time, and repeats on the period time if given
+
+
+- The of operator
+
+The most common used way of creating Observables is via the `of` factory. This takes a number of arguments, followed by an optional Scheduler of your choosing which determines how the values are emitted.
+
+Day 4 - - Creating delayed and polling operations
+--------------------------------------------
+
+Day 5 - Converting to Observables
+------------------------------------
+
+
+## Using the from operation
+
+Pretty much everything can be turned into an Observable with RxJS using the `from` creation operation. It can convert an `Array`, an `Iterable` such as a `Generator`, `Set`, or a `Map`, a `Promise`, and even another `Observable`.  Like all other creation operations, this also takes a `SchedulerLike` object used for scheduling the operation.  By default, if not provided, the `from` operation will perform things synchronously. 
+
+Internally, RxJS uses a number of operations to convert our incoming data such as:
+- `fromArray` - converts an array
+- `fromIterable` - Converts a sequence which exposes the `Symbol.iterator` property 
+- `fromObservable` - Converts an Observable which exposes the `Symbol.observable` property
+- `fromPromise` - converts a `Promise`
+
+Array to an Observable
+----------------------
+
+The first conversion we can do is from an `Array` or array-like structure, meaning it has a length property.  Let's first convert using just an array.
+
+```typescript
+import { from } from 'rxjs';
+
+const array = [1, 2, 3];
+const array$ = from(array);
+
+const subscription = array$.subscribe({
+    next: x => console.log(`Next: ${x}`),
+    complete: () => console.log(`Complete!`)
+  });
+```
+
+array-like structure 
+------------------
+as well with a length property of 3.
+
+```typescript
+const arrayLike = { length: 3 };
+const array$ = from(arrayLike);
+
+array$.subscribe({
+  next: x => console.log(`Next: ${x}`),
+  complete: () => console.log('Complete')
+});
+```
+
+##  Converting an Iterable to an Observable
+--------------------------------------------
+
+With ES2015 came the advent of [Iterables, Iterators, and Generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators).  This gave us a way to iterate over existing sequences such as arrays, but also new structures such as `Map` and `Set`.  Each of these objects now implement the `Symbol.iterator` property which returns an `Iterator` object.  This `Iterator` object has three methods which correspond directly to our `Observer` with `next()`, `throw()` and `return()` and its Observer equivalents with `next()`, `error()`, and `complete()`.  When `next()` is called on an iterator, it returns a structure with both a property of the current value, if any, and a done flag indicating whether the sequence has been iterated.  Generators also implement this `Symbol.iterator` property which allows us to create infinite sequences if we so choose.
+
+We can for example, create an Observable from a `Set` with a few values.
+```typescript
+const set = new Set<number>([1, 2, 3]);
+const set$ = from(set);
+
+const subscription = set$.subscribe({
+  next: x => console.log(`Next: ${x}`),
+  complete: () => console.log(`Complete!`)
+});
+```
+
+
+
+create a `Generator` function 
+--------------------------------
+which yields values as well via the `yield` keyword.
+
+```typescript
+const generatorFunction = function* () {
+  yield 1;
+  yield 2;
+  yield 3;
+};
+
+const iterable$ = from(generatorFunction(), asapScheduler);
+iterable$.subscribe({
+  next: x => console.log(`Next: ${x}`),
+  complete: () => console.log('Complete')
+});
+```
+
+
+
+## Converting an Observable to an Observable
+--------------------------------------------
+
+Another thing we can convert is an Observable to yet another Observable.  There are a number of libraries that implement the Observable contract which has the `subscribe` method, just as the `Promise` exposes the `then` method.  For example, we could take something from Redux and convert it to an RxJS Observable.  In this example, we'll just use another RxJS Observable, but it could be anything that implements the `Observable` contract.
+
+```typescript
+import { from, Observable } from 'rxjs';
+
+const obs$ = new Observable<number>(observer => {
+  observer.next(42);
+  observer.complete();
+});
+
+
+## Converting a Promise to an Observable
+-----------------------------------------
+
+One of the more common scenarios using `from` is converting a `Promise` to an Observable.  Many libraries now implement Promises as part of their asynchronous APIs, including Node.js, so it's only natural we give an easy way to convert that a `Promise` to an `Observable`.  
+
+```typescript
+const promise = Promise.resolve(42);
+const promise$ = from(promise);
+
+promise$.subscribe({
+  next: x => console.log(`Next: ${x}`),
+  complete: () => console.log('Complete')
+});
+```
+
+Day 06 - Converting Events to Observables
+---------------------------------------------------
+
+## Converting events to Observable with fromEvent
+
+The first operation we're going to look at here is `fromEvent` which allows us to take DOM Nodes, a DOM Node List, a Node.js `EventListener`, and even jQuery objects, and transform their events into Observables.  This will attach the event during the Observable creation, and during the teardown, it will remove the event listener.
+
+Let's make this a bit more concrete with some code.  Let's take for example a DOM Node, capturing click events from a button.
+```typescript
+import { fromEvent } from 'rxjs';
+
+const element = document.querySelector('#submitButton');
+const click$ = fromEvent(element, 'click');
+
+click$.subscribe({
+  next: () => console.log('Clicked');
+});
+```
+
+capture a DOM Node list
+----------------------
+ and `fromEvent` will iterate over the items and subscribe to the `click` event for each one.
+```typescript
+import { fromEvent } from 'rxjs';
+
+const elements = document.querySelectorAll('.selectButtons');
+const click$ = fromEvent(element, 'click');
+
+click$.subscribe({
+  next: () => console.log('Clicked');
+});
+```
+
+Node.js `EventEmitter`
+-----------------------------
+ so capturing data is pretty quick and easy!
+
+```typescript
+import { EventEmitter } from 'events';
+import { fromEvent } from 'rxjs';
+
+const emitter = new EventEmitter();
+const event$ = fromEvent(emitter, 'data');
+
+emitter.emit('data', 'foobarbaz');
+
+event$.subscribe({
+  next: x => console.log(`Data: ${x}`)
+});
+
+for (let i of ['foo', 'bar', 'baz', 'quux']) {
+  emitter.emit('data', i);
+}
+```
+
+merge streams
+----------------
+
+```typescript
+import { EventEmitter } from 'events';
+import { 
+  fromEvent,
+  throwError
+} from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+
+const emitter = new EventEmitter();
+const data$ = fromEvent(emitter, 'data');
+
+const error$ = fromEvent(emitter, 'error')
+  .pipe(mergeMap(err => throwError(err)));
+
+const merged$ = merge(data$, error$);
+```
+
+
+```
+
+## Converting events to Observables with fromEventPattern
+----------------------------------------------------------
+Sometimes, our event-based contract is not quite as straightforward as the DOM, Node.js `EventEmitter` or jQuery.  Using `fromEventPattern` you can encompass your own way of attaching and detaching handlers from your event emitter, whatever it may be.  For example, you could model if your API uses `attachEvent` and `detachEvent` as the subscription pair.
+
+```typescript
+import { fromEventPattern } from 'rxjs';
+
+const event$ = fromEventPattern(
+  h => obj.attachEvent('data', h),
+  h => obj.detachEvent('data', h)
+);
+```
+
+We can also encompass an API that returns a token for example for unsubscription for example an `AbortController`.  By returning it from the add handler, we can then use it in our remove handler by passing it in as the second argument.
+
+```typescript
+import { fromEventPattern } from 'rxjs';
+
+const event$ = fromEventPattern(
+  h => { return obj.registerListener('data', h); },
+  (h, controller) => { controller.abort(); }
+);
+```
+
+Day 7 - Pipe Dreams
+---------------------------------------------------------------
+
+## Adding operators with chaining
+-----------------------------------------
+In previous releases, RxJS would use dot-chaining for operators, meaning we would add methods such as `map`, `filter`, `scan` and others directly to the prototype so we could achieve a nice fluent API.  This had some advantages of a complete toolbox where you could easily consume new operators by adding it to the prototype.  
+
+```typescript
+var observable = Rx.Observable.range(0, 10)
+  .map(x => x * x)
+  .filter(x => x % 3 === 0);
+```
+
+This had many advantages at the time with a batteries included approach where you had all the operators you usually needed directly out of the box.  Unfortunately, the number of operators used in RxJS grew over time where we had to split out each operator by functionality, either by time, by join patterns, by grouping, or core.  That was a little bit of a hassle because you would get many operators you would never even use.
+
+## Adding Operators wit pipe Operator
+
+That looks a bit better and towards a solution we'd want for importing only the operators we want.  This style was called lettable operators.  This was changed later on to `pipe` because of the confusing name around it, like what the heck does "let" even mean?  Not only did this change a bit from allowing only a single operator, to allowing any number of operators, where we could write `pipe` easily enough over an arguments array of them.
+
+```typescript
+function pipe(...operators: Operator) {
+  const ops = Array.from(operators);
+  
+  return function piped(input: any) {
+    return ops.reduce((prev, fn) => fn(prev), input);
+  }
+}
+```
+
+Then we could write something like the following where we could take map and filter together and then give it an initial value.
+
+```typescript
+const pipes = pipe(
+  map(x => x * x),
+  filter(x => x % 3 === 0)
+);
+
+const pipe$ = pipes(range(, 100)).subscribe({
+  next: x => console.log(`Next: ${x}`)
+});
+```
+
+Luckily this is all done for you with there being a `Observable.prototype.pipe` which provides this method for you.  And all the operators have been rewritten in such a way to support this style by importing from `rxjs/operators`.  So now we could rewrite our above sample as easily as this with imports.
+
+Day 08 - Mapping, Plucking, Tapping, and Filtering
+----------------------------------------------------
+
+
+## Mapping one value to another
+-------------------------------
+
+higher order function - higher order observable
+
+One of the most common operations over data structure is [`map`](https://en.wikipedia.org/wiki/Map_%28higher-order_function%29) which applies to each element of a [functor](https://en.wikipedia.org/wiki/Functor), such as arrays, and returns a new instance with results in the same order.  
+
+In simple terms, a functor 
+-----------------------------
+is just anything that supports that mapping operation such as an array, a Promise, and yes even an Observable.  In JavaScript, we have [`Array.prototype.map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map) which creates a new array with the projected values.  In RxJS, we give you the operator `map` in the `rxjs/operators` imports.
+
+As we showed in the previous post, implementing `map` in JavaScript is pretty simple, for example we could have implemented `map` ourselves on an Array.  This creates a new array, filling the array with a function call on each element from the source array, and returning the new array.
+
+```typescript
+function map<T, R>(source: Array<T>, selector: (value: T, index: number) => R, thisArg?: any): Array<R> {
+  const length = source.length;
+  const results = new Array(length);
+  for (let i = 0; i < length; i++) {
+    results[i] = selector.call(thisArg, source[i], i)
+  }
+  
+  return results;
+}
+
+With the advent of Iterables in ES2015, we could generalize this a bit more to apply for both `Set` and `Array` and have it lazy as well.  We can iterate over the existing structure using the [`for .. of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of) and then yielding the transformed item.
+
+```typescript
+function* map<T, R>(source: Iterable<T>, selector: (value: T, index: number) => R, thisArg?: any): Iterable<R> {
+  let i = 0;
+  for (let item of source) {
+    yield selector.call(thisArg, item, i++);
+  }
+}
+
+const mapped = map(new Set([1, 2, 3]), x => x * x);
+for (let item of mapped) {
+  console.log(`Next: ${item}`);
+}
+// [1, 4, 9]
+```
+
+Implementing this in Observables is almost as straightforward, except that we have to take care of the error case should our selector function throw an error, and forwarding the error and completion channels on through.
+
+```typescript
+function map<T, R>(selector: (value: T, index: number, thisArg?: any) => R) {
+  return function mapOperator(source: Observable<T>) : Observable<R> {
+    return new Observable<R>(observer => {
+      let index = 0;
+      return source.subscribe({
+        next: x => {
+          let value: any;
+          try {
+            value = selector.call(thisArg, x, index++);
+          } catch (err) {
+            observer.error(err);
+            return;
+          }
+
+          observer.next(value);
+        }
+      }, 
+      error: err => observer.error(err),
+      complete: () => observer.complete()
+    });
+  };
+}
+```
+
+
+## Plucking Data
+
+With the `map` operator, we can easily project values to a new sequence.  But, what if we wanted to just pull out values from the sequence itself?  To do that, we have the `pluck` operator, which allows us to specify which properties to pull out.  As you will notice, we can specify multiple values which recursively walks the object to pluck that desired value.
+
+```typescript
+import { from } from 'rxjs';
+import { pluck } from 'rxjs/operators';
+
+const people = [
+  { name: 'Kim' },
+  { name: 'Bob' },
+  { name: 'Joe' }
+];
+
+const person$ = from(people).pipe(pluck('name'));
+
+const props = [
+  { prop1: { prop2: 'Kim' } },
+  { prop1: { prop2: 'Bob' } },
+  { prop1: { prop2: 'Joe' } }
+];
+
+const data$ = from(data).pipe(pluck('prop1', 'prop2'));
+```
+
+## Tapping Data
+
+While `map` allows us to project a value to a new sequence.  But, what if we want to cause a side effect for each item, while project the current value to a new sequence?  That's what the `tap` operator is for, which allows us to intercept not only `next` calls, but also `error` and `complete` calls as well.  This is good for when during a sequence, some side effect needs to happen, for example a progress status to be updated, while not affecting the stream itself.
+
+```typescript
+import { of } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+const val$ = of(1, 2, 3).pipe(
+  tap({
+    next: item => console.log(`Tapped next: ${item}`),
+    complete: () => console.log('Tapped complete')
+  })
+);
+
+const subscription = val$.subscribe({
+  next: item => console.log(`Next: ${item}`),
+  complete: () => console.log('Done')
+});
+
+```
+
+## Filtering Data
+
+Another higher-order function that's often used is [`filter`](https://en.wikipedia.org/wiki/Filter_%28higher-order_function%29), which iterates over a given data structure, and creates a new data structure where the predicate returns true.  No magical functional programming jargon like functor required for this operator!  In JavaScript, we have it implemented for us on the Array with [`Array.prototype.filter`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter).
+
+We could easily implement this ourselves much like we did for `map` above, iterating over the array and only including values where the predicate evaluates to true.
+
+```typescript
+function filter<T>(source: Array<T>, predicate: (value: T, index: number) => boolean, thisArg?: any) {
+  let results = [];
+  for (let i = 0; i < source.length; i++) {
+    if (predicate.call(thisArg, source[i], i)) {
+      results.push(source[i]);
+    }
+  }
+
+  return results;
+} 
+
+filter([1, 2, 3], x => x % 2 === 0);
+// [2]
+```
+
+Similarly, as with the above, we can implement `filter` on things that implement `[Symbol.iterator]` such as Array, Map, Set, and even generator functions.
+
+```typescript
+  let i = 0;
+  for (let item of source) {
+    if (predicate.call(thisArg, item, i++)) {
+      yield item;
+    }
+  }
+}
+
+const filtered = filter(new Set([1, 2, 3]), x => x % 2 === 0);
+for (let item of filtered) {
+  console.log(`Next: ${item}`);
+}
+// [2]
+```
+
+Lastly, implementing this for Observables is pretty much as straightforward, sending values to `observer.next` only if the predicate returns true.
+
+```typescript
+function filter<T>(predicate: predicate: (value: T, index: number) => boolean, thisArg?: any) {
+  return function filterOperator(source: Observable<T>): Observable<T> {
+    return new Observable<T>(observer => {
+      let i = 0;
+      return source.subscribe({
+        next: x => {
+                                      function* filter<T>(source: Iterable<T>, predicate: (value: T, index: number) => bool, thisArg?: any) {
+          let shouldYield = false;
+          try {
+            shouldYield = predicate.call(thisArg, x, i++);
+          } catch (err) {
+            observer.error(err);
+            return;
+          }
+
+          if (shouldYield) {
+            observer.next(x);
+          }
+        },
+        error: err => observer.error(err),
+        complete: () => observer.complete()
+      });
+    });
+  }
+}
+```
+

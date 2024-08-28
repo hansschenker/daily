@@ -1,0 +1,177 @@
+https://blog.jcore.com/2020/10/rxjs-when-and-how-to-unsubscribe/, Tom Raaff
+
+
+
+Until recently I’ve found unsubscribing to be a confusing subject. Apparently, you have to unsubscribe if you want to avoid memory leaks. But NOT doing so doesn’t always result in a memory leak. So what causes these leaks and how can we avoid them?
+
+Avoid memory leaks by unsubscribing properly
+Let me start off by saying there are plenty of times when you don’t have to worry about memory leaks and unsubscribing. It all depends on how long your observable lives. To put it bluntly: if it’s a long lived observable, you need to unsubscribe. If it’s a short lived observable, you don’t.
+
+So what is a short lived observable?
+A short lived observable is an observable that has a limited amount of values and completes on his own. A good example would be observables like this:
+
+of(45);
+of(2, 6, 3, 6, 46);
+from([1, 23, 4, 64, 5]);
+range(1, 10);
+In these cases, the observable will call .complete() after it has emitted all of it’s values. There’s no need to unsubscribe. It completes on it’s own, which means it unsubscribes all subscribers automatically.
+
+Another important example is Angular’s HttpClient. All http requests made by the HttpClient return only 1 value and then they complete. This is true for GET, PUT, POST as well as DELETE. You can easily test this for yourself:
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Injectable({ providedIn: 'root' })
+export class SomeService {
+
+  constructor(private http: HttpClient) { }
+
+  get() {
+    const url = 'https://jsonplaceholder.typicode.com/posts';
+    return this.http.get(url).subscribe(
+      (response) => console.log(response),
+      (error) => console.error(error),
+      () => console.log('it completed')
+    );
+  }
+}
+This is also the reason why you don’t often notice any memory leaks. When developing an Angular application, it is quite common to use observables mostly for http requests. These complete on their own, so there ARE no memory leaks.
+
+So what is a long lived observable?
+A long lived observable is an observable that has an undefined amount of values and won’t complete on it’s own. They just keep outputting values and require you to tell them to stop. That is why THESE observables have to potential to create memory leaks.
+
+Here are some examples:
+
+timer(500, 500);
+or when working with Angular forms:
+
+const postcodeControl$ = this.adresForm.get('postcode').valueChanges;
+when working with Angular routes:
+
+const params = this.route.params;
+// Angular doesn't navigate when only route parameters change. They use long lived observables instead.
+when working with Firebase’s Firestore:
+
+this.firestore.collection().valueChanges();
+How do you handle unsubscribing these?
+Most often you’d want to unsubscribe when your component is destroyed. One way to unsubscribe would be something like this:
+
+export class SomeComponent implements OnInit, OnDestroy {
+  private subscriptions: Subscription[] = [];
+
+  constructor() { }
+
+  ngOnInit() {
+    const timer1 = timer(500, 500);
+    const timer2 = timer(1000, 1000);
+
+    const sub1 = timer1.subscribe(() => console.log('timer1'));
+    const sub2 = timer2.subscribe(() => console.log('timer2'));
+    this.subscriptions.push(sub1);
+    this.subscriptions.push(sub2);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+}
+However, I personally think this is a bit ugly…​ It is still readable, but in realistic production code, this will quickly turn really messy. There is a lot of logic that is not clear in its intent.
+
+It isn’t clear on first glance what the subscriptions array is for. You have to keep reading until you find the onDestroy() method. It suddenly seems like a requirement to add all subscriptions (also the short-lived ones) to the array, even though it isn’t necessary.
+
+Can we avoid this?
+
+takeUntil()
+Luckily, RxJS has provided some tools that can make this process a lot cleaner! Here is my favourite: the .takeUntil() operator.
+
+export class SomeComponent implements OnInit, OnDestroy {
+  private componentIsDestroyed$ = new Subject<boolean>();
+
+  constructor() {}
+
+  ngOnInit() {
+    const timer1 = timer(500, 500);
+    const timer2 = timer(1000, 1000);
+
+    timer1.pipe(takeUntil(this.componentIsDestroyed$))
+          .subscribe(() => console.log('timer1'));
+
+    timer2.pipe(takeUntil(this.componentIsDestroyed$))
+          .subscribe(() => console.log('timer2'));
+  }
+
+  ngOnDestroy() {
+    this.componentIsDestroyed$.next(true);
+    this.componentIsDestroyed$.complete();
+  }
+}
+Personally, I think this is a far more elegant way to handle unsubscribing. It reads like a charm and it shows the intention of the code. The downside here, is that you have to remember to call .complete() on it as well. Otherwise you’d still have a hidden memory leak.
+
+Another option, to take this a step further, would be to implement a SubscriptionCleaner that implements OnDestroy and handles the unsubscribing. Something like this:
+
+export class SubscriptionCleaner implements OnDestroy {
+  componentIsDestroyed$ = new Subject<boolean>();
+
+  constructor() {}
+
+  ngOnDestroy() {
+    this.componentIsDestroyed$.next(true);
+    this.componentIsDestroyed$.complete();
+  }
+}
+export class SomeComponent extends SubscriptionCleaner implements OnInit {
+
+  constructor() { super(); }
+
+  ngOnInit() {
+    const timer1 = timer(500, 500);
+    const timer2 = timer(1000, 1000);
+
+    timer1.pipe(takeUntil(this.componentIsDestroyed$))
+          .subscribe(() => console.log('timer1'));
+
+    timer2.pipe(takeUntil(this.componentIsDestroyed$))
+          .subscribe(() => console.log('timer2'));
+  }
+}
+Now you’ve reduced the risk of forgetting about calling this.componentIsDestroyed$.complete(). And you have to implement the unsubscribing only once. Super clean, if you ask me!
+
+Async pipe
+Another way for Angular applications would be to use the async pipe in the template:
+
+TS-code:
+export class SomeComponent implements OnInit {
+  private routeParam$: Observable<string>;
+
+  constructor(private route: ActivatedRoute) { }
+
+  ngOnInit() {
+    // long lived observable. No unsubscribe.
+    this.routeParam$ = this.route.params
+      .pipe(
+        map((params: Params[]) => params['someParameter'])
+      );
+  }
+}
+HTML:
+<div *ngIf="routeParam$ | async as param">
+  <p>Current route param: </p>
+</div>
+The async pipe automatically handles unsubscribing for you. So when your component is destroyed, your subscription will be unsubscribed as well.
+
+Even though this is the most clean way, I personally think this is less practical than the example with the takeUntil. Mostly because handling observables in the HTML comes with some problems. Having asynchronous code in the HTML makes it VERY hard to unit-test, because you now suddenly have to test HTML rather than functions. Plus it’s asynchronous, so you also have to have a proper waiting mechanism in your unit-test. The more async logic there is in the HTML, the harder it gets to test.
+
+Another problem arises if you’d want to show a loader and handle errors. These are far easier to handle within the subscribe method than in the template.
+
+To be honest, I only use this method when I know the usecase is (and stays) REALLY simple. Or when testing is not an issue. I rarely use it, but it comes in handy with simple personal projects or POC’s.
+
+Other ways
+Other ways to handle unsubscribing would be to use the .take(number) or the .takeWhile(function) operators. Though I haven’t found any good enough usecases for them yet. That’s why I haven’t included them in this article.
+
+Conclusion
+of(23) and this.httpClient.get() are short-lived observables. These complete on their own.
+
+Long-lived observables don’t complete on their own. This is where you should be wary for memory leaks. These observables are best handled using the .takeUntil() operator.
+
+I hope this was informative. I’ve become a big fan of the .takeUntil() operator. But if you’ve come across other clean ways to handle unsubscribing, please let me know!
+

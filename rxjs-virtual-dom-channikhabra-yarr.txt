@@ -1,0 +1,114 @@
+github.com/channikhabra/yarr
+
+use case: rss reader
+---------------------------------------------
+
+Install npm modules
+cd to/where/you/cloned/this/repo
+npm i
+
+"license": "MIT",
+
+"devDependencies": {
+
+"babel-core": "^5.6.17",
+"babel-loader": "^5.3.1",
+"css-loader": "^0.15.4",
+"extract-text-webpack-plugin": "^0.8.2",
+"node-libs-browser": "^0.5.2",
+"sass-loader": "^1.0.2",
+"style-loader": "^0.12.3",
+
+"virtual-dom-loader": "^0.1.0",
+
+"webpack": "^1.10.1",
+"webpack-dev-server": "^1.10.1"
+
+"dependencies": {
+"babel-runtime": "^5.6.17",
+
+"htm12hscript": "^1.0.4",
+
+"dexie": "^1.1.0",
+"jquery": "^2.1.4",
+
+"rx": "^2.5.3",
+"virtual-dom": "^2.0.1"
+
+Yarr : Hello RX
+We'll proceed assuming you have the project at a stage equivalent to 'step 0'. If not, clone this repo
+and checkout to '0-setup' git tag.
+
+Rx or Reactive Extensions is a javascript library for writing asynchronous/event-based code in terms
+of composable asynchronous-streams.
+
+ An asynchronous stream/collection is represented by an Observable.
+Value
+Iterable
+Observable
+
+Observables are central to Rx. We can think of an Observable as an array spanned over time. It's a
+collection which gets its values over time. Or, we can think of them as a promise which can resolve
+more than once.
+
+An Observable is to Promise what an Array is to a single value.
+Imperative | Temporal
+| Promise
+| Observable |
+Let's not talk much and play with Observables to get a feel. Open index.js' file in your favourite editor
+and
+
+Virtual DOM with Hyperscript
+----------------------------------------------------------------------------------------------------------
+above because
+can't handle integers in this
+);
+}
+import {Observable} from 'rx';
+import {h} from 'virtual-dom';
+import createElement from 'virtual-dom/create-element';
+import diff from 'virtual-dom/diff';
+import patch from 'virtual-dom/patch';
+
+// prepare the html
+Let render = (count) => <h1 className='hello-world'>Hello World {count+ ''}</h1>;
+//we did a 'count = '
+case, it need strings
+let view = render(0);
+let rootNode = createElement(view);
+document.body.appendChild(rootNode) ;
+
+// prepare the data
+Observable
+.interval(1000) //replace the steTimeout and 'count' state variable.
+Interval will give us an increment-ing number every 1000 milliseconds
+// render the data - replace oldview with newView
+.map(n => render(n + 1))
+. subscribe(
+newView => {
+let patches = diff(view, newView);
+rootNode = patch(rootNode, patches);
+view = newView;
+
+
+import 2 components and render them together
+-----------------------------------------------------------------------------------------------------------------
+
+import {h} from 'virtual-dom';
+import createElement from 'virtual-dom/create-element';
+import diff from 'virtual-dom/diff';
+import patch from 'virtual-dom/patch';
+import greeting from './components/greeting';
+import counter from './components/counter';
+
+let render = (count) => {
+count += '';
+return <div className="container">
+{greeting()}
+{counter(count) }
+</div>;
+}
+let view = render(0);
+let rootNode = createElement(view);
+let baseDOMNode = document.getElementById('app');
+

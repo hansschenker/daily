@@ -1,0 +1,126 @@
+module Primitives(
+    Coord(..), Stage(..), Direction(..), Snake(..), GameState(..),
+    GameStatus(..), snakeMove, stageBorders
+    ) where
+
+
+data Direction = LEFT | RIGHT | UP | DOWN
+    deriving (Show)
+
+
+data Coord = Coord {x :: Int, y :: Int} deriving (Show, Eq)
+
+
+data Stage = Stage {  width :: Int
+                    , height :: Int
+                    , offset :: Coord
+                    }
+    deriving(Show)
+
+
+newtype Snake = Snake {cords :: [Coord]} deriving(Show, Eq)
+
+
+data GameState = GameState  { direction :: Direction
+                            , stage     :: Stage
+                            , snake     :: Snake
+                            , score     :: Int
+                            , apple     :: Coord
+                            }
+
+
+data GameStatus = Continue | Loose | Win | Quit | HitApple
+    deriving(Show, Eq)
+
+
+snakeMove :: Direction -> Snake -> Snake
+snakeMove direction oldS@Snake{cords=cords} =
+    Snake (newCord: init cords)
+        where 
+            newCord = action $ head cords
+            action = case direction of
+                UP -> \Coord{x=x, y=y} -> Coord (x - 1) y
+                DOWN -> \Coord{x=x, y=y} -> Coord (x + 1) y
+                LEFT -> \Coord{x=x, y=y} -> Coord x (y -1)
+                RIGHT -> \Coord{x=x, y=y} -> Coord x (y + 1)
+
+
+stageBorders :: Stage -> [Coord]
+stageBorders st@Stage{width=w, height=h, offset=o} =
+    foldl (++) [] [head_line, bottom_line, left_line, right_line]
+    where
+        head_line = [Coord i 0 | i <- [0..w]]
+        bottom_line = [Coord i h | i <- [0..w]]
+        left_line = [Coord 0 j | j <- [0..h]]
+        right_line = [Coord w j | j <- [0..h]]
+
+keyListen :: IO (Maybe Char)
+keyListen = do
+    result <- hReady stdin
+    if result 
+        then (Just) <$> getChar 
+        else return Nothing
+
+
+getNewDir :: Direction -> Maybe Char -> Direction
+getNewDir DOWN (Just 'w') = DOWN
+getNewDir _ (Just 'w') = UP
+getNewDir UP (Just 's') = UP
+getNewDir _ (Just 's') = DOWN
+getNewDir RIGHT (Just 'a') = RIGHT
+getNewDir _ (Just 'a') = LEFT
+getNewDir LEFT (Just 'd') = LEFT
+getNewDir _ (Just 'd') = RIGHT
+getNewDir old Nothing = old
+getNewDir old _ = old
+
+
+getNewGameState :: GameState -> GameStatus -> Direction -> Coord -> GameState
+getNewGameState 
+    gs@GameState{snake=snake, stage=stage, apple=apple, score=score} 
+    status 
+    dir
+    newApple
+    | status == Continue = GameState dir stage newSnake score apple
+    | status == HitApple = GameState dir stage biggerSnake (score+1) newApple
+    where newSnake = snakeMove dir snake
+          biggerSnake = Snake (apple:cords snake)
+
+
+getGameStatus :: GameState -> Direction -> GameStatus
+getGameStatus 
+    gs@GameState{direction=dir, snake=snake, stage=stage, apple=apple} 
+    newDir
+    | nextHeadPosition `elem` stBorders       = Loose
+    | nextHeadPosition `elem` cords(snake)    = Loose
+    | nextHeadPosition == apple               = HitApple
+    | otherwise                               = Continue
+    where 
+        nextHeadPosition = head $ cords(snakeMove newDir snake)
+        stBorders = stageBorders stage
+
+
+getApplePosition :: Stage -> IO Coord
+getApplePosition st@Stage{width=w, height=h} = 
+    Coord <$> randomRIO (1, w-1) <*> randomRIO (1, h-1)
+
+    
+gameStart :: GameState -> IO (Either String GameState)
+gameStart gs@GameState{direction=direction, score=score, snake=snake, apple=apple} =
+    do
+        wclear stdScr
+        draw gs
+        refresh
+        threadDelay 200000
+        key <- keyListen
+        newApple <- getApplePosition $ stage gs
+        let newDir = getNewDir direction key
+        let gameStatus = getGameStatus gs newDir
+        case gameStatus of
+            Continue -> return $ Right(getNewGameState gs Continue newDir newApple)
+            HitApple -> return $ Right(getNewGameState gs HitApple newDir newApple)
+            Loose -> return $ Left("You looose your score is " ++ show score)
+
+
+gameLoop :: GameState -> IO String
+gameLoop gs = gameStart gs >>= either return gameLoop

@@ -1,0 +1,231 @@
+tweets
+.filter(t => t.username === me.username)
+.filter(t => hasTag(selectedHTag, t.text))
+.map(t => {
+t.text = emogize(t.text);
+return t;
+})
+
+.forEach(t => render);
+· Stateless
+· Composable
+· Non mutating
+
+input	-> logic	-> output
+Source -> Operations	-> Sink
+          Operation 1
+          Operation n
+
+pure functions, no side effects
+
+
+Problem: the solution deals only with one single tweet ( tweet source produces one tweet after the other)
+
+
+	
+Synchronous
+---------------------
+var tweets = getTweets();
+//getTweets -> Array
+tweets
+.filter(t => t.username === me.un)
+.filter(t => hasTag(selectedTag))
+.map(t => {
+t.text = emogize(t.text);
+return t;
+.forEach(t => render);
+
+Asynchronous
+----------------------
+var tweets_ =
+Rx.Observable
+.fromPromise(getTweets);
+//getTweets -> Promise
+tweets
+.filter(t => t.username === me.un)
+.filter(t => hasTag(selectedTag))
+.map(t => {
+t.text = emogize(t.text);
+return t;
+.subsribe(x => render);
+
+Observable is the building block of  FRP? in RxJs
+
+What is an Observable?
+Imperative
+· Value
+· Iterable
+Temporal
+. Promise
+· Observable
+
+
+Array
+.of(1, 2, 3, 4, 5)
+.map(x => x * x)
+.filter(x => x%2 === 0)
+.reduce((x, acc) => x + acc)
+
+Observable
+.of(1, 2, 3, 4, 5)
+.map(x => x * x)
+.filter(x => x%2 === 0)
+.reduce((x, acc) => x + acc
+
+
+Promise
+· resolve()
+· reject()
+· then()
+· error()
+
+Observable
+· onNext()
+· onError()
+· onComplete() -> Observer
+
+
+Observable are Lazy
+let users_ = getUsersObservable();
+let notJohnConners_ =
+users
+.map(user => user.fullName)
+.map(name => name.first +
+.filter(x => x === 'John Connor');
+notJohnConners _. subscribe(
+(user) => console.log('New user arrived: ', user),
+(error) => console.log('Error Occured', error),
+() => console.log('All Done')
+-
+' + name.last)
+)
+
+Operators
+---------------------------
+· Create
+· Defer
+· Empty
+· Never
+· Throw
+· From
+· Interval
+· Just
+· Range
+· Repeat
+· Start
+· Timer
+· Buffer
+· FlatMap
+· GroupBy
+· Map
+· Scan
+. Window
+. Debounce
+· Distinct
+· ElementAt
+· Filter
+· First
+· IgnoreElements
+· Last
+· Sample
+· Skip
+· SkipLast
+· Take
+· TakeLast
+· And
+· Then
+· When
+. CombineLate
+· Join
+· Merge
+· StartWith
+· Switch
+· Zip
+· Catch
+· Retry
+· Delay
+
+
+function* theMeaningOfLife() {
+yield 42;
+Anything -> Observable
+· Variables/Arrays
+· Promises
+· Events
+. Callbacks
+· Generators
+}
+Rx.Observable.from(theMeaningOfLife());
+
+Observable are Disposable
+var clicks _= Rx.Observable.fromEvent(countBtn, 'click'),
+counter _= Rx.Observable.from([1,2,3,4,5,6,7,8,9,10]);
+var disposeable = clicks
+. zip(
+counter_,
+function(e, count) { return count; }
+.take(5)
+.subscribe(function(x) {countNode.innerHTML =x;});
+)
+
+mouse sample follow cursor
+-------------
+var mousemove_ = Rx.Observable.fromEvent(document, 'mousemove');
+var left _= mousemove _. map(e => e.clientx);
+var top_ = mousemove _. map(e => e.clientY);
+
+// Update the mouse
+var themouse = document.querySelector('#themouse');
+left _. subscribe(setLeft.bind(themouse));
+top _. subscribe(setTop.bind(themouse));
+
+
+9 // Update the tail
+0 var mouseoffset = themouse.offsetWidth;
+1 var thetail = document.querySelector('#thetail');
+2 left
+. map(x => x + mouseoffset)
+.delay(delay)
+.subscribe(setLeft.bind(thetail));
+
+6 top_
+.delay(delay)
+.subscribe(setTop.bind(thetail));
+
+0 // Update wagging
+1 var wagDelay = delay * 1.5;
+2 var wagging = document.querySelector('#wagging');
+3 var mouseandtailoffset = mouseoffset + thetail.offsetWidth;
+4 left
+.map(x =>mouseandtailoffset +x)
+. delay (wagDelay)
+.subscribe(setLeft.bind(wagging));
+
+9 // var waggingDelay_ = Rx.Observable.return(0);
+0 var wagainaDelav = Rx.Observable
+followthemouse.es.js
+23% (24,0)
+Git-gh-pages (JS2 Par- Fly FlyC:0/
+
+
+ autocomplete
+.-----------------
+Meat of it
+search = Rx.Observable.fromEvent($input,'keyup')
+.map(function (e) {
+return e.target.value;
+.filter(function (text) {
+return text.length > 2;
+. debounce (200)
+.distinctUntilChanged()
+.flatMapLatest(searchWikipedia);
+
+pros of RxJs
+
+Conclusion
+· Composable
+· Readable
+· Maintainable
+. Great error handling
+
+

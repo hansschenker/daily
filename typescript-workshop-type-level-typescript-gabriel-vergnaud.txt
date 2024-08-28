@@ -1,0 +1,440 @@
+important distinction between the language of values and the language of types. 
+
+js runtime
+The language of values lets us write the code that will run in production and will do helpful stuff for our users. 
+
+js designtime
+The language of types, will run with Typescript Compiler, however, is completely erased before the code reaches our users.
+
+
+The language of types
+Type-level TypeScript is a minimal, purely-functional language.
+
+The term "functional" in that definition refers to Functional Programming, a concept you might have heard of before. Type-level TypeScript is functional simply because functions are the main means of abstraction in this language. We will use functions all the time.
+
+At the type level, functions are called generic types: they take one or several type parameters and return a single output type
+
+Here are some of the things you can do with Type-Level TypeScript:
+
+Code branching: executing different code paths depending on a condition (the equivalent of the value-level if/else keywords).
+Variable assignment: declaring a variable and using it in an expression (the equivalent of the value-level var/let keywords).
+Functions: re-usable bits of logic like the one we have seen in the previous example.
+Loops: usually through recursion.
+Equality checks: == but for types!
+And much more!
+
+Types are just data
+Every programming language is about transforming data and Type-level TypeScript is no exception. The main difference with other programming languages is that types are our data! We will write programs that take types as input and output some other types.
+
+Five categories of types
+TypeScript provides us with 5 main categories of types: 
+- primitive types, 
+- literal types, 
+- data structure types, 
+- union types, and 
+- intersection types.
+
+type Primitives =
+  | number
+  | string
+  | boolean
+  | symbol
+  | bigint
+  | undefined
+  | null;
+
+type Literals =
+  | 20
+  | "Hello"
+  | true
+  | 10000n
+
+Values and Types
+
+Values and types belong to two different worlds — they exist separately and can't be mixed together in a single expression1. I find it helpful to see literal types as a sort of reflection of values in the world of types, but we need to keep in mind that they are different things. One notable difference is that we can't write arithmetic expressions at the type level. For instance type five = 2 + 3 won't work, even if const five = 2 + 3 is perfectly valid.
+
+Literal types become particularly useful when put in unions to describe variables that only contain a finite set of possible values like type TrafficLight = "green" | "orange" | "red".
+
+Data structures
+In our type-level world, we have four built-in data structures at our disposal: objects, records, tuples and arrays.
+
+Edit
+type DataStructures =
+  | { key1: boolean; key2: number } // objects
+  | { [key: string]: number } // records
+  | [boolean, number] // tuples
+  | number[]; // arrays
+
+Object types describe objects with a finite set of keys, and these keys contain values of potentially different types.
+
+Record types are similar to object types, except they describe objects with an unknown number of keys, and all values in a record share the same type. For example, in { [key: string]: number }, all values are numbers.
+
+Tuple types describe arrays with a fixed length. They can have a different type for each index.
+
+Array types describe arrays with an unknown length. Just like with records, all values share the same type.
+
+Unions and Intersections
+Everything we have seen so far looks somewhat similar to concepts we are used to at the value level, but unions and intersections are different. They are really specific to the type level, and building a good mental model of how they work is essential, although a little more challenging.
+
+Here is how they look:
+
+Edit
+type Union = X | Y;
+
+type Intersection = X & Y;
+
+Types are Sets
+
+An interesting feature of TypeScript is that a value can belong to more than one type. For example, the value 2 can be assigned to a variable of type number, but also to a variable of type 2, or even of type 1 | 2 | 3. This property is called subtyping. It means that types can be included in other types, or, in other words, that types can be subsets of other types.
+
+This implies that not only unions, but all types are sets! Types can contain other types, overlap with each other, or be mutually exclusive.
+
+For example, the literal type "Hi" and the literal type "Hello" are both included in the type string because each of them is part of the greater family of all strings:
+
+
+Hierarchy of Types - supertypes and subtypes
+
+Turns out all types in TypeScript take their place in a hierarchy. You can visualize it as a tree-like structure. Minimally, in a tree, we can a parent node and a child node. In a type system, for such a relationship, we call the parent node a supertype and the child node a subtype.
+
+Intersections
+Intersections are just the opposite of unions: A & B is the type of all values that simultaneously belong to A and to B:
+
+never - the empty set
+
+never — the empty set
+The type never doesn't contain any value, so we can use it to represent values that should never exist at runtime. For instance, a function that always throws will return a value of type never:
+
+- In our type-level programs, types are just data.
+
+- There are 5 main categories of types: primitives, literals, data structures, unions, and intersections.
+
+- Types are sets. Once you wrap your head around this concept, everything starts to make sense!
+
+- Union types are data structures that join sets together.
+
+- unknown is the final superset — it contains every other type.
+
+- never is the empty set — it is contained in every other type.
+
+- any is weird because it's the subset and the superset of every type.
+
+
+Objects & Records
+
+Objects and Records are two of the most common data structures we can manipulate in Type-level TypeScript. They will be the bread and butter of our type-level algorithms, so understanding how they work is essential. I'm sure you've already used objects and records, but I hope this chapter will help develop your intuition of the values they represent and show you how they behave beyond trivial cases.
+
+Object types
+Object types define sets of JavaScript objects. The syntax to create an object type is very similar to the way we create regular objects:
+
+Edit
+type User = {
+  name: string;
+  age: number;
+  isAdmin: boolean;
+};
+
+The keyof keyword
+
+The keyof keyword lets you retrieve the union of all keys in an object type. You can place it right before any object:
+
+Edit
+type User = {
+  name: string;
+  age: number;
+  isAdmin: boolean;
+};
+
+type Keys = keyof User; // "name" | "age" | "isAdmin"
+
+Since keyof returns a union of string literals, we can combine it with the square brackets notation to retrieve the union of the types of all values in this object!
+
+Edit
+type User = {
+  name: string;
+  age: number;
+  isAdmin: boolean;
+};
+
+type UserValues = User[keyof User]; //  string | number | boolean
+This is such a common use-case that people often define a ValueOf generic type to abstract over this pattern:
+
+Edit
+type ValueOf<Obj> = Obj[keyof Obj];
+
+type UserValues = ValueOf<User>; //  string | number | boolean
+Generics are type-level functions. Now, we can reuse this logic with any object type!
+
+Optional properties
+
+Merging object types with intersections (&)
+To make our code more modular, it's sometimes useful to split type definitions into multiple object types. Let's split our User type into three parts:
+
+Edit
+type WithName = { name: string };
+type WithAge = { age: number };
+type WithRole = { isAdmin: boolean };
+Now we need a way to re-assemble them into a single type. We can use an intersection for that:
+
+Edit
+type User = WithName & WithAge & WithRole;
+
+type Organization = WithName & WithAge; // organizations don't have a isAdmin
+We've seen in the previous chapter that intersections create types with all properties of intersected types, so this new definition of User is equivalent to the previous one.
+
+Intersections of objects and unions of keys
+Wait. If the type {a: string, b: number} is the intersection of {a: string} and {b: number}, why does this type contain the union of their keys: 'a' | 'b'? 
+
+Here is why: we are not intersecting their keys, we are intersecting the sets of values they represent.
+
+Since object types with additional keys are assignable to object types with fewer keys, there are objects containing a key b of type number in the set {a: string}. There are also objects containing a key a of type string in the set {b: number}.
+
+Intersecting {a: string} with {b: number} returns the set of values that belong to both sets, which is expressed as {a: string, b: number}.
+
+It turns out that the intersection of two objects contains the union of their keys:
+
+Edit
+type A = { a: string };
+type KeyOfA = keyof A; // => 'a'
+
+type B = { b: number };
+type KeyOfB = keyof B; // => 'b'
+
+type C = A & B;
+type KeyOfC = keyof C; // => 'a' | 'b'
+
+Conversely, the union of two objects contains the intersection of their keys:
+
+Edit
+type A = { a: string; c: boolean };
+type KeyOfA = keyof A; // => 'a' | 'c'
+
+type B = { b: number; c: boolean };
+type KeyOfB = keyof B; // => 'b' | 'c'
+
+type C = A | B;
+type KeyOfC = keyof C; // => ('a' | 'c') & ('b' | 'c') <=> 'c'
+
+Another way to think about this is that if you have a value of either type A or type B, the only key that will be present in both cases is "c".
+
+Here is the general rule:
+
+keyof (A & B) = (keyof A) | (keyof B)
+keyof (A | B) = (keyof A) & (keyof B)
+This is a bit subtle, I hope this makes sense!
+
+Records
+
+Just like Object types, Records also represent sets of objects. The difference is that all keys of a record must share the same type.
+
+A record of booleans is defined like this:
+
+Edit
+type RecordOfBooleans = { [key: string]: boolean };
+You can read this as "any key assignable to string has a value of type boolean."
+
+Records can also be defined using the built-in Record generic:
+
+Edit
+type RecordOfBooleans = Record<string, boolean>;
+
+
+type Record<K, V> = { [Key in K]: V };
+
+Notice the in keyword. This is using a feature called Mapped Types, which we will cover in more detail in a dedicated chapter. 
+
+Mapped Types
+assign a type of value for every key in the union K.
+
+In our previous example, we passed the type string as K, but we could also have used a union of string literals:
+
+Edit
+type InputState = Record<"valid" | "edited" | "focused", boolean>;
+
+
+- Object types and Records both represent sets of JavaScript objects.
+
+- Object types are sets of objects containing at least all properties defined on this type, but they can also contain more properties.
+
+- Record types are sets of objects that share the same type for all properties.
+
+- Intersections let us "merge" objects together in types containing all of their properties.
+
+- TypeScript provides several built-in functions like Partial, Required, Pick and Omit to transform object types.
+
+
+Arrays & Tuples
+
+After learning about object types in the previous chapter, let's take a look at the second most important data structure of Type-level TypeScript – Tuples.
+
+It might come as a surprise, but Tuples are much more interesting than Arrays at the type level. In fact, they are the real arrays of type-level programs. In this chapter, we are going to learn why they are so useful and how to use all their awesome features. 
+
+In this chapter, we learned about the true arrays of the type level — Tuples. We have seen how to create them, how to read their content, and how to merge them to form bigger tuples!
+
+We have also talked about Array types, which represent arrays with an unknown number of values all sharing the same type. Arrays and tuples are complementary — we can mix them together in variadic tuples.
+
+Anatomy of a Conditional Type
+In Type-level TypeScript, code branching is known as Conditional Types. The syntax is very similar to the Ternary Operators we use in JavaScript:
+
+Edit
+type TrueOrFalse = A extends B ? true : false;
+/*                 -----------   ----   -----
+                      ^          /         \
+                 condition    branch     branch
+                             if true    if false
+          
+                   \-------------------------/
+                                ^
+                        Conditional Type
+*/
+
+The extends keyword
+Before the question mark stands a condition. It's always of the form A extends B, which is how you ask "Is A assignable to B?" to the type checker.
+
+"A extends B" means "Is A assignable to B?"
+We touched on the topic of assignability several times already so you should already know that "A is assignable to B" means that the set of values defined by the type B includes the set of values defined by the type A.
+
+Narrowing input types with type constraints
+Type constraints can not only prevent invalid inputs, but also make TypeScript infer precise types for our parameters. Let's illustrate that with an example.
+
+Imagine we have a function taking a string and wrapping it in an object:
+
+Edit
+const createUser = <S>(name: S) => ({ name });
+
+Nesting conditions
+Just like ternaries, conditional types can be nested to chain several branches of code together:
+
+Edit
+// Nested conditions
+type GetColor<I> =
+    I extends 0 ? "black"
+  : I extends 1 ? "cyan"
+  : I extends 2 ? "magenta"
+  : "white";
+Granted, nested ternaries are a little hard to read sometimes. The thing is, the type-level language doesn't provide us with many alternatives for code branching, so we have to roll with them.
+
+That said, There is an interesting trick when branching on unions of literals. We can declare an object type with a key for each of our cases, and use our literal as a property accessor:
+
+Edit
+type GetColor<I extends 0 | 1 | 2 | 3> = {
+  0: "black";
+  1: "cyan";
+  2: "magenta";
+  3: "white";
+}[I];
+
+
+Pattern Matching with Conditional Types
+So far, we have only used extends with literal and primitive types, but we can also use it to check if a type is assignable to a data structure!
+
+Edit
+type IsUser<T> =
+  T extends { name: string; age: number }
+    ? true
+    : false;
+
+type T1 = IsUser<{ name: "Gabriel" }> // => false
+type T2 = IsUser<{ name: "Alice", age: 32 }> // => true
+If you are familiar with functional programming languages, you might recognize this as Pattern Matching. Here, we essentially check if T matches the pattern {name:string, age:number}.
+
+Pattern matching is powerful because it's recursive. We can simultaneously check several properties of our types, at any depth of nesting:
+
+Edit
+type IsUser<T> = T extends {
+  name: string;
+  team: { memberCount: number };
+}
+  ? true
+  : false;
+
+type T1 = IsUser<{
+  name: "Gabriel";
+  team: {
+    memberCount: 12;
+    name: "dataviz"; // <- extra prop
+  };
+}>; // => true
+
+type T2 = IsUser<{ name: "Alice" }>; // => false
+
+The infer keyword
+The infer keyword is the real superpower of Conditional Types. It enables us to declare a type variable by destructuring the type on the left-hand side of extends:
+
+Edit
+type GetRole<User> =
+  User extends { name: string; role: infer Role }
+    ? Role //                          ^ new! 🤔
+    : never;
+
+type T1 = GetRole<{ name: "Gabriel"; role: "admin" }>;
+// => 'admin'
+
+type T2 = GetRole<{ role: "user" }>;
+// => `never` because the input type doesn't have a `name` property.
+Here, the function GetRole checks if User is assignable to { name: string; role: any }. If it is, we declare a variable Role that contains the type of the role property and we return it. If User isn't assignable to this pattern, we return the never type.
+
+I always felt like infer was similar in spirit to JavaScript's Destructuring Assignments:
+
+Edit
+type GetRole<User> =
+  User extends { role: infer Role } ? Role : never;
+
+// `GetRole` is the type-level equivalent of:
+const getRole = ({ role }) => role;
+But since infer can only be used on the right-hand side of extends, it makes Conditional Types even more similar to Pattern Matching:
+
+Edit
+type Fn<A> = A extends { a: { deeply: { nested: { prop: infer P } } } }
+  ? P
+  : never; // We have to handle the "else" case too!
+Notice that we don't even need to add a type constraint on our type parameter to be able to pattern-match on it. It's ok because we have to handle the falsy case anyway.
+
+Conditional types are super powerful. I wish we had value-level syntax for code branching that was as flexible as this!1
+
+infer with Tuples
+infer can be used inside any kind of type-level data structure, including tuples!
+
+You can use it to retrieve the first element of the list:
+
+Edit
+type Head<Tuple> = Tuple extends [infer First, ...any] ? First : never;
+
+// `Head` is the type-level equivalent of:
+const head = ([first]) => first;
+
+type T1 = Head<["alpha", "beta", "gamma"]>; // => "alpha"
+type T2 = Head<[]>; // => never
+
+
+infer with function types
+Even though they are so common in our day-to-day code, we haven't talked too much about function types so far, so let's start with a simple example:
+
+Edit
+type IsEqual = (a: number, b: number) => boolean;
+Nothing surprising yet, but here is the catch: at the type level, function types are data structures too!
+
+They are essentially wrappers around a Tuple representing the list of arguments bundled with an arbitrary return type:
+
+Edit
+// this type
+type IsEqual = (a: number, b: number) => boolean;
+// contains the same type-level information as this one
+type IsEqual = {
+  inputs: [a: number, b: number];
+  output: boolean;
+};
+
+At the type level, we use Conditional Types for code branching.
+
+- Conditional types must be of the form A extends B ? T : F.
+
+- A extends B means "A is assignable to B".
+
+- We can also use extends to declare a type constraint on a type parameter.
+
+- The infer keyword lets us assign a variable by extracting a piece from a data-structure type.
+
+- infer can only be used within a conditional type, on the right-hand side of extends.
+
+- Even though conditional types look like value-level ternaries, they are much more powerful because they let us pattern-match on types.
+

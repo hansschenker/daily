@@ -1,0 +1,64 @@
+method chaining,    call methods of an object
+pipeline,           output of one function is input to next function, (Type and number of parameters must match)
+
+Combinators behave as control logic 
+
+are higher-order functions that can combine primitive artifacts like other functions (or other
+combinators) and behave as control logic. Combinators typically don't declare any variables of their own or
+contain any business logic; they're meant to orchestrate the flow of a functional program. 
+
+- compose
+- and pipe, and a infinite number of combinators, but we'll look at some of the most common ones:
+- tap takes input and returns input without changing
+- forq
+- ...
+
+
+
+· Functional chains and pipelines connect reusable and modular componentized programs.
+· Ramda.js is a functional library adapted for currying and composition, with a powerful arsenal of utility functions.
+. Currying and partial evaluation can be used to reduce the arity of pure functions by partially evaluating a subset
+of a function's arguments and transforming them into unary functions.
+. You can break a task into simple functions and compose them together to arrive at the entire solution.
+. Using function combinators allows you to orchestrate complicated program flows to tackle any real-world
+problem as well as write in a point-free manner.
+
+Functors
+
+We need to work smarter, not harder. In this chapter, I'll introduce the concept of functors as a means to create
+simple data types on which functions can be mapped. A functor is applied to data types called monads that contain
+specific behavior for dealing with errors in different ways. Monads are one of the hardest concepts to grasp in
+functional programming because the theory is deeply rooted in category theory, which I won't cover. My intention
+is to focus only on the practical aspects. Having said that, I'll slowly work my way into that topic, layering in some
+prerequisite concepts, and then show how you can use monads to create fault-tolerant function compositions in a
+
+Wrapping values in Containers (Functors)$
+
+Containerizing (or wrapping) values is a fundamental design pattern in functional programming because it guards
+direct access to the values so they can be manipulated safely and immutably in your programs. It's like wearing
+armor before going to battle. Accessing a wrapped value can only be done by mapping an operation to its container.
+In this chapter, I'll talk extensively about the concept of a map, but you already learned about this in chapter 3
+when you used map on arrays-the array was the container of values, in that case.
+
+map and fmap are containers
+
+fmap knows how to apply functions to values wrapped in a context. It first opens the container, then applies the
+given function to its value, and finally closes the value back into a new container of the same type. This type of
+function is known as a functor.
+
+fmap :: (A -> B) -> Wrapper (A) -> Wrapper (B)
+Wrapper is any
+container type.
+
+const plus = R.curry((a, b) => a + b);
+const plus3 = plus(3);
+
+const two = wrap(2)
+
+const five = two.fmap(plus3); //-> Wrapper(5)
+five.map(R.identity); //-> 5 Returns the value in a context
+
+two.fmap(plus3).fmap(plus10); //-> Wrapper(15)
+
+
+

@@ -1,0 +1,457 @@
+https://medium.com/@floyd.may
+https://github.com/floyd-may?tab=repositories
+
+Async Superpowers: State Machines
+
+It seems that every UI in existence has to deal with doing something asynchronous. If you don’t know what that means, think back to every time you’ve seen one of these:
+
+A spinning “loading” indicator
+Hang on, we’re loading stuff…
+Any time you see a “spinner” like the above, it’s probably an indication that some asynchronous stuff is happening. Programming UIs that do asynchronous stuff can be difficult. What often seems even more difficult is testing those UIs. And when I say, “testing,” I mean real tests. Automated tests. And… many programmers just don’t bother with those. Instead, we just slap some spinners into the code, do a bit of manual testing (ewww… 🤢), and call it good. I’m here to tell you, there’s a better way. A way to write UIs with complex asynchronous logic that you can test easily.
+
+But, to get there, I’ve got to teach you some computer science fundamentals. So buckle up, we’re going to learn about state machines, also called discrete finite automata or DFAs.
+
+Part 1: Intro to State Machines
+A state machine is a way to model a specific kind of computation problem. It can be a system that changes over time, parsing text a character at a time, or a number of other kinds of similar problems. We can model each phase of that computation over time in precise steps, called states, and then define how the system moves from one state to another using something called transitions. So… states and transitions.
+
+Let’s look at an example. Let’s say that we need to figure out if a given string is the string “ab”, that is, a single “a” followed by a single “b”. We can model this using a state machine that looks like this:
+
+
+A simple state machine for parsing the string “ab”
+You see, the way a state machine works is simply this: Given a current state and some input, a state machine decides what the next state is. Our states, start, s1, ands2, are represented by circles, and our transitions are the arrows that point between these three states. Notice that each transition has a letter associated with it. This is our input. One last observation is that s2 is marked green, to indicate that it’s our “success” state. Now, we’ll go through a few examples.
+
+First, let’s try the string “ab”. We begin at the start state, and follow the transition from start to s1 for input a, arriving at s1. Then, at state s1, we follow the transition to s2 for input b. Since we’ve processed all the input and arrived at the “success” state, the state machine has shown us that this, indeed, is the string “ab”. Underwhelmed? Just hang in there.
+
+Now, let’s see what happens when we give it input that doesn’t match. For instance, if we tried the string “ac”, we’d go from start to state s1, and then have input c that we need to process. But there is no transition from state s1 for input c. Put another way, there’s no arrow that starts at state s1 that is labeled with the input c. When we arrive at a state where there’s no transition away from that state for whatever input we’re looking at, the machine is “stuck”. When a state machine is stuck for a parsing problem like this, it means that the state machine is telling us “this input doesn’t match what I expect.”
+
+Let’s try another failing example. Let’s parse the string “a” using our state machine. Again, we follow the transition for a from start to s1, but then we have no more input to process. The state machine is done processing the input, but it’s not at the “success” state of s2. This, again, means the state machine has told us that the input string we processed doesn’t match.
+
+Now, let’s look at a more complex example:
+
+Zero or more ‘a’s followed by zero or more ‘b’s followed by at least one ‘c’.
+
+We can design a state machine¹ that solves this problem, and it looks like this:
+
+
+A state diagram for parsing the string with the above rules.
+This state machine is, obviously, a bit more complex. Let’s go through some examples. See if you can follow along from state to state as the machine processes each letter. First, let’s look at the steps for processing string “abbbc”:
+
+At state start, input a: follow transition for ato s1
+At state s1, input b: follow transition for b to s2
+At state s2, input b: follow transition for b to s2
+Note: some transitions start and end at the same state, like this one. This is one of the ways that state machines can handle repetitive input.
+At state s2, input b: follow transition for b to s2
+At state s2, input c: follow transition for c to s3
+At state s3, no remaining input: s3 is a success state; SUCCESS
+Now, let’s look at the string “acd”:
+
+At state start, input a: follow transition for ato s1
+At state s1, input c: follow transition for c to s3
+At state s3, input d: no transition from s3 for d; stuck; FAIL
+Now, try a few examples of your own that match the rules:
+
+Zero or more ‘a’s followed by zero or more ‘b’s followed by at least one ‘c’.
+
+
+More Than Parsing
+State machines can model more things than just parsing text. Let’s say we’d like to model the operational controls for a rollercoaster using a state machine. We have gates that allow the queued passengers into the loading area, we have restraints that keep people in the cars while the rollercoaster is moving, and we have a launch motor that gets the stopped rollercoaster moving onto the track. We also have a number of safety-related scenarios that we want to prevent:
+
+Open gates while the rollercoaster is moving — this could cause crowding near the loading platform and allow someone to be struck by a moving coaster
+Restraints released while the rollercoaster is in motion — this could cause someone to fall out of the ride!
+Open gates while the previous riders are still restrained and waiting to exit — this could cause sneaky passengers to ride multiple times in a row
+So, we could model the operational controls like this:
+
+
+A potential model for safe operation of a rollercoaster.
+Starting with an empty rollercoaster with open gates (the Loading state), the operator ensures that passengers get seated and no other passengers are on the loading platform. Next, the operator closes the gates and begins securing the passengers (the Securing state). Once the passengers are secured, the operator launches the rollercoaster and the passengers enjoy their ride (the Riding state). When the coaster returns to the loading platform a sensor is triggered (the Waiting for exit state). The operator can then release the restraints (moving to the Exiting state) and wait for the platform to clear before opening the gates and allowing a new set of passengers to board (moving back to Loading). We also have the additional option while in the Securing state to release the restraints and let terrified would-be passengers out of the ride at the last moment. Don’t ask me why I know this is a thing.
+
+If you remember, the transitions between states represent input, and state machines only accept certain inputs at certain states. For instance, this state machine only accepts the input Release restraints in the Waiting for exit and Securing states, since it would be obviously dangerous to release the restraints on a moving rollercoaster! If the operator were to press the “release restraints” button while the coaster is moving, the state machine would not become “stuck” like parsing strings. Instead, the state machine would simply ignore that input. So, in cases like parsing, state machines are “stuck” on unexpected input. In cases like safety controls and UIs, state machines often ignore invalid or irrelevant input.
+
+Next Up
+So, what do rollercoaster rides have to do with UIs that do asynchronous things? They both have to wait for things to finish, accept user input, and ignore invalid input. In the next few articles, we’ll talk through how to model a UI that does asynchronous stuff using a state machine. Next up: Part 2!
+
+¹ Fun fact: many regular expression engines use DFAs to parse strings, and there is a mathematical relationship between DFAs and the kinds of strings that regular expressions can parse.
+
+For further reading: great examples of why a state machine would be better than a big pile of if/else statements
+
+Async Superpowers, Part 2
+Floyd May
+Floyd May
+
+·
+Follow
+
+7 min read
+·
+Dec 29, 2021
+81
+
+
+
+
+
+
+This is the second in a four-part series that will help you easily write and test UIs that do asynchronous stuff.
+
+(Heads up: I’ll be doing pseudocode examples in Typescript and React. This isn’t a necessity for state machine driven UIs; however, having some familiarity with both would be helpful in reading and understanding this series.)
+
+So, in the last article, I introduced you to state machines. Now, let’s see if we can take that knowledge and apply it to a real-world UI. Let’s say we’re building a UI that searches for things, and displays the things that match the search criteria. Here’s a sketch of what that might look like:
+
+
+Our UI
+Now, let’s also say that we have to do some loading before we can display the above screen. We’ve got to load the available options for those dropdowns from the backend as well as the initial results, let’s say. Let’s also say that we have an “infinite scroll” type scenario, where we load another page of data when the user scrolls down far enough. So, we have four states of our UI. Our initial “loading” state:
+
+
+Let’s call this our “Loading” state
+Next, our “loaded” state that shows results:
+
+
+The “Loaded” state of the UI
+Third, we have a state that we show when we’ve changed our search criteria and are reloading results:
+
+
+The “Reloading” state
+And finally, our “loading more” state that we enter when the “infinite scroll” kicks in and we load another page of results:
+
+
+The “Loading more” state
+As you may have noticed, I’ve modeled every possible state that this UI could be in. As you might suspect, these will all correspond to states in a state machine. What you may have also noticed is that I’ve modeled states not just for when the UI is loaded, but for the various situations where the UI is waiting for data to load.
+
+State Data
+In order for this UI to display itself properly, it needs data. For all but the “Loading” state, the UI needs the list of things and the dropdown options. If we were to define that in code, it might look like this:
+
+type ThingSearchData = {
+  things: Thing[];
+  options1: Options[];
+  options2: Options[];
+  options3: Options[];
+  searchText: string;
+  selected1: string;
+  selected2: string;
+  selected3: string;
+}
+However, the UI displays differently depending on which state it’s in. In Typescript, I tend to represent the states and their data as a “tagged” union type¹, like this:
+
+type Tagged<T extends string> = { tag: T };
+type Loading = Tagged<"Loading">;
+type Loaded = Tagged<"Loaded"> & ThingSearchData;
+type Reloading = Tagged<"Reloading"> & ThingSearchData;
+type LoadingMore = Tagged<"LoadingMore"> & ThingSearchData;
+type State = Loading | Loaded | Reloading | LoadingMore;
+This lets us write code that accepts a State and then inspect it to see which state it is using typescript’s “narrowing”:
+
+if(state.tag === "Loading") {
+  renderLoading(state);
+} else if(state.tag === "Loaded") {
+  renderLoaded(state);
+} // and so on...
+(Quick note: you could use a class hierarchy in a language like C# or Java to accomplish the same goal of representing your states’ data. This isn’t a Typescript only concept!)
+
+With our State type, we can now write some tests for our UI to make sure it displays itself properly given the right state. For example:
+
+describe("Loaded state", () => {
+  const state = {
+    tag: "Loaded",
+    things: [
+      { name: "A thing" },
+      { name: "Another thing" },
+      { name: "yet another thing" },
+    ],
+    options1: [{ /* omitted for brevity */ }],
+    /* and so on... */
+  };
+  beforeEach(() => {
+    render(<ThingSearch state={state} />);
+  });
+  it("should not show spinner", () => {
+    expect(document.querySelectorAll(".spinner")).toHaveLength(0);
+  });
+  state.things.forEach(thing => {
+    expect(screen.getByText(thing.name)).toBeInTheDocument();
+  });
+});
+So, we’ve solved one part of the problem: given a state, what should get displayed. We’ve also got a testing strategy for that. However, we still a few more details to sort through.
+
+Input and Actions
+Now, let’s examine, in our UI, what user input we need to handle. There are two distinct user interactions that we need to be concerned with:
+
+Search criteria changed — this occurs when the user changes the search text or any of the dropdowns. This will (eventually) lead to loading a new list of things.
+Scrolled to bottom — this occurs when the user scrolls the page to the bottom, triggering the “infinite scroll” behavior that loads more data as the user scrolls.
+For the remainder of these articles, we’ll call these state machine inputs actions. We’ll also define some more actions for our UI’s state machine, but for now, let’s focus on these two. We need to represent these in code, and we’ll use a similar definition to our State type earlier:
+
+type SearchCriteriaChanged = Tagged<"SearchCriteriaChanged"> & {
+  searchText: string;
+  option1: string;
+  option2: string;
+  option3: string;
+}
+type ScrolledToBottom = Tagged<"ScrolledToBottom">
+type Action = SearchCriteriaChanged | ScrolledToBottom;
+Given these definitions, we can now test that our UI properly produces the actions it should as the user types, clicks, and scrolls. For instance:
+
+it("Dispatches ScrolledToBottom action", () => {
+  const actions: Action[] = [];
+  render(<ThingSearch
+    state={loadedState}
+    dispatch={a => actions.push(a)}
+  />);
+const container = document.querySelector(".thing-list");
+  fireEvent.scroll(container, { target: { scrollY: 1000 } });
+  expect(actions).toEqual([{
+    tag: "ScrolledToBottom",
+  }]);
+});
+Writing the State Machine
+So far, we have a UI that displays itself properly based on its state, and the UI produces actions based on user input. However, we still don’t yet have code that allows us to move from state to state based on those actions. So, let’s discuss how to represent a state machine in code. Our UI’s state diagram should look something like this:
+
+
+In the previous article, I said that transitions between states are labeled with the input that’s being processed by that transition. In the parsing examples, for instance, that input was letters. In the rollercoaster example, the input fell into two categories: button presses by the operator (open gates, close gates, launch, release restraints), and sensor input (coaster arrived). Similarly, our UI also has two categories of input, or, more precisely, two categories of actions. Our first category is user input. scrolled to bottom and search criteria changed are the direct user interactions that our state machine accepts. We also have another kind of action: asynchronous results; that is, stuff that is likely obtained via a fetch(...) call or similar. I’ve represented the transitions for those actions using dashed lines.
+
+A key element in the design of this state machine is that we have states that represent when asynchronous things are pending. This is the core idea that lets us turn the complicated and difficult-to-test messiness of asynchronous operations into a straightforward, easy-to-test state machine. We can represent the data that gets returned from our asynchronous operations as our state machine’s actions, and prove that the machine transitions correctly given an action. For instance, our AdditionalDataLoaded action would probably be defined like this:
+
+export type AdditionalDataLoaded = Tagged<"AddlDataLoaded"> & {
+  things: Thing[];
+}
+In the previous article I said that a state machine decides, given a current state and an action, what the next state should be. In code, this is a function whose signature looks like this:
+
+(state: State, action: Action) => State
+So, given one of our states and some action, we should be able to compute another state. This kind of function is called a reducer, and reducers typically take the form of nested switch statements or if/else chains:
+
+function reduce(state: State, action: Action): State {
+  if(state.tag === "Loading") {
+    return reduceLoading(state, action);
+  } else if(state.tag === "Loaded") {
+    return reduceLoaded(state, action);
+  } // and so on
+return state;
+}
+function reduceLoading(state: Loading, action: Action): State {
+  if(action.tag === "DataLoaded") {
+    return {
+      things: action.things,
+      options1: action.options1,
+      options2: action.options2,
+      options3: action.options3,
+      tag: "Loaded",
+    };
+  }
+  return state;
+}
+// additional reduceXXX functions omitted for brevity
+Given a state machine expressed as States, Actions, and a reducer function, putting the state machine under test is very straightforward. For example, here are some tests for the Loading state:
+
+describe("Loading state", () => {
+  const state = { tag: "Loading" };
+  it("ignores irrelevant action", () => {
+    const result = reduce(state, { tag: "ScrolledToBottom" });
+    expect(result).toEqual(state);
+  });
+it("transitions to Loaded on DataLoaded action", () => {
+    const action = {
+      things: [{ name: "Thing 1" }],
+      options1: [{ label: "Opt1 label", value: "1"],
+      options2: [],
+      options3: [],
+    };
+    const result = reduce(state, action);
+    expect(result).toEqual({
+      ...action,
+      tag: "Loaded",
+    });
+  });
+});
+Next Up: Putting It All Together
+We’ve solved quite a few problems up to this point, including writing tests for each:
+
+The UI displays properly given some State
+The UI produces the right Action from user input
+The state machine’s reducer function generates the correct next State given a current State and an Action
+However, we still have two important problems left to solve:
+
+Connecting the UI to a working state machine
+Making the asynchronous calls at the right time, dispatching Actions when they complete
+In the next article, we’ll see how to connect all of this together so that our UI functions properly end-to-end.
+
+Footnotes
+
+[1]: The Tagged<T> type and its “tag” property is inspired by my distaste for the fact that Typescript doesn’t support tagged unions
+
+Computer Scien
+
+Async Superpowers, Part 3
+Floyd May
+Floyd May
+
+·
+Follow
+
+4 min read
+·
+Dec 29, 2021
+30
+
+
+
+
+
+
+This is the third in an four-part series that will help you easily write and test UIs that do asynchronous stuff.
+
+Recap
+In the previous two articles, we learned about how to model real-world computing problems with a state machine. We played with parsing strings, controlling a rollercoaster, and modeling a search UI. We also showed how we use a state and its associated data to prove (via automated tests) that the UI renders properly when it’s in a given state. We also proved that the UI dispatches actions in response to user input.
+
+
+The state machine that drives our search UI.
+Connecting It All Together
+We have two remaining problems to solve. One, we need to “drive” our state machine so that actions cause the UI’s state to change; and two, we need to initiate those asynchronous communications at the right times and dispatch actions when they complete.
+
+(Quick note: I’m using React for my code samples here, but don’t let that deter you if you’re using some other tech! This technique is applicable in any programming language and/or UI framework.)
+
+For the first problem, we’ll use React’s useReducer hook. This is, unsurprisingly, built exactly for usages like ours:
+
+const ThingSearchUI = () => {
+  const [state, dispatch] = useReducer(reducer, { tag: "Loading" });
+  return <ThingSearch state={state} dispatch={dispatch} />;
+};
+Let’s take a closer look. The useReducer function accepts a reducer function (the reducer we built in the previous article), and an initial state. In our case, the initial state for our state machine is Loading. The return values are the current state and a dispatch function. Notice how we’re passing this state and dispatch directly to ThingSearch, which we also learned how to test in the previous article. Now, our UI renders itself properly in each state and actions generated from user input are now “connected” to our reducer function, causing the state machine to transition.
+
+If you’re using some other framework, you could replicate useReducer using something like this:
+
+// assuming `this.state` and `this.dispatch` are available
+//  for use in your child components (or similar)
+class ThingSearch extends Component {
+  onInit() {
+    this.state = { tag: "Loading" };
+  }
+  dispatch(action: Action) {
+    this.state = reducer(this.state, action);
+  }
+}
+Next, we need to initiate those asynchronous communications at the right times. For the three “asynchronous result” transitions in our state machine, they begin at the Loading, Reloading, and Loading More states. So, when our machine arrives at each state, we should initiate those asynchronous calls (like, say, using the fetch API to get some data over HTTP). So, we could write a function that, given a state and a dispatch function, makes the correct fetch call and dispatches the correct action:
+
+async function reactToState(state, dispatch) {
+  if(state.tag === "Loading" || state.tag === "Reloading") {
+    const response = fetch({
+      method: "POST",
+      path: "/api/thingsearch",
+      content: { state.searchText, /* ... */ }
+    });
+    const data = await response.json();
+    dispatch({
+      tag: "Data Loaded",
+      things: data.things,
+      /* ... */
+    });
+  }
+  /* and so on */
+}
+Then, we can fashion a React component that uses this function when the state changes:
+
+const ThingSearchReactor = ({ state, dispatch }) => {
+  useEffect(() => {
+    reactToState(state, dispatch);
+  }, [state]);
+  return <React.Fragment />
+}
+I call this kind of component that only listens for state changes and initiates asynchronous operations an “async reactor”. Tests for this component would likely check for initiating the right HTTP communications given some state, and dispatching the correct action when the HTTP call completes. Then, finally, we can compose the entire thing together like this:
+
+const ThingSearchUI = () => {
+  const [state, dispatch] = useReducer(reducer, { tag: "Loading" });
+return (<>
+  <ThingSearch state={state} dispatch={dispatch} />
+  <ThingSearchReactor state={state} dispatch={dispatch} />
+  </>);
+};
+Zooming Out
+At this point, let’s take a step back and revisit what problem we were solving and see how all of these disjointed code snippets fit together. We have a “Thing Search” UI that has a search box, some dropdowns, and a list of “things”:
+
+
+This UI has a number of states where we’re waiting for asynchronous operations to complete. Our solution for this has three major components:
+
+
+The state machine
+This is implemented as a reducer function that accepts a current State and an Action and returns a new State. We modeled every behavior of our UI, including user interactions and asynchronous results, into this state machine.
+The display component
+This is the portion that displays UI based on a given State and dispatches Actions when the user interacts with the UI.
+The async reactor
+This component listens for state changes and initiates the asynchronous communications for our various “loading” states.
+Each of these components can be thoroughly and easily unit tested in isolation, and composing them together is quite simple. A larger-scale “integration” test or two¹ could ensure that we’ve composed these pieces correctly.
+
+A working example app based on create-react-app is posted here (thanks GitHub!). In the final article in this series, we’ll discuss some design guidance for modeling your own UIs using state machines and explore some common pitfalls. Stick around!
+
+Footnotes
+No, we’re not going to have an argument about what is and isn’t an integration test
+
+Async Superpowers — Some Guidance
+Floyd May
+Floyd May
+
+·
+Follow
+
+4 min read
+·
+Dec 29, 2021
+55
+
+
+
+
+
+
+This is the final article in a series, Async Superpowers: State Machines, geared for helping you understand how to easily build and test¹ UIs that have asynchronous things going on. The first article in the series is here.
+
+Here in this last article, I’d like to spend some time giving you some general guidance as you learn how to use state machines to tame UIs. All of what you’re about to read comes from real-world experience. In other words, this is how I’ve messed it up in the past.
+
+Ignoring Irrelevant Actions
+One of the beauties of using a state machine to manage a UI is that the machine ignores irrelevant actions. For instance, let’s consider a classic problem. An over-eager user² double-clicks a button that, say, makes a purchase, and causes the purchase to be duplicated³. In this kind of situation, any subsequent clicks after the first one should be ignored. When we use a state machine to manage these interactions, the button click should dispatch an action that causes a state transition:
+
+
+A part of a potential state machine for our purchase scenario.
+Given the state machine above, the button click would dispatch the Confirm purchase action, and our state machine would transition to the Purchase pending state. Even if rapid-fire clicking manages to dispatch more than one Confirm purchase action, our state machine ignores all but the first of those actions.
+
+Initiate Asynchronous Operations from States
+In our purchase example above, a key element of preventing duplicate purchase attempts is that we initiate the HTTP call only when we arrive at the Purchase pending state. It is the state that indicates when to invoke the HTTP call and not the Confirm purchase action. Always initiate asynchronous operations based on the state; never based on an action. This keeps the state machine in control of which actions are (and are not) relevant. If you review the “async reactor” we built in the previous article, it initiates async operations based on the state, and never the action.
+
+Reference Equality on Ignored Actions
+A key element that prevents our async reactor from duplicating asynchronous operations is the useEffect hook in React. It only invokes the callback when the given state changes:
+
+useEffect(() => {
+  reactToState(state, dispatch);
+}, [state]);
+Regardless of how many times this component is re-rendered, the call to reactToState(...) will only be invoked if state changes vis a vis reference equality; that is, if the new value of state is not the exact same object it was previously. If, say, when processing a duplicate Confirm purchase action, our reducer function returned { ...state } (that is, generating a new, equivalent object with the same data) rather than state, this useEffect(...) callback would be invoked again, possibly attempting a duplicate purchase.
+
+Whether or not you’re using React, your async reactor should only initiate communications when the state changes. The simplest solution to this is to ensure that your reducer returns the same state when it ignores an action and never returns a clone or copy of the state. This ensures that a new state object is produced only when a state transition has occurred. If you aren’t careful about this, some potential problems could include:
+
+Repeatedly sending duplicate HTTP requests
+Infinite loops
+Stack overflows
+Always make sure you return the exact same state when an action is ignored.
+
+There Is No Such Thing As In-between States
+You may find yourself tempted to have things happen “between” states; that is, your UI might have an animation or something like it that’s timing-related, but quick, and you’d rather not model that “in between” transitionary part as yet another state in your state machine. Resist that temptation.
+
+Watch Out for Complexity
+Be aware of how complex your state machines are. A machine with four to six states is pretty comfortable to work with. Nine or ten states will often start becoming unwieldy, and a dozen states is almost certain to be too complex.
+
+When you discover that a state machine has become too complex, revisit your UI to see if you can decompose it into separate components that use simpler state machines.
+
+Conclusion: Guiding Principles
+Now that you’re ready to try out your new async superpowers and tame some UIs, let me give you a quick list of what we’ve covered:
+
+Model your UI as a set of states
+This lets you can easily build and test the visual representation of each state in isolation, especially those tricky “loading” states. Be sure to test that the UI dispatches the correct actions given specific user input.
+Design a state machine
+Put the state machine in control of which actions allow transitions from one state to another. Make sure that your machine ignores invalid or irrelevant actions.
+React to state changes
+Initiate asynchronous communications in a “reactor” that reacts to changes to the state (and not to dispatched actions).
+Write good tests
+Each component should be thoroughly testable in isolation, and one or two higher-level integration tests can help ensure that everything is working together as intended
+Footnotes
+Yes, those tests. You know. Automated ones.
+Or a clever QA engineer.
+A well-designed backend wouldn’t allow this, and would likely produce errors on subsequent attempts to confirm a purchase.
+Programming
+UI
+Computer Science
+Unit Testing

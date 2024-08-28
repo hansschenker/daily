@@ -1,0 +1,171 @@
+Pluralsight Course Deborah Kurata
+
+Observe events (actions) or state (data)
+
+Sign up to receive notifications
+when event occurs or state changes
+
+Reacts to the notification
+
+Applications are
+more responsive
+and provide a better
+user experience
+
+Signals
+
+New way for our code to observe
+data, notify and react when that
+data changes
+Share data between components
+and services
+Important for improved change
+detection
+Available as a developer preview in
+Angular v16
+
+Signal = data value
++ change notification
+Reactive Primitive
+
+Signals
+
+const x = signal(5);
+const y = signal(3);
+const z = computed( ()=>
+x()+y());
+console.log(z()); // 8
+x.set(10);
+console.log(z()); // 13
+
+Reactive Extensions for
+JavaScript (RxJS)
+
+Popular library for reactive programming
+Use RxJS to compose observable data streams
+Observe events and data over time
+Subscribe to receive a notification when the
+event occurs or data is emitted
+React to the notification and
+perform an operation or
+process the data
+
+RxJs Operators
+
+Work with the
+data before it is
+emitted
+100+ operators
+Provide error
+handling
+Handle multiple
+complex data
+sets
+
+Reactive Extensions (Rx)
+
+Originally developed by Microsoft as Rx.NET
+(https://github.com/dotnet/reactive)
+RxJava, RxPy, Rx.rb
+RxJS: Reactive Extensions for JavaScript
+
+RxJs in Angular
+
+Routing events
+this.route.paramMap
+this.route.data
+this.router.events
+Reactive forms events
+this.productForm. valueChanges
+HttpClient response notifications
+getProducts() : Observable<Product[]> {
+return this.http.get<Product[]>(this.url);
+}
+
+Signals
+
+- Observe state
+(variable values)
+- Notify when that state
+changes
+- React to those notifications
+
+
+RxJS Observables
+
+- Observe events or data that
+arrive over time
+- Notify when the event occurs,
+or data is emitted
+- React to those notifications
+
+RxJs for
+
+Asynchronous operations such as HTTP requests
+Retrieving and merging related sets of data
+
+
+Signals for
+
+Managing data after it's been retrieved + computed signals
+Binding in the template for better change detection
+
+Angular Dat Flow
+
+Template + Component -> Custom Data Service -> HTTP Service -> Backend Server
+
+
+Observables are
+
+Synchronous
+  Finite emissions
+Asynchronous
+  Infinite emissions
+
+Observer
+
+Explicit Observer (Uncommon)
+// Define an explicit observer (uncommon)
+const observer = {
+next: apple => console. log( Value emitted ${apple} ),
+error: err => console. log( Error occurred: ${err}),
+complete: () => console. log('No more apples )
+};
+
+Creation Functions
+const apples$ = of('Apple1', 'Apple2');
+const apples$ = from(['Apple1', 'Apple2']);
+const clicks$ = fromEvent (document, 'click') ;
+const items$ = timer(initialDelay);
+
+
+Create an Observable from
+
+Angular feature
+- Forms: valueChanges
+- Routing: paramMap
+- HTTP: get
+
+RxJs Creation functions
+- of, from, fromEvent, timer, ...
+- Create an Observable from anything
+
+RxJs Subject
+- Our code is the source
+- We emit notifications and our own values
+
+For More Information
+
+RxJS documentation
+- https://rxjs.dev/
+"RxJS in Angular: Terms, Tips and Patterns"
+- https://youtu.be/vtCDRiG_D4
+Demo code
+- https://stackblitz.com/edit/rxjs-signals-m3-deborahk
+
+
+
+
+
+
+

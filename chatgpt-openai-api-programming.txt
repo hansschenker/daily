@@ -1,0 +1,135 @@
+Making a request
+import openai
+openai.api_key = "ENTER YOUR KEY HERE"
+response = openai. Completion.create(
+model="gpt-3.5-turbo-instruct",
+prompt="What is the OpenAI API?"
+)
+print(response)
+
+. JSON (JavaScript Object Notation) response
+"choices": [
+"finish_reason": "stop",
+"index": 0,
+"Logprobs": null,
+"text": "\n\nOpenAI is an artificial intelligence research Laboratory that focuses on developing machine Learning algorithms
+with the goal of advancing artificial intelligence technology. The OpenAI API is a set of tools, services, and data that can be
+used to create, train, and deploy models. With the OpenAI API, developers have access to advanced AI algorithms, datasets,
+pre-trained models, and tools to help them create applications powered by artificial intelligence."
+1,
+"created": 1682437639,
+"id": "cmpl-79FAt7HqtdLQ1DDQIyvrkKLqFRThX",
+"model": "gpt-3.5-turbo-instruct",
+"object": "text_completion",
+"usage": {
+"completion_tokens": 86,
+"prompt_tokens": 7,
+"total_tokens": 93
+
+Interpreting the response
+print(response["choices"])
+[<OpenAIObject at 0x7f3146559c70> JSON: {
+"finish_reason": "stop",
+"index": 0,
+"Logprobs": null,
+"text": "\n\nOpenAI is an artificial intelligence research Laboratory that focuses
+on developing machine Learning algorithms with the goal of advancing artificial
+intelligence technology. The OpenAI API is a set of tools, services, and data that
+can be used to create, train, and deploy models. With the OpenAI API, developers
+have access to advanced AI algorithms, datasets, pre-trained models, and tools to
+help them create applications powered by artificial intelligence."
+}]
+
+print(response ["choices"][0])
+
+# Import openai
+import openai
+
+# Set your API key
+openai.api_key = "<YOUR_API_KEY>"
+
+# Create a request to the Completion endpoint
+response = openai.Completion.create(
+  # Specify the correct model
+  model="gpt-3.5-turbo-instruct ",
+  prompt="Who developed ChatGPT?"
+)
+
+print(response)
+
+Completions
+. Receive continuation of a prompt
+· Single-turn tasks
+o Answer questions
+o Classification into categories
+o Sentiment analysis
+· Explain complex topics
+
+Chat
+. Multi-turn conversations
+o Ideation
+o Customer support assistant
+o Personal tutor
+o Translate languages
+o Write code
+· Also performs well on single-turn tasks
+· Available through openai.ChatCompletion
+-> Chapter 2
+
+Moderation
+. Check content for violations of OpenAl's
+usage policies, including:
+o Inciting violence
+o Hate speech
+· Can customize model sensitivity to specific
+violations
+1 https://openai.com/policies/usage-policies 2 https://platform.openai.com/docs/guides/moderation/overview
+
+Organization settings
+Organization name
+Human-friendly label for your organization, shown in user interfaces
+DataCamp
+Organization ID
+Identifier for this organization sometimes used in API requests
+. Better management of access, billing, and
+usage limits
+· Users can be part of multiple organizations
+Save
+https://platform.openai.com/account/org-settings
+
+Organizations
+import openai
+openai.api_key = "ENTER YOUR KEY HERE"
+openai.organization = "ENTER ORG ID"
+response = openai.Completion.create(
+model="gpt-3.5-turbo-instruct",
+prompt="What is the OpenAI API?"
+)
+print(response)
+
+
+
+Rate limits
+. Cap on frequency or size of API requests
+--.
+----
+-
+--.
+!
+--
+API
+ttps://platform.openai.com/docs/guides/rate-limits
+
+Organization structure
+!
+Organization
+Organization 1
+Customer Service Chatbot
+Customer Service Chatbot
+Content Recommendation
+Organization 2
+Content Recommendation
+Video Transcript Generator
+Organization 3
+Video Transcript Generator
+

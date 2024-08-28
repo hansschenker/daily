@@ -1,0 +1,91 @@
+// user input, cycle intent, rxjs is really good at
+
+
+// view
+<span class="cell b1">
+state.a * 10
+</span>
+
+// state changed
+onStateChanged(() => {
+view = render(state)
+
+let update
+const onStateChanged = _update => {
+update = _update
+
+const setState = newState => {
+state = newState
+update()
+
+React
+onStateChanged(() => {
+view = render(state)
+setState({ a: 5 })
+
+Redux
+store. subscribe(() => {
+view = render(state)
+store.dispatch({
+type: UPDATE_A,
+payload: 5
+
+Angular 1
+$scope. $watch(() => {
+view = render ($scope)
+$scope.a = 5
+// auto-called in event handlers
+$scope. $apply()
+
+Angular 2
+ngOnChanges() {
+view = render(state)
+state.a = 5
+// auto-called if in a zone
+Lifecycle.tick()
+
+VueJs
+---------------------
+let subscribers = []
+let activeJob = null
+let a = 3
+const state = {
+get a () {
+if (subscribers.indexOf (activeJob) < 0)
+subscribers.push(activeJob)
+return a
+set a (newValue) {
+a = newValue
+subscribers. forEach(job => job())
+
+const autorun = update => {
+function job () {
+activeJob = job
+update()
+activeJob = null
+job()
+
+autorun( () => {
+view = render(state)
+This is the basic form of the dependency tracking systems as
+seen in Knockout.js, Meteor Tracker, Vue.js and MobX.
+
+Push vs. Pull Tradeoffs
+Pull
+· Requires explicit pull signal from user (can
+be mitigated via auto-call e.g. Zone.js)
+· Requires manual optimization hints (can be
+simplified via use of Immutable data)
+
+dependency tracking
+
+Push vs. Pull Tradeoffs
+· No silver bullet
+· Real world implementations often mix both:
+o Angular 2 onPush
+o React + MobX
+o Vue 2 + Immutable data
+
+
+
+-------------------

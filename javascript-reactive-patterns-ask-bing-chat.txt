@@ -1,0 +1,134 @@
+javascript reactive patterns ask bing chat:
+
+Yes, you're correct. In JavaScript, particularly in the context of React, there are several ways to manage state in a reactive way. Here are some of them:
+
+1. **Local Component State**: This is the simplest way to manage state. You can use the `useState` hook to manage the state in functional components¹². Here's an example of how to use it:
+
+```javascript
+import { useState } from 'react'
+
+const Counter = () => {
+  const [count, setCount] = useState(0)
+  
+  const increaseCount = () => {
+    setCount(count + 1)
+  }
+  
+  const decreaseCount = () => {
+    if (count > 0) {
+      setCount(count - 1)
+    }
+  }
+  
+  return (
+    <div>
+      <h1>{count}</h1>
+      <button onClick={decreaseCount}>-</button>
+      <button onClick={increaseCount}>+</button>
+    </div>
+  )
+}
+
+export default Counter
+```
+
+2. **React's Context API with useReducer**: This is another way to manage state in React. It's particularly useful when you have global state that needs to be shared across many components¹.
+
+3. **Redux**: Redux is a predictable state container for JavaScript apps. It helps you write applications that behave consistently, run in different environments (client, server, and native), and are easy to test¹².
+
+4. **Recoil**: Recoil is an experimental state management library for React apps. It provides several capabilities that are difficult to achieve with React alone, while being compatible with the newest features of React¹².
+
+5. **Jotai**: Jotai is a primitive and flexible state management library for React¹.
+
+6. **MobX**: MobX is a battle tested library that makes state management simple and scalable by transparently applying functional reactive programming (TFRP)¹.
+
+7. **Zustand**: Zustand is a small, fast and scaleable bearbones state-management solution. It has a comfy api based on hooks, that isn't boilerplatey or opinionated, but still just enough to be explicit and flux-like¹².
+
+Remember, the choice of state management solution depends on the specific needs and complexity of your application¹².
+
+Quelle: Unterhaltung mit Bing, 8.11.2023
+(1) A guide to choosing the right React state management solution. https://blog.logrocket.com/guide-choosing-right-react-state-management-solution/.
+(2) How to Manage State in a React App – With Hooks, Redux, and More. https://www.freecodecamp.org/news/how-to-manage-state-in-a-react-app/.
+(3) Mastering React State Management: A Comprehensive Guide. https://javascript.plainenglish.io/mastering-react-state-management-a-comprehensive-guide-5b21359ec76a.
+(4) State management in JavaScript - codeburst. https://codeburst.io/state-management-in-javascript-15d0d98837e1.
+(5) Handling State Management in Large Scale Application. https://javascript.plainenglish.io/handling-state-management-in-large-scale-application-36227c56899f.
+
+Reactive patterns in Javascript
+-------------------------------------------------------------------
+Sure, let's go through each of these JavaScript reactive patterns:
+
+1. **ReactJs hooks**⁸⁶: Hooks are built-in React functions introduced in React version 16.8. They allow you to use features of the React library like lifecycle methods, state, and context in functional components without having to rewrite it to a class. Each React Hook name is prefixed with the word "use". For example, `useState` or `useEffect`.
+
+2. **Signals in Solid**⁹[^10^]: Signals are the cornerstone of reactivity in Solid. They contain values that change over time; when you change a signal's value, it automatically updates anything that uses it. To create a signal, you import `createSignal` from `solid-js` and call it from your component like this: `const [count, setCount] = createSignal(0);`.
+
+3. **Observables in Rx.js**¹²¹³: Observables represent a stream of data that can be subscribed to, allowing multiple values to be emitted over time. Observables, operators, and observers are three fundamental concepts in RxJS that work together to create reactive and asynchronous programming patterns.
+
+4. **JavaScript Promise**¹⁶¹⁷: A Promise is an object that represents the eventual completion (or failure) of an asynchronous operation, and its resulting value. Promises are the most common type of Push system in JavaScript today. A Promise (the producer) delivers a resolved value to registered callbacks (the consumers).
+
+5. **JavaScript Proxy**¹²: A JavaScript Proxy is an object that wraps another object (target) and intercepts the fundamental operations of the target object. The fundamental operations can be the property lookup, assignment, enumeration, function invocations, etc.
+
+6. **JavaScript Property set and get**³¹³²: In JavaScript, accessor properties are methods that get or set the value of an object. For that, we use these two keywords: `get` - to define a getter method to get the property value. `set` - to define a setter method to set the property value.
+
+7. **JavaScript Pub Sub Pattern**²⁶²⁷: The Publish-Subscribe pattern is a design pattern where senders (publishers) can send messages to receivers (subscribers), without the subscribers knowing about what the publishers are doing. This pattern is especially valuable for decoupling components and facilitating extensibility in software applications.
+
+8. **JavaScript Subject Observer**²¹²²: The Observer pattern typically consists of three key participants: Subject, Observers, and Notify Method. The subject contains references to the concrete observers to notify for any changes. The Observer object is an abstract class that allows for the concrete observers to implement the notify method.
+
+Please note that these are high-level explanations. For detailed explanations and examples, I recommend referring to the respective official documentation or tutorials.
+
+Quelle: Unterhaltung mit Bing, 8.11.2023
+
+Hooks
+(1) Learn React Hooks – A Beginner's Guide - freeCodeCamp.org. https://www.freecodecamp.org/news/the-beginners-guide-to-react-hooks/.
+(2) Explaining all React Hooks with examples - DEV Community. https://dev.to/sergioamjr/explaining-all-react-hooks-with-examples-4jl1.
+(20) React Hooks cheat sheet: Best practices with examples. https://blog.logrocket.com/react-hooks-cheat-sheet-solutions-common-problems/.
+
+Signals
+(3) Introduction/Signals - solidjs.com. https://www.solidjs.com/tutorial/introduction_signals.
+(4) Signals: Fine-grained Reactivity for JavaScript Frameworks. https://www.sitepoint.com/signals-fine-grained-javascript-framework-reactivity/.
+(21) Why I like Signals in Angular and the importance of Declarative code. https://dev.to/this-is-angular/why-i-like-signals-in-angular-and-the-importance-of-declarative-code-4lh9.
+
+RxJs - Observable and Observer and Subscription
+(5) A guide to RxJS Observables - LogRocket Blog. https://blog.logrocket.com/guide-rxjs-observables/.
+(6) RxJS - Observable. https://rxjs.dev/guide/observable.
+(22) A Beginner's Guide to RxJS & Redux Observable - freeCodeCamp.org. https://www.freecodecamp.org/news/beginners-guide-to-rxjs-redux-observables/.
+(23) Using RxJS operators to consume Observables - LogRocket Blog. https://blog.logrocket.com/using-rxjs-operators-consume-observables/.
+(27) javascript - What is the difference between Observable and a Subject in .... https://stackoverflow.com/questions/47537934/what-is-the-difference-between-observable-and-a-subject-in-rxjs.
+(28) RxJS - Observer. https://rxjs.dev/guide/observer.
+(29) Subject - Learn RxJS. https://www.learnrxjs.io/learn-rxjs/subjects/subject.
+
+
+JavaScript Promises
+(7) JavaScript Promises - W3Schools. https://www.w3schools.com/Js/js_promise.asp.
+(8) JavaScript Promises Explained - freeCodeCamp.org. https://www.freecodecamp.org/news/javascript-promises-explained/.
+(24) What is a promise in JavaScript? - Javatpoint. https://www.javatpoint.com/what-is-a-promise-in-javascript.
+(25) How to Use JavaScript Promises – Callbacks, Async/Await, and Promise .... https://www.freecodecamp.org/news/javascript-promises-async-await-and-promise-methods/.
+(26) JavaScript | Promise | Codecademy. https://www.codecademy.com/resources/docs/javascript/promise.
+
+JavaScript Proxy
+(9) JavaScript Proxy Explained Clearly By Practical Examples. https://www.javascripttutorial.net/es6/javascript-proxy/.
+(10) How JavaScript's Proxy Object Works – Explained with Example Use Cases. https://www.freecodecamp.org/news/javascript-proxy-object/.
+(17) How to use a Proxy API with JavaScript [Proxy API JavaScript Tutorial]. https://rapidapi.com/blog/proxy-api-javascript/.
+(18) javascript proxy : clear explanation and practical examples - 知乎. https://zhuanlan.zhihu.com/p/390748511.
+(19) JavaScript Proxies - Programiz. https://www.programiz.com/javascript/proxies.
+
+
+JavaScript Getter and Setter
+(11) JavaScript Getter and Setter (with Examples) - Programiz. https://www.programiz.com/javascript/getter-setter.
+(12) Property getters and setters - The Modern JavaScript Tutorial. https://javascript.info/property-accessors.
+(33) Property getters and setters - The Modern JavaScript Tutorial. https://bing.com/search?q=Javascript+Property+set+and+get+explanation+and+example.
+(34) Introduction to JavaScript getters and setters in ES6. https://www.javascripttutorial.net/es6/javascript-getters-and-setters/.
+
+(13) Implementing Pub-Sub in JavaScript - DEV Community. https://dev.to/adancarrasco/implementing-pub-sub-in-javascript-3l2e.
+(14) Publish-Subscribe Pattern: The Most Used Patterns in JavaScript. https://medium.com/frontend-canteen/publish-subscribe-pattern-in-javascript-17bf1e94e83d.
+(32) The pros and cons of the Pub-Sub architecture pattern. https://www.redhat.com/architect/pub-sub-pros-and-cons.
+(30) Understanding jQuery & Pub Sub Pattern with this example. https://stackoverflow.com/questions/38558075/understanding-jquery-pub-sub-pattern-with-this-example.
+(31) javascript - Jquery syntax explanation for PubSub Design Pattern .... https://stackoverflow.com/questions/28985376/jquery-syntax-explanation-for-pubsub-design-pattern.
+
+(15) Observer Design Pattern in JavaScript | DigitalOcean. https://www.digitalocean.com/community/conceptual-articles/observer-design-pattern-in-javascript.
+(16) Observer Method – JavaScript Design Pattern - GeeksforGeeks. https://www.geeksforgeeks.org/observer-method-javascript-design-pattern/.
+
+
+
+
+
+

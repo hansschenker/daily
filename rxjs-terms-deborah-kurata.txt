@@ -1,0 +1,150 @@
+RxJS Patterns
+---------------------------
+
+1 Declarative Data Access Pattern
+
+2 Retrieve on Action Pattern
+
+3 Shape on Action Pattern
+
+4 Retrieve Related Data Pattern
+
+Array:			items in space (memory)
+
+Observable:		items delivered over time
+
+Observable
+A collection of items over time
+. Unlike an array, it doesn't retain items
+. Emitted items can be observed over time
+[A, P, P, L, E ]
+
+Why Use an Observable?
+· Things that arrive over time
+o Key presses
+o Mouse movement
+o Button clicks
+. An HTTP response
+· Notifications
+o Process complete
+o Process failure
+. React to arrival (emission) and notification
+
+What Does an Observable Do?
+It does nothing until a consumer subscribes
+When subscribed, the Observable begins emitting items
+or notifications to the consumer:
+next: The next item is emitted
+error: An error occurred and no more items are emitted
+complete: No more items are emitted
+
+Angular Creates Observables
+- Routing emits parameters via a paramMap Observable
+- FormControl emits value via a valueChanges Observable
+- Http client emits the response via an Observable
+- getProducts(): Observable<Product[]> {
+   return this.http.get<Product[]>(this.productUrl);
+}
+
+Subscription
+An object that represents the execution of an
+Observable
+ngOnInit(): void {
+this.productService.getProducts(). subscribe()
+}
+
+Observer with Arrow Functions
+// Pass the next callback function
+const sub = source$. subscribe(
+apple => console.log( Apple was emitted ${apple} )
+);
+// Pass an Observer object with callback arrow functions
+const sub = source$. subscribe({
+next: apple => console. log( Apple was emitted ${apple} ),
+error: err => console.log( Error occurred: ${err} ),
+complete: () => console.log( No more apples, go home )
+});
+
+     Subscription Observable Observer
+// Pass an Observer object with callback arrow functions
+const sub = source$. subscribe({
+next: apple => console.log( Apple was emitted ${apple} ),
+error: err => console.log( Error occurred: ${err} ),
+complete: () => console.log( No more apples, go home )
+});
+this.sub.unsubscribe();
+
+1 Declarative Data Access Pattern
+------------------------------------------
+// pipe is a angular template function
+
+<div *ngIf="products$ | async as products">
+<button type='button'
+*ngFor='let product of products'>
+{{ product. productName }} ({{ product.category }})
+</button>
+</div>
+products$ = this.productService.products$;
+products$ = this.http.get<Product[]>(this.url)
+. pipe(
+tap(data => console.log(data)),
+catchError(this.handleError)
+@deborahkurata
+);
+
+Subject can take next, error, comple notification in and output next, error, complete
+-------------------------------------------------------------------------------------
+allows you to track actions
+
+To respond to an action,
+use a Subject or
+BehaviorSubject
+
+To subscribe to an inner
+Observable and
+flatten the result, use a
+higher-order mapping
+operator
+
+Higher-Order Mapping Operators
+Automatically subscribe to the inner Observable
+Flatten the resulting Observable
+Returning Observable<T> not Observable<Observable<T>>
+Automatically unsubscribe from the inner Observable
+
+
+Higher-Order Mapping Operators
+---------------------------------
+
+switchMap 	Stops the current operation and performs the new operation
+
+concatMap 	Performs each operation one at a time, in order
+
+mergeMap 	Performs each operation concurrently
+
+
+
+));
+
+
+2 Retrieve on Action Pattern
+----------------------------------------------------------
+
+private categorySubject = new Subject<number>();
+categorySelectedAction$ = this.categorySubject.asObservable();
+products$ = this.categorySelectedAction$.pipe(
+switchMap(catId=>this.http.get<Product[]>( ${this.url}?cat=${catId} ))
+.pipe(
+tap(data => console.log(data)),
+catchError(this.handleError)
+
+
+Combination Operators
+------------------------------------------------------
+
+combineLatest -		Emits a combined value when any of the Observables emit
+			Won't emit until all Observables have emitted at least once
+
+merge -			Emits the one value when any of the Observables emit each Observable into an array
+
+forkJoin		When all Observables complete, emit the last value from

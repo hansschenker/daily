@@ -1,0 +1,422 @@
+https://www.youtube.com/watch?v=wOsqWoszMDI&t=6s
+
+Linear Interpolation (LERP)
+--------------------------------------
+
+const lerp = (current, next) =>co
+const dx = next.x - current.x;
+const dy = next.y - current. y;
+const ratio = 0.1;
+return {
+X: current.x + dx * ratio;
+y: current. y + dy * ratio;
+
+
+ball$.pipe(
+scan((a, b) => lerp(a, b)))
+
+1.5 1.75 2 2.5 2.75
+
+const lerp =
+const animFrame$ = // ...
+const smoothMove$ = animFrame$.pipe(
+withLatestFrom(move$, (frame, move) => move)
+scan(lerp));
+smoothMove$.subscribe(values => {
+// render values
+
+https://css-tricks.com/animated-intro-rxjs/
+
+https://codepen.io/davidkpiano/pen/vxZEoO
+
+https://codepen.io/davidkpiano/pen/c188c1c723f79cebe74a151f64c50574
+
+STREAM -> VALUES -> CUSTOM PROPERTIES -> REACTIVE STYLES
+
+Animations are transitions
+between states
+due to events
+
+}
+}
+Animations - David Khourshid
+
+State machine as a reducer function
+------------------------------------
+
+function searchReducer(state = idle',
+switch (state) {
+case 'idle':
+switch (event.type) {
+case 'SEARCH':
+return 'searching';
+default:
+return state;
+case 'searching':
+switch (event.type) {
+case 'RESOLVE':
+return 'success';
+case 'REJECT':
+return 'failure';
+default:
+return state;
+case 'success':
+switch (event.type) {
+case 'SEARCH':
+return 'searching';
+default:
+return state;
+
+State machine as a dictionary lookup
+-------------------------------------
+
+Animations - David Khourshid
+const machine = {
+initial: 'idle',
+states: {
+idle: {
+on: { SEARCH: 'searching' }
+},
+searching: {
+on: {
+RESOLVE: 'success',
+REJECT: 'failure',
+SEARCH: 'searching'
+C
+}
+success: {
+on: { SEARCH: 'searching' }
+failure: {
+on: { SEARCH: 'searching' }
+21 };
+
+.on [event ]
+state;
+
+
+Define transitions between
+states & events
+-----------------------------------
+
+const transition = (state, event) => {
+return machine
+.states [state] // current state
+// next state
+// or same state
+}
+
+merge mulitpe observables and scan them with the reducer
+---------------------------------------------------------
+merge (. . . ) 
+pipe(
+scan(reducer, initial)
+)
+
+
+David khourshid's way
+------------------------------------------------
+import { fromEvent, fromEventPattern, merge } from 'rxjs';
+2 import { scan } from 'rxjs/operators';
+
+const pan$ = fromEventPattern(/*
+const esc$ = fromEvent (/*
+const other$ = fromEventPattern(/* ... */);// pan$, esc$, others$
+
+const event$ = merge(pan$, esc$, other$);
+
+10 const initialState = {  ...  }
+
+14 const state$ = event$.pipe(
+scan((state, event) => {
+
+// state transition here
+
+}, initialState)
+);
+
+20 state$. subscribe(state => {
+// render state
+22 });
+
+https://codepen.io/davidkpiano/pen/mAoaxP
+
+
+
+Time as a Neglected Variable: 
+
+He emphasizes that time is often overlooked in programming, leading to the development of various concepts like callbacks, promises, async/await, and observables.
+
+Interest in Animations: 
+-----------------------
+Khourshid's entry into RxJS was driven by his interest in animations, leading him to explore reactive animations.
+
+Reactive Animation Concept: 
+--------------------------
+The concept involves discrete changes in response to continuous events, allowing automation of animation details.
+
+Discrete vs. Continuous Events: 
+-------------------------------
+He notes a fundamental difference in digital signals being discrete, not continuous, affecting how RxJS relates to Functional Reactive Programming (FRP).
+
+Professional Background: Khourshid introduces himself, mentioning his work at Microsoft and his involvement in the RxJS community.
+
+Animating with RxJS: He discusses using RxJS for animations, such as mapping mouse movements to XY positions for CSS animations.
+
+Examples of Reactive Animations: Demonstrates examples like a CSS-only dog animation and discusses the practicality and challenges in implementing reactive animations.
+
+Linear Interpolation in Animations: Explains using linear interpolation for smooth transitions in animations, providing a mathematical approach.
+
+State Machines in Animation: Introduces the concept of finite state machines and state charts to manage animation states more efficiently.
+
+Combining RxJS with State Machines: Describes how he evolved his animation approach to combine RxJS with state machines for more complex animations.
+
+Practical Demonstration: Provides a live example of an app utilizing state machines for animation, illustrating the concept's effectiveness.
+
+Visualizing State Machines: Emphasizes the importance of visualizing state machines to understand and manage complex animations better.
+
+Advantages of State Machines: Highlights the benefits of state machines, such as comprehensive test coverage, accommodating late-breaking requirements, and visualizing application logic.
+
+Closing Thoughts: Khourshid encourages attendees to explore state machines and state charts further to enhance their understanding of reactive programming and animation.
+
+User
+give me more details on '4.Reactive...'
+ChatGPT
+Certainly! In point 4, David Khourshid discusses the concept of Reactive Animation, specifically focusing on the notion of Functional Reactive Animations (FRAN). Here are more details:
+
+Origin of Concept: The idea of Functional Reactive Animations dates back to 1997, highlighting its longstanding presence in the field of reactive programming.
+
+Definition and Characteristics: Khourshid explains that reactive animations involve discrete changes in response to potentially continuous events. This definition underscores the relationship between events (which could be continuous in nature) and the discrete, specific changes they trigger in an animation context.
+
+Automation of Animation Details: By defining animations in this functional reactive way, it becomes possible to automate the "how" aspect of animations — essentially, the implementation details. This means that once the behavior of an animation is specified ('what' the animation should do), the underlying system can handle the actual execution.
+
+Digital Signal Characteristics: A critical aspect discussed is the nature of digital signals as discrete rather than continuous. This distinction is vital because it influences how animations are processed and rendered in a digital environment.
+
+RxJS and FRP (Functional Reactive Programming): Khourshid touches on the relationship between RxJS (Reactive Extensions for JavaScript) and FRP. He notes that some people argue that RxJS isn't exactly FRP because of the way it handles events and animations, which ties back to the difference between continuous and discrete events.
+
+This part of Khourshid's talk emphasizes the importance of understanding the underlying principles of reactive animations, particularly how events drive changes and how these can be efficiently managed and automated within a reactive programming framework like RxJS.
+
+User
+give me more details on '5.Discrete...'
+ChatGPT
+In point 5 of David Khourshid's talk, he delves into the distinction between discrete and continuous events in the context of Functional Reactive Programming (FRP) and RxJS. Here's a more detailed explanation:
+
+Discrete vs. Continuous Events: Khourshid highlights a fundamental difference in the nature of events in digital systems. Digital signals are inherently discrete, not continuous. This means that they occur as distinct, individual events or values, rather than as a seamless, uninterrupted flow.
+
+Impact on Reactive Programming: This distinction is crucial in reactive programming, especially in the implementation of animations. In a continuous system, one could theoretically have an infinite number of intermediate states between two points in time. However, in a digital (discrete) system, the states are countable and distinct.
+
+Relevance to RxJS: RxJS, a library for reactive programming using observables, deals primarily with discrete events. This influences how animations and other reactive behaviors are programmed and executed. The discrete nature of events in RxJS means that reactive animations are processed as a series of individual, distinct changes rather than continuous transformations.
+
+FRP and Digital Signals: The talk also touches on the original concept of FRP, which often considered continuous events. However, since digital systems are based on discrete signals, there's a mismatch between the theoretical underpinnings of FRP and the practical realities of implementing it in a digital context like RxJS.
+
+Perception of RxJS in FRP: Due to this difference, there's a viewpoint that RxJS doesn't fully align with the original concept of FRP. This is because FRP was conceptualized around continuous events, whereas RxJS operates within the realm of discrete digital events.
+
+Khourshid's exploration of these concepts underscores a critical aspect of programming animations and other reactive systems: understanding the nature of the events you're working with (discrete vs. continuous) and how this affects the implementation and behavior of reactive solutions.
+
+User
+give me more details on '7.Animating..'
+ChatGPT
+In point 7 of David Khourshid's talk, he focuses on using RxJS for animating user interfaces. Here's an expansion on this point:
+
+RxJS for UI Animations: Khourshid discusses how RxJS, a reactive programming library, can be effectively used for creating sophisticated and responsive animations in user interfaces.
+
+Mapping Mouse Movements: A key example he provides is mapping mouse movements to create animations. By tracking the mouse's X and Y positions, these coordinates can be transformed into reactive data streams using RxJS.
+
+Integration with CSS: These data streams are then used to dynamically update CSS properties. For instance, the XY coordinates from mouse movements can be fed directly into CSS variables. This integration allows for real-time updates of the UI based on user interaction.
+
+Use of CSS Variables: The approach leverages CSS variables to apply the reactive data (like the mouse coordinates) across different parts of the UI. This method simplifies the implementation process, as the reactive data can be utilized anywhere in the CSS without redundant code.
+
+Efficiency in Animation Implementation: Khourshid emphasizes the efficiency of this method, particularly in reducing the overhead of manually managing the animation states and transitions. By using RxJS, much of the complexity in animating UI elements in response to user interactions is abstracted away.
+
+Example of Reactive Animation: He gives an example of a "CSS-only dog" animation, where the reactive approach enabled him to make the animation respond dynamically to user inputs, such as range slider adjustments.
+
+These details of Khourshid's talk illustrate how reactive programming concepts, particularly through the use of RxJS, can be leveraged to create more dynamic, responsive, and efficient animations in web development. By binding UI elements directly to reactive data streams, developers can create complex animations that respond to user interactions in real-time with less code and fewer implementation details to manage manually.
+
+User
+give me more details on '9. Linear...'
+ChatGPT
+In point 9 of David Khourshid's talk, he delves into the concept of linear interpolation (often abbreviated as "lerp") in the context of animations. Here's a more detailed explanation:
+
+Linear Interpolation Explained: Khourshid describes linear interpolation as a method for creating smooth transitions between values. This technique is commonly used in animations to interpolate between different states or values over time.
+
+Mathematical Basis: The fundamental principle of linear interpolation involves computing intermediate values between two endpoints. Khourshid provides an example with two numbers, 200 and 300. The delta (difference) between these numbers is calculated, which in this case is 100.
+
+Interpolation Process: To interpolate, one takes the delta and multiplies it by a fraction, which represents a step in the transition. For instance, if the fraction is 1/2, the value halfway between 200 and 300 is calculated. This approach is iteratively applied to create a smooth transition from the start value to the end value.
+
+Application in Animations: In animation, linear interpolation is used to create fluid motion. By gradually changing values (like position, size, color, etc.) over time, animations appear more natural and less abrupt.
+
+Combining with RxJS: Khourshid discusses how this lerp function can be combined with RxJS's animation frames. Using the withLatestFrom operator in RxJS, animation frames are matched with interpolated values, ensuring that animations are updated with each frame rendered by the browser.
+
+Resulting Smooth Animations: The outcome of this approach, as Khourshid demonstrates, is a smooth animation effect. He emphasizes that by using linear interpolation in conjunction with reactive programming concepts, animations can be both fluid and efficiently handled.
+
+Improving User Experience: Khourshid also touches on the importance of smooth animations for user experience. Abrupt changes or jumps in animations can be jarring, whereas linear interpolation provides a more seamless and visually appealing transition.
+
+This portion of Khourshid's talk highlights the importance of mathematical concepts like linear interpolation in creating aesthetically pleasing and smooth animations, especially when combined with reactive programming techniques like those offered by RxJS.
+
+User
+give me more details on '10. State Machines...'
+ChatGPT
+In point 10 of David Khourshid's talk, he introduces the concept of finite state machines and their extended version, statecharts, in the context of managing animation states. Here's a detailed explanation:
+
+Finite State Machines (FSM): Khourshid explains that finite state machines are a mathematical model of computation used to design both computer programs and sequential logic circuits. They are characterized by a finite number of states, transitions between these states, and actions.
+
+Application in Animations: In the realm of animations, finite state machines can be used to manage the various states of an animation (like starting, running, paused, stopped) and define the rules for transitioning between these states.
+
+Five Parts of FSM: He outlines that a typical finite state machine has five parts: an initial state (where the system starts), a finite number of states, transitions (rules for moving from one state to another), events (which trigger transitions), and final states (where the system can end).
+
+Statecharts as an Extension: Statecharts extend the concept of finite state machines. They add hierarchy, orthogonality (parallel states), and actions based on the transition taken, among other features. This makes statecharts more powerful and expressive, especially for complex animations and UI states.
+
+Visual Representation: Khourshid emphasizes the visual aspect of state machines and statecharts. They can be represented visually, making it easier to understand and manage complex animation states and transitions.
+
+Benefits in UI Development: Using state machines and statecharts in UI development, particularly in animations, brings several benefits. They provide a clear structure for handling different states and transitions, making the code more predictable and easier to debug.
+
+Example in Animation: An example given involves a UI component that can be in different states (like idle, dragging, dropped) with clear rules on how it transitions from one state to another based on user interactions.
+
+State Machines and Reactive Programming: He ties this back to reactive programming by showing how state machines and reactive streams (like those in RxJS) can be combined. This combination allows for managing complex user interactions and animations in a more structured and maintainable way.
+
+Khourshid's discussion of finite state machines and statecharts in this part of his talk highlights their utility in creating more manageable, scalable, and understandable code for animations and interactive UIs. By leveraging these concepts, developers can handle complex UI states and transitions in a systematic way, improving both the development process and the end user experience.
+
+User
+give me more details on '10. State..'
+ChatGPT
+In point 10 of David Khourshid's talk, he delves deeper into the concept of finite state machines and statecharts, especially in the context of animations and UI interactions. Here's a more detailed look:
+
+Finite State Machines (FSM) Defined: Finite state machines are a theoretical model used to represent a system with a limited number of states. An FSM can be in exactly one of a finite number of states at any given time, and transitions from one state to another are triggered by events.
+
+Application in UI and Animations: Khourshid discusses how FSMs can be effectively used to manage the complexity in UI animations and interactions. For instance, an animation or a UI component can have various states like 'idle', 'animating', 'completed', and transitions between these states can be defined.
+
+Five Components of FSMs: He outlines that FSMs are characterized by five main components:
+
+Initial State: The starting point of the machine.
+Finite Number of States: A set number of possible states the machine can be in.
+Transitions: Rules or conditions that trigger a change from one state to another.
+Events: External inputs or actions that affect the state of the machine.
+Final States: States indicating the completion or end of a process.
+Statecharts as an Advanced Form of FSMs: Statecharts are an extended form of FSMs. They add more capabilities like hierarchical states (states within states), parallel states, and more complex transition logic. This makes them suitable for managing the nuances of complex UI states and interactions.
+
+Visual Modeling and Clarity: Statecharts offer a visual way to model complex interactions, making it easier to understand and manage them. This visual aspect is particularly useful in planning and debugging UI animations and interactions.
+
+Implementation in Reactive Programming: Khourshid links these concepts back to reactive programming. By combining state machines or statecharts with reactive programming principles, such as those in RxJS, developers can create more robust, manageable, and scalable UIs.
+
+Enhancing Code Maintainability and Predictability: Using FSMs and statecharts helps in organizing the logic of UI interactions and animations, making the code more maintainable and predictable. It also aids in reducing bugs and simplifying the debugging process.
+
+Example and Use Cases: Khourshid likely gives specific examples or use cases where state machines and statecharts have been effectively utilized in animations and UI design, demonstrating their practical application.
+
+In this segment of his talk, Khourshid emphasizes the practical benefits of applying theoretical computer science concepts like FSMs and statecharts in front-end development, particularly for managing complex animations and user interactions in a structured and efficient manner.
+
+User
+give me more on '11. Combining...'
+ChatGPT
+In point 11 of David Khourshid's talk, he discusses the integration of RxJS with finite state machines (FSMs) and statecharts for creating more complex and interactive animations. Here's a detailed breakdown:
+
+Combining RxJS with FSMs: Khourshid explores how RxJS, a library for reactive programming, can be combined with the concept of finite state machines to manage complex UI states and animations more effectively.
+
+RxJS for Reactive Data Streams: RxJS is used to create reactive data streams that respond to events like mouse movements, clicks, or other user interactions. These streams can represent anything that changes over time in an application, such as the state of a UI element or user input.
+
+FSMs for State Management: Finite state machines are employed to manage the states of these animations or UI elements. FSMs provide a structured way to handle the various states an element can be in (like 'idle', 'hovered', 'clicked') and define clear rules for transitioning between these states based on events.
+
+Enhanced Control Over Animations: By combining the two, Khourshid demonstrates how developers can gain greater control and predictability over the behavior of their animations. RxJS streams react to user inputs or other changes, and FSMs manage the state transitions based on these reactive streams.
+
+Example of Combined Implementation: A typical example might involve a UI component that changes its appearance and behavior based on user interaction. RxJS could be used to capture and process these interactions, while an FSM could determine the component's state (like opening, open, closing, closed) at any given moment.
+
+Streamlining Complex Interactions: This approach is particularly useful in streamlining complex interactions and animations where multiple states and transitions are involved. It simplifies the management of these states and makes the code more readable and maintainable.
+
+Real-World Application: Khourshid likely provides real-world examples or demos showing how combining RxJS with state machines enhances the capability to create sophisticated and interactive animations, demonstrating the practicality and effectiveness of this approach.
+
+In summary, this part of Khourshid's talk highlights the synergy between reactive programming (RxJS) and state management (FSMs and statecharts) in building complex, stateful animations and interactive UIs. This combination allows for handling intricate user interactions and animation states in a more structured, efficient, and maintainable way.
+
+User
+give me more details on 'Linear Interpolation' in animations
+ChatGPT
+Linear interpolation, commonly referred to as "lerp," is a fundamental technique in animations and graphical computations. Here's a more detailed explanation of how it's used in animations:
+
+Basic Concept: Linear interpolation is a method of estimating unknown values that fall between two known values. In animations, it's used to create smooth transitions between points or states.
+
+Mathematical Formula: Mathematically, linear interpolation is expressed as: lerp(v0, v1, t) = v0 + t * (v1 - v0), where v0 and v1 are the start and end values, and t is a fraction between 0 and 1 that represents the interpolation point.
+
+Creating Smooth Motion: In animations, lerp is used to calculate frames that are not explicitly defined. For instance, if you have a point moving from position A to position B, linear interpolation can be used to calculate its position at any point in time between A and B.
+
+Transition Between States: For UI animations, lerp can be applied to smoothly transition elements between states, such as fading in/out, moving, scaling, or changing colors.
+
+Time-Based Interpolation: Often, t is tied to the elapsed time or a percentage of the animation's duration, allowing for smooth, time-based transitions.
+
+Frame Rate Independence: By using time-based linear interpolation, animations can maintain smoothness regardless of the frame rate, ensuring consistent visual experience across different devices.
+
+Handling Non-Linear Motion: While lerp provides linear transitions, it can be adjusted to simulate non-linear motion (like easing effects) by modifying the t parameter using various easing functions.
+
+Example in Web Development: In CSS animations or JavaScript-based animations, linear interpolation is often used behind the scenes to calculate the intermediate states of properties being animated over time.
+
+Performance Benefits: Using linear interpolation in animations can be more performance-efficient than defining every frame manually, as it allows the computer to calculate intermediate frames dynamically.
+
+Versatility: The technique is versatile and can be applied to a wide range of properties and scenarios in animations, from 2D and 3D transformations to color changes and more.
+
+Real-Time Calculations: In interactive applications, such as video games or dynamic UIs, linear interpolation is used for real-time calculations to interpolate values between frames based on user input or dynamic data.
+
+Enhancing Realism and Fluidity: By interpolating values, animations appear more realistic and fluid, enhancing the overall user experience in digital interfaces and applications.
+
+In summary, linear interpolation in animations is a powerful tool for creating smooth transitions and realistic motion effects. It's a core concept in computer graphics and animation, used extensively across various platforms and technologies to enhance the visual appeal and user experience of digital content.
+
+User
+RxJs can be thought of being Finite state machines
+1. that have one initial state
+2. that have a finite number of states
+3. that have a finite number of events
+4. that are a mapping of state transitions
+5. that are triggered by events
+ChatGPT
+Your description draws parallels between RxJS and finite state machines (FSMs), highlighting some key aspects of FSMs. Let's clarify and expand on these points in the context of RxJS:
+
+One Initial State:
+
+In FSMs, there's always one defined initial state where the system begins.
+In RxJS, the initial state can be thought of as the starting point of a data stream or the initial value in a reactive sequence.
+Finite Number of States:
+
+FSMs have a limited, defined set of states.
+In RxJS, while the range of potential values in a stream can be vast, in a specific application context (like UI state management), the number of states handled by an observable can be finite and well-defined.
+Finite Number of Events:
+
+FSMs respond to a finite set of events that trigger state transitions.
+Similarly, in RxJS, a stream or observable can be configured to respond to a specific set of events (like user inputs, API responses, etc.), leading to changes in the observed data.
+Mapping of State Transitions:
+
+FSMs define explicit transitions between states based on events.
+In RxJS, state transitions can be modeled by operators that transform, filter, or combine streams. For instance, the .map() operator can be used to transform data, effectively representing a state transition.
+Triggered by Events:
+
+Both FSMs and RxJS rely on events to trigger changes. In FSMs, events are the basis for moving from one state to another.
+In RxJS, events (like mouse clicks, timer ticks, or data arrivals) are observed and handled by observables, which then emit new values or states in response.
+While RxJS itself is not an FSM, it can be used to implement FSM-like behavior in applications, particularly in managing UI states, animations, or any scenario where a system's state needs to evolve in response to events in a predictable manner. The reactive paradigm of RxJS makes it well-suited for such implementations, providing a robust framework for handling asynchronous events and data streams.
+
+
+
+STT for Garage Door
+----------------
+
+Current State		Input		Action			Next State
+------------------------------------------------------------------------------------------------------------------------------------------
+Door Closed		Button Pressed	Start Motor		Motor Running Up
+Motor Off
+-----------------------------------------------------------------------------------
+Motor Running Up	Door Open	Stop Motor		Door Open
+			Detected				Motor Off
+------------------------------------------------------------------------------------
+Motor Running Up	Button Pressed	Stop Motor		Door Partially Open
+								Motor Off
+------------------------------------------------------------------------------------
+Door Partially Open	Button Pressed	Start Motor		Motor Running Down
+Motor Off
+--------------------------------------------------------------------------------------
+Door Open		Button Pressed	Start Motor		Motor Running Down
+Motor Off
+---------------------------------------------------------------------------------------
+Motor Running Down	Door Closed	Stop Motor		Door Closed
+			Detected				Motor Off
+---------------------------------------------------------------------------------------
+Motor Running Down	Button Pressed	Stop Motor		Door Partially Closed
+								Motor Off
+----------------------------------------------------------------------------------------
+Door Partially Closed	Button Pressed	Start Motor		Motor Running Down
+Motor Off
+----------------------------------------------------------------------------------------
+
+
