@@ -1,0 +1,104 @@
+In computer science, 
+a dispatcher typically denotes a specific software module 
+that manages the allocation of CPU control to a chosen process or thread. 
+
+This idea is mainly found in operating systems, where it plays a vital role in the process/thread management system.
+
+Conceptual Mapping
+In classical operating systems, a dispatcher is the mechanism responsible for:
+
+- Selecting the next unit of execution (process or thread) after the scheduler has made a     
+  policy decision.
+- Performing the actual context switch: saving the current execution context and restoring the 
+  next one.
+- Determining when and how the next piece of work begins execution.
+
+RxJS schedulers fulfill a closely parallel role within the observable pipeline:
+
+They control the execution context and timing of three primary actions:
+
+- Subscription (when the observable begins work, via subscribeOn).
+- Notification delivery (when values, errors, or completion are delivered to observers, via 
+  observeOn).
+- Scheduling of delayed or periodic operations (used internally by operators such as delay, 
+  sinterval, timer, observeOn, etc.).
+
+
+By centralizing control over these timing and threading decisions in a single abstraction
+the Scheduler in RxJS effectively makes it 
+- the central point 
+      - through which all asynchronous or deferred work is dispatched. 
+
+This mirrors the dispatcher's responsibility in an OS kernel for routing execution to the appropriate context.
+
+Scheduler,Execution Context,Dispatcher Analogy
+queueScheduler,"Synchronous, depth-first queue",Immediate inline dispatcher (no real async hand-off)
+asapScheduler,Microtask (post-current task),Fast async dispatcher (like Promise.then)
+asyncScheduler,Macrotask (setTimeout/setInterval),General-purpose async dispatcher (most common for decoupling)
+animationFrameScheduler,Browser repaint cycle,UI-specific dispatcher tied to requestAnimationFrame
+VirtualTimeScheduler / TestScheduler,Simulated time,Controllable dispatcher for deterministic testing
+
+----------
+);
+
+export class Observablestore {
+constructor(initialstate){
+this ._ store = new BehaviorSubject(
+initialState
+
+this ._ stateUpdates = new Subject();
+I
+
+accumulate state
+this ._ stateUpdates.pipe(
+scan((acc, curr) = {
+return { ... acc, ... curr };
+}, initialState)
+).subscribe(this ._ store);
+
+updateState(stateUpdate){
+this ._ stateUpdates.next(stateUpdate);
+
+selectState(statekey) {
+return this ._ store. pipe(
+distinctUntilKeyChanged(stateKey),
+pluck(statekey)
+
+statechanges ()
+return this ._ store.asobservable
+----------use store
+// begin lesson code
+import { ObservableStore } from './store';
+
+const store = new ObservableStoreC{
+user: 'joe',
+isAuthenticated: true
+
+*
+
+* Select a slice of state from store.
+
+store. selectState('user').subscribe(console. log);
+
+/*
+* Update a property with new value.
+
+store.updateState({
+user: 'bob'
+
+*
+
+store. updateState({
+isAuthenticated: true
+
+/*
+* Selected state above (user) only emits when value has changed
+* for the requested property.
+*/
+store. updateStateC{
+isAuthenticated: false
+------------
+
+
+
+---------------
